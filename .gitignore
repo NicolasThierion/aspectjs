@@ -1,0 +1,7 @@
+.cache
+.idea
+coverage
+dist
+yarn-error.log
+node_modules
+src.old

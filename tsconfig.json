@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
+    "importHelpers": true,
+    "lib": [
+//      "es6",
+//      "es7",
+//      "es2017.object",
+      "es2019.array"
+    ],
+    "types": ["reflect-metadata", "jasmine", "node"],
+    "target": "es6"
+  },
+  "exclude": [
+    "dist",
+    "build",
+    "node_modules"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "node_modules/@types/node/globals.d.ts"
+  ]
+}
