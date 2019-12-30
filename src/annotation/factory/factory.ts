@@ -8,9 +8,16 @@ import {
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
-import { AfterAdvice, AfterReturnAdvice, AfterThrowAdvice, AroundAdvice, BeforeAdvice } from '../../weaver/types';
+import {
+    AfterAdvice,
+    AfterReturnAdvice,
+    AfterThrowAdvice,
+    AroundAdvice,
+    BeforeAdvice,
+    JoinPoint,
+} from '../../weaver/types';
 import { Weaver } from '../../weaver/load-time/load-time-weaver';
-import { assert, getMetaOrDefault } from '../../utils';
+import { assert, getMetaOrDefault, isArray } from '../../utils';
 import { AnnotationContextImpl } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver } from '../../index';
@@ -47,25 +54,33 @@ export class AnnotationFactory {
                 );
             }
 
-            return _createDecorator(weaver, annotation, annotationArgs);
+            const decorator = _createDecorator(weaver, annotation, annotationArgs);
+            _createAnnotationRef(decorator as S, annotationStub, groupId);
+
+            return decorator;
         } as S;
 
-        annotation.groupId = groupId;
-        _setAnnotationRef(annotation, annotationStub);
-
-        getMetaOrDefault('aspectjs.referenceAnnotation', annotationStub, () => {
-            Reflect.defineMetadata('aspectjs.referenceAnnotation', annotationStub, annotation);
-            return annotationStub;
-        });
-
-        return annotation;
+        return _createAnnotationRef(annotation, annotationStub, groupId);
     }
 }
 
-function _setAnnotationRef(fn: Function, annotationRef: AnnotationRef): void {
+function _createAnnotationRef<S extends Annotation>(
+    fn: Function & S,
+    annotationStub: S,
+    groupId: string,
+): AnnotationRef & S {
     assert(typeof fn === 'function');
 
-    Object.defineProperties(fn, Object.getOwnPropertyDescriptors(annotationRef));
+    const annotation = (fn as any) as AnnotationRef & S;
+    Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
+    annotation.groupId = groupId;
+
+    getMetaOrDefault('aspectjs.referenceAnnotation', annotationStub, () => {
+        Reflect.defineMetadata('aspectjs.referenceAnnotation', annotationStub, fn);
+        return annotationStub;
+    });
+
+    return annotation;
 }
 
 function _setFunctionName(fn: Function, name: string): void {
@@ -77,7 +92,7 @@ function _setFunctionName(fn: Function, name: string): void {
 }
 
 function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, annotationArgs: any[]): Decorator {
-    const decorator = function(...targetArgs: any[]): Function {
+    return function(...targetArgs: any[]): Function {
         const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
         if (target.type === AnnotationTargetType.CLASS) {
@@ -86,21 +101,15 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
             assert(false, 'not implemented'); // TODO
         }
     };
-    _setAnnotationRef(decorator, annotation);
-
-    return decorator;
 
     function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
         // eslint-disable-next-line @typescript-eslint/class-name-casing
         const ctor = function(...ctorArgs: any[]): void {
-            let joinPointWrapper = (...args: any[]) => {
-                joinPointWrapper = () => {
-                    throw new WeavingError(`joinPoint already proceeded`);
-                };
-                return new target.proto.constructor(...args);
-            };
-
+            // set 'this' to null, as ctor joinpoint has not been called yet
             const ctxt = new AnnotationContextImpl(target, null, annotation, annotationArgs);
+            const jpf = new JoinpointFactory();
+
+            // prevent getting reference to this until ctor has been called
             const thisHolder = {
                 instance(): any {
                     throw new WeavingError('Cannot get "this" instance before constructor joinpoint has been called');
@@ -111,10 +120,17 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                     return thisHolder.instance();
                 },
             });
+
+            // create joinpoint toward ctor
+            let jp = jpf.create(
+                (args: any[]) => new target.proto.constructor(...args),
+                () => ctorArgs,
+            );
+
             try {
                 weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
 
-                const aroundAdvices = weaver.getAdvices('around');
+                const aroundAdvices = weaver.getAdvices('around') as AroundAdvice<T>[];
                 if (aroundAdvices.length) {
                     // allow call to fake 'this'
                     let instance = Object.create(target.proto);
@@ -123,18 +139,39 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                         dirty = true;
                         return instance;
                     };
-
-                    aroundAdvices.forEach((advice: AroundAdvice<unknown>) =>
-                        advice(ctxt, (...args: any[]) => {
+                    const oldJp = jp;
+                    jp = jpf.create(
+                        (args: any[]) => {
                             if (dirty) {
-                                throw new Error(`Cannot get "this" instance of constructor joinpoint has been called`);
+                                throw new Error(
+                                    `Cannot get "this" instance of constructor before joinpoint has been called`,
+                                );
                             }
-                            instance = joinPointWrapper(...args);
+                            instance = oldJp(args);
                             thisHolder.instance = () => instance;
-                        }),
+                        },
+                        () => ctorArgs,
                     );
+
+                    let aroundAdvice = aroundAdvices.shift();
+
+                    let previousArgs = ctorArgs;
+                    while (aroundAdvices.length) {
+                        const previousAroundAdvice = aroundAdvice;
+                        aroundAdvice = aroundAdvices.shift();
+                        const previousJp = jp;
+                        jp = jpf.create(
+                            (...args: any[]) => {
+                                previousArgs = args ?? previousArgs;
+                                previousAroundAdvice(ctxt, previousJp, args);
+                            },
+                            () => previousArgs,
+                        );
+                    }
+
+                    aroundAdvice(ctxt, jp, ctorArgs);
                 } else {
-                    const instance = joinPointWrapper(...ctorArgs);
+                    const instance = jp(ctorArgs);
                     thisHolder.instance = () => instance;
                 }
 
@@ -161,5 +198,26 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
         _setFunctionName(ctor, target.proto.constructor.name);
         return ctor;
+    }
+}
+
+class JoinpointFactory<T> {
+    create(fn: (...args: any[]) => any, argsProvider: () => any[]): JoinPoint {
+        const alreadyCalledFn = (): void => {
+            throw new WeavingError(`joinPoint already proceeded`);
+        };
+
+        const originalArgs = argsProvider();
+        const jp = function(args?: any[]) {
+            args = args ?? originalArgs;
+            if (!isArray(args)) {
+                throw new TypeError(`Joinpoint arguments expected to be array. Got: ${args}`);
+            }
+            const jp = fn;
+            fn = alreadyCalledFn as any;
+            return jp(args);
+        };
+
+        return jp;
     }
 }

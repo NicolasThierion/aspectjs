@@ -60,6 +60,6 @@ export class Weaver extends WeaverProfile {
     }
 
     getAdvices(pointCutName: keyof MethodPointCutHooks): Advice<any>[] {
-        return this._advices[pointCutName];
+        return [...this._advices[pointCutName]];
     }
 }

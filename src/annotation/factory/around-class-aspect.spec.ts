@@ -4,6 +4,7 @@ import { WeavingError } from '../../weaver/weaving-error';
 import { Weaver } from '../../weaver/load-time/load-time-weaver';
 import { setWeaver } from '../../index';
 import Spy = jasmine.Spy;
+import { ClassAnnotationContext } from '../context/context';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
@@ -11,7 +12,7 @@ function setupWeaver(...aspects: Aspect[]) {
     weaver.load();
 }
 
-let aroundAdvice: AroundAdvice<any> = (ctxt, jp) => {
+let aroundAdvice: AroundAdvice<any> = (ctxt, jp, jpArgs) => {
     throw new Error('should configure aroundAdvice');
 };
 describe('given a class configured with some class-annotation aspect', () => {
@@ -20,7 +21,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             name = 'AClassLabel';
 
             apply(hooks: AspectHooks): void {
-                hooks.annotations(AClass).class.around((ctxt, jp) => aroundAdvice(ctxt, jp));
+                hooks.annotations(AClass).class.around((ctxt, jp, jpArgs) => aroundAdvice(ctxt, jp, jpArgs));
             }
         }
 
@@ -77,7 +78,9 @@ describe('given a class configured with some class-annotation aspect', () => {
                     }
 
                     new A();
-                }).toThrow(new WeavingError('Cannot get "this" instance of constructor joinpoint has been called'));
+                }).toThrow(
+                    new WeavingError('Cannot get "this" instance of constructor before joinpoint has been called'),
+                );
             });
         });
 
@@ -109,7 +112,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and calls the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
-                    jp('x');
+                    jp(['x']);
                     ctxt.instance.labels.push('a');
                 };
             });
@@ -152,7 +155,68 @@ describe('given a class configured with some class-annotation aspect', () => {
         });
     });
 
-    xdescribe('when multiple "around" advices are configured', () => {
-        it('should call them nested, in declaration order');
+    describe('when multiple "around" advices are configured', () => {
+        describe('and joinpoint has been called', () => {
+            let labels: string[];
+            let aArgsOverride: any[] = undefined;
+            let bArgsOverride: any[] = undefined;
+            beforeEach(() => {
+                aArgsOverride = undefined;
+                bArgsOverride = undefined;
+                labels = [];
+                setupWeaver(
+                    new (class extends Aspect {
+                        name = 'aAspect';
+                        apply(hooks: AspectHooks): void {
+                            hooks.annotations(AClass).class.around((ctxt: ClassAnnotationContext<any>, jp) => {
+                                labels.push('beforeA');
+                                jp(aArgsOverride);
+                                labels.push('afterA');
+                            });
+                        }
+                    })(),
+                    new (class extends Aspect {
+                        name = 'bAspect';
+                        apply(hooks: AspectHooks): void {
+                            hooks.annotations(AClass).class.around((ctxt: ClassAnnotationContext<any>, jp) => {
+                                labels.push('beforeB');
+                                jp(bArgsOverride);
+                                labels.push('afterB');
+                            });
+                        }
+                    })(),
+                );
+            });
+            it('should call them nested, in declaration order', () => {
+                @AClass()
+                class A {
+                    constructor(label: string) {
+                        labels.push(label);
+                    }
+                }
+
+                new A('ctor');
+                expect(labels).toEqual(['beforeB', 'beforeA', 'ctor', 'afterA', 'afterB']);
+            });
+
+            describe('with joinpoint arguments override', () => {
+                beforeEach(() => {
+                    aArgsOverride = ['aArgs'];
+                    bArgsOverride = undefined;
+                });
+
+                it('should pass overridden arguments', () => {
+                    @AClass()
+                    class A {
+                        constructor(label: string) {
+                            labels.push(label);
+                        }
+                    }
+
+                    new A('ctor');
+                    expect(labels).toEqual(['beforeB', 'beforeA', 'aArgs', 'afterA', 'afterB']);
+                });
+            });
+        });
     });
 });

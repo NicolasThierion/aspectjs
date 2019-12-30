@@ -6,6 +6,7 @@ import {
 } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import {
+    AnnotationRef,
     AnnotationType,
     ClassAnnotation,
     MethodAnnotation,
@@ -17,29 +18,25 @@ export interface AnnotationContext<T, D extends AnnotationType> {
     readonly args?: any[];
     readonly target: AnnotationTarget<T, D>;
     readonly instance: T;
-    readonly annotation: AnnotationType;
+    readonly annotation: AnnotationRef;
     bindValue(value: any): this;
     getValue(): any;
 }
 
 export interface ClassAnnotationContext<T> extends AnnotationContext<T, ClassAnnotation> {
     readonly target: ClassAnnotationTarget<T>;
-    readonly annotation: ClassAnnotation;
 }
 
 export interface MethodAnnotationContext<T> extends AnnotationContext<T, MethodAnnotation> {
     readonly target: MethodAnnotationTarget<T>;
-    readonly annotation: MethodAnnotation;
 }
 
 export interface PropertyAnnotationContext<T> extends AnnotationContext<T, PropertyAnnotation> {
     readonly target: PropertyAnnotationTarget<T>;
-    readonly annotation: PropertyAnnotation;
 }
 
 export interface ParameterAnnotationContext<T> extends AnnotationContext<T, ParameterAnnotation> {
     readonly target: AnnotationTarget<T, ParameterAnnotation>;
-    readonly annotation: ParameterAnnotation;
 }
 
 // TODO move
@@ -51,7 +48,7 @@ export class AnnotationContextImpl<T, D extends AnnotationType> implements Annot
     constructor(
         public readonly target: AnnotationTarget<T, D>,
         public readonly instance: T,
-        public readonly annotation: D,
+        public readonly annotation: AnnotationRef,
         args?: any[],
     ) {
         this.args = args;

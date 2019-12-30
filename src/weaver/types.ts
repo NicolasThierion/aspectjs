@@ -53,7 +53,11 @@ export type BeforeClassAdvice<T> = (ctxt: Omit<AnnotationContext<T, AnnotationTy
 export type AfterAdvice<T> = BeforeAdvice<T>;
 export type AfterReturnAdvice<T> = BeforeAdvice<T>;
 export type AfterThrowAdvice<T> = BeforeAdvice<T>;
-export type AroundAdvice<T> = (ctxt: AnnotationContext<T, AnnotationType>, joinPoint: JoinPoint) => void;
+export type AroundAdvice<T> = (
+    ctxt: AnnotationContext<T, AnnotationType>,
+    joinPoint: JoinPoint,
+    joinpointArgs: any[],
+) => void;
 export type Advice<T> =
     | SetupAdvice<T>
     | BeforeAdvice<T>
@@ -61,4 +65,5 @@ export type Advice<T> =
     | AfterReturnAdvice<T>
     | AfterThrowAdvice<T>
     | AroundAdvice<T>;
-export type JoinPoint = Function;
+
+export type JoinPoint = (args?: any[]) => any;
