@@ -1,9 +1,8 @@
-import { Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterAdvice, AfterReturnAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
 import { AClass } from '../../../../tests/a';
 import { AnnotationContext } from '../../../context/context';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { setWeaver } from '../../../../index';
-import { AAspect } from '../../../../tests/a/a.aspect';
 
 interface Labeled {
     labels?: string[];
@@ -15,26 +14,29 @@ function setupWeaver(...aspects: Aspect[]): void {
     weaver.load();
 }
 
+let afterReturn: AfterReturnAdvice<any> = (ctxt, retVal) => {
+    throw new Error('should configure afterThrowAdvice');
+};
+
 describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterReturn" pointcut', () => {
-        let aaspect: AAspect;
         beforeEach(() => {
-            class AAspect extends Aspect {
+            class AfterReturnAspect extends Aspect {
                 name = 'AClassLabel';
 
-                addLabels(ctxt: AnnotationContext<any, ClassDecorator>): void {
-                    ctxt.instance.labels = ctxt.instance.labels ?? [];
-                    ctxt.instance.labels.push('AClass');
-                }
-
                 apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.afterReturn(this.addLabels);
+                    hooks.annotations(AClass).class.afterReturn((ctxt, retVal) => afterReturn(ctxt, retVal));
                 }
             }
-            aaspect = new AAspect();
-            spyOn(aaspect, 'addLabels').and.callThrough();
-            setupWeaver(aaspect);
+
+            afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {
+                ctxt.instance.labels = ctxt.instance.labels ?? [];
+                ctxt.instance.labels.push('AClass');
+            });
+
+            setupWeaver(new AfterReturnAspect());
         });
+
         describe('creating an instance of this class', () => {
             describe('with a constructor that throws', () => {
                 it('should not call the aspect', () => {
@@ -48,7 +50,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                     expect(() => {
                         new A('ctor');
                     }).toThrow();
-                    expect(aaspect.addLabels).not.toHaveBeenCalled();
+                    expect(afterReturn).not.toHaveBeenCalled();
                 });
             });
 
@@ -63,7 +65,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                     }
 
                     const labels = new A('ctor').labels;
-                    expect(aaspect.addLabels).toHaveBeenCalled();
+                    expect(afterReturn).toHaveBeenCalled();
                     expect(labels).toEqual(['ctor', 'AClass']);
                 });
             });

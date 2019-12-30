@@ -31,3 +31,7 @@ test global weaver & named weaver
 
 throw error when no 'afterThrow' 
 
+replace Jasmine with Jest
+
+- create 'AdvicePipeline'
+- bypass es6 ctor 'new' call with proxies : https://exceptionshub.com/es6-call-class-constructor-without-new-keyword.html

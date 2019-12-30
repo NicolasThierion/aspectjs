@@ -166,7 +166,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                 Object.assign(this, ctxt.instance);
                 instanceResolver.resolve(this);
 
-                weaver.getAdvices('afterReturn').forEach((advice: AfterReturnAdvice<unknown>) => advice(ctxt));
+                weaver.getAdvices('afterReturn').forEach((advice: AfterReturnAdvice<unknown>) => advice(ctxt, this));
             } catch (e) {
                 if (e instanceof WeavingError) {
                     throw e;
@@ -176,7 +176,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                     // pass-trough errors by default
                     throw e;
                 } else {
-                    afterThrowAdvices.forEach((advice: AfterThrowAdvice<unknown>) => advice(ctxt));
+                    afterThrowAdvices.forEach((advice: AfterThrowAdvice<unknown>) => advice(ctxt, e));
                 }
             } finally {
                 weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));

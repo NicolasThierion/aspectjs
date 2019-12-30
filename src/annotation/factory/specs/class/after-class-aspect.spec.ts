@@ -1,9 +1,8 @@
-import { Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterAdvice, AfterThrowAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
 import { AClass } from '../../../../tests/a';
 import { AnnotationContext } from '../../../context/context';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { setWeaver } from '../../../../index';
-import { AAspect } from '../../../../tests/a/a.aspect';
 
 interface Labeled {
     labels?: string[];
@@ -15,26 +14,29 @@ function setupWeaver(...aspects: Aspect[]): void {
     weaver.load();
 }
 
+let afterAdvice: AfterAdvice<any> = ctxt => {
+    throw new Error('should configure afterThrowAdvice');
+};
+
 describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "after" pointcut', () => {
-        let aaspect: AAspect;
         beforeEach(() => {
-            class AAspect extends Aspect {
+            class AfterAspect extends Aspect {
                 name = 'AClassLabel';
 
-                addLabels(ctxt: AnnotationContext<any, ClassDecorator>): void {
-                    ctxt.instance.labels = ctxt.instance.labels ?? [];
-                    ctxt.instance.labels.push('AClass');
-                }
-
                 apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.after(this.addLabels);
+                    hooks.annotations(AClass).class.after(ctxt => afterAdvice(ctxt));
                 }
             }
-            aaspect = new AAspect();
-            spyOn(aaspect, 'addLabels').and.callThrough();
-            setupWeaver(aaspect);
+
+            afterAdvice = jasmine.createSpy('afterAdvice', function(ctxt) {
+                ctxt.instance.labels = ctxt.instance.labels ?? [];
+                ctxt.instance.labels.push('AClass');
+            });
+
+            setupWeaver(new AfterAspect());
         });
+
         describe('creating an instance of this class', () => {
             it('should invoke the aspect', () => {
                 @AClass()
@@ -89,12 +91,12 @@ describe('given a class configured with some class-annotation aspect', () => {
                             throw new Error('');
                         }
                     }
-                    expect(aaspect.addLabels).not.toHaveBeenCalled();
+                    expect(afterAdvice).not.toHaveBeenCalled();
 
                     try {
                         new A();
                     } catch (e) {}
-                    expect(aaspect.addLabels).toHaveBeenCalled();
+                    expect(afterAdvice).toHaveBeenCalled();
                 });
             });
         });

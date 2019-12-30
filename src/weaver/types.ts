@@ -50,14 +50,14 @@ export abstract class Aspect {
 export type SetupAdvice<T> = (target: AnnotationTarget<T, AnnotationType>) => void;
 export type BeforeAdvice<T> = (ctxt: AnnotationContext<T, AnnotationType>) => void;
 export type BeforeClassAdvice<T> = (ctxt: Omit<AnnotationContext<T, AnnotationType>, 'instance'>) => void;
-export type AfterAdvice<T> = BeforeAdvice<T>;
-export type AfterReturnAdvice<T> = BeforeAdvice<T>;
-export type AfterThrowAdvice<T> = BeforeAdvice<T>;
+export type AfterAdvice<T> = (ctxt: AnnotationContext<T, AnnotationType>) => any; // TODO change return value
+export type AfterReturnAdvice<T> = (ctxt: AnnotationContext<T, AnnotationType>, returnValue: any) => any; // TODO change return value
+export type AfterThrowAdvice<T> = (ctxt: AnnotationContext<T, AnnotationType>, error: Error) => any; // TODO change return value
 export type AroundAdvice<T> = (
     ctxt: AnnotationContext<T, AnnotationType>,
     joinPoint: JoinPoint,
     joinpointArgs: any[],
-) => void;
+) => any; // TODO change return value;
 export type Advice<T> =
     | SetupAdvice<T>
     | BeforeAdvice<T>
