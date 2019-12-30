@@ -1,8 +1,8 @@
-import { Aspect, AspectHooks } from '../types';
+import { Aspect, AspectHooks } from '../../weaver/types';
 import { AClass } from '../../tests/a';
-import { AnnotationContext } from '../../annotation/context/context';
-import { WeavingError } from '../weaving-error';
-import { Weaver } from './load-time-weaver';
+import { AnnotationContext } from '../context/context';
+import { WeavingError } from '../../weaver/weaving-error';
+import { Weaver } from '../../weaver/load-time/load-time-weaver';
 import { setWeaver } from '../../index';
 
 function setupWeaver(...aspects: Aspect[]) {
@@ -62,7 +62,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                     }
 
                     new A();
-                }).toThrow(new WeavingError('cannot get instance of "this" before constructor has been called'));
+                }).toThrow(new WeavingError('Cannot get "this" instance before constructor joinpoint has been called'));
             });
         });
     });

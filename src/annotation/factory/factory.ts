@@ -16,6 +16,8 @@ import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 
+type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
+
 /**
  * Factory to create some {@link Annotation}.
  */
@@ -35,7 +37,9 @@ export class AnnotationFactory {
         }
         const groupId = this._groupId;
 
+        // create the annotation (ie: decorator provider)
         const annotation = function(...annotationArgs: any[]) {
+            // assert the weaver is loaded before invoking the underlying decorator
             const weaver = getWeaver(groupId) ?? getWeaver();
             if (!weaver.isLoaded()) {
                 throw new WeavingError(
@@ -46,6 +50,7 @@ export class AnnotationFactory {
             return _createDecorator(weaver, annotation, annotationArgs);
         } as S;
 
+        annotation.groupId = groupId;
         _setAnnotationRef(annotation, annotationStub);
 
         getMetaOrDefault('aspectjs.referenceAnnotation', annotationStub, () => {
@@ -53,19 +58,17 @@ export class AnnotationFactory {
             return annotationStub;
         });
 
-        annotation.groupId = this._groupId;
-
         return annotation;
     }
 }
 
-function _setAnnotationRef(fn: Function, annotationRef: AnnotationRef) {
+function _setAnnotationRef(fn: Function, annotationRef: AnnotationRef): void {
     assert(typeof fn === 'function');
 
     Object.defineProperties(fn, Object.getOwnPropertyDescriptors(annotationRef));
 }
 
-function _setFunctionName(fn: Function, name: string) {
+function _setFunctionName(fn: Function, name: string): void {
     assert(typeof fn === 'function');
 
     Object.defineProperty(fn, 'name', {
@@ -73,69 +76,90 @@ function _setFunctionName(fn: Function, name: string) {
     });
 }
 
-function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, annotationArgs: any[]) {
-    const decorator = function(...targetArgs: any[]) {
+function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, annotationArgs: any[]): Decorator {
+    const decorator = function(...targetArgs: any[]): Function {
         const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
-        let decoration: Function;
         if (target.type === AnnotationTargetType.CLASS) {
             return _createClassDecoration(target);
         } else {
             assert(false, 'not implemented'); // TODO
         }
-
-        return decoration;
     };
     _setAnnotationRef(decorator, annotation);
 
     return decorator;
 
-    function _createClassDecoration(target: AnnotationTarget<any, A>) {
+    function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
         // eslint-disable-next-line @typescript-eslint/class-name-casing
-        const decoration = class extends target.proto.constructor {
-            constructor(...ctorArgs: any[]) {
-                let originalCtorWrapper = (...args: any[]) => {
-                    originalCtorWrapper = () => {
-                        throw new WeavingError(`joinPoint already proceeded`);
-                    };
-                    return new target.proto.constructor(...args);
+        const ctor = function(...ctorArgs: any[]): void {
+            let joinPointWrapper = (...args: any[]) => {
+                joinPointWrapper = () => {
+                    throw new WeavingError(`joinPoint already proceeded`);
                 };
+                return new target.proto.constructor(...args);
+            };
 
-                let ctxt = new AnnotationContextImpl(target, null, annotation, annotationArgs);
-                Reflect.defineProperty(ctxt, 'instance', {
-                    get() {
-                        throw new WeavingError('cannot get instance of "this" before constructor has been called');
-                    },
-                });
-                Object.seal(ctxt);
-                try {
-                    weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
+            const ctxt = new AnnotationContextImpl(target, null, annotation, annotationArgs);
+            const thisHolder = {
+                instance(): any {
+                    throw new WeavingError('Cannot get "this" instance before constructor joinpoint has been called');
+                },
+            };
+            Reflect.defineProperty(ctxt, 'instance', {
+                get() {
+                    return thisHolder.instance();
+                },
+            });
+            try {
+                weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
 
-                    const aroundAdvices = weaver.getAdvices('around');
-                    if (aroundAdvices.length) {
-                        aroundAdvices.forEach((advice: AroundAdvice<unknown>) =>
-                            advice(ctxt, (...args: any[]) => {
-                                const instance = originalCtorWrapper(args);
-                                ctxt = new AnnotationContextImpl(target, instance, annotation, annotationArgs);
-                            }),
-                        );
-                    } else {
-                        super(...ctorArgs);
-                        ctxt = new AnnotationContextImpl(target, this, annotation, annotationArgs);
-                    }
+                const aroundAdvices = weaver.getAdvices('around');
+                if (aroundAdvices.length) {
+                    // allow call to fake 'this'
+                    let instance = Object.create(target.proto);
+                    let dirty = false;
+                    thisHolder.instance = () => {
+                        dirty = true;
+                        return instance;
+                    };
 
-                    weaver.getAdvices('afterReturn').forEach((advice: AfterReturnAdvice<unknown>) => advice(ctxt));
-                } catch (e) {
-                    if (e instanceof WeavingError) {
-                        throw e;
-                    }
-                    weaver.getAdvices('afterThrow').forEach((advice: AfterThrowAdvice<unknown>) => advice(ctxt));
-                } finally {
-                    weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));
+                    aroundAdvices.forEach((advice: AroundAdvice<unknown>) =>
+                        advice(ctxt, (...args: any[]) => {
+                            if (dirty) {
+                                throw new Error(`Cannot get "this" instance of constructor joinpoint has been called`);
+                            }
+                            instance = joinPointWrapper(...args);
+                            thisHolder.instance = () => instance;
+                        }),
+                    );
+                } else {
+                    const instance = joinPointWrapper(...ctorArgs);
+                    thisHolder.instance = () => instance;
                 }
+
+                // assign 'this' to the object created by the original ctor at joinpoint;
+                Object.assign(this, ctxt.instance);
+                thisHolder.instance = () => this;
+
+                weaver.getAdvices('afterReturn').forEach((advice: AfterReturnAdvice<unknown>) => advice(ctxt));
+            } catch (e) {
+                if (e instanceof WeavingError) {
+                    throw e;
+                }
+                const afterThrowAdvices = weaver.getAdvices('afterThrow');
+                if (!afterThrowAdvices.length) {
+                    // pass-trough errors by default
+                    throw e;
+                } else {
+                    afterThrowAdvices.forEach((advice: AfterThrowAdvice<unknown>) => advice(ctxt));
+                }
+            } finally {
+                weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));
             }
         };
 
-        return decoration;
+        _setFunctionName(ctor, target.proto.constructor.name);
+        return ctor;
     }
 }

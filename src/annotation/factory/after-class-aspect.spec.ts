@@ -1,7 +1,7 @@
-import { Aspect, AspectHooks } from '../types';
+import { Aspect, AspectHooks } from '../../weaver/types';
 import { AClass } from '../../tests/a';
-import { AnnotationContext } from '../../annotation/context/context';
-import { Weaver } from './load-time-weaver';
+import { AnnotationContext } from '../context/context';
+import { Weaver } from '../../weaver/load-time/load-time-weaver';
 import { setWeaver } from '../../index';
 import { AAspect } from '../../tests/a/a.aspect';
 
@@ -9,7 +9,7 @@ interface Labeled {
     labels?: string[];
 }
 
-function setupWeaver(...aspects: Aspect[]) {
+function setupWeaver(...aspects: Aspect[]): void {
     const weaver = new Weaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();

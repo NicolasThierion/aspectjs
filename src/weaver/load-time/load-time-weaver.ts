@@ -1,5 +1,5 @@
 import { WeaverProfile } from '../profile';
-import { getOrDefault } from '../../../src.old/utils';
+import { getOrDefault } from '../../utils';
 import { Advice, Aspect, MethodPointCutHooks, POINTCUT_NAMES } from '../types';
 import { WeavingError } from '../weaving-error';
 

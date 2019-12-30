@@ -30,3 +30,5 @@ create WeaverPlugin:
 test global weaver & named weaver
 
 
+throw error when no 'afterThrow' 
+

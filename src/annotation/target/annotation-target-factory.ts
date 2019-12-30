@@ -8,7 +8,7 @@ import {
     isObject,
     isUndefined,
     Mutable,
-} from '../../../src.old/utils';
+} from '../../../src/utils';
 import { AnnotationType } from '../annotation.types';
 import { AnnotationLocation } from '../location/location';
 import {
