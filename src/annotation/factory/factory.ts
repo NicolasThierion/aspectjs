@@ -18,10 +18,11 @@ import {
 } from '../../weaver/types';
 import { Weaver } from '../../weaver/load-time/load-time-weaver';
 import { assert, getMetaOrDefault, isArray } from '../../utils';
-import { AnnotationContextImpl } from '../context/context';
+import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
+import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -74,6 +75,9 @@ function _createAnnotationRef<S extends Annotation>(
     const annotation = (fn as any) as AnnotationRef & S;
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
     annotation.groupId = groupId;
+    annotation.toString = function() {
+        return `@${annotation.name}`;
+    };
 
     getMetaOrDefault('aspectjs.referenceAnnotation', annotationStub, () => {
         Reflect.defineMetadata('aspectjs.referenceAnnotation', annotationStub, fn);
@@ -105,23 +109,13 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
     function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
         // eslint-disable-next-line @typescript-eslint/class-name-casing
         const ctor = function(...ctorArgs: any[]): void {
-            // set 'this' to null, as ctor joinpoint has not been called yet
-            const ctxt = new AnnotationContextImpl(target, null, annotation, annotationArgs);
+            // prevent getting reference to this until ctor has been called
+            const instanceResolver = new InstanceResolver<T>();
+
+            const ctxt = new AnnotationContextImpl(target, instanceResolver, annotation, annotationArgs);
             const jpf = new JoinpointFactory();
 
-            // prevent getting reference to this until ctor has been called
-            const thisHolder = {
-                instance(): any {
-                    throw new WeavingError('Cannot get "this" instance before constructor joinpoint has been called');
-                },
-            };
-            Reflect.defineProperty(ctxt, 'instance', {
-                get() {
-                    return thisHolder.instance();
-                },
-            });
-
-            // create joinpoint toward ctor
+            // create ctor joinpoint
             let jp = jpf.create(
                 (args: any[]) => new target.proto.constructor(...args),
                 () => ctorArgs,
@@ -133,22 +127,16 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                 const aroundAdvices = weaver.getAdvices('around') as AroundAdvice<T>[];
                 if (aroundAdvices.length) {
                     // allow call to fake 'this'
-                    let instance = Object.create(target.proto);
-                    let dirty = false;
-                    thisHolder.instance = () => {
-                        dirty = true;
-                        return instance;
-                    };
+                    instanceResolver.resolve(Object.create(target.proto));
                     const oldJp = jp;
                     jp = jpf.create(
                         (args: any[]) => {
-                            if (dirty) {
+                            if (instanceResolver.isDirty()) {
                                 throw new Error(
                                     `Cannot get "this" instance of constructor before joinpoint has been called`,
                                 );
                             }
-                            instance = oldJp(args);
-                            thisHolder.instance = () => instance;
+                            instanceResolver.resolve(oldJp(args));
                         },
                         () => ctorArgs,
                     );
@@ -171,13 +159,12 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
                     aroundAdvice(ctxt, jp, ctorArgs);
                 } else {
-                    const instance = jp(ctorArgs);
-                    thisHolder.instance = () => instance;
+                    instanceResolver.resolve(jp(ctorArgs));
                 }
 
                 // assign 'this' to the object created by the original ctor at joinpoint;
                 Object.assign(this, ctxt.instance);
-                thisHolder.instance = () => this;
+                instanceResolver.resolve(this);
 
                 weaver.getAdvices('afterReturn').forEach((advice: AfterReturnAdvice<unknown>) => advice(ctxt));
             } catch (e) {
@@ -219,5 +206,72 @@ class JoinpointFactory<T> {
         };
 
         return jp;
+    }
+}
+
+export class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
+    readonly args?: any[];
+    private _value: any;
+    private _resolved = false;
+
+    constructor(
+        public readonly target: AnnotationTarget<T, D>,
+        private _instanceResolver: InstanceResolver<T>,
+        public readonly annotation: AnnotationRef,
+        args?: any[],
+    ) {
+        this.args = args;
+    }
+
+    get instance() {
+        return this._instanceResolver.instance();
+    }
+
+    toString(): string {
+        return this.target.toString();
+    }
+
+    bindValue(value: any): this {
+        this._value = value;
+        this._resolved = true;
+        return this;
+    }
+
+    getValue() {
+        if (!this._resolved) {
+            throw new Error(`${this} value has not been bound`);
+        }
+
+        return this._value;
+    }
+
+    get bundle() {
+        return AnnotationBundleFactory.of(this.target) as AnnotationsBundleImpl<any>;
+    }
+}
+
+class InstanceResolver<T> {
+    private _instance: T;
+    private _dirty = false;
+
+    instance(): T {
+        if (!this._instance) {
+            throw new WeavingError('Cannot get "this" instance before constructor joinpoint has been called');
+        }
+
+        this._dirty = true;
+        return this._instance;
+    }
+
+    resolve(instance: T) {
+        this._instance = instance;
+    }
+
+    isResolved() {
+        return !!this._instance;
+    }
+
+    isDirty() {
+        return this._dirty;
     }
 }

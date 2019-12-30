@@ -1,9 +1,9 @@
-import { Aspect, AspectHooks } from '../../weaver/types';
-import { AClass } from '../../tests/a';
-import { AnnotationContext } from '../context/context';
-import { Weaver } from '../../weaver/load-time/load-time-weaver';
-import { setWeaver } from '../../index';
-import { AAspect } from '../../tests/a/a.aspect';
+import { Aspect, AspectHooks } from '../../../../weaver/types';
+import { AClass } from '../../../../tests/a';
+import { AnnotationContext } from '../../../context/context';
+import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
+import { setWeaver } from '../../../../index';
+import { AAspect } from '../../../../tests/a/a.aspect';
 
 interface Labeled {
     labels?: string[];

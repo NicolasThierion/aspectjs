@@ -1,9 +1,9 @@
-import { Aspect, AspectHooks } from '../../weaver/types';
-import { AClass } from '../../tests/a';
-import { AnnotationContext } from '../context/context';
-import { WeavingError } from '../../weaver/weaving-error';
-import { Weaver } from '../../weaver/load-time/load-time-weaver';
-import { setWeaver } from '../../index';
+import { Aspect, AspectHooks } from '../../../../weaver/types';
+import { AClass } from '../../../../tests/a';
+import { AnnotationContext } from '../../../context/context';
+import { WeavingError } from '../../../../weaver/weaving-error';
+import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
+import { setWeaver } from '../../../../index';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
