@@ -121,13 +121,15 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                 () => ctorArgs,
             );
 
+            // this partial instance will take place until ctor is called
+            const partialThis = Object.create(target.proto);
             try {
                 weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
 
                 const aroundAdvices = weaver.getAdvices('around') as AroundAdvice<T>[];
                 if (aroundAdvices.length) {
                     // allow call to fake 'this'
-                    instanceResolver.resolve(Object.create(target.proto));
+                    instanceResolver.resolve(partialThis);
                     const oldJp = jp;
                     jp = jpf.create(
                         (args: any[]) => {
@@ -171,12 +173,18 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                 if (e instanceof WeavingError) {
                     throw e;
                 }
+
+                // as of ES6 class, this has been destructed before leaving ctor.
+                // bind to partial this
+                instanceResolver.resolve(partialThis);
+
                 const afterThrowAdvices = weaver.getAdvices('afterThrow');
                 if (!afterThrowAdvices.length) {
                     // pass-trough errors by default
                     throw e;
                 } else {
                     afterThrowAdvices.forEach((advice: AfterThrowAdvice<unknown>) => advice(ctxt, e));
+                    return partialThis;
                 }
             } finally {
                 weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));

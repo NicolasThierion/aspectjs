@@ -29,10 +29,12 @@ describe('given a class configured with some class-annotation aspect', () => {
                 }
             }
 
-            afterAdvice = jasmine.createSpy('afterAdvice', function(ctxt) {
-                ctxt.instance.labels = ctxt.instance.labels ?? [];
-                ctxt.instance.labels.push('AClass');
-            });
+            afterAdvice = jasmine
+                .createSpy('afterAdvice', function(ctxt) {
+                    ctxt.instance.labels = ctxt.instance.labels ?? [];
+                    ctxt.instance.labels.push('AClass');
+                })
+                .and.callThrough();
 
             setupWeaver(new AfterAspect());
         });

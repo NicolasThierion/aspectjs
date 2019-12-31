@@ -20,30 +20,33 @@ let afterThrowAdvice: AfterThrowAdvice<any> = (ctxt, error: Error) => {
 };
 
 let afterThrowAdviceSpy: Spy;
-fdescribe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
+            afterThrowAdvice = (ctxt: ClassAnnotationContext<Labeled>, error) => {
+                ctxt.instance.labels = ctxt.instance.labels ?? [];
+                ctxt.instance.labels.push('A');
+            };
+            afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
             class AfterThrowAspect extends Aspect {
                 name = 'AClassLabel';
 
                 apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.afterThrow((ctxt, error) => afterThrowAdvice(ctxt, error));
+                    hooks.annotations(AClass).class.afterThrow((ctxt, error) => afterThrowAdviceSpy(ctxt, error));
                 }
             }
-            afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
 
             setupWeaver(new AfterThrowAspect());
         });
-        fdescribe('creating an instance of this class', () => {
+        describe('creating an instance of this class', () => {
             describe('with a constructor that throws', () => {
                 beforeEach(() => {
-                    afterThrowAdviceSpy = jasmine
-                        .createSpy('afterThrowAdvice', (ctxt: ClassAnnotationContext<Labeled>, error) => {
-                            ctxt.instance.labels = ctxt.instance.labels ?? [];
-                            ctxt.instance.labels.push('A');
-                            throw error;
-                        })
-                        .and.callThrough();
+                    afterThrowAdvice = (ctxt: ClassAnnotationContext<Labeled>, error) => {
+                        ctxt.instance.labels = ctxt.instance.labels ?? [];
+                        ctxt.instance.labels.push('A');
+                        throw error;
+                    };
+                    afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
                 });
 
                 it('should call the aspect', () => {
@@ -59,21 +62,19 @@ fdescribe('given a class configured with some class-annotation aspect', () => {
                     expect(() => {
                         new A('ctor');
                     }).toThrow();
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(afterThrowAdviceSpy).toHaveBeenCalled();
                 });
 
-                fdescribe('when the aspect swallows the exception', () => {
+                describe('when the aspect swallows the exception', () => {
                     beforeEach(() => {
-                        afterThrowAdvice = jasmine.createSpy(
-                            'afterThrowAdvice',
-                            (ctxt: ClassAnnotationContext<Labeled>, error) => {
-                                ctxt.instance.labels = ctxt.instance.labels ?? [];
-                                ctxt.instance.labels.push('A');
-                            },
-                        );
+                        afterThrowAdvice = (ctxt: ClassAnnotationContext<Labeled>, error) => {
+                            ctxt.instance.labels = ctxt.instance.labels ?? [];
+                            ctxt.instance.labels.push('A');
+                        };
+                        afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
                     });
 
-                    fit('should not throw', () => {
+                    it('should not throw', () => {
                         @AClass()
                         class A implements Labeled {
                             public labels: string[];
@@ -90,8 +91,8 @@ fdescribe('given a class configured with some class-annotation aspect', () => {
                             const a = new A('ctor');
                             labels = a.labels;
                         }).not.toThrow();
-                        expect(afterThrowAdvice).toHaveBeenCalled();
-                        expect(labels).toEqual(['ctor', 'AClass']);
+                        expect(afterThrowAdviceSpy).toHaveBeenCalled();
+                        expect(labels).toEqual(['A']);
                     });
                 });
             });
