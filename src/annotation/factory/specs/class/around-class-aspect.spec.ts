@@ -2,9 +2,10 @@ import { AroundAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
 import { AClass } from '../../../../tests/a';
 import { WeavingError } from '../../../../weaver/weaving-error';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
-import { setWeaver } from '../../../../index';
+import { ClassAnnotation, setWeaver } from '../../../../index';
 import Spy = jasmine.Spy;
 import { ClassAnnotationContext } from '../../../context/context';
+import { AnnotationAspectContext } from '../../../../weaver/annotation-aspect-context';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
@@ -168,21 +169,25 @@ describe('given a class configured with some class-annotation aspect', () => {
                     new (class extends Aspect {
                         name = 'aAspect';
                         apply(hooks: AspectHooks): void {
-                            hooks.annotations(AClass).class.around((ctxt: ClassAnnotationContext<any>, jp) => {
-                                labels.push('beforeA');
-                                jp(aArgsOverride);
-                                labels.push('afterA');
-                            });
+                            hooks
+                                .annotations(AClass)
+                                .class.around((ctxt: AnnotationAspectContext<any, ClassAnnotation>, jp) => {
+                                    labels.push('beforeA');
+                                    jp(aArgsOverride);
+                                    labels.push('afterA');
+                                });
                         }
                     })(),
                     new (class extends Aspect {
                         name = 'bAspect';
                         apply(hooks: AspectHooks): void {
-                            hooks.annotations(AClass).class.around((ctxt: ClassAnnotationContext<any>, jp) => {
-                                labels.push('beforeB');
-                                jp(bArgsOverride);
-                                labels.push('afterB');
-                            });
+                            hooks
+                                .annotations(AClass)
+                                .class.around((ctxt: AnnotationAspectContext<any, ClassAnnotation>, jp) => {
+                                    labels.push('beforeB');
+                                    jp(bArgsOverride);
+                                    labels.push('afterB');
+                                });
                         }
                     })(),
                 );

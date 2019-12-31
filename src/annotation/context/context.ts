@@ -13,13 +13,9 @@ import {
     PropertyAnnotation,
 } from '../annotation.types';
 
-export interface AnnotationContext<T, D extends AnnotationType> {
+export interface AnnotationContext<T, D extends AnnotationType> extends AnnotationRef {
     readonly args?: any[];
     readonly target: AnnotationTarget<T, D>;
-    readonly instance: T;
-    readonly annotation: AnnotationRef;
-    bindValue(value: any): this;
-    getValue(): any;
 }
 
 export interface ClassAnnotationContext<T> extends AnnotationContext<T, ClassAnnotation> {

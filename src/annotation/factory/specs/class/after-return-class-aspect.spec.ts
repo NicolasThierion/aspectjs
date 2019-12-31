@@ -1,8 +1,9 @@
-import { AfterAdvice, AfterReturnAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterReturnAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
 import { AClass } from '../../../../tests/a';
-import { AnnotationContext } from '../../../context/context';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
-import { setWeaver } from '../../../../index';
+import { ClassAnnotation, setWeaver } from '../../../../index';
+import { ClassAnnotationContext } from '../../../context/context';
+import { AnnotationAspectContext } from '../../../../weaver/annotation-aspect-context';
 
 interface Labeled {
     labels?: string[];
@@ -69,6 +70,29 @@ describe('given a class configured with some class-annotation aspect', () => {
                     const labels = new A('ctor').labels;
                     expect(afterReturn).toHaveBeenCalled();
                     expect(labels).toEqual(['ctor', 'AClass']);
+                });
+
+                describe('and the aspect returns a new value', () => {
+                    beforeEach(() => {
+                        afterReturn = (ctxt: AnnotationAspectContext<Labeled, ClassAnnotation>) => {
+                            return Object.assign(Object.create(ctxt.annotation.target.proto), {
+                                labels: ['ABis'],
+                            });
+                        };
+                        afterReturn = jasmine.createSpy('afterReturn', afterReturn).and.callThrough();
+                    });
+
+                    it('should assign "this" instance to the returned value', () => {
+                        @AClass()
+                        class A implements Labeled {
+                            public labels: string[];
+                            constructor(label: string) {
+                                this.labels = [label];
+                            }
+                        }
+                        const a = new A('test');
+                        expect(a.labels).toEqual(['ABis']);
+                    });
                 });
             });
         });

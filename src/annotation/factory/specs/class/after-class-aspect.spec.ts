@@ -1,6 +1,5 @@
-import { AfterAdvice, AfterThrowAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
 import { AClass } from '../../../../tests/a';
-import { AnnotationContext } from '../../../context/context';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { setWeaver } from '../../../../index';
 

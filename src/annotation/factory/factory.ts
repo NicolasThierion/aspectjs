@@ -9,20 +9,25 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import {
+    Advice,
     AfterAdvice,
     AfterReturnAdvice,
     AfterThrowAdvice,
+    AnnotationAspectPointcuts,
     AroundAdvice,
+    AspectHooks,
     BeforeAdvice,
+    BeforeClassAdvice,
     JoinPoint,
 } from '../../weaver/types';
 import { Weaver } from '../../weaver/load-time/load-time-weaver';
-import { assert, getMetaOrDefault, isArray } from '../../utils';
+import { assert, getMetaOrDefault, isArray, isUndefined } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
+import { AnnotationAspectContext } from '../../weaver/annotation-aspect-context';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -108,11 +113,14 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
     function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
         // eslint-disable-next-line @typescript-eslint/class-name-casing
-        const ctor = function(...ctorArgs: any[]): void {
+
+        const annotationContext = new AnnotationContextImpl(target, annotation, annotationArgs);
+
+        const ctor = function(...ctorArgs: any[]): T {
             // prevent getting reference to this until ctor has been called
             const instanceResolver = new InstanceResolver<T>();
 
-            const ctxt = new AnnotationContextImpl(target, instanceResolver, annotation, annotationArgs);
+            const ctxt = new AnnotationAspectContextImpl(annotationContext, instanceResolver, ctorArgs);
             const jpf = new JoinpointFactory();
 
             // create ctor joinpoint
@@ -124,9 +132,9 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
             // this partial instance will take place until ctor is called
             const partialThis = Object.create(target.proto);
             try {
-                weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
+                weaver.run(ctxt).class.before();
 
-                const aroundAdvices = weaver.getAdvices('around') as AroundAdvice<T>[];
+                const aroundAdvices = weaver.getAdvices('around');
                 if (aroundAdvices.length) {
                     // allow call to fake 'this'
                     instanceResolver.resolve(partialThis);
@@ -166,9 +174,20 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
                 // assign 'this' to the object created by the original ctor at joinpoint;
                 Object.assign(this, ctxt.instance);
-                instanceResolver.resolve(this);
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                let newInstance = this;
+                instanceResolver.resolve(newInstance);
 
-                weaver.getAdvices('afterReturn').forEach((advice: AfterReturnAdvice<unknown>) => advice(ctxt, this));
+                const advices = weaver.getAdvices('afterReturn');
+
+                while (advices.length) {
+                    const advice = advices.shift();
+                    newInstance = advice(ctxt, instanceResolver.instance());
+                    if (!isUndefined(newInstance)) {
+                        instanceResolver.resolve(newInstance);
+                    }
+                }
+                return instanceResolver.instance();
             } catch (e) {
                 if (e instanceof WeavingError) {
                     throw e;
@@ -183,8 +202,16 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                     // pass-trough errors by default
                     throw e;
                 } else {
-                    afterThrowAdvices.forEach((advice: AfterThrowAdvice<unknown>) => advice(ctxt, e));
-                    return partialThis;
+                    let newInstance = partialThis;
+
+                    while (afterThrowAdvices.length) {
+                        const advice = afterThrowAdvices.shift();
+                        newInstance = advice(ctxt, e);
+                        if (!isUndefined(newInstance)) {
+                            instanceResolver.resolve(newInstance);
+                        }
+                    }
+                    return instanceResolver.instance();
                 }
             } finally {
                 weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));
@@ -220,37 +247,17 @@ class JoinpointFactory<T> {
 export class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
     readonly args?: any[];
     private _value: any;
-    private _resolved = false;
+    public readonly name: string;
+    public readonly groupId: string;
 
-    constructor(
-        public readonly target: AnnotationTarget<T, D>,
-        private _instanceResolver: InstanceResolver<T>,
-        public readonly annotation: AnnotationRef,
-        args?: any[],
-    ) {
+    constructor(public readonly target: AnnotationTarget<T, D>, annotation: AnnotationRef, args?: any[]) {
+        this.name = annotation.name;
+        this.groupId = annotation.groupId;
         this.args = args;
-    }
-
-    get instance() {
-        return this._instanceResolver.instance();
     }
 
     toString(): string {
         return this.target.toString();
-    }
-
-    bindValue(value: any): this {
-        this._value = value;
-        this._resolved = true;
-        return this;
-    }
-
-    getValue() {
-        if (!this._resolved) {
-            throw new Error(`${this} value has not been bound`);
-        }
-
-        return this._value;
     }
 
     get bundle() {
@@ -281,5 +288,16 @@ class InstanceResolver<T> {
 
     isDirty() {
         return this._dirty;
+    }
+}
+
+class AnnotationAspectContextImpl<T, A extends AnnotationType> implements AnnotationAspectContext<T, A> {
+    constructor(
+        public readonly annotation: AnnotationContextImpl<T, A>,
+        private readonly _instanceResolver: InstanceResolver<T>,
+        public readonly args: any[],
+    ) {}
+    get instance() {
+        return this._instanceResolver.instance();
     }
 }

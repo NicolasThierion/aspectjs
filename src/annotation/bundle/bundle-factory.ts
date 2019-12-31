@@ -59,7 +59,7 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
     }
 
     addAnnotation(ctxt: AnnotationContext<T, AnnotationType>): void {
-        const name = ctxt.annotation.name;
+        const name = ctxt.name;
 
         const holders = this._getContextHolders(ctxt.target, true);
 
