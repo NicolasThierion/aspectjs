@@ -14,8 +14,8 @@ function setupWeaver(...aspects: Aspect[]) {
 
 describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "before" pointcut', () => {
-        const advice = jasmine.createSpy('advice');
-        const ctor = jasmine.createSpy('ctor');
+        const advice = jest.fn();
+        const ctor = jest.fn();
         beforeEach(() => {
             class AAspect extends Aspect {
                 name = 'AClassLabel';

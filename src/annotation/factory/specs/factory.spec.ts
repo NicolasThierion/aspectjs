@@ -35,13 +35,13 @@ describe('Annotation Factory', () => {
                 it('should return a class decorator', () => {
                     AClass = factory.create(AClass);
 
-                    expect(AClass('0', 0)).toEqual(jasmine.any(Function));
+                    expect(AClass('0', 0)).toEqual(expect.any(Function));
                     @AClass('', 0)
                     class A {
                         someProp: any;
                     }
 
-                    expect(new A()).toEqual(jasmine.any(A));
+                    expect(new A()).toEqual(expect.any(A));
                 });
 
                 it('should return a class decorator with the same name', () => {

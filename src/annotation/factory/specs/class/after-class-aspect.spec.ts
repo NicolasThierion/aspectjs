@@ -17,7 +17,7 @@ let afterAdvice: AfterAdvice<any> = ctxt => {
     throw new Error('should configure afterThrowAdvice');
 };
 
-describe('given a class configured with some class-annotation aspect', () => {
+fdescribe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "after" pointcut', () => {
         beforeEach(() => {
             class AfterAspect extends Aspect {
@@ -28,12 +28,10 @@ describe('given a class configured with some class-annotation aspect', () => {
                 }
             }
 
-            afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt) {
-                    ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                    ctxt.instance.instance().labels.push('AClass');
-                })
-                .and.callThrough();
+            afterAdvice = jest.fn().mockImplementation(function(ctxt) {
+                ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                ctxt.instance.instance().labels.push('AClass');
+            });
 
             setupWeaver(new AfterAspect());
         });
@@ -54,7 +52,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 class A implements Labeled {}
 
                 const instance = new A();
-                expect(instance instanceof A).toBeTrue();
+                expect(instance instanceof A).toBe(true);
             });
             it('should call the original constructor after the aspect', () => {
                 @AClass()

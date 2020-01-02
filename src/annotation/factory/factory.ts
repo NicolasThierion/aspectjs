@@ -69,7 +69,7 @@ function _createAnnotationRef<S extends Annotation>(
     const annotation = (fn as any) as AnnotationRef & S;
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
     annotation.groupId = groupId;
-    annotation.toString = function() {
+    Reflect.getPrototypeOf(annotation).toString = function() {
         return `@${annotation.name}`;
     };
 
@@ -81,15 +81,13 @@ function _createAnnotationRef<S extends Annotation>(
     return annotation;
 }
 
-function _setFunctionName(fn: Function, name: string, tag?: string): void {
-    assert(typeof fn === 'function');
-
-    Object.defineProperty(fn, 'name', {
+function _setName(object: any, name: string, tag?: string): void {
+    Object.defineProperty(object, 'name', {
         value: name,
     });
     tag = tag ?? name;
 
-    Object.defineProperty(Reflect.getPrototypeOf(fn), Symbol.toPrimitive, {
+    Object.defineProperty(Reflect.getPrototypeOf(object), Symbol.toPrimitive, {
         enumerable: false,
         configurable: true,
         value: () => tag,
@@ -141,7 +139,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
             }
         };
 
-        _setFunctionName(ctor, target.proto.constructor.name, `class ${target.proto.constructor.name} {}`);
+        _setName(ctor, target.proto.constructor.name, `class ${target.proto.constructor.name} {}`);
         return ctor;
     }
 }

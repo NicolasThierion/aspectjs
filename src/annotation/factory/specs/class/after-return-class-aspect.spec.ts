@@ -2,7 +2,6 @@ import { AfterReturnAdvice, Aspect, AspectHooks } from '../../../../weaver/types
 import { AClass } from '../../../../tests/a';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
-import { ClassAnnotationContext } from '../../../context/context';
 import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
 interface Labeled {
@@ -30,12 +29,10 @@ describe('given a class configured with some class-annotation aspect', () => {
                 }
             }
 
-            afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
-                    ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                    ctxt.instance.instance().labels.push('AClass');
-                })
-                .and.callThrough();
+            afterReturn = jest.fn().mockImplementation(function(ctxt) {
+                ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                ctxt.instance.instance().labels.push('AClass');
+            });
 
             setupWeaver(new AfterReturnAspect());
         });
@@ -79,7 +76,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                                 labels: ['ABis'],
                             });
                         };
-                        afterReturn = jasmine.createSpy('afterReturn', afterReturn).and.callThrough();
+                        afterReturn = jest.fn().mockImplementation(afterReturn);
                     });
 
                     it('should assign "this" instance to the returned value', () => {

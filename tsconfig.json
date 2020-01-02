@@ -16,7 +16,7 @@
 //      "es2017.object",
       "es2019.array"
     ],
-    "types": ["reflect-metadata", "jasmine", "node"],
+    "types": ["reflect-metadata", "jest", "jest-extended", "node"],
     "target": "es6"
   },
   "exclude": [

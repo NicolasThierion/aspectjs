@@ -2,7 +2,6 @@ import { AfterThrowAdvice, Aspect, AspectHooks } from '../../../../weaver/types'
 import { AClass } from '../../../../tests/a';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
-import Spy = jasmine.Spy;
 import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
 interface Labeled {
@@ -19,7 +18,7 @@ let afterThrowAdvice: AfterThrowAdvice<any> = ctxt => {
     throw new Error('should configure afterThrowAdvice');
 };
 
-let afterThrowAdviceSpy: Spy;
+let afterThrowAdviceSpy: jest.Mock;
 describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
@@ -27,7 +26,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
                 ctxt.instance.instance().labels.push('A');
             };
-            afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
+            afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
             class AfterThrowAspect extends Aspect {
                 name = 'AClassLabel';
 
@@ -46,7 +45,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                         ctxt.instance.instance().labels.push('A');
                         throw ctxt.error;
                     };
-                    afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
+                    afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
                 });
 
                 it('should call the aspect', () => {
@@ -71,7 +70,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                             ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
                             ctxt.instance.instance().labels.push('A');
                         };
-                        afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
+                        afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
                     });
 
                     it('should not throw', () => {
@@ -104,7 +103,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                             labels: ['ABis'],
                         });
                     };
-                    afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
+                    afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
                 });
 
                 it('should assign "this" instance to the returned value', () => {

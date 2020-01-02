@@ -22,7 +22,6 @@
 
 ## Chore
 - remove lodash dependency
-- replace Jasmine with Jest
 
 ## Refactor
 - remove {priority: number} in favor of { appliesBefore: Decorators[], appliesAfter: Decorators[] }
