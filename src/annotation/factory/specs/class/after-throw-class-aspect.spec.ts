@@ -3,7 +3,7 @@ import { AClass } from '../../../../tests/a';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
 import Spy = jasmine.Spy;
-import { AnnotationAspectContext } from '../../../../weaver/annotation-aspect-context';
+import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
 interface Labeled {
     labels?: string[];
@@ -15,7 +15,7 @@ function setupWeaver(...aspects: Aspect[]): void {
     weaver.load();
 }
 
-let afterThrowAdvice: AfterThrowAdvice<any> = (ctxt, error: Error) => {
+let afterThrowAdvice: AfterThrowAdvice<any> = ctxt => {
     throw new Error('should configure afterThrowAdvice');
 };
 
@@ -23,16 +23,16 @@ let afterThrowAdviceSpy: Spy;
 describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
-            afterThrowAdvice = (ctxt: AnnotationAspectContext<Labeled, ClassAnnotation>, error) => {
-                ctxt.instance.labels = ctxt.instance.labels ?? [];
-                ctxt.instance.labels.push('A');
+            afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
+                ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                ctxt.instance.instance().labels.push('A');
             };
             afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
             class AfterThrowAspect extends Aspect {
                 name = 'AClassLabel';
 
                 apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.afterThrow((ctxt, error) => afterThrowAdviceSpy(ctxt, error));
+                    hooks.annotations(AClass).class.afterThrow(ctxt => afterThrowAdviceSpy(ctxt));
                 }
             }
 
@@ -41,10 +41,10 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('creating an instance of this class', () => {
             describe('with a constructor that throws', () => {
                 beforeEach(() => {
-                    afterThrowAdvice = (ctxt: AnnotationAspectContext<Labeled, ClassAnnotation>, error) => {
-                        ctxt.instance.labels = ctxt.instance.labels ?? [];
-                        ctxt.instance.labels.push('A');
-                        throw error;
+                    afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
+                        ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                        ctxt.instance.instance().labels.push('A');
+                        throw ctxt.error;
                     };
                     afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
                 });
@@ -67,9 +67,9 @@ describe('given a class configured with some class-annotation aspect', () => {
 
                 describe('when the aspect swallows the exception', () => {
                     beforeEach(() => {
-                        afterThrowAdvice = (ctxt: AnnotationAspectContext<Labeled, ClassAnnotation>, error) => {
-                            ctxt.instance.labels = ctxt.instance.labels ?? [];
-                            ctxt.instance.labels.push('A');
+                        afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
+                            ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                            ctxt.instance.instance().labels.push('A');
                         };
                         afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
                     });
@@ -99,7 +99,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
             describe('and the aspect returns a new value', () => {
                 beforeEach(() => {
-                    afterThrowAdvice = (ctxt: AnnotationAspectContext<Labeled, ClassAnnotation>, error) => {
+                    afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
                         return Object.assign(Object.create(ctxt.annotation.target.proto), {
                             labels: ['ABis'],
                         });

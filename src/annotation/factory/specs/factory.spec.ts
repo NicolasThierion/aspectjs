@@ -38,7 +38,6 @@ describe('Annotation Factory', () => {
                     expect(AClass('0', 0)).toEqual(jasmine.any(Function));
                     @AClass('', 0)
                     class A {
-                        // @AClassDec()XO
                         someProp: any;
                     }
 

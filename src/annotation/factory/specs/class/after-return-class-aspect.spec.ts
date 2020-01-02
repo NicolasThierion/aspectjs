@@ -3,7 +3,7 @@ import { AClass } from '../../../../tests/a';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
 import { ClassAnnotationContext } from '../../../context/context';
-import { AnnotationAspectContext } from '../../../../weaver/annotation-aspect-context';
+import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
 interface Labeled {
     labels?: string[];
@@ -32,8 +32,8 @@ describe('given a class configured with some class-annotation aspect', () => {
 
             afterReturn = jasmine
                 .createSpy('afterReturnAdvice', function(ctxt) {
-                    ctxt.instance.labels = ctxt.instance.labels ?? [];
-                    ctxt.instance.labels.push('AClass');
+                    ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                    ctxt.instance.instance().labels.push('AClass');
                 })
                 .and.callThrough();
 
@@ -74,7 +74,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
                 describe('and the aspect returns a new value', () => {
                     beforeEach(() => {
-                        afterReturn = (ctxt: AnnotationAspectContext<Labeled, ClassAnnotation>) => {
+                        afterReturn = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
                             return Object.assign(Object.create(ctxt.annotation.target.proto), {
                                 labels: ['ABis'],
                             });

@@ -1,32 +1,33 @@
 import { WeaverProfile } from '../profile';
-import { assert, getOrDefault } from '../../utils';
+import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
 import {
     Advice,
     AfterAdvice,
     AfterReturnAdvice,
     AfterThrowAdvice,
-    AnnotationAspectPointcutRunners,
     AroundAdvice,
     Aspect,
     BeforeAdvice,
+    JoinPoint,
     MethodPointCutHooks,
     POINTCUT_NAMES,
     SetupAdvice,
 } from '../types';
 import { WeavingError } from '../weaving-error';
-import { AnnotationContext } from '../../annotation/context/context';
-import { AnnotationType } from '../..';
-import { AnnotationAspectContext } from '../annotation-aspect-context';
+import { AnnotationType, ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../..';
+import { AnnotationAdviceContext } from '../annotation-advice-context';
 
 type AdviceRegistry = { [k in keyof MethodPointCutHooks]?: Advice<any>[] };
 
 export class Weaver extends WeaverProfile {
     private _advices: AdviceRegistry;
-    public run: (ctxt: AnnotationAspectContext<any, AnnotationType>) => AnnotationAspectPointcutRunners;
     constructor(name?: string) {
         super(name);
-        this.run = _createPointcutRunners(this);
-        Object.seal(this.run);
+        Object.freeze(this.run);
+    }
+
+    run<T>(ctxt: AnnotationAdviceContext<T, AnnotationType>): PointcutRunners<T> {
+        return new PointcutRunners(this, ctxt);
     }
 
     enable(...aspects: Aspect[]): this {
@@ -87,89 +88,231 @@ export class Weaver extends WeaverProfile {
     }
 }
 
-function _createPointcutRunners(
-    weaver: Weaver,
-): (ctxt: AnnotationAspectContext<any, AnnotationType>) => AnnotationAspectPointcutRunners {
-    const runners = {
-        class: {
-            setup: () => assert(false, 'not implemented'),
-            before: () => assert(false, 'not implemented'),
-            around: () => assert(false, 'not implemented'),
-            afterReturn: () => assert(false, 'not implemented'),
-            afterThrow: () => assert(false, 'not implemented'),
-            after: () => assert(false, 'not implemented'),
-        },
-        property: {
-            setup: () => assert(false, 'not implemented'),
-            before: () => assert(false, 'not implemented'),
-            around: () => assert(false, 'not implemented'),
-            afterReturn: () => assert(false, 'not implemented'),
-            afterThrow: () => assert(false, 'not implemented'),
-            after: () => assert(false, 'not implemented'),
-        },
-        method: {
-            setup: () => assert(false, 'not implemented'),
-            before: () => assert(false, 'not implemented'),
-            around: () => assert(false, 'not implemented'),
-            afterReturn: () => assert(false, 'not implemented'),
-            afterThrow: () => assert(false, 'not implemented'),
-            after: () => assert(false, 'not implemented'),
-        },
-        parameter: {
-            setup: () => assert(false, 'not implemented'),
-            before: () => assert(false, 'not implemented'),
-            around: () => assert(false, 'not implemented'),
-            afterReturn: () => assert(false, 'not implemented'),
-            afterThrow: () => assert(false, 'not implemented'),
-            after: () => assert(false, 'not implemented'),
-        },
+class PointcutRunners<T> {
+    class = {
+        setup: () => classSetup(this.weaver, this.ctxt),
+        before: () => classBefore(this.weaver, this.ctxt),
+        around: () => classAround(this.weaver, this.ctxt),
+        afterReturn: () => classAfterReturn(this.weaver, this.ctxt),
+        afterThrow: () => classAfterThrow(this.weaver, this.ctxt),
+        after: () => classAfter(this.weaver, this.ctxt),
+    };
+    property = {
+        setup: () => propertySetup(this.weaver, this.ctxt),
+        before: () => propertyBefore(this.weaver, this.ctxt),
+        around: () => propertyAround(this.weaver, this.ctxt),
+        afterReturn: () => propertyAfterReturn(this.weaver, this.ctxt),
+        afterThrow: () => propertyAfterThrow(this.weaver, this.ctxt),
+        after: () => propertyAfter(this.weaver, this.ctxt),
+    };
+    method = {
+        setup: () => methodSetup(this.weaver, this.ctxt),
+        before: () => methodBefore(this.weaver, this.ctxt),
+        around: () => methodAround(this.weaver, this.ctxt),
+        afterReturn: () => methodAfterReturn(this.weaver, this.ctxt),
+        afterThrow: () => methodAfterThrow(this.weaver, this.ctxt),
+        after: () => methodAfter(this.weaver, this.ctxt),
+    };
+    parameter = {
+        setup: () => parameterSetup(this.weaver, this.ctxt),
+        before: () => parameterBefore(this.weaver, this.ctxt),
+        around: () => parameterAround(this.weaver, this.ctxt),
+        afterReturn: () => parameterAfterReturn(this.weaver, this.ctxt),
+        afterThrow: () => parameterAfterThrow(this.weaver, this.ctxt),
+        after: () => parameterAfter(this.weaver, this.ctxt),
     };
 
-    let _ctxt: AnnotationAspectContext<any, AnnotationType> = null;
-    runners.class.before = () => {
-        weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(_ctxt));
-    };
-
-    return (ctxt: AnnotationAspectContext<any, AnnotationType>) => {
-        _ctxt = ctxt;
-        return runners;
-    };
+    constructor(private weaver: Weaver, public readonly ctxt: AnnotationAdviceContext<any, AnnotationType>) {}
 }
-//
-// function _(weaver: Weaver) {
-//     const aroundAdvices = weaver.getAdvices('around');
-//     if (aroundAdvices.length) {
-//         // allow call to fake 'this'
-//         instanceResolver.resolve(partialThis);
-//         const oldJp = jp;
-//         jp = jpf.create(
-//             (args: any[]) => {
-//                 if (instanceResolver.isDirty()) {
-//                     throw new Error(`Cannot get "this" instance of constructor before joinpoint has been called`);
-//                 }
-//                 instanceResolver.resolve(oldJp(args));
-//             },
-//             () => ctorArgs,
-//         );
-//
-//         let aroundAdvice = aroundAdvices.shift();
-//
-//         let previousArgs = ctorArgs;
-//         while (aroundAdvices.length) {
-//             const previousAroundAdvice = aroundAdvice;
-//             aroundAdvice = aroundAdvices.shift();
-//             const previousJp = jp;
-//             jp = jpf.create(
-//                 (...args: any[]) => {
-//                     previousArgs = args ?? previousArgs;
-//                     previousAroundAdvice(ctxt, previousJp, args);
-//                 },
-//                 () => previousArgs,
-//             );
-//         }
-//
-//         aroundAdvice(ctxt, jp, ctorArgs);
-//     } else {
-//         instanceResolver.resolve(jp(ctorArgs));
-//     }
-// }
+
+class JoinpointFactory<T> {
+    create(fn: (...args: any[]) => any, argsProvider: () => any[]): JoinPoint {
+        const alreadyCalledFn = (): void => {
+            throw new WeavingError(`joinPoint already proceeded`);
+        };
+
+        const originalArgs = argsProvider();
+        const jp = function(args?: any[]) {
+            args = args ?? originalArgs;
+            if (!isArray(args)) {
+                throw new TypeError(`Joinpoint arguments expected to be array. Got: ${args}`);
+            }
+            const jp = fn;
+            fn = alreadyCalledFn as any;
+            return jp(args);
+        };
+
+        return jp;
+    }
+}
+
+function classSetup<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ClassAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function classBefore<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ClassAnnotation>): void {
+    weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
+}
+function classAround<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ClassAnnotation>): void {
+    const proto = ctxt.annotation.target.proto;
+
+    // this partial instance will take place until ctor is called
+    const partialThis = Object.create(proto);
+
+    const jpf = new JoinpointFactory();
+
+    const ctorArgs = ctxt.args;
+    // create ctor joinpoint
+    let jp = jpf.create(
+        (args: any[]) => new proto.constructor(...args),
+        () => ctorArgs,
+    );
+
+    const aroundAdvices = weaver.getAdvices('around');
+    const originalThis = ctxt.instance.instance();
+
+    if (aroundAdvices.length) {
+        // allow call to fake 'this'
+        ctxt.instance.resolve(partialThis);
+        const oldJp = jp;
+
+        // intercept this call, and ensure it has not been read before joinpoint gets called.
+        jp = jpf.create(
+            (args: any[]) => {
+                if (ctxt.instance.isDirty()) {
+                    throw new Error(`Cannot get "this" instance of constructor before joinpoint has been called`);
+                }
+                ctxt.instance.resolve(oldJp(args));
+            },
+            () => ctorArgs,
+        );
+
+        let aroundAdvice = aroundAdvices.shift();
+
+        let previousArgs = ctorArgs;
+        // nest all around advices into each others
+        while (aroundAdvices.length) {
+            const previousAroundAdvice = aroundAdvice;
+            aroundAdvice = aroundAdvices.shift();
+            const previousJp = jp;
+
+            // replace args that may have been passed from calling advice's joinpoint
+            jp = jpf.create(
+                (...args: any[]) => {
+                    previousArgs = args ?? previousArgs;
+                    previousAroundAdvice(ctxt, previousJp, args);
+                },
+                () => previousArgs,
+            );
+        }
+
+        try {
+            aroundAdvice(ctxt, jp, ctorArgs);
+        } catch (e) {
+            // as of ES6 classes, 'this' is no more available after ctor thrown.
+            // replace 'this' with partial this
+
+            ctxt.instance.resolve(partialThis);
+
+            throw e;
+        }
+    } else {
+        ctxt.instance.resolve(jp(ctorArgs));
+    }
+
+    // assign 'this' to the object created by the original ctor at joinpoint;
+    Object.assign(originalThis, ctxt.instance.instance());
+    ctxt.instance.resolve(originalThis);
+    // TODO what in case advice returns brand new 'this'?
+}
+
+function classAfterReturn<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ClassAnnotation>): void {
+    let newInstance = ctxt.instance.instance();
+
+    const advices = weaver.getAdvices('afterReturn');
+
+    while (advices.length) {
+        const advice = advices.shift();
+        newInstance = advice(ctxt, ctxt.instance.instance());
+        if (!isUndefined(newInstance)) {
+            ctxt.instance.resolve(newInstance);
+        }
+    }
+}
+function classAfterThrow<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ClassAnnotation>): void {
+    const afterThrowAdvices = weaver.getAdvices('afterThrow');
+    if (!afterThrowAdvices.length) {
+        // pass-trough errors by default
+        throw ctxt.error;
+    } else {
+        let newInstance = ctxt.instance.instance();
+
+        while (afterThrowAdvices.length) {
+            const advice = afterThrowAdvices.shift();
+            newInstance = advice(ctxt);
+            if (!isUndefined(newInstance)) {
+                ctxt.instance.resolve(newInstance);
+            }
+        }
+    }
+}
+
+function classAfter<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ClassAnnotation>): void {
+    weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));
+}
+
+function propertySetup<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, PropertyAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function propertyBefore<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, PropertyAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function propertyAround<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, PropertyAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function propertyAfterReturn<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, PropertyAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function propertyAfterThrow<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, PropertyAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function propertyAfter<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, PropertyAnnotation>): void {
+    assert(false, 'not implemented');
+}
+
+function methodSetup<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function methodBefore<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function methodAround<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function methodAfterReturn<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function methodAfterThrow<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function methodAfter<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+
+function parameterSetup<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterBefore<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAround<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAfterReturn<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAfterThrow<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAfter<T>(weaver: Weaver, ctxt: AnnotationAdviceContext<T, ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}

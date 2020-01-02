@@ -1,3 +1,10 @@
+## Ideas
+- use webworkers & cache
+- use uuid, weekref, murmurhash, hlc clock, sorted arrays
+- prohibits body in annotationStub 
+
+## Features
+### Annotations
 - `@Automapper`
 - `@Cacheable(key? | {key?, ttl?})`
 - `@EqualsAndHashcode({of?})`
@@ -10,28 +17,15 @@
 - `@Bind`
 - `@Cloneable`
 
-
-- remove lodash dependency
-- use webworkers & cache
-- use uuid, weekref, murmurhash, hlc clock, sorted arrays
-- DevModePlugin & ProdModePlugin
-- plugin-based decorators that prohibits body in decorator function 
-
-
-remove {priority: number} in favor of { appliesBefore: Decorators[], appliesAfter: Decorators[] }
-create WeakDecoratorRef = {module, name}
-
-
-create WeaverPlugin:
+### Aspects
  - DuplicateAspectHandler
- - DevAspectHandler
 
+## Chore
+- remove lodash dependency
+- replace Jasmine with Jest
 
-test global weaver & named weaver
-
-throw error when no 'afterThrow' 
-
-replace Jasmine with Jest
-
-- create 'AdvicePipeline'
-- bypass es6 ctor 'new' call with proxies : https://exceptionshub.com/es6-call-class-constructor-without-new-keyword.html
+## Refactor
+- remove {priority: number} in favor of { appliesBefore: Decorators[], appliesAfter: Decorators[] }
+- use AnnotationRef = {module, name} in bundles & contexts
+- create 'AdvicePipeline' = Array<(ctxt) => advice(ctxt)>
+- freeze instead of seal

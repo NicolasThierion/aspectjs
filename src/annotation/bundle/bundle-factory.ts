@@ -130,24 +130,24 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         assert(false, `unknown decorator type: ${target.type}`);
     }
 
-    all(decoratorName?: string): AnnotationContext<T, AnnotationType>[] {
+    all(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
         return new AnnotationContextSelectorImpl(this._global).all(decoratorName);
     }
 
-    class(decoratorName?: string): AnnotationContext<T, AnnotationType>[] {
+    class(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
         return new AnnotationContextSelectorImpl<T, AnnotationType>(
             this._contextHolders[AnnotationTargetType.CLASS],
         ).all(decoratorName);
     }
-    properties(decoratorName?: string): AnnotationContext<T, AnnotationType>[] {
+    properties(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
         return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationTargetType.PROPERTY]).all(
             decoratorName,
         );
     }
-    methods(decoratorName?: string): AnnotationContext<T, AnnotationType>[] {
+    methods(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
         return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationTargetType.METHOD]).all(decoratorName);
     }
-    parameters(decoratorName?: string): AnnotationContext<T, AnnotationType>[] {
+    parameters(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
         return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationTargetType.PARAMETER]).all(
             decoratorName,
         );
@@ -158,10 +158,10 @@ export class AnnotationContextSelectorImpl<T, D extends AnnotationType> implemen
     constructor(private _holder: AnnotationContextsHolder<T, D>) {
         assert(!!this._holder);
     }
-    all(decoratorName?: string): AnnotationContext<T, D>[] {
-        return isUndefined(decoratorName)
-            ? Object.seal(clone(this._holder.all))
-            : Object.seal(clone(this._holder.byAnnotationName[decoratorName] ?? []));
+    all(decoratorName?: string): readonly AnnotationContext<T, D>[] {
+        return Object.freeze([
+            ...(isUndefined(decoratorName) ? this._holder.all : this._holder.byAnnotationName[decoratorName] ?? []),
+        ]);
     }
 }
 

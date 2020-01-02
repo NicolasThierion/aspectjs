@@ -1,7 +1,4 @@
-import defaults from 'lodash/defaults';
-import cloneDeep from 'lodash/cloneDeep';
 import clone from 'lodash/clone';
-import defaultsDeep from 'lodash/defaultsDeep';
 
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
@@ -83,7 +80,4 @@ export function isEmpty(value: any): boolean {
     return value.length === 0;
 }
 
-export { defaults };
-export { cloneDeep };
 export { clone };
-export { defaultsDeep };

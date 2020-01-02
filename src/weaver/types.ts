@@ -1,7 +1,6 @@
 import { Annotation, AnnotationType } from '../annotation/annotation.types';
-import { AnnotationContext } from '../annotation/context/context';
 import { AnnotationTarget } from '../annotation/target/annotation-target';
-import { AnnotationAspectContext } from './annotation-aspect-context';
+import { AnnotationAdviceContext } from './annotation-advice-context';
 
 export interface AspectHooks {
     annotations(...annotations: Annotation[]): AnnotationAspectPointcuts;
@@ -49,13 +48,16 @@ export abstract class Aspect {
 }
 
 export type SetupAdvice<T> = (target: AnnotationTarget<T, AnnotationType>) => void;
-export type BeforeAdvice<T> = (ctxt: AnnotationAspectContext<T, AnnotationType>) => void;
-export type BeforeClassAdvice<T> = (ctxt: Omit<AnnotationAspectContext<T, AnnotationType>, 'instance'>) => void;
-export type AfterAdvice<T> = (ctxt: AnnotationAspectContext<T, AnnotationType>) => any; // TODO change return value
-export type AfterReturnAdvice<T> = (ctxt: AnnotationAspectContext<T, AnnotationType>, returnValue: any) => any; // TODO change return value
-export type AfterThrowAdvice<T> = (ctxt: AnnotationAspectContext<T, AnnotationType>, error: Error) => any; // TODO change return value
+export type BeforeAdvice<T> = (ctxt: AnnotationAdviceContext<T, AnnotationType>) => void;
+export type BeforeClassAdvice<T> = (ctxt: Omit<AnnotationAdviceContext<T, AnnotationType>, 'instance'>) => void;
+export type AfterAdvice<T> = (ctxt: AnnotationAdviceContext<T, AnnotationType>) => void;
+export type AfterReturnAdvice<T> = (
+    ctxt: AnnotationAdviceContext<T, AnnotationType>,
+    returnValue: any,
+) => T | null | undefined;
+export type AfterThrowAdvice<T> = (ctxt: AnnotationAdviceContext<T, AnnotationType>) => T | null | undefined;
 export type AroundAdvice<T> = (
-    ctxt: AnnotationAspectContext<T, AnnotationType>,
+    ctxt: AnnotationAdviceContext<T, AnnotationType>,
     joinPoint: JoinPoint,
     joinpointArgs: any[],
 ) => any; // TODO change return value;
@@ -69,9 +71,11 @@ export type Advice<T> =
 
 export type JoinPoint = (args?: any[]) => any;
 
-export type AnnotationAspectPointcutRunners = {
-    [annotationType in keyof AnnotationAspectPointcuts]: Record<
-        keyof AnnotationAspectPointcuts[annotationType],
-        () => void
-    >;
-};
+export interface PointCutHooks {
+    setup<T>(advice: SetupAdvice<T>): this;
+    around<T>(advice: AroundAdvice<T>): this;
+    before<T>(advice: BeforeAdvice<T>): this;
+    afterReturn<T>(advice: AfterReturnAdvice<T>): this;
+    after<T>(advice: AfterAdvice<T>): this;
+    afterThrow<T>(advice: AfterThrowAdvice<T>): this;
+}

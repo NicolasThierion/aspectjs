@@ -4,7 +4,7 @@ import { AnnotationContext } from '../../../context/context';
 import { WeavingError } from '../../../../weaver/weaving-error';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
-import { AnnotationAspectContext } from '../../../../weaver/annotation-aspect-context';
+import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
@@ -49,8 +49,8 @@ describe('given a class configured with some class-annotation aspect', () => {
                     apply(hooks: AspectHooks): void {
                         hooks
                             .annotations(AClass)
-                            .class.before((ctxt: AnnotationAspectContext<any, ClassAnnotation>) => {
-                                console.log(ctxt.instance);
+                            .class.before((ctxt: AnnotationAdviceContext<any, ClassAnnotation>) => {
+                                console.log(ctxt.instance.instance());
                             });
                     }
                 }

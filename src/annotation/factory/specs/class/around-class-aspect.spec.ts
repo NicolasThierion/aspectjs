@@ -5,7 +5,7 @@ import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
 import Spy = jasmine.Spy;
 import { ClassAnnotationContext } from '../../../context/context';
-import { AnnotationAspectContext } from '../../../../weaver/annotation-aspect-context';
+import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
@@ -64,7 +64,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and references "this" from before the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
-                    console.log(ctxt.instance);
+                    console.log(ctxt.instance.instance());
                     jp();
                 };
             });
@@ -89,7 +89,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
                     jp();
-                    ctxt.instance.labels.push('a');
+                    ctxt.instance.instance().labels.push('a');
                 };
             });
 
@@ -114,7 +114,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
                     jp(['x']);
-                    ctxt.instance.labels.push('a');
+                    ctxt.instance.instance().labels.push('a');
                 };
             });
 
@@ -135,8 +135,8 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and do not call the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
-                    ctxt.instance.labels = ctxt.instance.labels ?? [];
-                    ctxt.instance.labels.push('a');
+                    ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                    ctxt.instance.instance().labels.push('a');
                 };
             });
 
@@ -171,7 +171,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                         apply(hooks: AspectHooks): void {
                             hooks
                                 .annotations(AClass)
-                                .class.around((ctxt: AnnotationAspectContext<any, ClassAnnotation>, jp) => {
+                                .class.around((ctxt: AnnotationAdviceContext<any, ClassAnnotation>, jp) => {
                                     labels.push('beforeA');
                                     jp(aArgsOverride);
                                     labels.push('afterA');
@@ -183,7 +183,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                         apply(hooks: AspectHooks): void {
                             hooks
                                 .annotations(AClass)
-                                .class.around((ctxt: AnnotationAspectContext<any, ClassAnnotation>, jp) => {
+                                .class.around((ctxt: AnnotationAdviceContext<any, ClassAnnotation>, jp) => {
                                     labels.push('beforeB');
                                     jp(bArgsOverride);
                                     labels.push('afterB');

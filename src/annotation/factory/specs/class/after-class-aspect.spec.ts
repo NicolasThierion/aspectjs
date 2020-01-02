@@ -30,8 +30,8 @@ describe('given a class configured with some class-annotation aspect', () => {
 
             afterAdvice = jasmine
                 .createSpy('afterAdvice', function(ctxt) {
-                    ctxt.instance.labels = ctxt.instance.labels ?? [];
-                    ctxt.instance.labels.push('AClass');
+                    ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
+                    ctxt.instance.instance().labels.push('AClass');
                 })
                 .and.callThrough();
 
