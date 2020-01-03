@@ -1,5 +1,5 @@
-import { Annotation, AnnotationType } from '../annotation/annotation.types';
-import { AnnotationTarget } from '../annotation/target/annotation-target';
+import { Annotation, AnnotationType } from './annotation/annotation.types';
+import { AnnotationTarget } from './annotation/target/annotation-target';
 import { AnnotationAdviceContext } from './annotation-advice-context';
 
 export interface AspectHooks {

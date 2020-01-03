@@ -1,9 +1,9 @@
-import { AfterReturnAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterReturnAdvice, Aspect, AspectHooks } from '../../../types';
 import { AClass } from '../../../../tests/a';
-import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
+import { Weaver } from '../../load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
-import { ClassAnnotationContext } from '../../../context/context';
-import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
+import { ClassAnnotationContext } from '../../../annotation/context/context';
+import { AnnotationAdviceContext } from '../../../annotation-advice-context';
 
 interface Labeled {
     labels?: string[];

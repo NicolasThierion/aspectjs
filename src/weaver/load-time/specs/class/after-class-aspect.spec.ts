@@ -1,6 +1,6 @@
-import { AfterAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterAdvice, Aspect, AspectHooks } from '../../../types';
 import { AClass } from '../../../../tests/a';
-import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
+import { Weaver } from '../../load-time-weaver';
 import { setWeaver } from '../../../../index';
 
 interface Labeled {

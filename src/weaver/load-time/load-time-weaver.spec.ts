@@ -1,4 +1,4 @@
-import { AnnotationFactory } from '../../annotation/factory/factory';
+import { AnnotationFactory } from '../annotation/factory/factory';
 import { setWeaver } from '../../index';
 import { Weaver } from './load-time-weaver';
 import { Aspect, AspectHooks } from '../types';

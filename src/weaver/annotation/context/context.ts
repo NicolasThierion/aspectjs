@@ -14,7 +14,7 @@ import {
 } from '../annotation.types';
 
 export interface AnnotationContext<T, D extends AnnotationType> extends AnnotationRef {
-    readonly args?: any[];
+    readonly args: any[];
     readonly target: AnnotationTarget<T, D>;
 }
 

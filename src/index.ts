@@ -11,4 +11,4 @@ export function setWeaver(weaver: Weaver, groupId = DEFAULT_WEAVER_NAME): void {
 }
 
 export * from './weaver/types';
-export * from './annotation/annotation.types';
+export * from './weaver/annotation/annotation.types';

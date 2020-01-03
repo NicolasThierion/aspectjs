@@ -1,5 +1,5 @@
 import { assert, getOrDefault, isFunction } from '../utils';
-import { Annotation } from '../annotation/annotation.types';
+import { Annotation } from './annotation/annotation.types';
 import { Advice, AnnotationAspectPointcuts, Aspect, AspectHooks, POINTCUT_NAMES, PointCutHooks } from './types';
 
 let profileId = 0;

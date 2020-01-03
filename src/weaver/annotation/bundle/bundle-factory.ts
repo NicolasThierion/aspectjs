@@ -1,11 +1,9 @@
 import { AnnotationTarget, AnnotationTargetType, ClassAnnotationTarget } from '../target/annotation-target';
-import { assert, clone, getMetaOrDefault, getOrDefault, isUndefined } from '../../utils';
-import { ClassAnnotation } from '../annotation.types';
+import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../../utils';
+import { AnnotationType, ClassAnnotation } from '../annotation.types';
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
-import { AnnotationType } from '../annotation.types';
-import { AnnotationContext } from '../context/context';
+import { AnnotationContext, ClassAnnotationContext } from '../context/context';
 import { AnnotationLocation, AnnotationLocationFactory } from '../location/location';
-import { ClassAnnotationContext } from '../context/context';
 
 export abstract class AnnotationBundleFactory {
     static of<T>(target: AnnotationTarget<T, any>): AnnotationsBundle<T> | undefined {

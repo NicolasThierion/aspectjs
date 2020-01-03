@@ -7,16 +7,16 @@ import {
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { WeavingError } from '../../weaver/weaving-error';
-import { Weaver } from '../../weaver/load-time/load-time-weaver';
-import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
+import { WeavingError } from '../../weaving-error';
+import { Weaver } from '../../load-time/load-time-weaver';
+import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
-import { getWeaver } from '../../index';
+import { getWeaver } from '../../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
-import { AnnotationAdviceContext, MutableAnnotationAdviceContext } from '../../weaver/annotation-advice-context';
-import { InstanceResolver } from '../../weaver/instance-resolver';
+import { AnnotationAdviceContext, MutableAnnotationAdviceContext } from '../../annotation-advice-context';
+import { InstanceResolver } from '../../instance-resolver';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -110,7 +110,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
     function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
         // eslint-disable-next-line @typescript-eslint/class-name-casing
 
-        const annotationContext = new AnnotationContextImpl(target, annotation, annotationArgs);
+        const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
 
         const ctor = function(...ctorArgs: any[]): T {
             // prevent getting reference to this until ctor has been called
@@ -167,14 +167,16 @@ class AnnotationAspectContextImpl<T, A extends AnnotationType> implements Mutabl
 }
 
 class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
-    readonly args?: any[];
     public readonly name: string;
     public readonly groupId: string;
 
-    constructor(public readonly target: AnnotationTarget<T, D>, annotation: AnnotationRef, args?: any[]) {
+    constructor(
+        public readonly target: AnnotationTarget<T, D>,
+        public readonly args: any[],
+        annotation: AnnotationRef,
+    ) {
         this.name = annotation.name;
         this.groupId = annotation.groupId;
-        this.args = args;
     }
 
     toString(): string {

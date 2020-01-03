@@ -1,5 +1,5 @@
 import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
-import { assert, clone, getMetaOrDefault, getProto, isNumber, isObject, isUndefined, Mutable } from '../../utils';
+import { assert, clone, getMetaOrDefault, getProto, isNumber, isObject, isUndefined, Mutable } from '../../../utils';
 import { AnnotationType } from '../annotation.types';
 import { AnnotationLocation } from '../location/location';
 import {

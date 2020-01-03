@@ -1,9 +1,9 @@
-import { AfterThrowAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
+import { AfterThrowAdvice, Aspect, AspectHooks } from '../../../types';
 import { AClass } from '../../../../tests/a';
-import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
+import { Weaver } from '../../load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
 import Spy = jasmine.Spy;
-import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
+import { AnnotationAdviceContext } from '../../../annotation-advice-context';
 
 interface Labeled {
     labels?: string[];

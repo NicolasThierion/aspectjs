@@ -1,11 +1,11 @@
-import { AroundAdvice, Aspect, AspectHooks } from '../../../../weaver/types';
+import { AroundAdvice, Aspect, AspectHooks } from '../../../types';
 import { AClass } from '../../../../tests/a';
-import { WeavingError } from '../../../../weaver/weaving-error';
-import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
+import { WeavingError } from '../../../weaving-error';
+import { Weaver } from '../../load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
 import Spy = jasmine.Spy;
-import { ClassAnnotationContext } from '../../../context/context';
-import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
+import { ClassAnnotationContext } from '../../../annotation/context/context';
+import { AnnotationAdviceContext } from '../../../annotation-advice-context';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);

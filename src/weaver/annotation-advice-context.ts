@@ -1,4 +1,4 @@
-import { AnnotationContext } from '../annotation/context/context';
+import { AnnotationContext } from './annotation/context/context';
 import { AnnotationType } from '..';
 import { Mutable } from '../utils';
 import { InstanceResolver } from './instance-resolver';
