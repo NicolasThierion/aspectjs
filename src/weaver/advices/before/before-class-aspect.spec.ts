@@ -1,17 +1,17 @@
-import { Aspect, AspectHooks } from '../../../types';
-import { AClass } from '../../../../tests/a';
-import { AnnotationContext } from '../../../annotation/context/context';
-import { WeavingError } from '../../../weaving-error';
-import { Weaver } from '../../load-time-weaver';
-import { ClassAnnotation, setWeaver } from '../../../../index';
-import { AnnotationAdviceContext } from '../../../annotation-advice-context';
+import { Aspect } from '../../types';
+import { AClass } from '../../../tests/a';
+import { WeavingError } from '../../weaving-error';
+import { Weaver } from '../../load-time/load-time-weaver';
+import { ClassAnnotation, setWeaver } from '../../../index';
+import { AdviceContext } from '../../advice-context';
+import { Before } from './before.decorator';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }
-
+// TODO describe('on a class that do not extends aspect') it('should throw an error');
 describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "before" pointcut', () => {
         const advice = jasmine.createSpy('advice');
@@ -20,8 +20,9 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AAspect extends Aspect {
                 name = 'AClassLabel';
 
-                apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.before(advice);
+                @Before(AClass)
+                applyBefore(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                    advice(ctxt);
                 }
             }
 
@@ -46,12 +47,9 @@ describe('given a class configured with some class-annotation aspect', () => {
                 class AAspect extends Aspect {
                     name = 'AClassLabel';
 
-                    apply(hooks: AspectHooks): void {
-                        hooks
-                            .annotations(AClass)
-                            .class.before((ctxt: AnnotationAdviceContext<unknown, ClassAnnotation>) => {
-                                console.log(ctxt.instance.get());
-                            });
+                    @Before(AClass)
+                    apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                        console.log((ctxt as any).instance.get());
                     }
                 }
 

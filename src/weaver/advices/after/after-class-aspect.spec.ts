@@ -1,7 +1,10 @@
-import { AfterAdvice, Aspect, AspectHooks } from '../../../types';
-import { AClass } from '../../../../tests/a';
-import { Weaver } from '../../load-time-weaver';
-import { setWeaver } from '../../../../index';
+import { Aspect } from '../../types';
+import { AfterAdvice } from '../types';
+import { Weaver } from '../../load-time/load-time-weaver';
+import { ClassAnnotation, setWeaver } from '../../../index';
+import { After } from './after.decorator';
+import { AClass } from '../../../tests/a';
+import { AdviceContext } from '../../advice-context';
 
 interface Labeled {
     labels?: string[];
@@ -23,8 +26,9 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AfterAspect extends Aspect {
                 name = 'AClassLabel';
 
-                apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.after(ctxt => afterAdvice(ctxt));
+                @After(AClass)
+                apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                    afterAdvice(ctxt);
                 }
             }
 

@@ -1,9 +1,10 @@
-import { AfterReturnAdvice, Aspect, AspectHooks } from '../../../types';
-import { AClass } from '../../../../tests/a';
-import { Weaver } from '../../load-time-weaver';
-import { ClassAnnotation, setWeaver } from '../../../../index';
-import { ClassAnnotationContext } from '../../../annotation/context/context';
-import { AnnotationAdviceContext } from '../../../annotation-advice-context';
+import { Aspect } from '../../types';
+import { Weaver } from '../../load-time/load-time-weaver';
+import { ClassAnnotation, setWeaver } from '../../../index';
+import { AfterReturnAdvice } from '../types';
+import { AClass } from '../../../tests/a';
+import { AfterReturn } from './after-return.decorator';
+import { AdviceContext, AfterReturnContext } from '../../advice-context';
 
 interface Labeled {
     labels?: string[];
@@ -25,8 +26,10 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AfterReturnAspect extends Aspect {
                 name = 'AClassLabel';
 
-                apply(hooks: AspectHooks): void {
-                    hooks.annotations(AClass).class.afterReturn((ctxt, retVal) => afterReturn(ctxt, retVal));
+                @AfterReturn(AClass)
+                apply(ctxt: AfterReturnContext<any, ClassAnnotation>, retVal: any): void {
+                    expect(retVal).toEqual(ctxt.returnValue);
+                    return afterReturn(ctxt, retVal);
                 }
             }
 
@@ -74,7 +77,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
                 describe('and the aspect returns a new value', () => {
                     beforeEach(() => {
-                        afterReturn = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
+                        afterReturn = (ctxt: AdviceContext<Labeled, ClassAnnotation>) => {
                             return Object.assign(Object.create(ctxt.annotation.target.proto), {
                                 labels: ['ABis'],
                             });

@@ -12,10 +12,10 @@ import { Weaver } from '../../load-time/load-time-weaver';
 import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
-import { getWeaver } from '../../../index';
+import { getWeaver, JoinPoint } from '../../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
-import { AnnotationAdviceContext, MutableAnnotationAdviceContext } from '../../annotation-advice-context';
+import { AdviceContext, MutableAdviceContext } from '../../advice-context';
 import { InstanceResolver } from '../../instance-resolver';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
@@ -40,7 +40,7 @@ export class AnnotationFactory {
         const groupId = this._groupId;
 
         // create the annotation (ie: decorator provider)
-        const annotation = function(...annotationArgs: any[]) {
+        const annotation = function(...annotationArgs: any[]): Decorator {
             // assert the weaver is loaded before invoking the underlying decorator
             const weaver = getWeaver(groupId) ?? getWeaver();
             if (!weaver.isLoaded()) {
@@ -49,24 +49,24 @@ export class AnnotationFactory {
                 );
             }
 
-            const decorator = _createDecorator(weaver, annotation, annotationArgs);
-            _createAnnotationRef(decorator as S, annotationStub, groupId);
+            const decorator = _createDecorator(weaver, annotation as any, annotationArgs);
+            _createAnnotationRef(decorator, annotationStub, groupId);
 
             return decorator;
-        } as S;
+        };
 
         return _createAnnotationRef(annotation, annotationStub, groupId);
     }
 }
 
-function _createAnnotationRef<S extends Annotation>(
-    fn: Function & S,
-    annotationStub: S,
+function _createAnnotationRef<A extends Annotation, D extends Decorator>(
+    fn: Function & D,
+    annotationStub: A,
     groupId: string,
-): AnnotationRef & S {
+): AnnotationRef & A {
     assert(typeof fn === 'function');
 
-    const annotation = (fn as any) as AnnotationRef & S;
+    const annotation = (fn as any) as AnnotationRef & A;
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
     annotation.groupId = groupId;
     annotation.toString = function() {
@@ -116,7 +116,10 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
             // prevent getting reference to this until ctor has been called
             const instanceResolver = new InstanceResolver<T>();
 
-            const ctxt = new AnnotationAspectContextImpl(annotationContext, instanceResolver, ctorArgs);
+            const ctxt = new AnnotationAspectContextImpl();
+            ctxt.instance = instanceResolver;
+            ctxt.annotation = annotationContext;
+            ctxt.args = ctorArgs;
 
             const runner = weaver.run(ctxt);
             try {
@@ -146,22 +149,22 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
     }
 }
 
-class AnnotationAspectContextImpl<T, A extends AnnotationType> implements MutableAnnotationAdviceContext<T, A> {
-    public error: Error;
-    constructor(
-        public annotation: AnnotationContextImpl<T, A>,
-        public instance: InstanceResolver<T>,
-        public args: any[],
-    ) {}
+class AnnotationAspectContextImpl<T, A extends AnnotationType> implements MutableAdviceContext<A> {
+    public error?: Error;
+    public annotation?: AnnotationContextImpl<T, A>;
+    public instance?: InstanceResolver<T>;
+    public args?: any[];
+    public joinpoint?: JoinPoint;
+    public returnValue?: unknown;
 
-    seal(): AnnotationAdviceContext<T, A> {
+    freeze(): AdviceContext<T, A> {
         return Object.freeze(
             Object.entries(this).reduce((cpy, e) => {
                 if (!isUndefined(e[1])) {
                     cpy[e[0]] = e[1];
                 }
                 return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AnnotationAdviceContext<any, AnnotationType>>,
+            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, AnnotationType>>,
         );
     }
 }

@@ -1,32 +1,53 @@
 import { WeaverProfile } from '../profile';
 import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
+import { Aspect, JoinPoint } from '../types';
+import { WeavingError } from '../weaving-error';
+import {
+    AnnotationRef,
+    AnnotationType,
+    ClassAnnotation,
+    MethodAnnotation,
+    ParameterAnnotation,
+    PropertyAnnotation,
+} from '../..';
+import { MutableAdviceContext } from '../advice-context';
 import {
     Advice,
     AfterAdvice,
+    AfterPointcut,
     AfterReturnAdvice,
+    AfterReturnPointcut,
     AfterThrowAdvice,
+    AfterThrowPointcut,
+    AnnotationAdvice,
     AroundAdvice,
-    Aspect,
+    AroundPointcut,
     BeforeAdvice,
-    JoinPoint,
-    MethodPointCutHooks,
-    POINTCUT_NAMES,
+    BeforeClassAdvice,
+    BeforePointcut,
+    Pointcut,
+    PointcutName,
     SetupAdvice,
-} from '../types';
-import { WeavingError } from '../weaving-error';
-import { AnnotationType, ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../..';
-import { MutableAnnotationAdviceContext } from '../annotation-advice-context';
+    SetupPointcut,
+} from '../advices/types';
+import { AdvicesRegistry } from '../advices/advice-registry';
 
-type AdviceRegistry = { [k in keyof MethodPointCutHooks]?: Advice<any>[] };
+type AdvicePipeline = {
+    annotations: {
+        [annotationRef: string]: {
+            [k in PointcutName]?: AnnotationAdvice[];
+        };
+    };
+};
 
 export class Weaver extends WeaverProfile {
-    private _advices: AdviceRegistry;
+    private _advices: AdvicePipeline;
     constructor(name?: string) {
         super(name);
         Object.freeze(this.run);
     }
 
-    run<T>(ctxt: MutableAnnotationAdviceContext<T, AnnotationType>): PointcutRunners<T> {
+    run<T>(ctxt: MutableAdviceContext<AnnotationType>): PointcutRunners {
         return new PointcutRunners(this, ctxt);
     }
 
@@ -48,20 +69,29 @@ export class Weaver extends WeaverProfile {
     }
     load(): void {
         this._assertNotCompiled(`Weaver "${this.name}" already loaded`);
-        this._advices = POINTCUT_NAMES.reduce((acc, c) => {
-            acc[c] = [];
-            return acc;
-        }, {} as AdviceRegistry);
+        this._aspects = this._aspects.filter(a => !!this._aspectsRegistry[a.name]);
 
-        this._advices = Object.values(this._aspects)
-            .map(Object.values)
+        this._advices = this._aspects
+            .map(AdvicesRegistry.getAdvices)
             .flat()
-            .reduce((acc, c) => {
-                Object.entries(c).forEach(e => {
-                    getOrDefault(acc, e[0], () => []).push((e[1] as any).advice);
-                });
-                return acc;
-            }, this._advices);
+            .reduce(
+                (advices: AdvicePipeline, advice: Advice) => {
+                    const annotationPointcuts = getOrDefault(
+                        advices.annotations,
+                        _annotationId(advice.pointcut.annotation),
+                        () => {
+                            return {} as any;
+                        },
+                    );
+
+                    getOrDefault(annotationPointcuts, advice.pointcut.name, () => []).push(advice);
+
+                    return advices;
+                },
+                {
+                    annotations: {},
+                } as AdvicePipeline,
+            );
     }
 
     reset(): this {
@@ -72,23 +102,38 @@ export class Weaver extends WeaverProfile {
         return !!this._advices;
     }
 
+    getAdvices(pointcut: SetupPointcut): SetupAdvice<any>[];
+    getAdvices(pointcut: BeforePointcut): BeforeClassAdvice<any>[];
+    getAdvices(pointcut: AfterPointcut): AfterAdvice<any>[];
+    getAdvices(pointcut: AfterReturnPointcut): AfterReturnAdvice<any>[];
+    getAdvices(pointcut: AfterThrowPointcut): AfterThrowAdvice<any>[];
+    getAdvices(pointcut: AroundPointcut): AroundAdvice<any>[];
+    getAdvices(pointcut: Pointcut): Advice[] {
+        assert(
+            !!pointcut.annotation,
+            `No other than annotation pointcut are supported at the moment. Got pointcut: ${pointcut}`,
+        );
+
+        const advices = getOrDefault(
+            getOrDefault(this._advices.annotations, _annotationId(pointcut.annotation), () => ({})),
+            pointcut.name,
+            () => [],
+        );
+        return [...advices];
+    }
+
     private _assertNotCompiled(msg: string) {
         if (this._advices) {
             throw new WeavingError(msg);
         }
     }
-    getAdvices(pointCutName: 'setup'): SetupAdvice<any>[];
-    getAdvices(pointCutName: 'before'): BeforeAdvice<any>[];
-    getAdvices(pointCutName: 'after'): AfterAdvice<any>[];
-    getAdvices(pointCutName: 'afterReturn'): AfterReturnAdvice<any>[];
-    getAdvices(pointCutName: 'afterThrow'): AfterThrowAdvice<any>[];
-    getAdvices(pointCutName: 'around'): AroundAdvice<any>[];
-    getAdvices(pointCutName: keyof MethodPointCutHooks): Advice<any>[] {
-        return [...this._advices[pointCutName]];
-    }
 }
 
-class PointcutRunners<T> {
+function _annotationId(annotation: AnnotationRef): string {
+    return `${annotation.groupId}:${annotation.name}`;
+}
+
+class PointcutRunners {
     class = {
         setup: () => classSetup(this.weaver, this.ctxt),
         before: () => classBefore(this.weaver, this.ctxt),
@@ -122,7 +167,7 @@ class PointcutRunners<T> {
         after: () => parameterAfter(this.weaver, this.ctxt),
     };
 
-    constructor(private weaver: Weaver, public readonly ctxt: MutableAnnotationAdviceContext<any, AnnotationType>) {}
+    constructor(private weaver: Weaver, public readonly ctxt: MutableAdviceContext<AnnotationType>) {}
 }
 
 class JoinpointFactory<T> {
@@ -146,13 +191,18 @@ class JoinpointFactory<T> {
     }
 }
 
-function classSetup<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ClassAnnotation>): void {
+function classSetup<T>(weaver: Weaver, ctxt: MutableAdviceContext<ClassAnnotation>): void {
     assert(false, 'not implemented');
 }
-function classBefore<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ClassAnnotation>): void {
-    weaver.getAdvices('before').forEach((advice: BeforeAdvice<unknown>) => advice(ctxt));
+function classBefore<T>(weaver: Weaver, ctxt: MutableAdviceContext<ClassAnnotation>): void {
+    weaver
+        .getAdvices({
+            annotation: ctxt.annotation,
+            name: PointcutName.BEFORE,
+        })
+        .forEach((advice: BeforeAdvice<unknown>) => advice(ctxt.freeze()));
 }
-function classAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ClassAnnotation>): void {
+function classAround(weaver: Weaver, ctxt: MutableAdviceContext<ClassAnnotation>): void {
     const proto = ctxt.annotation.target.proto;
 
     // this partial instance will take place until ctor is called
@@ -167,7 +217,10 @@ function classAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, 
         () => ctorArgs,
     );
 
-    const aroundAdvices = weaver.getAdvices('around');
+    const aroundAdvices = weaver.getAdvices({
+        annotation: ctxt.annotation,
+        name: PointcutName.AROUND,
+    });
     const originalThis = ctxt.instance.get();
 
     if (aroundAdvices.length) {
@@ -199,14 +252,18 @@ function classAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, 
             jp = jpf.create(
                 (...args: any[]) => {
                     previousArgs = args ?? previousArgs;
-                    previousAroundAdvice(ctxt.seal(), previousJp, args);
+                    ctxt.joinpoint = previousJp;
+                    ctxt.joinpointArgs = args;
+                    previousAroundAdvice(ctxt.freeze(), previousJp, args);
                 },
                 () => previousArgs,
             );
         }
 
         try {
-            aroundAdvice(ctxt.seal(), jp, ctorArgs);
+            ctxt.joinpoint = jp;
+            ctxt.joinpointArgs = ctorArgs;
+            aroundAdvice(ctxt.freeze(), jp, ctorArgs);
         } catch (e) {
             // as of ES6 classes, 'this' is no more available after ctor thrown.
             // replace 'this' with partial this
@@ -225,21 +282,28 @@ function classAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, 
     // TODO what in case advice returns brand new 'this'?
 }
 
-function classAfterReturn<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ClassAnnotation>): void {
+function classAfterReturn(weaver: Weaver, ctxt: MutableAdviceContext<ClassAnnotation>): void {
     let newInstance = ctxt.instance.get();
 
-    const advices = weaver.getAdvices('afterReturn');
+    const advices = weaver.getAdvices({
+        annotation: ctxt.annotation,
+        name: PointcutName.AFTERRETURN,
+    });
 
     while (advices.length) {
         const advice = advices.shift();
-        newInstance = advice(ctxt, ctxt.instance.get());
+        ctxt.returnValue = ctxt.instance.get();
+        newInstance = advice(ctxt.freeze(), ctxt.returnValue);
         if (!isUndefined(newInstance)) {
             ctxt.instance.resolve(newInstance);
         }
     }
 }
-function classAfterThrow<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ClassAnnotation>): void {
-    const afterThrowAdvices = weaver.getAdvices('afterThrow');
+function classAfterThrow(weaver: Weaver, ctxt: MutableAdviceContext<ClassAnnotation>): void {
+    const afterThrowAdvices = weaver.getAdvices({
+        annotation: ctxt.annotation,
+        name: PointcutName.AFTERTHROW,
+    });
     if (!afterThrowAdvices.length) {
         // pass-trough errors by default
         throw ctxt.error;
@@ -248,7 +312,7 @@ function classAfterThrow<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext
 
         while (afterThrowAdvices.length) {
             const advice = afterThrowAdvices.shift();
-            newInstance = advice(ctxt);
+            newInstance = advice(ctxt.freeze());
             if (!isUndefined(newInstance)) {
                 ctxt.instance.resolve(newInstance);
             }
@@ -256,63 +320,68 @@ function classAfterThrow<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext
     }
 }
 
-function classAfter<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ClassAnnotation>): void {
-    weaver.getAdvices('after').forEach((advice: AfterAdvice<unknown>) => advice(ctxt));
+function classAfter(weaver: Weaver, ctxt: MutableAdviceContext<ClassAnnotation>): void {
+    weaver
+        .getAdvices({
+            annotation: ctxt.annotation,
+            name: PointcutName.AFTER,
+        })
+        .forEach((advice: AfterAdvice<unknown>) => advice(ctxt.freeze()));
 }
 
-function propertySetup<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, PropertyAnnotation>): void {
+function propertySetup(weaver: Weaver, ctxt: MutableAdviceContext<PropertyAnnotation>): void {
     assert(false, 'not implemented');
 }
-function propertyBefore<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, PropertyAnnotation>): void {
+function propertyBefore(weaver: Weaver, ctxt: MutableAdviceContext<PropertyAnnotation>): void {
     assert(false, 'not implemented');
 }
-function propertyAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, PropertyAnnotation>): void {
+function propertyAround(weaver: Weaver, ctxt: MutableAdviceContext<PropertyAnnotation>): void {
     assert(false, 'not implemented');
 }
-function propertyAfterReturn<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, PropertyAnnotation>): void {
+function propertyAfterReturn(weaver: Weaver, ctxt: MutableAdviceContext<PropertyAnnotation>): void {
     assert(false, 'not implemented');
 }
-function propertyAfterThrow<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, PropertyAnnotation>): void {
+function propertyAfterThrow(weaver: Weaver, ctxt: MutableAdviceContext<PropertyAnnotation>): void {
     assert(false, 'not implemented');
 }
-function propertyAfter<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, PropertyAnnotation>): void {
-    assert(false, 'not implemented');
-}
-
-function methodSetup<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, MethodAnnotation>): void {
-    assert(false, 'not implemented');
-}
-function methodBefore<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, MethodAnnotation>): void {
-    assert(false, 'not implemented');
-}
-function methodAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, MethodAnnotation>): void {
-    assert(false, 'not implemented');
-}
-function methodAfterReturn<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, MethodAnnotation>): void {
-    assert(false, 'not implemented');
-}
-function methodAfterThrow<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, MethodAnnotation>): void {
-    assert(false, 'not implemented');
-}
-function methodAfter<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, MethodAnnotation>): void {
+function propertyAfter(weaver: Weaver, ctxt: MutableAdviceContext<PropertyAnnotation>): void {
     assert(false, 'not implemented');
 }
 
-function parameterSetup<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ParameterAnnotation>): void {
+function methodSetup(weaver: Weaver, ctxt: MutableAdviceContext<MethodAnnotation>): void {
     assert(false, 'not implemented');
 }
-function parameterBefore<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ParameterAnnotation>): void {
+function methodBefore(weaver: Weaver, ctxt: MutableAdviceContext<MethodAnnotation>): void {
     assert(false, 'not implemented');
 }
-function parameterAround<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ParameterAnnotation>): void {
+function methodAround(weaver: Weaver, ctxt: MutableAdviceContext<MethodAnnotation>): void {
     assert(false, 'not implemented');
 }
-function parameterAfterReturn<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ParameterAnnotation>): void {
+function methodAfterReturn(weaver: Weaver, ctxt: MutableAdviceContext<MethodAnnotation>): void {
     assert(false, 'not implemented');
 }
-function parameterAfterThrow<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ParameterAnnotation>): void {
+function methodAfterThrow(weaver: Weaver, ctxt: MutableAdviceContext<MethodAnnotation>): void {
     assert(false, 'not implemented');
 }
-function parameterAfter<T>(weaver: Weaver, ctxt: MutableAnnotationAdviceContext<T, ParameterAnnotation>): void {
+function methodAfter(weaver: Weaver, ctxt: MutableAdviceContext<MethodAnnotation>): void {
+    assert(false, 'not implemented');
+}
+
+function parameterSetup(weaver: Weaver, ctxt: MutableAdviceContext<ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterBefore(weaver: Weaver, ctxt: MutableAdviceContext<ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAround(weaver: Weaver, ctxt: MutableAdviceContext<ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAfterReturn(weaver: Weaver, ctxt: MutableAdviceContext<ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAfterThrow(weaver: Weaver, ctxt: MutableAdviceContext<ParameterAnnotation>): void {
+    assert(false, 'not implemented');
+}
+function parameterAfter(weaver: Weaver, ctxt: MutableAdviceContext<ParameterAnnotation>): void {
     assert(false, 'not implemented');
 }

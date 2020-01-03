@@ -1,11 +1,12 @@
-import { AroundAdvice, Aspect, AspectHooks } from '../../../types';
-import { AClass } from '../../../../tests/a';
-import { WeavingError } from '../../../weaving-error';
-import { Weaver } from '../../load-time-weaver';
-import { ClassAnnotation, setWeaver } from '../../../../index';
+import { Aspect, JoinPoint } from '../../types';
+import { Weaver } from '../../load-time/load-time-weaver';
+import { ClassAnnotation, setWeaver } from '../../../index';
+import { AroundAdvice } from '../types';
+import { AClass } from '../../../tests/a';
+import { AroundContext } from '../../advice-context';
 import Spy = jasmine.Spy;
-import { ClassAnnotationContext } from '../../../annotation/context/context';
-import { AnnotationAdviceContext } from '../../../annotation-advice-context';
+import { WeavingError } from '../../weaving-error';
+import { Around } from './around.decorator';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new Weaver().enable(...aspects);
@@ -21,8 +22,12 @@ describe('given a class configured with some class-annotation aspect', () => {
         class AroundClassAspect extends Aspect {
             name = 'AClassLabel';
 
-            apply(hooks: AspectHooks): void {
-                hooks.annotations(AClass).class.around((ctxt, jp, jpArgs) => aroundAdvice(ctxt, jp, jpArgs));
+            @Around(AClass)
+            apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
+                expect(jp).toEqual(ctxt.joinpoint);
+                expect(jpArgs).toEqual(ctxt.joinpointArgs);
+
+                return aroundAdvice(ctxt, jp, jpArgs);
             }
         }
 
@@ -63,7 +68,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
         describe('and references "this" from before the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt, jp) => {
+                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
                     expect(ctxt.instance.get()).not.toBeNull();
                     jp();
                 };
@@ -87,7 +92,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
         describe('and references "this" from after the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt, jp) => {
+                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
                     jp();
                     ctxt.instance.get().labels.push('a');
                 };
@@ -112,7 +117,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
         describe('and calls the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt, jp) => {
+                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
                     jp(['x']);
                     ctxt.instance.get().labels.push('a');
                 };
@@ -134,7 +139,7 @@ describe('given a class configured with some class-annotation aspect', () => {
 
         describe('and do not call the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt, jp) => {
+                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
                     ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
                     ctxt.instance.get().labels.push('a');
                 };
@@ -165,32 +170,29 @@ describe('given a class configured with some class-annotation aspect', () => {
                 aArgsOverride = undefined;
                 bArgsOverride = undefined;
                 labels = [];
-                setupWeaver(
-                    new (class extends Aspect {
-                        name = 'aAspect';
-                        apply(hooks: AspectHooks): void {
-                            hooks
-                                .annotations(AClass)
-                                .class.around((ctxt: AnnotationAdviceContext<any, ClassAnnotation>, jp) => {
-                                    labels.push('beforeA');
-                                    jp(aArgsOverride);
-                                    labels.push('afterA');
-                                });
-                        }
-                    })(),
-                    new (class extends Aspect {
-                        name = 'bAspect';
-                        apply(hooks: AspectHooks): void {
-                            hooks
-                                .annotations(AClass)
-                                .class.around((ctxt: AnnotationAdviceContext<any, ClassAnnotation>, jp) => {
-                                    labels.push('beforeB');
-                                    jp(bArgsOverride);
-                                    labels.push('afterB');
-                                });
-                        }
-                    })(),
-                );
+
+                class AAspect extends Aspect {
+                    name = 'aAspect';
+
+                    @Around(AClass)
+                    apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
+                        labels.push('beforeA');
+                        jp(aArgsOverride);
+                        labels.push('afterA');
+                    }
+                }
+
+                class BAspect extends Aspect {
+                    name = 'bAspect';
+
+                    @Around(AClass)
+                    apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
+                        labels.push('beforeB');
+                        jp(bArgsOverride);
+                        labels.push('afterB');
+                    }
+                }
+                setupWeaver(new AAspect(), new BAspect());
             });
             it('should call them nested, in declaration order', () => {
                 @AClass()
