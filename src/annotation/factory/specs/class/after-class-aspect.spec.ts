@@ -28,10 +28,12 @@ describe('given a class configured with some class-annotation aspect', () => {
                 }
             }
 
-            afterAdvice = jest.fn(function(ctxt) {
-                ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
-                ctxt.instance.get().labels.push('AClass');
-            });
+            afterAdvice = jasmine
+                .createSpy('afterAdvice', function(ctxt) {
+                    ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
+                    ctxt.instance.get().labels.push('AClass');
+                })
+                .and.callThrough();
 
             setupWeaver(new AfterAspect());
         });
@@ -52,7 +54,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 class A implements Labeled {}
 
                 const instance = new A();
-                expect(instance instanceof A).toBe(true);
+                expect(instance instanceof A).toBeTrue();
             });
             it('should call the original constructor after the aspect', () => {
                 @AClass()

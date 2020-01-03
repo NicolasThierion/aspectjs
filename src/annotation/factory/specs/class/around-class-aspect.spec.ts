@@ -3,6 +3,7 @@ import { AClass } from '../../../../tests/a';
 import { WeavingError } from '../../../../weaver/weaving-error';
 import { Weaver } from '../../../../weaver/load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../../index';
+import Spy = jasmine.Spy;
 import { ClassAnnotationContext } from '../../../context/context';
 import { AnnotationAdviceContext } from '../../../../weaver/annotation-advice-context';
 
@@ -28,14 +29,14 @@ describe('given a class configured with some class-annotation aspect', () => {
         setupWeaver(new AroundClassAspect());
     });
     describe('that leverage "around" pointcut', () => {
-        let beforeAdvice: jest.Mock;
-        let ctor: jest.Mock;
-        let afterAdvice: jest.Mock;
+        let beforeAdvice: Spy;
+        let ctor: Spy;
+        let afterAdvice: Spy;
 
         beforeEach(() => {
-            beforeAdvice = jest.fn();
-            ctor = jest.fn();
-            afterAdvice = jest.fn();
+            beforeAdvice = jasmine.createSpy('beforeAdvice');
+            ctor = jasmine.createSpy('ctor');
+            afterAdvice = jasmine.createSpy('afterAdvice');
 
             aroundAdvice = (ctxt, jp) => {
                 beforeAdvice();

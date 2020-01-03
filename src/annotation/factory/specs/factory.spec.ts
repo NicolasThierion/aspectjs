@@ -1,6 +1,6 @@
-import { AnnotationFactory } from '../factory';
-import { getWeaver, setWeaver } from '../../../index';
-import { Weaver } from '../../../weaver/load-time/load-time-weaver';
+import { AnnotationFactory } from './factory';
+import { getWeaver, setWeaver } from '../../index';
+import { Weaver } from '../../weaver/load-time/load-time-weaver';
 
 let factory: AnnotationFactory;
 
@@ -35,13 +35,13 @@ describe('Annotation Factory', () => {
                 it('should return a class decorator', () => {
                     AClass = factory.create(AClass);
 
-                    expect(AClass('0', 0)).toEqual(expect.any(Function));
+                    expect(AClass('0', 0)).toEqual(jasmine.any(Function));
                     @AClass('', 0)
                     class A {
                         someProp: any;
                     }
 
-                    expect(new A()).toEqual(expect.any(A));
+                    expect(new A()).toEqual(jasmine.any(A));
                 });
 
                 it('should return a class decorator with the same name', () => {
