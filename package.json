@@ -6,7 +6,7 @@
   "main": "dist/main.js",
   "module": "dist/main.mjs",
   "scripts": {
-    "test": "ts-node  node_modules/jest/bin/jest --config=jest.config.js",
+    "test": "ts-node  node_modules/jest/bin/jest --config=jest.config.js --runInBand",
     "develop": "nodemon --ext ts --exec 'npm run test && parcel build index.ts --target browser --no-source-maps --experimental-scope-hoisting && size-limit'",
     "build": "parcel build index.ts --target node --detailed-report",
     "build:prod": "parcel build index.ts --target node --no-source-maps --detailed-report --experimental-scope-hoisting",

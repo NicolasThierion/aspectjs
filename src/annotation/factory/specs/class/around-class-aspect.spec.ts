@@ -63,7 +63,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and references "this" from before the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
-                    console.log(ctxt.instance.instance());
+                    expect(ctxt.instance.get()).not.toBeNull();
                     jp();
                 };
             });
@@ -88,7 +88,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
                     jp();
-                    ctxt.instance.instance().labels.push('a');
+                    ctxt.instance.get().labels.push('a');
                 };
             });
 
@@ -113,7 +113,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
                     jp(['x']);
-                    ctxt.instance.instance().labels.push('a');
+                    ctxt.instance.get().labels.push('a');
                 };
             });
 
@@ -134,8 +134,8 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and do not call the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt, jp) => {
-                    ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                    ctxt.instance.instance().labels.push('a');
+                    ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
+                    ctxt.instance.get().labels.push('a');
                 };
             });
 

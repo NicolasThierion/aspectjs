@@ -17,7 +17,7 @@ let afterAdvice: AfterAdvice<any> = ctxt => {
     throw new Error('should configure afterThrowAdvice');
 };
 
-fdescribe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "after" pointcut', () => {
         beforeEach(() => {
             class AfterAspect extends Aspect {
@@ -28,9 +28,9 @@ fdescribe('given a class configured with some class-annotation aspect', () => {
                 }
             }
 
-            afterAdvice = jest.fn().mockImplementation(function(ctxt) {
-                ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                ctxt.instance.instance().labels.push('AClass');
+            afterAdvice = jest.fn(function(ctxt) {
+                ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
+                ctxt.instance.get().labels.push('AClass');
             });
 
             setupWeaver(new AfterAspect());

@@ -49,8 +49,8 @@ describe('given a class configured with some class-annotation aspect', () => {
                     apply(hooks: AspectHooks): void {
                         hooks
                             .annotations(AClass)
-                            .class.before((ctxt: AnnotationAdviceContext<any, ClassAnnotation>) => {
-                                console.log(ctxt.instance.instance());
+                            .class.before((ctxt: AnnotationAdviceContext<unknown, ClassAnnotation>) => {
+                                console.log(ctxt.instance.get());
                             });
                     }
                 }

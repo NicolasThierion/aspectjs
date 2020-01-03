@@ -30,8 +30,8 @@ describe('given a class configured with some class-annotation aspect', () => {
             }
 
             afterReturn = jest.fn().mockImplementation(function(ctxt) {
-                ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                ctxt.instance.instance().labels.push('AClass');
+                ctxt.instance.labels = ctxt.instance.get().labels ?? [];
+                ctxt.instance.labels.push('AClass');
             });
 
             setupWeaver(new AfterReturnAspect());

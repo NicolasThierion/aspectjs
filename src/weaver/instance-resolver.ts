@@ -4,7 +4,7 @@ export class InstanceResolver<T> {
     private _instance: T;
     private _dirty = false;
 
-    instance(): T {
+    get(): T {
         if (!this._instance) {
             throw new WeavingError('Cannot get "this" instance before constructor joinpoint has been called');
         }

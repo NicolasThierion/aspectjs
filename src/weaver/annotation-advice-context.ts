@@ -1,7 +1,7 @@
 import { AnnotationContext } from '../annotation/context/context';
 import { AnnotationType } from '..';
-import { InstanceResolver } from './instance-resolver';
 import { Mutable } from '../utils';
+import { InstanceResolver } from './instance-resolver';
 
 export interface AnnotationAdviceContext<T, A extends AnnotationType> {
     readonly annotation: AnnotationContext<T, A>;

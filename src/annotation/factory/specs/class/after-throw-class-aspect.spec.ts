@@ -23,8 +23,8 @@ describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
             afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
-                ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                ctxt.instance.instance().labels.push('A');
+                ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
+                ctxt.instance.get().labels.push('A');
             };
             afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
             class AfterThrowAspect extends Aspect {
@@ -41,8 +41,8 @@ describe('given a class configured with some class-annotation aspect', () => {
             describe('with a constructor that throws', () => {
                 beforeEach(() => {
                     afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
-                        ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                        ctxt.instance.instance().labels.push('A');
+                        ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
+                        ctxt.instance.get().labels.push('A');
                         throw ctxt.error;
                     };
                     afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
@@ -67,8 +67,8 @@ describe('given a class configured with some class-annotation aspect', () => {
                 describe('when the aspect swallows the exception', () => {
                     beforeEach(() => {
                         afterThrowAdvice = (ctxt: AnnotationAdviceContext<Labeled, ClassAnnotation>) => {
-                            ctxt.instance.instance().labels = ctxt.instance.instance().labels ?? [];
-                            ctxt.instance.instance().labels.push('A');
+                            ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
+                            ctxt.instance.get().labels.push('A');
                         };
                         afterThrowAdviceSpy = jest.fn().mockImplementation(afterThrowAdvice);
                     });

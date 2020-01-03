@@ -9,7 +9,7 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import { Weaver } from '../../weaver/load-time/load-time-weaver';
-import { assert, getMetaOrDefault, isUndefined } from '../../utils';
+import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver } from '../../index';
@@ -124,7 +124,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
                 runner.class.afterReturn();
 
-                return instanceResolver.instance();
+                return instanceResolver.get();
             } catch (e) {
                 // consider WeavingErrors as not recoverable by an aspect
                 if (e instanceof WeavingError) {
@@ -133,7 +133,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
                 ctxt.error = e;
                 runner.class.afterThrow();
-                return instanceResolver.instance();
+                return instanceResolver.get();
             } finally {
                 runner.class.after();
             }
@@ -159,7 +159,7 @@ class AnnotationAspectContextImpl<T, A extends AnnotationType> implements Mutabl
                     cpy[e[0]] = e[1];
                 }
                 return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))),
+            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AnnotationAdviceContext<any, AnnotationType>>,
         );
     }
 }
