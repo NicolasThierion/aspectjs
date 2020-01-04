@@ -42,29 +42,27 @@ describe('given a class configured with some class-annotation aspect', () => {
             expect(advice).toHaveBeenCalledBefore(ctor);
         });
 
-        describe('and the aspect requires "this"', () => {
-            beforeEach(() => {
-                class AAspect extends Aspect {
-                    name = 'AClassLabel';
+        it('should have a "null" context.instance', () => {
+            let thisInstance: any;
+            class AAspect extends Aspect {
+                name = 'AClassLabel';
 
-                    @Before(AClass)
-                    apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
-                        console.log((ctxt as any).instance.get());
-                    }
+                @Before(AClass)
+                apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                    thisInstance = (ctxt as any).instance;
                 }
+            }
 
-                setupWeaver(new AAspect());
-            });
-            it('should throw an error', () => {
-                expect(() => {
-                    @AClass()
-                    class A {
-                        constructor() {}
-                    }
+            setupWeaver(new AAspect());
 
-                    new A();
-                }).toThrow(new WeavingError('Cannot get "this" instance before constructor joinpoint has been called'));
-            });
+            @AClass()
+            class A {
+                constructor() {}
+            }
+
+            new A();
+
+            expect(thisInstance).toBeUndefined();
         });
     });
 });

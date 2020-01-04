@@ -6,6 +6,7 @@ import { AClass } from '../../../tests/a';
 import { Compile } from './compile.decorator';
 import { assert } from '../../../utils';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
+import { AdviceContext } from '../advice-context';
 
 interface Labeled {
     labels?: string[];
@@ -28,13 +29,13 @@ xdescribe('given a class configured with some class-annotation aspect', () => {
                 name = 'AClassLabel';
 
                 @Compile(AClass)
-                apply(target: AnnotationTarget<any, ClassAnnotation>): void {
-                    return compileAdvice(target);
+                apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                    return compileAdvice(ctxt);
                 }
             }
 
             compileAdvice = jasmine
-                .createSpy('compileAdvice', function(target: AnnotationTarget<any, ClassAnnotation>) {
+                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, ClassAnnotation>) {
                     assert(false, 'not implemented');
                 })
                 .and.callThrough();

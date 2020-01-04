@@ -1,21 +1,20 @@
 import {
-    AnnotationRef,
     Annotation,
+    AnnotationRef,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
-import { Weaver, PointcutsRunner } from '../../weaver/weaver';
-import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
+import { PointcutsRunner } from '../../weaver/weaver';
+import { assert, getMetaOrDefault, getProto, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
-import { InstanceResolver } from '../../weaver/instance-resolver';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -83,7 +82,7 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
     });
     tag = tag ?? name;
 
-    Object.defineProperty(Reflect.getPrototypeOf(fn), Symbol.toPrimitive, {
+    Object.defineProperty(getProto(fn), Symbol.toPrimitive, {
         enumerable: false,
         configurable: true,
         value: () => tag,
@@ -109,26 +108,20 @@ function _createDecorator<A extends Annotation>(
         // eslint-disable-next-line @typescript-eslint/class-name-casing
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
-
-        // runner.class.compile(null);  // TODO
+        const ctxt = new AnnotationAspectContextImpl(annotationContext);
+        runner.class.compile(ctxt);
 
         const ctor = function(...ctorArgs: any[]): T {
-            // prevent getting reference to this until ctor has been called
-            const instanceResolver = new InstanceResolver<T>();
-
-            const ctxt = new AnnotationAspectContextImpl();
-            ctxt.instance = instanceResolver;
-            ctxt.annotation = annotationContext;
             ctxt.args = ctorArgs;
 
             try {
                 runner.class.before(ctxt);
-                instanceResolver.resolve(this);
+                ctxt.instance = this;
                 runner.class.around(ctxt);
 
                 runner.class.afterReturn(ctxt);
 
-                return instanceResolver.get();
+                return ctxt.instance;
             } catch (e) {
                 // consider WeavingErrors as not recoverable by an aspect
                 if (e instanceof WeavingError) {
@@ -137,7 +130,7 @@ function _createDecorator<A extends Annotation>(
 
                 ctxt.error = e;
                 runner.class.afterThrow(ctxt);
-                return instanceResolver.get();
+                return ctxt.instance;
             } finally {
                 runner.class.after(ctxt);
             }
@@ -149,9 +142,10 @@ function _createDecorator<A extends Annotation>(
 }
 
 class AnnotationAspectContextImpl<T, A extends Annotation> implements MutableAdviceContext<A> {
+    constructor(readonly annotation: AnnotationContextImpl<T, A>) {}
+
     public error?: Error;
-    public annotation?: AnnotationContextImpl<T, A>;
-    public instance?: InstanceResolver<T>;
+    public instance?: T;
     public args?: any[];
     public joinpoint?: JoinPoint;
     public returnValue?: unknown;

@@ -1,19 +1,29 @@
-import { Advice, PointcutName } from './types';
+import { Advice, Pointcut, PointcutName } from './types';
 import { Annotation } from '../..';
 import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
 
 export class AnnotationAdviceFactory {
-    static create(annotation: Annotation, pointcut: PointcutName): MethodDecorator {
-        return function(target: any, propertyKey: string | symbol) {
-            assert(isFunction(target[propertyKey]));
-            const advice = target[propertyKey] as Advice;
-            advice.pointcut = {
+    static create(annotation: Annotation, pointcutName: PointcutName): MethodDecorator {
+        return function(aspect: any, propertyKey: string | symbol) {
+            assert(isFunction(aspect[propertyKey]));
+            const advice = aspect[propertyKey] as Advice;
+            const pointcut: Pointcut = {
                 annotation: annotation,
-                name: pointcut,
+                name: pointcutName,
             };
 
-            AdvicesRegistry.create(target, advice);
+            advice.pointcut = pointcut;
+
+            Reflect.defineProperty(pointcut, Symbol.toPrimitive, {
+                value: () => `${pointcutName}(${annotation})`,
+            });
+
+            Reflect.defineProperty(advice, Symbol.toPrimitive, {
+                value: () => `${aspect.constructor.name} {${pointcutName}(${annotation}) ${String(propertyKey)}() }`,
+            });
+
+            AdvicesRegistry.create(aspect, advice);
         };
     }
 }

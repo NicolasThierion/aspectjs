@@ -2,14 +2,7 @@ import { WeaverProfile } from '../profile';
 import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
 import { Aspect, JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
-import {
-    Annotation,
-    AnnotationRef,
-    ClassAnnotation,
-    MethodAnnotation,
-    ParameterAnnotation,
-    PropertyAnnotation,
-} from '../..';
+import { AnnotationRef, ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../..';
 import { MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
@@ -25,15 +18,13 @@ import {
     BeforeAdvice,
     BeforeClassAdvice,
     BeforePointcut,
-    Pointcut,
-    PointcutName,
     CompileAdvice,
     CompilePointcut,
+    Pointcut,
+    PointcutName,
 } from '../advices/types';
 import { AdvicesRegistry } from '../advices/advice-registry';
-import { AnnotationTarget } from '../../annotation/target/annotation-target';
-import { AnnotationContext } from '../../annotation/context/context';
-import { Weaver, PointcutsRunner } from '../weaver';
+import { PointcutsRunner, Weaver } from '../weaver';
 
 type AdvicePipeline = {
     annotations: {
@@ -55,14 +46,17 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot enable or disable aspects`);
         return super.enable(...aspects);
     }
+
     disable(...aspects: Aspect[]): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot enable or disable aspects`);
         return super.disable(...aspects);
     }
+
     merge(...profiles: WeaverProfile[]): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot change profile`);
         return super.merge(...profiles);
     }
+
     setProfile(profile: WeaverProfile): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot change profile`);
         return super.reset().merge(profile);
@@ -105,6 +99,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         this._runner = undefined;
         return super.reset();
     }
+
     isLoaded(): boolean {
         return !!this._advices;
     }
@@ -142,7 +137,7 @@ function _annotationId(annotation: AnnotationRef): string {
 
 class PointcutsRunnersImpl implements PointcutsRunner {
     class = {
-        compile: this._classSetup.bind(this),
+        compile: this._classCompile.bind(this),
         before: this._classBefore.bind(this),
         around: this._classAround.bind(this),
         afterReturn: this._classAfterReturn.bind(this),
@@ -150,7 +145,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         after: this._classAfter.bind(this),
     };
     property = {
-        compile: this._propertySetup.bind(this),
+        compile: this._propertyCompile.bind(this),
         before: this._propertyBefore.bind(this),
         around: this._propertyAround.bind(this),
         afterReturn: this._propertyAfterReturn.bind(this),
@@ -158,7 +153,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         after: this._propertyAfter.bind(this),
     };
     method = {
-        compile: this._methodSetup.bind(this),
+        compile: this._methodCompile.bind(this),
         before: this._methodBefore.bind(this),
         around: this._methodAround.bind(this),
         afterReturn: this._methodAfterReturn.bind(this),
@@ -166,7 +161,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         after: this._methodAfter.bind(this),
     };
     parameter = {
-        compile: this._parameterSetup.bind(this),
+        compile: this._parameterCompile.bind(this),
         before: this._parameterBefore.bind(this),
         around: this._parameterAround.bind(this),
         afterReturn: this._parameterAfterReturn.bind(this),
@@ -176,17 +171,30 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     constructor(private weaver: LoadTimeWeaver) {}
 
-    private _classSetup<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {
-        assert(false, 'not implemented');
+    private _classCompile<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {
+        this.weaver
+            .getAdvices({
+                annotation: ctxt.annotation,
+                name: PointcutName.COMPILE,
+            })
+            .forEach((advice: CompileAdvice<unknown>) => advice(ctxt.freeze()));
     }
+
     private _classBefore<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {
+        const frozenCtxt = ctxt.freeze();
         this.weaver
             .getAdvices({
                 annotation: ctxt.annotation,
                 name: PointcutName.BEFORE,
             })
-            .forEach((advice: BeforeAdvice<unknown>) => advice(ctxt.freeze()));
+            .forEach((advice: BeforeAdvice<unknown>) => {
+                const retVal = advice(frozenCtxt) as any;
+                if (retVal) {
+                    throw new WeavingError(`Returning from @Before advice "${advice}" is not supported`);
+                }
+            });
     }
+
     private _classAround(ctxt: MutableAdviceContext<ClassAnnotation>): void {
         const proto = ctxt.annotation.target.proto;
 
@@ -206,25 +214,26 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             annotation: ctxt.annotation,
             name: PointcutName.AROUND,
         });
-        const originalThis = ctxt.instance.get();
+        const originalThis = ctxt.instance;
 
         if (aroundAdvices.length) {
-            // allow call to fake 'this'
-            ctxt.instance.resolve(partialThis);
             const oldJp = jp;
+            let aroundAdvice = aroundAdvices.shift();
 
-            // intercept this call, and ensure it has not been read before joinpoint gets called.
+            let wasRead = false;
+            // ensure 'this' instance has not been read before joinpoint gets called.
             jp = jpf.create(
                 (args: any[]) => {
-                    if (ctxt.instance.isDirty()) {
-                        throw new Error(`Cannot get "this" instance of constructor before joinpoint has been called`);
+                    if (wasRead) {
+                        throw new Error(
+                            `In @Around advice "${aroundAdvice}": Cannot get "this" instance of constructor before calling constructor joinpoint`,
+                        );
                     }
-                    ctxt.instance.resolve(oldJp(args));
+
+                    ctxt.instance = oldJp(args);
                 },
                 () => ctorArgs,
             );
-
-            let aroundAdvice = aroundAdvices.shift();
 
             let previousArgs = ctorArgs;
             // nest all around advices into each others
@@ -248,27 +257,38 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             try {
                 ctxt.joinpoint = jp;
                 ctxt.joinpointArgs = ctorArgs;
-                aroundAdvice(ctxt.freeze(), jp, ctorArgs);
+
+                ctxt.instance = partialThis;
+                const { instance, ...frozenContext } = { ...ctxt.freeze() };
+                Reflect.defineProperty(frozenContext, 'instance', {
+                    get() {
+                        wasRead = true;
+                        return ctxt.instance;
+                    },
+                });
+                Object.freeze(frozenContext);
+                wasRead = false;
+                aroundAdvice(frozenContext, jp, ctorArgs);
             } catch (e) {
                 // as of ES6 classes, 'this' is no more available after ctor thrown.
                 // replace 'this' with partial this
 
-                ctxt.instance.resolve(partialThis);
+                ctxt.instance = partialThis;
 
                 throw e;
             }
         } else {
-            ctxt.instance.resolve(jp(ctorArgs));
+            ctxt.instance = jp(ctorArgs);
         }
 
         // assign 'this' to the object created by the original ctor at joinpoint;
-        Object.assign(originalThis, ctxt.instance.get());
-        ctxt.instance.resolve(originalThis);
+        Object.assign(originalThis, ctxt.instance);
+        ctxt.instance = originalThis;
         // TODO what in case advice returns brand new 'this'?
     }
 
     private _classAfterReturn(ctxt: MutableAdviceContext<ClassAnnotation>): void {
-        let newInstance = ctxt.instance.get();
+        let newInstance = ctxt.instance;
 
         const advices = this.weaver.getAdvices({
             annotation: ctxt.annotation,
@@ -277,13 +297,14 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
         while (advices.length) {
             const advice = advices.shift();
-            ctxt.returnValue = ctxt.instance.get();
+            ctxt.returnValue = ctxt.instance;
             newInstance = advice(ctxt.freeze(), ctxt.returnValue);
             if (!isUndefined(newInstance)) {
-                ctxt.instance.resolve(newInstance);
+                ctxt.instance = newInstance;
             }
         }
     }
+
     private _classAfterThrow(ctxt: MutableAdviceContext<ClassAnnotation>): void {
         const afterThrowAdvices = this.weaver.getAdvices({
             annotation: ctxt.annotation,
@@ -293,13 +314,13 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             // pass-trough errors by default
             throw ctxt.error;
         } else {
-            let newInstance = ctxt.instance.get();
+            let newInstance = ctxt.instance;
 
             while (afterThrowAdvices.length) {
                 const advice = afterThrowAdvices.shift();
                 newInstance = advice(ctxt.freeze());
                 if (!isUndefined(newInstance)) {
-                    ctxt.instance.resolve(newInstance);
+                    ctxt.instance = newInstance;
                 }
             }
         }
@@ -314,59 +335,74 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             .forEach((advice: AfterAdvice<unknown>) => advice(ctxt.freeze()));
     }
 
-    private _propertySetup(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
+    private _propertyCompile(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _propertyBefore(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _propertyAround(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _propertyAfterReturn(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _propertyAfterThrow(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _propertyAfter(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
         assert(false, 'not implemented');
     }
 
-    private _methodSetup(ctxt: MutableAdviceContext<MethodAnnotation>): void {
+    private _methodCompile(ctxt: MutableAdviceContext<MethodAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _methodBefore(ctxt: MutableAdviceContext<MethodAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _methodAround(ctxt: MutableAdviceContext<MethodAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _methodAfterReturn(ctxt: MutableAdviceContext<MethodAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _methodAfterThrow(ctxt: MutableAdviceContext<MethodAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _methodAfter(ctxt: MutableAdviceContext<MethodAnnotation>): void {
         assert(false, 'not implemented');
     }
 
-    private _parameterSetup(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
+    private _parameterCompile(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _parameterBefore(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _parameterAround(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _parameterAfterReturn(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _parameterAfterThrow(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
         assert(false, 'not implemented');
     }
+
     private _parameterAfter(ctxt: MutableAdviceContext<ParameterAnnotation>): void {
         assert(false, 'not implemented');
     }

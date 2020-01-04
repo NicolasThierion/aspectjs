@@ -69,7 +69,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and references "this" from before the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
-                    expect(ctxt.instance.get()).not.toBeNull();
+                    expect(ctxt.instance).not.toBeNull();
                     jp();
                 };
             });
@@ -85,7 +85,9 @@ describe('given a class configured with some class-annotation aspect', () => {
 
                     new A();
                 }).toThrow(
-                    new WeavingError('Cannot get "this" instance of constructor before joinpoint has been called'),
+                    new WeavingError(
+                        'In @Around advice "AroundClassAspect {around(@AClass) apply() }": Cannot get "this" instance of constructor before calling constructor joinpoint',
+                    ),
                 );
             });
         });
@@ -94,7 +96,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
                     jp();
-                    ctxt.instance.get().labels.push('a');
+                    ctxt.instance.labels.push('a');
                 };
             });
 
@@ -119,7 +121,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
                     jp(['x']);
-                    ctxt.instance.get().labels.push('a');
+                    ctxt.instance.labels.push('a');
                 };
             });
 
@@ -140,8 +142,8 @@ describe('given a class configured with some class-annotation aspect', () => {
         describe('and do not call the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
-                    ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
-                    ctxt.instance.get().labels.push('a');
+                    ctxt.instance.labels = ctxt.instance.labels ?? [];
+                    ctxt.instance.labels.push('a');
                 };
             });
 

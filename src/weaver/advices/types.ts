@@ -43,7 +43,7 @@ export interface AfterThrowPointcut {
 
 export type CompileAdvice<T> = {
     pointcut?: CompilePointcut;
-} & ((target: AnnotationTarget<T, Annotation>) => void);
+} & ((ctxt: AdviceContext<T, Annotation>) => void);
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
 } & ((ctxt: AdviceContext<T, Annotation>) => void);

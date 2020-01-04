@@ -26,8 +26,8 @@ describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
             afterThrowAdvice = (ctxt: AfterThrowContext<Labeled, ClassAnnotation>) => {
-                ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
-                ctxt.instance.get().labels.push('A');
+                ctxt.instance.labels = ctxt.instance.labels ?? [];
+                ctxt.instance.labels.push('A');
             };
             afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
             class AfterThrowAspect extends Aspect {
@@ -45,8 +45,8 @@ describe('given a class configured with some class-annotation aspect', () => {
             describe('with a constructor that throws', () => {
                 beforeEach(() => {
                     afterThrowAdvice = (ctxt: AfterThrowContext<Labeled, ClassAnnotation>) => {
-                        ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
-                        ctxt.instance.get().labels.push('A');
+                        ctxt.instance.labels = ctxt.instance.labels ?? [];
+                        ctxt.instance.labels.push('A');
                         throw ctxt.error;
                     };
                     afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
@@ -71,8 +71,8 @@ describe('given a class configured with some class-annotation aspect', () => {
                 describe('when the aspect swallows the exception', () => {
                     beforeEach(() => {
                         afterThrowAdvice = (ctxt: AfterThrowContext<Labeled, ClassAnnotation>) => {
-                            ctxt.instance.get().labels = ctxt.instance.get().labels ?? [];
-                            ctxt.instance.get().labels.push('A');
+                            ctxt.instance.labels = ctxt.instance.labels ?? [];
+                            ctxt.instance.labels.push('A');
                         };
                         afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
                     });
