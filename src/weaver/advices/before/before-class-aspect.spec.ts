@@ -1,13 +1,13 @@
 import { Aspect } from '../../types';
 import { AClass } from '../../../tests/a';
 import { WeavingError } from '../../weaving-error';
-import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { AdviceContext } from '../advice-context';
 import { Before } from './before.decorator';
+import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 
 function setupWeaver(...aspects: Aspect[]) {
-    const weaver = new Weaver().enable(...aspects);
+    const weaver = new LoadTimeWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }

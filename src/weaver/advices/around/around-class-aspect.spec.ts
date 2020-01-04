@@ -1,5 +1,4 @@
 import { Aspect, JoinPoint } from '../../types';
-import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { AroundAdvice } from '../types';
 import { AClass } from '../../../tests/a';
@@ -7,9 +6,10 @@ import { AroundContext } from '../advice-context';
 import Spy = jasmine.Spy;
 import { WeavingError } from '../../weaving-error';
 import { Around } from './around.decorator';
+import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 
 function setupWeaver(...aspects: Aspect[]) {
-    const weaver = new Weaver().enable(...aspects);
+    const weaver = new LoadTimeWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }

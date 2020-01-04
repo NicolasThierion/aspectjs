@@ -1,14 +1,13 @@
 import {
-    Annotation,
     AnnotationRef,
-    AnnotationType,
+    Annotation,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
-import { Weaver } from '../../weaver/load-time/load-time-weaver';
+import { Weaver, PointcutsRunner } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
@@ -33,7 +32,7 @@ export class AnnotationFactory {
     create<A extends PropertyAnnotationStub>(annotationStub: A): A & AnnotationRef;
     create<A extends ParameterAnnotationStub>(annotationStub: A): A & AnnotationRef;
 
-    create<A extends AnnotationType, S extends Annotation>(annotationStub: S): S & AnnotationRef {
+    create<A extends Annotation, S extends Annotation>(annotationStub: S): S & AnnotationRef {
         if (!annotationStub.name) {
             throw new TypeError('Annotation functions should have a name');
         }
@@ -43,13 +42,8 @@ export class AnnotationFactory {
         const annotation = function(...annotationArgs: any[]): Decorator {
             // assert the weaver is loaded before invoking the underlying decorator
             const weaver = getWeaver(groupId) ?? getWeaver();
-            if (!weaver.isLoaded()) {
-                throw new WeavingError(
-                    'Weaving did not happen. Please make sure to call "getWeaver().load()" before creating annotations',
-                );
-            }
 
-            const decorator = _createDecorator(weaver, annotation as any, annotationArgs);
+            const decorator = _createDecorator(weaver.load(), annotation as any, annotationArgs);
             _createAnnotationRef(decorator, annotationStub, groupId);
 
             return decorator;
@@ -96,7 +90,11 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
     });
 }
 
-function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, annotationArgs: any[]): Decorator {
+function _createDecorator<A extends Annotation>(
+    runner: PointcutsRunner,
+    annotation: A,
+    annotationArgs: any[],
+): Decorator {
     return function(...targetArgs: any[]): Function {
         const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
@@ -112,9 +110,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
 
-        // TODO
-        // const compiler = weaver.compile(annotationContext);
-        // compiler.compile();
+        // runner.class.compile(null);  // TODO
 
         const ctor = function(...ctorArgs: any[]): T {
             // prevent getting reference to this until ctor has been called
@@ -125,13 +121,12 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
             ctxt.annotation = annotationContext;
             ctxt.args = ctorArgs;
 
-            const runner = weaver.run(ctxt);
             try {
-                runner.class.before();
+                runner.class.before(ctxt);
                 instanceResolver.resolve(this);
-                runner.class.around();
+                runner.class.around(ctxt);
 
-                runner.class.afterReturn();
+                runner.class.afterReturn(ctxt);
 
                 return instanceResolver.get();
             } catch (e) {
@@ -141,10 +136,10 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
                 }
 
                 ctxt.error = e;
-                runner.class.afterThrow();
+                runner.class.afterThrow(ctxt);
                 return instanceResolver.get();
             } finally {
-                runner.class.after();
+                runner.class.after(ctxt);
             }
         };
 
@@ -153,7 +148,7 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
     }
 }
 
-class AnnotationAspectContextImpl<T, A extends AnnotationType> implements MutableAdviceContext<A> {
+class AnnotationAspectContextImpl<T, A extends Annotation> implements MutableAdviceContext<A> {
     public error?: Error;
     public annotation?: AnnotationContextImpl<T, A>;
     public instance?: InstanceResolver<T>;
@@ -168,12 +163,12 @@ class AnnotationAspectContextImpl<T, A extends AnnotationType> implements Mutabl
                     cpy[e[0]] = e[1];
                 }
                 return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, AnnotationType>>,
+            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, Annotation>>,
         );
     }
 }
 
-class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
+class AnnotationContextImpl<T, D extends Annotation> implements AnnotationContext<T, D> {
     public readonly name: string;
     public readonly groupId: string;
 

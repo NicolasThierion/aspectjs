@@ -1,6 +1,6 @@
 import { AnnotationFactory } from './factory';
 import { getWeaver, setWeaver } from '../../index';
-import { Weaver } from '../../weaver/load-time/load-time-weaver';
+import { LoadTimeWeaver } from '../../weaver/load-time/load-time-weaver';
 
 let factory: AnnotationFactory;
 
@@ -13,49 +13,44 @@ describe('Annotation Factory', () => {
 
     beforeEach(() => {
         factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
-        setWeaver(new Weaver(WEAVER_TEST_NAME));
+        setWeaver(new LoadTimeWeaver(WEAVER_TEST_NAME));
     });
 
     describe('method "create"', () => {
-        describe('after weaver did load', () => {
-            beforeEach(() => {
-                getWeaver().load();
+        describe('given a class annotation', () => {
+            describe('that has no name', () => {
+                it('should throw an error', () => {
+                    expect(() => {
+                        AClass = factory.create(function(): ClassDecorator {
+                            return;
+                        });
+                    }).toThrow(new TypeError('Annotation functions should have a name'));
+                });
             });
-            describe('given a class annotation', () => {
-                describe('that has no name', () => {
-                    it('should throw an error', () => {
-                        expect(() => {
-                            AClass = factory.create(function(): ClassDecorator {
-                                return;
-                            });
-                        }).toThrow(new TypeError('Annotation functions should have a name'));
-                    });
-                });
 
-                it('should return a class decorator', () => {
-                    AClass = factory.create(AClass);
+            it('should return a class decorator', () => {
+                AClass = factory.create(AClass);
 
-                    expect(AClass('0', 0)).toEqual(jasmine.any(Function));
-                    @AClass('', 0)
-                    class A {
-                        someProp: any;
-                    }
+                expect(AClass('0', 0)).toEqual(jasmine.any(Function));
+                @AClass('', 0)
+                class A {
+                    someProp: any;
+                }
 
-                    expect(new A()).toEqual(jasmine.any(A));
-                });
+                expect(new A()).toEqual(jasmine.any(A));
+            });
 
-                it('should return a class decorator with the same name', () => {
-                    AClass = factory.create(AClass);
+            it('should return a class decorator with the same name', () => {
+                AClass = factory.create(AClass);
 
-                    expect(AClass.name).toEqual('AClass');
-                    expect(AClass('0', 0).name).toEqual('AClass');
-                });
+                expect(AClass.name).toEqual('AClass');
+                expect(AClass('0', 0).name).toEqual('AClass');
+            });
 
-                it(`should assign a the annotation's groupId to the factory's groupId`, () => {
-                    const _AClass = factory.create(AClass);
+            it(`should assign a the annotation's groupId to the factory's groupId`, () => {
+                const _AClass = factory.create(AClass);
 
-                    expect(_AClass.groupId).toEqual(FACTORY_GROUP_TEST_ID);
-                });
+                expect(_AClass.groupId).toEqual(FACTORY_GROUP_TEST_ID);
             });
         });
     });

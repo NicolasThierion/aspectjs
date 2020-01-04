@@ -1,17 +1,17 @@
 import { Aspect } from '../../types';
-import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { AfterReturnAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
+import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 
 interface Labeled {
     labels?: string[];
 }
 
 function setupWeaver(...aspects: Aspect[]): void {
-    const weaver = new Weaver().enable(...aspects);
+    const weaver = new LoadTimeWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }

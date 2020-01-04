@@ -1,18 +1,18 @@
 import { Aspect } from '../../types';
-import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { AfterThrowAdvice } from '../types';
 import Spy = jasmine.Spy;
 import { AdviceContext, AfterThrowContext } from '../advice-context';
 import { AClass } from '../../../tests/a';
 import { AfterThrow } from './after-throw.decorator';
+import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 
 interface Labeled {
     labels?: string[];
 }
 
 function setupWeaver(...aspects: Aspect[]): void {
-    const weaver = new Weaver().enable(...aspects);
+    const weaver = new LoadTimeWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }

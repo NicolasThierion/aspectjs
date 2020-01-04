@@ -18,8 +18,7 @@ type Provider<T> = (...args: any[]) => T;
  */
 export type Annotation = (ClassAnnotation | MethodAnnotation | ParameterAnnotation | PropertyAnnotation) & Function;
 
-export type AnnotationType = ClassAnnotation | MethodAnnotation | ParameterAnnotation | PropertyAnnotation;
-export type DecoratorType = ClassDecorator | MethodDecorator | ParameterDecorator | PropertyDecorator;
+type DecoratorType = ClassDecorator | MethodDecorator | ParameterDecorator | PropertyDecorator;
 
 export type ClassAnnotation = AnnotationStub<ClassDecorator> & AnnotationRef;
 export type MethodAnnotation = AnnotationStub<MethodDecorator> & AnnotationRef;

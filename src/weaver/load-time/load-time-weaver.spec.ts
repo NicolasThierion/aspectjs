@@ -1,10 +1,10 @@
 import { AnnotationFactory } from '../../annotation/factory/factory';
 import { setWeaver } from '../../index';
-import { Weaver } from './load-time-weaver';
 import { Aspect } from '../types';
 import { WeavingError } from '../weaving-error';
+import { LoadTimeWeaver } from './load-time-weaver';
 
-let weaver: Weaver;
+let weaver: LoadTimeWeaver;
 
 let factory: AnnotationFactory;
 
@@ -14,7 +14,7 @@ const WEAVER_TEST_NAME = 'testWeaver';
 describe('LoadTimeWeaver', () => {
     beforeEach(() => {
         factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
-        weaver = new Weaver(WEAVER_TEST_NAME);
+        weaver = new LoadTimeWeaver(WEAVER_TEST_NAME);
         setWeaver(weaver);
     });
 

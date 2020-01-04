@@ -1,5 +1,5 @@
 import {
-    AnnotationType,
+    Annotation,
     ClassAnnotation,
     MethodAnnotation,
     ParameterAnnotation,
@@ -16,7 +16,7 @@ import { assert, getOrDefault, getProto } from '../../utils';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 
 export abstract class AnnotationLocationFactory {
-    static create<T, D extends AnnotationType>(dtarget: Partial<AnnotationTarget<T, D>>): AnnotationLocation<T, D> {
+    static create<T, D extends Annotation>(dtarget: Partial<AnnotationTarget<T, D>>): AnnotationLocation<T, D> {
         // get the rootTarget (the target of the class) for this target
         const rootTarget = dtarget.declaringClass;
 
@@ -92,13 +92,13 @@ export abstract class AnnotationLocationFactory {
         return target.location;
     }
 
-    static getTarget(loc: AnnotationLocation<any, AnnotationType>) {
+    static getTarget(loc: AnnotationLocation<any, Annotation>) {
         return loc ? Object.getPrototypeOf(loc).getTarget() : undefined;
     }
 }
 
-function _createLocation<T, D extends AnnotationType>(
-    target: Partial<AnnotationTarget<T, AnnotationType>>,
+function _createLocation<T, D extends Annotation>(
+    target: Partial<AnnotationTarget<T, Annotation>>,
     locationStub: any = new AnnotationLocationImpl(),
 ): AnnotationLocation<T, D> {
     const proto = Object.create(Reflect.getPrototypeOf(locationStub));
@@ -111,8 +111,8 @@ function _createLocation<T, D extends AnnotationType>(
     return (locationStub as any) as AnnotationLocation<T, D>;
 }
 
-class AnnotationLocationImpl<T, D extends AnnotationType> {
-    getTarget(): AnnotationTarget<T, AnnotationType> {
+class AnnotationLocationImpl<T, D extends Annotation> {
+    getTarget(): AnnotationTarget<T, Annotation> {
         throw new Error('No target registered');
     }
 }
@@ -123,7 +123,7 @@ export namespace AnnotationLocation {
     export const getTarget = AnnotationLocationFactory.getTarget;
 }
 
-export type AnnotationLocation<T, D extends AnnotationType> =
+export type AnnotationLocation<T, D extends Annotation> =
     | undefined
     | {
           [prop in keyof T]: T[prop] extends (...any: any[]) => any

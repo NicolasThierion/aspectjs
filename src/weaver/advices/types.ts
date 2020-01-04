@@ -1,5 +1,5 @@
 import { AnnotationTarget } from '../../annotation/target/annotation-target';
-import { AnnotationRef, AnnotationType, JoinPoint } from '../..';
+import { AnnotationRef, Annotation, JoinPoint } from '../..';
 import { AdviceContext } from './advice-context';
 
 export enum PointcutName {
@@ -43,25 +43,25 @@ export interface AfterThrowPointcut {
 
 export type CompileAdvice<T> = {
     pointcut?: CompilePointcut;
-} & ((target: AnnotationTarget<T, AnnotationType>) => void);
+} & ((target: AnnotationTarget<T, Annotation>) => void);
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>) => void);
+} & ((ctxt: AdviceContext<T, Annotation>) => void);
 export type BeforeClassAdvice<T> = {
     pointcut?: BeforePointcut;
-} & ((ctxt: Omit<AdviceContext<T, AnnotationType>, 'instance'>) => void);
+} & ((ctxt: Omit<AdviceContext<T, Annotation>, 'instance'>) => void);
 export type AfterAdvice<T> = {
     pointcut?: AfterPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>) => void);
+} & ((ctxt: AdviceContext<T, Annotation>) => void);
 export type AfterReturnAdvice<T> = {
     pointcut?: AfterReturnPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>, returnValue: any) => T | null | undefined);
+} & ((ctxt: AdviceContext<T, Annotation>, returnValue: any) => T | null | undefined);
 export type AfterThrowAdvice<T> = {
     pointcut?: AfterThrowPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>) => T | null | undefined);
+} & ((ctxt: AdviceContext<T, Annotation>) => T | null | undefined);
 export type AroundAdvice<T> = {
     pointcut?: AroundPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>, joinPoint: JoinPoint, joinpointArgs: any[]) => any); // TODO change return value;
+} & ((ctxt: AdviceContext<T, Annotation>, joinPoint: JoinPoint, joinpointArgs: any[]) => any); // TODO change return value;
 
 export type Advice = AnnotationAdvice;
 

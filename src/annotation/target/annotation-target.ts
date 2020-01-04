@@ -1,5 +1,5 @@
 import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
-import { AnnotationType } from '../annotation.types';
+import { Annotation } from '../annotation.types';
 import {
     AnnotationLocation,
     ClassAnnotationLocation,
@@ -15,7 +15,7 @@ export enum AnnotationTargetType {
     PARAMETER = 3,
 }
 
-export interface AnnotationTarget<T, A extends AnnotationType> {
+export interface AnnotationTarget<T, A extends Annotation> {
     readonly location: AnnotationLocation<T, A>;
     readonly type: A extends ClassAnnotation
         ? AnnotationTargetType.CLASS
