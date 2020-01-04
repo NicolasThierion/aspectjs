@@ -3,7 +3,7 @@ import { AClass } from '../../../tests/a';
 import { WeavingError } from '../../weaving-error';
 import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
-import { AdviceContext } from '../../advice-context';
+import { AdviceContext } from '../advice-context';
 import { Before } from './before.decorator';
 
 function setupWeaver(...aspects: Aspect[]) {

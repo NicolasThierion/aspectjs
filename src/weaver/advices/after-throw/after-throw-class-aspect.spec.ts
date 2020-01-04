@@ -3,7 +3,7 @@ import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { AfterThrowAdvice } from '../types';
 import Spy = jasmine.Spy;
-import { AdviceContext, AfterThrowContext } from '../../advice-context';
+import { AdviceContext, AfterThrowContext } from '../advice-context';
 import { AClass } from '../../../tests/a';
 import { AfterThrow } from './after-throw.decorator';
 

@@ -6,14 +6,14 @@ import {
 } from '../target/annotation-target';
 import {
     AnnotationRef,
-    AnnotationType,
+    Annotation,
     ClassAnnotation,
     MethodAnnotation,
     ParameterAnnotation,
     PropertyAnnotation,
 } from '../annotation.types';
 
-export interface AnnotationContext<T, D extends AnnotationType> extends AnnotationRef {
+export interface AnnotationContext<T, D extends Annotation> extends AnnotationRef {
     readonly args: any[];
     readonly target: AnnotationTarget<T, D>;
 }

@@ -1,6 +1,6 @@
 import { AnnotationFactory } from './factory';
-import { getWeaver, setWeaver } from '../../../index';
-import { Weaver } from '../../load-time/load-time-weaver';
+import { getWeaver, setWeaver } from '../../index';
+import { Weaver } from '../../weaver/load-time/load-time-weaver';
 
 let factory: AnnotationFactory;
 

@@ -7,16 +7,16 @@ import {
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { WeavingError } from '../../weaving-error';
-import { Weaver } from '../../load-time/load-time-weaver';
-import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../../utils';
+import { WeavingError } from '../../weaver/weaving-error';
+import { Weaver } from '../../weaver/load-time/load-time-weaver';
+import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
-import { getWeaver, JoinPoint } from '../../../index';
+import { getWeaver, JoinPoint } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
-import { AdviceContext, MutableAdviceContext } from '../../advice-context';
-import { InstanceResolver } from '../../instance-resolver';
+import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
+import { InstanceResolver } from '../../weaver/instance-resolver';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -111,6 +111,10 @@ function _createDecorator<A extends Annotation>(weaver: Weaver, annotation: A, a
         // eslint-disable-next-line @typescript-eslint/class-name-casing
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
+
+        // TODO
+        // const compiler = weaver.compile(annotationContext);
+        // compiler.compile();
 
         const ctor = function(...ctorArgs: any[]): T {
             // prevent getting reference to this until ctor has been called

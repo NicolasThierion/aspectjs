@@ -1,9 +1,9 @@
-import { AnnotationTarget } from '../annotation/target/annotation-target';
+import { AnnotationTarget } from '../../annotation/target/annotation-target';
 import { AnnotationRef, AnnotationType, JoinPoint } from '../..';
-import { AdviceContext } from '../advice-context';
+import { AdviceContext } from './advice-context';
 
 export enum PointcutName {
-    SETUP = 'setup',
+    COMPILE = 'compile',
     AROUND = 'around',
     BEFORE = 'before',
     AFTERRETURN = 'afterReturn',
@@ -16,9 +16,9 @@ export interface Pointcut {
     name: PointcutName;
 }
 
-export interface SetupPointcut {
+export interface CompilePointcut {
     annotation: AnnotationRef;
-    name: PointcutName.SETUP;
+    name: PointcutName.COMPILE;
 }
 export interface AroundPointcut {
     annotation: AnnotationRef;
@@ -41,8 +41,8 @@ export interface AfterThrowPointcut {
     name: PointcutName.AFTERTHROW;
 }
 
-export type SetupAdvice<T> = {
-    pointcut?: SetupPointcut;
+export type CompileAdvice<T> = {
+    pointcut?: CompilePointcut;
 } & ((target: AnnotationTarget<T, AnnotationType>) => void);
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
@@ -66,7 +66,7 @@ export type AroundAdvice<T> = {
 export type Advice = AnnotationAdvice;
 
 export type AnnotationAdvice =
-    | SetupAdvice<any>
+    | CompileAdvice<any>
     | BeforeAdvice<any>
     | AfterAdvice<any>
     | AfterReturnAdvice<any>

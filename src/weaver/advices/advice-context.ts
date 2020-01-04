@@ -1,9 +1,9 @@
-import { AnnotationContext } from './annotation/context/context';
-import { AnnotationType, JoinPoint } from '..';
-import { Mutable } from '../utils';
-import { InstanceResolver } from './instance-resolver';
-import { AnnotationTarget } from './annotation/target/annotation-target';
-import { PointcutName } from './advices/types';
+import { AnnotationContext } from '../../annotation/context/context';
+import { AnnotationType, JoinPoint } from '../../index';
+import { Mutable } from '../../utils';
+import { InstanceResolver } from '../instance-resolver';
+import { AnnotationTarget } from '../../annotation/target/annotation-target';
+import { PointcutName } from './types';
 
 export type AdviceContext<T, A extends AnnotationType> =
     | AfterContext<T, A>

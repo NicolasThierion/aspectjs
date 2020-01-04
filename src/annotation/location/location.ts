@@ -12,7 +12,7 @@ import {
     ParameterAnnotationTarget,
     PropertyAnnotationTarget,
 } from '../target/annotation-target';
-import { assert, getOrDefault, getProto } from '../../../utils';
+import { assert, getOrDefault, getProto } from '../../utils';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 
 export abstract class AnnotationLocationFactory {

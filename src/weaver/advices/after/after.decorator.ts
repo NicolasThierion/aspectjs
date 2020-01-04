@@ -1,5 +1,5 @@
 import { PointcutName } from '../types';
-import { ClassAnnotation } from '../../annotation/annotation.types';
+import { ClassAnnotation } from '../../../annotation/annotation.types';
 import { AnnotationAdviceFactory } from '../annotation-advice-factory';
 
 export function After(annotation: ClassAnnotation): MethodDecorator {

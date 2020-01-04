@@ -4,7 +4,7 @@ import { ClassAnnotation, setWeaver } from '../../../index';
 import { AfterReturnAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
-import { AdviceContext, AfterReturnContext } from '../../advice-context';
+import { AdviceContext, AfterReturnContext } from '../advice-context';
 
 interface Labeled {
     labels?: string[];

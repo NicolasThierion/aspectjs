@@ -4,7 +4,7 @@ import { Weaver } from '../../load-time/load-time-weaver';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { After } from './after.decorator';
 import { AClass } from '../../../tests/a';
-import { AdviceContext } from '../../advice-context';
+import { AdviceContext } from '../advice-context';
 
 interface Labeled {
     labels?: string[];

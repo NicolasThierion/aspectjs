@@ -1,6 +1,6 @@
 import { AnnotationTarget, AnnotationTargetType, ClassAnnotationTarget } from '../target/annotation-target';
-import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../../utils';
-import { AnnotationType, ClassAnnotation } from '../annotation.types';
+import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../utils';
+import { Annotation, ClassAnnotation } from '../annotation.types';
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
 import { AnnotationContext, ClassAnnotationContext } from '../context/context';
 import { AnnotationLocation, AnnotationLocationFactory } from '../location/location';
@@ -15,7 +15,7 @@ export abstract class AnnotationBundleFactory {
     }
 }
 
-interface AnnotationContextsHolder<T, D extends AnnotationType> {
+interface AnnotationContextsHolder<T, D extends Annotation> {
     byAnnotationName: {
         [decoratorName: string]: AnnotationContext<T, D>[];
     };
@@ -28,7 +28,7 @@ interface AnnotationContextsHolder<T, D extends AnnotationType> {
     };
 }
 
-function _createContextsHolder<T, D extends AnnotationType>(): AnnotationContextsHolder<T, D> {
+function _createContextsHolder<T, D extends Annotation>(): AnnotationContextsHolder<T, D> {
     return {
         byAnnotationName: {},
         all: [],
@@ -42,13 +42,13 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         .fill(() => _createContextsHolder<any, any>())
         .map(c => c());
 
-    private _global = _createContextsHolder<T, AnnotationType>();
+    private _global = _createContextsHolder<T, Annotation>();
 
     constructor(target: ClassAnnotationTarget<T>) {
         this._target = target;
     }
 
-    at<D extends AnnotationType>(location: AnnotationLocation<T, D>): AnnotationContextSelector<T, D> {
+    at<D extends Annotation>(location: AnnotationLocation<T, D>): AnnotationContextSelector<T, D> {
         const target = AnnotationLocationFactory.getTarget(location);
 
         return new AnnotationContextSelectorImpl<T, D>(
@@ -56,7 +56,7 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         );
     }
 
-    addAnnotation(ctxt: AnnotationContext<T, AnnotationType>): void {
+    addAnnotation(ctxt: AnnotationContext<T, Annotation>): void {
         const name = ctxt.name;
 
         const holders = this._getContextHolders(ctxt.target, true);
@@ -78,7 +78,7 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
     }
 
     @Enumerable(false)
-    private _getContextHolders<D extends AnnotationType>(
+    private _getContextHolders<D extends Annotation>(
         target: AnnotationTarget<T, D>,
         save: boolean,
     ): AnnotationContextsHolder<T, D>[] {
@@ -89,11 +89,11 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         if (target.type === AnnotationTargetType.CLASS) {
             return [this._contextHolders[target.type] as AnnotationContextsHolder<T, D>, this._global];
         } else if (target.type <= AnnotationTargetType.PARAMETER) {
-            const byAnnotationType = this._contextHolders[target.type];
-            byAnnotationType.byPropertyName = byAnnotationType.byPropertyName ?? ({} as any);
+            const byAnnotation = this._contextHolders[target.type];
+            byAnnotation.byPropertyName = byAnnotation.byPropertyName ?? ({} as any);
 
             const byPropertyName = getOrDefault(
-                byAnnotationType.byPropertyName as any,
+                byAnnotation.byPropertyName as any,
                 target.propertyKey,
                 () => {
                     return { all: [], byAnnotationName: {} } as AnnotationContextsHolder<any, any>;
@@ -119,40 +119,40 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
                     save,
                 ) as AnnotationContextsHolder<T, D>;
 
-                return [byIndex, allArgsContext, byPropertyName, byAnnotationType, this._global];
+                return [byIndex, allArgsContext, byPropertyName, byAnnotation, this._global];
             }
 
-            return [byPropertyName, byAnnotationType, this._global];
+            return [byPropertyName, byAnnotation, this._global];
         }
 
         assert(false, `unknown decorator type: ${target.type}`);
     }
 
-    all(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
+    all(decoratorName?: string): readonly AnnotationContext<T, Annotation>[] {
         return new AnnotationContextSelectorImpl(this._global).all(decoratorName);
     }
 
-    class(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
-        return new AnnotationContextSelectorImpl<T, AnnotationType>(
-            this._contextHolders[AnnotationTargetType.CLASS],
-        ).all(decoratorName);
+    class(decoratorName?: string): readonly AnnotationContext<T, Annotation>[] {
+        return new AnnotationContextSelectorImpl<T, Annotation>(this._contextHolders[AnnotationTargetType.CLASS]).all(
+            decoratorName,
+        );
     }
-    properties(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
+    properties(decoratorName?: string): readonly AnnotationContext<T, Annotation>[] {
         return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationTargetType.PROPERTY]).all(
             decoratorName,
         );
     }
-    methods(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
+    methods(decoratorName?: string): readonly AnnotationContext<T, Annotation>[] {
         return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationTargetType.METHOD]).all(decoratorName);
     }
-    parameters(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
+    parameters(decoratorName?: string): readonly AnnotationContext<T, Annotation>[] {
         return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationTargetType.PARAMETER]).all(
             decoratorName,
         );
     }
 }
 
-export class AnnotationContextSelectorImpl<T, D extends AnnotationType> implements AnnotationContextSelector<T, D> {
+export class AnnotationContextSelectorImpl<T, D extends Annotation> implements AnnotationContextSelector<T, D> {
     constructor(private _holder: AnnotationContextsHolder<T, D>) {
         assert(!!this._holder);
     }

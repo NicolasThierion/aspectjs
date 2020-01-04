@@ -3,6 +3,7 @@ import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
 import { Aspect, JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
 import {
+    Annotation,
     AnnotationRef,
     AnnotationType,
     ClassAnnotation,
@@ -10,7 +11,7 @@ import {
     ParameterAnnotation,
     PropertyAnnotation,
 } from '../..';
-import { MutableAdviceContext } from '../advice-context';
+import { MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
     AfterAdvice,
@@ -27,10 +28,12 @@ import {
     BeforePointcut,
     Pointcut,
     PointcutName,
-    SetupAdvice,
-    SetupPointcut,
+    CompileAdvice,
+    CompilePointcut,
 } from '../advices/types';
 import { AdvicesRegistry } from '../advices/advice-registry';
+import { AnnotationTarget } from '../../annotation/target/annotation-target';
+import { AnnotationContext } from '../../annotation/context/context';
 
 type AdvicePipeline = {
     annotations: {
@@ -45,6 +48,9 @@ export class Weaver extends WeaverProfile {
     constructor(name?: string) {
         super(name);
         Object.freeze(this.run);
+    }
+    compile<T>(target: AnnotationContext<T, Annotation>): { compile: any } {
+        throw new Error('not implemented');
     }
 
     run<T>(ctxt: MutableAdviceContext<AnnotationType>): PointcutRunners {
@@ -102,7 +108,7 @@ export class Weaver extends WeaverProfile {
         return !!this._advices;
     }
 
-    getAdvices(pointcut: SetupPointcut): SetupAdvice<any>[];
+    getAdvices(pointcut: CompilePointcut): CompileAdvice<any>[];
     getAdvices(pointcut: BeforePointcut): BeforeClassAdvice<any>[];
     getAdvices(pointcut: AfterPointcut): AfterAdvice<any>[];
     getAdvices(pointcut: AfterReturnPointcut): AfterReturnAdvice<any>[];
