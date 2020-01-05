@@ -82,7 +82,7 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
     });
     tag = tag ?? name;
 
-    Object.defineProperty(getProto(fn), Symbol.toPrimitive, {
+    Object.defineProperty(fn, Symbol.toPrimitive, {
         enumerable: false,
         configurable: true,
         value: () => tag,
@@ -137,6 +137,8 @@ function _createDecorator<A extends Annotation>(
         };
 
         _setFunctionName(ctor, target.proto.constructor.name, `class ${target.proto.constructor.name} {}`);
+        // target.proto.constructor = ctor;
+
         return ctor;
     }
 }

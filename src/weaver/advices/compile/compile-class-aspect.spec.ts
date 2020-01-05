@@ -1,12 +1,12 @@
-import { AnnotationTarget } from '../../../annotation/target/annotation-target';
 import { Aspect } from '../../types';
-import { ClassAnnotation, setWeaver } from '../../../index';
+import { Annotation, ClassAnnotation, setWeaver } from '../../../index';
 import { CompileAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { Compile } from './compile.decorator';
 import { assert } from '../../../utils';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AdviceContext } from '../advice-context';
+import { AnnotationTarget } from '../../../annotation/target/annotation-target';
 
 interface Labeled {
     labels?: string[];
@@ -22,8 +22,10 @@ let compileAdvice: CompileAdvice<any> = target => {
     throw new Error('should configure setupAdvice');
 };
 
-xdescribe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "compile" pointcut', () => {
+        let target: AnnotationTarget<any, Annotation>;
+        let instance: any;
         beforeEach(() => {
             class CompileAspect extends Aspect {
                 name = 'AClassLabel';
@@ -36,17 +38,31 @@ xdescribe('given a class configured with some class-annotation aspect', () => {
 
             compileAdvice = jasmine
                 .createSpy('compileAdvice', function(ctxt: AdviceContext<any, ClassAnnotation>) {
-                    assert(false, 'not implemented');
+                    target = ctxt.annotation.target;
+                    instance = (ctxt as any).instance;
                 })
                 .and.callThrough();
 
             setupWeaver(new CompileAspect());
         });
 
-        it('should call the aspect uppon compilation of annotated class', () => {
+        it('should call the aspect upon compilation of annotated class', () => {
             @AClass()
             class A {}
             expect(compileAdvice).toHaveBeenCalled();
+        });
+
+        it('should pass annotation target', () => {
+            @AClass()
+            class A {}
+            expect(target).toBeDefined();
+            expect(target.proto.constructor.name).toEqual(A.name);
+        });
+
+        it('should not pass context instance', () => {
+            @AClass()
+            class A {}
+            expect(instance).toBeUndefined();
         });
     });
 });
