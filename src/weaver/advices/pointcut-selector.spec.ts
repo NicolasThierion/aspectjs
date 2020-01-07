@@ -8,16 +8,16 @@ describe('PointcutExpression', () => {
 
     describe('for a property getter', function() {
         it('should toString the property name', () => {
-            expect(pc.properties.getter.toString()).toEqual('property.get#*');
+            expect(pc.property.getter.toString()).toEqual('property.get#*');
         });
 
         it('should toString the annotation name', () => {
-            expect(pc.properties.getter.annotations(AProperty).toString()).toEqual('property.get#*@test:AProperty');
+            expect(pc.property.getter.annotations(AProperty).toString()).toEqual('property.get#*@test:AProperty');
         });
 
         xit('should toString the parent class name', () => {
             expect(
-                pc.properties.getter
+                pc.property.getter
                     .annotations(AProperty)
                     // .declaringClass()
                     // .name('*Service')

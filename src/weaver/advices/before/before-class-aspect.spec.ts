@@ -18,7 +18,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         const ctor = jasmine.createSpy('ctor');
         beforeEach(() => {
             class AAspect extends Aspect {
-                name = 'AClassLabel';
+                id = 'AClassLabel';
 
                 @Before(pc.class.annotations(AClass))
                 applyBefore(ctxt: AdviceContext<any, ClassAnnotation>): void {
@@ -45,7 +45,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         it('should have a "null" context.instance', () => {
             let thisInstance: any;
             class AAspect extends Aspect {
-                name = 'AClassLabel';
+                id = 'AClassLabel';
 
                 @Before(pc.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, ClassAnnotation>): void {

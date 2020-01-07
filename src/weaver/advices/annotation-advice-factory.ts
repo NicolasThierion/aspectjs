@@ -1,8 +1,7 @@
 import { Advice } from './types';
 import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
-import { PointcutExpression } from './pointcut';
-import { Pointcut, PointcutPhase } from '../pointcut/pointcut';
+import { Pointcut, PointcutExpression, PointcutPhase } from './pointcut';
 
 export class AnnotationAdviceFactory {
     static create(pointcutExp: PointcutExpression, phase: PointcutPhase): MethodDecorator {

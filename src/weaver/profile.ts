@@ -30,18 +30,18 @@ export class WeaverProfile {
     setEnabled(aspect: Aspect, enabled: boolean): this {
         _assertIsAspect(aspect);
         if (enabled) {
-            const oldAspect = this._aspectsRegistry[aspect.name];
+            const oldAspect = this._aspectsRegistry[aspect.id];
             if (oldAspect) {
                 console.warn(
                     `Aspect ${aspect.constructor.name} overrides aspect "${oldAspect?.constructor.name ??
-                        'unknown'}" already registered for name ${aspect.name}`,
+                        'unknown'}" already registered for name ${aspect.id}`,
                 );
             }
 
-            this._aspectsRegistry[aspect.name] = aspect;
+            this._aspectsRegistry[aspect.id] = aspect;
             this._aspects.push(aspect);
         } else {
-            delete this._aspectsRegistry[aspect.name];
+            delete this._aspectsRegistry[aspect.id];
         }
 
         return this;
@@ -53,7 +53,7 @@ function _assertIsAspect(obj: Aspect) {
         throw new TypeError('given object is not an Aspect');
     }
 
-    if (!obj.name) {
+    if (!obj.id) {
         throw new TypeError(`Aspect "${obj.constructor.name}" can not have null "name" attribute`);
     }
 }

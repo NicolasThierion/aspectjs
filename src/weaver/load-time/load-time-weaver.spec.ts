@@ -26,7 +26,7 @@ describe('LoadTimeWeaver', () => {
             it('should throw an error', () => {
                 expect(() => {
                     class AAspect extends Aspect {
-                        name = 'AClassLabel';
+                        id = 'AClassLabel';
                     }
                     weaver.enable(new AAspect());
                 }).toThrow(new WeavingError('Weaver "testWeaver" already loaded: Cannot enable or disable aspects'));

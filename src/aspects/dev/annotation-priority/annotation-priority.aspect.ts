@@ -1,7 +1,7 @@
 import { Aspect } from '../../../weaver/types';
 
 export class AnnotationPriorityAspect implements Aspect {
-    name: string;
+    id: string;
 
     apply(): void {}
 }

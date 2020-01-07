@@ -1,9 +1,11 @@
 import {
     Annotation,
     AnnotationRef,
+    ClassAnnotation,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
+    PropertyAnnotation,
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
@@ -15,8 +17,9 @@ import { getWeaver, JoinPoint } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
-import { Pointcut, PointcutPhase } from '../../weaver/pointcut/pointcut';
+import { Pointcut, PointcutPhase } from '../../weaver/advices/pointcut';
 import { pc } from '../../weaver/advices/pointcut';
+import { Runtime } from 'inspector';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -109,17 +112,52 @@ function _createDecorator<A extends Annotation>(
     return function(...targetArgs: any[]): Function {
         const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
+        Pointcut.of(PointcutPhase.COMPILE, pc.class.annotations(annotation));
+        const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
+        const ctxt = new AnnotationAdviceContextImpl(annotationContext);
+
         if (target.type === AnnotationTargetType.CLASS) {
-            return _createClassDecoration(target);
+            return _createClassDecoration(ctxt);
+        } else if (target.type === AnnotationTargetType.PROPERTY) {
+            _createPropertyDecoration(ctxt);
         } else {
             assert(false, 'not implemented'); // TODO
         }
     };
+    function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, A>): void {
+        const target = ctxt.annotation.target;
+        let refProperty = runner.property.compile(ctxt) ?? target.proto[target.propertyKey];
 
-    function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
-        Pointcut.of(PointcutPhase.COMPILE, pc.class.annotations(annotation));
-        const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
-        const ctxt = new AnnotationAspectContextImpl(annotationContext);
+        // test refProperty validity
+        const surrogate = {};
+        Object.defineProperty(surrogate, 'surrogate', refProperty);
+        refProperty = Object.getOwnPropertyDescriptor(surrogate, 'surrogate');
+
+        const propDescriptor: PropertyDescriptor = {
+            ...{
+                get() {},
+                set() {},
+            },
+            ...refProperty,
+        };
+
+        if ((propDescriptor as Record<string, any>).hasOwnProperty('value')) {
+            const value = propDescriptor.value;
+            refProperty.get = () => value;
+            delete propDescriptor.value;
+        }
+
+        propDescriptor.get = function() {
+            runner.property.before;
+            refProperty.get();
+        };
+
+        propDescriptor.set = function() {};
+
+        target.proto[target.propertyKey] = propDescriptor;
+    }
+
+    function _createClassDecoration<T>(ctxt: AnnotationAdviceContextImpl<any, A>): Function {
         runner.class.compile(ctxt);
 
         const ctor = function(...ctorArgs: any[]): T {
@@ -147,13 +185,14 @@ function _createDecorator<A extends Annotation>(
             }
         };
 
-        _setFunctionName(ctor, target.proto.constructor.name, `class ${target.proto.constructor.name} {}`);
+        const ctorName = ctxt.annotation.target.proto.constructor.name;
+        _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
 
         return ctor;
     }
 }
 
-class AnnotationAspectContextImpl<T, A extends Annotation> implements MutableAdviceContext<A> {
+class AnnotationAdviceContextImpl<T, A extends Annotation> implements MutableAdviceContext<A> {
     constructor(readonly annotation: AnnotationContextImpl<T, A>) {}
 
     public error?: Error;

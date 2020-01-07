@@ -21,7 +21,7 @@ let aroundAdvice: AroundAdvice<any> = (ctxt, jp, jpArgs) => {
 describe('given a class configured with some class-annotation aspect', () => {
     beforeEach(() => {
         class AroundClassAspect extends Aspect {
-            name = 'AClassLabel';
+            id = 'AClassLabel';
 
             @Around(pc.class.annotations(AClass))
             apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
@@ -175,7 +175,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 labels = [];
 
                 class AAspect extends Aspect {
-                    name = 'aAspect';
+                    id = 'aAspect';
 
                     @Around(pc.class.annotations(AClass))
                     apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
@@ -186,7 +186,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 }
 
                 class BAspect extends Aspect {
-                    name = 'bAspect';
+                    id = 'bAspect';
 
                     @Around(pc.class.annotations(AClass))
                     apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {

@@ -7,11 +7,11 @@ import {
     AroundPointcut,
     BeforePointcut,
     CompilePointcut,
-} from '../pointcut/pointcut';
+} from './pointcut';
 
 export type CompileAdvice<T> = {
     pointcut?: CompilePointcut;
-} & ((ctxt: AdviceContext<T, Annotation>) => void);
+} & ((ctxt: AdviceContext<T, Annotation>) => void | Function);
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
 } & ((ctxt: AdviceContext<T, Annotation>) => void);

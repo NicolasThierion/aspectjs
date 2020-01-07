@@ -32,7 +32,7 @@ import {
     CompilePointcut,
     Pointcut,
     PointcutPhase,
-} from '../pointcut/pointcut';
+} from '../advices/pointcut';
 import { AnnotationTargetType } from '../../annotation/target/annotation-target';
 import { AnnotationContext } from '../../annotation/context/context';
 
@@ -77,7 +77,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     load(): PointcutsRunner {
         if (!this._advices) {
             console.debug('weaver is loading...');
-            this._aspects = this._aspects.filter(a => !!this._aspectsRegistry[a.name]);
+            this._aspects = this._aspects.filter(a => !!this._aspectsRegistry[a.id]);
 
             this._advices = this._aspects
                 .map(AdvicesRegistry.getAdvices)
@@ -183,9 +183,15 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     constructor(private weaver: LoadTimeWeaver) {}
 
     private _classCompile<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {
-        this.weaver
+        const newCtor = this.weaver
             .getAdvices(PointcutPhase.COMPILE, ctxt)
-            .forEach((advice: CompileAdvice<unknown>) => advice(ctxt.freeze()));
+            .map((advice: CompileAdvice<unknown>) => advice(ctxt.freeze()))
+            .filter(c => !!c)
+            .slice(-1)[0];
+
+        if (newCtor) {
+            ctxt.annotation.target.proto.constructor = newCtor;
+        }
     }
 
     private _classBefore<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {

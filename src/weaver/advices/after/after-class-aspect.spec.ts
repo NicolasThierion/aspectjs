@@ -25,7 +25,7 @@ describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "after" pointcut', () => {
         beforeEach(() => {
             class AfterAspect extends Aspect {
-                name = 'AClassLabel';
+                id = 'AClassLabel';
 
                 @After(pc.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, ClassAnnotation>): void {

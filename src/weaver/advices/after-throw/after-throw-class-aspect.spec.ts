@@ -32,7 +32,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             };
             afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
             class AfterThrowAspect extends Aspect {
-                name = 'AClassLabel';
+                id = 'AClassLabel';
 
                 @AfterThrow(pc.class.annotations(AClass))
                 apply(ctxt: AfterThrowContext<any, ClassAnnotation>): void {

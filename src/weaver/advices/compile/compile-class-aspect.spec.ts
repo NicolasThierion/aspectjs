@@ -28,10 +28,10 @@ describe('given a class configured with some class-annotation aspect', () => {
         let instance: any;
         beforeEach(() => {
             class CompileAspect extends Aspect {
-                name = 'AClassLabel';
+                id = 'AClassLabel';
 
                 @Compile(pc.class.annotations(AClass))
-                apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                apply(ctxt: AdviceContext<any, ClassAnnotation>): any {
                     return compileAdvice(ctxt);
                 }
             }
@@ -63,6 +63,32 @@ describe('given a class configured with some class-annotation aspect', () => {
             @AClass()
             class A {}
             expect(instance).toBeUndefined();
+        });
+
+        fdescribe('when the advice returns a new constructor', () => {
+            let ctor: Function;
+            beforeEach(() => {
+                ctor = jasmine.createSpy('ctor');
+                compileAdvice = function(ctxt: AdviceContext<any, ClassAnnotation>) {
+                    target = ctxt.annotation.target;
+                    instance = (ctxt as any).instance;
+
+                    return function() {
+                        ctor();
+                        this.labels = ['replacedCtor'];
+                    };
+                };
+            });
+            fit('should use the new constructor', () => {
+                @AClass()
+                class A implements Labeled {
+                    labels?: string[];
+                }
+
+                const a = new A();
+                expect(ctor).toHaveBeenCalled();
+                expect(a.labels).toEqual(['replacedCtor']);
+            });
         });
     });
 });

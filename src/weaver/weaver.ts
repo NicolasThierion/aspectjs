@@ -1,7 +1,7 @@
 import { WeaverProfile } from './profile';
 import { Aspect } from './types';
-import { PointcutPhase } from './advices/types';
 import { MutableAdviceContext } from './advices/advice-context';
+import { PointcutPhase } from './advices/pointcut';
 
 type _PointcutsRunners = {
     [type in 'class' | 'property' | 'method' | 'parameter']: {

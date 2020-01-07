@@ -25,7 +25,7 @@ describe('given a class configured with some class-annotation aspect', () => {
     describe('that leverage "afterReturn" pointcut', () => {
         beforeEach(() => {
             class AfterReturnAspect extends Aspect {
-                name = 'AClassLabel';
+                id = 'AClassLabel';
 
                 @AfterReturn(pc.class.annotations(AClass))
                 apply(ctxt: AfterReturnContext<any, ClassAnnotation>, retVal: any): void {
