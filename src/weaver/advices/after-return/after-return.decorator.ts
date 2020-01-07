@@ -1,7 +1,7 @@
-import { PointcutName } from '../types';
-import { ClassAnnotation } from '../../../annotation/annotation.types';
 import { AnnotationAdviceFactory } from '../annotation-advice-factory';
+import { PointcutPhase } from '../../pointcut/pointcut';
+import { PointcutExpression } from '../pointcut';
 
-export function AfterReturn(annotation: ClassAnnotation): MethodDecorator {
-    return AnnotationAdviceFactory.create(annotation, PointcutName.AFTERRETURN);
+export function AfterReturn(pointcutExp: PointcutExpression): MethodDecorator {
+    return AnnotationAdviceFactory.create(pointcutExp, PointcutPhase.AFTERRETURN);
 }

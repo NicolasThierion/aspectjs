@@ -3,6 +3,37 @@ export interface AnnotationRef {
     groupId: string;
 }
 
+export namespace AnnotationRef {
+    export function of(name: string, groupId?: string): AnnotationRef {
+        const annotation = {
+            name,
+            groupId,
+        } as AnnotationRef;
+        if (!groupId) {
+            const ref = name;
+            const ANNOTATION_REF_REGEX = /(?<groupId>\S+):(?<name>\S+)/;
+            const macth = ANNOTATION_REF_REGEX.exec(ref);
+            annotation.groupId = macth.groups.groupId;
+            annotation.name = macth.groups.name;
+        }
+
+        Reflect.defineProperty(annotation, 'toString', {
+            enumerable: false,
+            value: function() {
+                return `@${annotation.groupId}:${annotation.name}`;
+            },
+        });
+
+        Reflect.defineProperty(annotation, Symbol.toPrimitive, {
+            enumerable: false,
+            value: function() {
+                return `@${annotation.name}`;
+            },
+        });
+
+        return annotation;
+    }
+}
 /**
  * An Annotation is an EcmaScript decorator with no behavior.
  * It relies on an annotation compiler with annotation processors to get the things done.

@@ -1,11 +1,11 @@
 import { WeaverProfile } from './profile';
 import { Aspect } from './types';
-import { PointcutName } from './advices/types';
+import { PointcutPhase } from './advices/types';
 import { MutableAdviceContext } from './advices/advice-context';
 
 type _PointcutsRunners = {
     [type in 'class' | 'property' | 'method' | 'parameter']: {
-        [k in PointcutName]: (ctxt: MutableAdviceContext<any>) => any;
+        [k in PointcutPhase]: (ctxt: MutableAdviceContext<any>) => any;
     };
 };
 

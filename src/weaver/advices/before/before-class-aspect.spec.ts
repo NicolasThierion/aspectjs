@@ -1,10 +1,10 @@
 import { Aspect } from '../../types';
 import { AClass } from '../../../tests/a';
-import { WeavingError } from '../../weaving-error';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { AdviceContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
+import { pc } from '../pointcut';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new LoadTimeWeaver().enable(...aspects);
@@ -20,7 +20,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AAspect extends Aspect {
                 name = 'AClassLabel';
 
-                @Before(AClass)
+                @Before(pc.class.annotations(AClass))
                 applyBefore(ctxt: AdviceContext<any, ClassAnnotation>): void {
                     advice(ctxt);
                 }
@@ -47,7 +47,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AAspect extends Aspect {
                 name = 'AClassLabel';
 
-                @Before(AClass)
+                @Before(pc.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
                     thisInstance = (ctxt as any).instance;
                 }

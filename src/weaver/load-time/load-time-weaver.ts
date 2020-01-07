@@ -2,34 +2,46 @@ import { WeaverProfile } from '../profile';
 import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
 import { Aspect, JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
-import { AnnotationRef, ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../..';
+import {
+    Annotation,
+    AnnotationRef,
+    ClassAnnotation,
+    MethodAnnotation,
+    ParameterAnnotation,
+    PropertyAnnotation,
+} from '../..';
 import { MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
     AfterAdvice,
-    AfterPointcut,
     AfterReturnAdvice,
-    AfterReturnPointcut,
     AfterThrowAdvice,
-    AfterThrowPointcut,
-    AnnotationAdvice,
     AroundAdvice,
-    AroundPointcut,
     BeforeAdvice,
     BeforeClassAdvice,
-    BeforePointcut,
     CompileAdvice,
-    CompilePointcut,
-    Pointcut,
-    PointcutName,
 } from '../advices/types';
 import { AdvicesRegistry } from '../advices/advice-registry';
 import { PointcutsRunner, Weaver } from '../weaver';
+import {
+    AfterPointcut,
+    AfterReturnPointcut,
+    AfterThrowPointcut,
+    AroundPointcut,
+    BeforePointcut,
+    CompilePointcut,
+    Pointcut,
+    PointcutPhase,
+} from '../pointcut/pointcut';
+import { AnnotationTargetType } from '../../annotation/target/annotation-target';
+import { AnnotationContext } from '../../annotation/context/context';
 
 type AdvicePipeline = {
-    annotations: {
-        [annotationRef: string]: {
-            [k in PointcutName]?: AnnotationAdvice[];
+    [target in AnnotationTargetType]: {
+        [phase in PointcutPhase]: {
+            byAnnotation: {
+                [annotationRef: string]: Advice[];
+            };
         };
     };
 };
@@ -70,24 +82,15 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
             this._advices = this._aspects
                 .map(AdvicesRegistry.getAdvices)
                 .flat()
-                .reduce(
-                    (advices: AdvicePipeline, advice: Advice) => {
-                        const annotationPointcuts = getOrDefault(
-                            advices.annotations,
-                            _annotationId(advice.pointcut.annotation),
-                            () => {
-                                return {} as any;
-                            },
-                        );
-
-                        getOrDefault(annotationPointcuts, advice.pointcut.name, () => []).push(advice);
-
-                        return advices;
-                    },
-                    {
-                        annotations: {},
-                    } as AdvicePipeline,
-                );
+                .reduce((pipeline: AdvicePipeline, advice: Advice) => {
+                    _getAdvicesArray(
+                        pipeline,
+                        advice.pointcut.targetType,
+                        advice.pointcut.phase,
+                        advice.pointcut.annotation,
+                    ).push(advice);
+                    return pipeline;
+                }, {} as AdvicePipeline);
             console.debug('weaver loaded. You can now use aspects.');
         }
 
@@ -104,33 +107,41 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         return !!this._advices;
     }
 
-    getAdvices(pointcut: CompilePointcut): CompileAdvice<any>[];
-    getAdvices(pointcut: BeforePointcut): BeforeClassAdvice<any>[];
-    getAdvices(pointcut: AfterPointcut): AfterAdvice<any>[];
-    getAdvices(pointcut: AfterReturnPointcut): AfterReturnAdvice<any>[];
-    getAdvices(pointcut: AfterThrowPointcut): AfterThrowAdvice<any>[];
-    getAdvices(pointcut: AroundPointcut): AroundAdvice<any>[];
-    getAdvices(pointcut: Pointcut): Advice[] {
-        assert(
-            !!pointcut.annotation,
-            `No other than annotation pointcut are supported at the moment. Got pointcut: ${pointcut}`,
-        );
-
-        const advices = getOrDefault(
-            getOrDefault(this._advices.annotations, _annotationId(pointcut.annotation), () => ({})),
-            pointcut.name,
-            () => [],
-        );
-        return [...advices];
+    getAdvices(phase: PointcutPhase.COMPILE, ctxt: MutableAdviceContext<Annotation>): CompileAdvice<any>[];
+    getAdvices(phase: PointcutPhase.BEFORE, ctxt: MutableAdviceContext<Annotation>): BeforeClassAdvice<any>[];
+    getAdvices(phase: PointcutPhase.AFTER, ctxt: MutableAdviceContext<Annotation>): AfterAdvice<any>[];
+    getAdvices(phase: PointcutPhase.AFTERRETURN, ctxt: MutableAdviceContext<Annotation>): AfterReturnAdvice<any>[];
+    getAdvices(phase: PointcutPhase.AFTERTHROW, ctxt: MutableAdviceContext<Annotation>): AfterThrowAdvice<any>[];
+    getAdvices(phase: PointcutPhase.AROUND, ctxt: MutableAdviceContext<Annotation>): AroundAdvice<any>[];
+    getAdvices(phase: PointcutPhase, ctxt: MutableAdviceContext<Annotation>): Advice[] {
+        return [..._getAdvicesArray(this._advices, ctxt.annotation.target.type, phase, ctxt.annotation)];
     }
 
-    private _assertNotLoaded(msg: string) {
+    private _assertNotLoaded(msg: string): void {
         if (this._advices) {
             throw new WeavingError(msg);
         }
     }
 }
 
+function _getAdvicesArray(
+    pipeline: AdvicePipeline,
+    targetType: AnnotationTargetType,
+    phase: PointcutPhase,
+    annotation: AnnotationRef,
+): Advice[] {
+    const targetAdvices = getOrDefault(pipeline, targetType, () => ({} as any));
+
+    const phaseAdvices = getOrDefault(
+        targetAdvices,
+        phase,
+        () =>
+            ({
+                byAnnotation: {},
+            } as any),
+    );
+    return getOrDefault(phaseAdvices.byAnnotation, _annotationId(annotation), () => []);
+}
 function _annotationId(annotation: AnnotationRef): string {
     return `${annotation.groupId}:${annotation.name}`;
 }
@@ -173,26 +184,18 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     private _classCompile<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {
         this.weaver
-            .getAdvices({
-                annotation: ctxt.annotation,
-                name: PointcutName.COMPILE,
-            })
+            .getAdvices(PointcutPhase.COMPILE, ctxt)
             .forEach((advice: CompileAdvice<unknown>) => advice(ctxt.freeze()));
     }
 
     private _classBefore<T>(ctxt: MutableAdviceContext<ClassAnnotation>): void {
         const frozenCtxt = ctxt.freeze();
-        this.weaver
-            .getAdvices({
-                annotation: ctxt.annotation,
-                name: PointcutName.BEFORE,
-            })
-            .forEach((advice: BeforeAdvice<unknown>) => {
-                const retVal = advice(frozenCtxt) as any;
-                if (retVal) {
-                    throw new WeavingError(`Returning from @Before advice "${advice}" is not supported`);
-                }
-            });
+        this.weaver.getAdvices(PointcutPhase.BEFORE, ctxt).forEach((advice: BeforeAdvice<unknown>) => {
+            const retVal = advice(frozenCtxt) as any;
+            if (retVal) {
+                throw new WeavingError(`Returning from @Before advice "${advice}" is not supported`);
+            }
+        });
     }
 
     private _classAround(ctxt: MutableAdviceContext<ClassAnnotation>): void {
@@ -210,10 +213,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             () => ctorArgs,
         );
 
-        const aroundAdvices = this.weaver.getAdvices({
-            annotation: ctxt.annotation,
-            name: PointcutName.AROUND,
-        });
+        const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
         const originalThis = ctxt.instance;
 
         if (aroundAdvices.length) {
@@ -290,10 +290,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     private _classAfterReturn(ctxt: MutableAdviceContext<ClassAnnotation>): void {
         let newInstance = ctxt.instance;
 
-        const advices = this.weaver.getAdvices({
-            annotation: ctxt.annotation,
-            name: PointcutName.AFTERRETURN,
-        });
+        const advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
 
         while (advices.length) {
             const advice = advices.shift();
@@ -306,10 +303,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _classAfterThrow(ctxt: MutableAdviceContext<ClassAnnotation>): void {
-        const afterThrowAdvices = this.weaver.getAdvices({
-            annotation: ctxt.annotation,
-            name: PointcutName.AFTERTHROW,
-        });
+        const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
         if (!afterThrowAdvices.length) {
             // pass-trough errors by default
             throw ctxt.error;
@@ -328,10 +322,8 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     private _classAfter(ctxt: MutableAdviceContext<ClassAnnotation>): void {
         this.weaver
-            .getAdvices({
-                annotation: ctxt.annotation,
-                name: PointcutName.AFTER,
-            })
+            .getAdvices(PointcutPhase.AFTER, ctxt)
+
             .forEach((advice: AfterAdvice<unknown>) => advice(ctxt.freeze()));
     }
 

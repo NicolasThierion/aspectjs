@@ -6,6 +6,7 @@ import { AdviceContext, AfterThrowContext } from '../advice-context';
 import { AClass } from '../../../tests/a';
 import { AfterThrow } from './after-throw.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
+import { pc } from '../pointcut';
 
 interface Labeled {
     labels?: string[];
@@ -33,7 +34,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AfterThrowAspect extends Aspect {
                 name = 'AClassLabel';
 
-                @AfterThrow(AClass)
+                @AfterThrow(pc.class.annotations(AClass))
                 apply(ctxt: AfterThrowContext<any, ClassAnnotation>): void {
                     return afterThrowAdviceSpy(ctxt);
                 }

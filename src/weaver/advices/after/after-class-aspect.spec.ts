@@ -5,6 +5,7 @@ import { After } from './after.decorator';
 import { AClass } from '../../../tests/a';
 import { AdviceContext } from '../advice-context';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
+import { pc } from '../pointcut';
 
 interface Labeled {
     labels?: string[];
@@ -26,7 +27,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AfterAspect extends Aspect {
                 name = 'AClassLabel';
 
-                @After(AClass)
+                @After(pc.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
                     afterAdvice(ctxt);
                 }

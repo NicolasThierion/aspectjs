@@ -7,7 +7,7 @@
   "module": "dist/main.mjs",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
-    "develop": "nodemon --ext ts --exec 'npm run test && parcel build index.ts --target browser --no-source-maps --experimental-scope-hoisting && size-limit'",
+    "dev": "nodemon --ext ts --exec 'npm run test && parcel build index.ts --target browser --no-source-maps --experimental-scope-hoisting && size-limit'",
     "build": "parcel build index.ts --target node --detailed-report",
     "build:prod": "parcel build index.ts --target node --no-source-maps --detailed-report --experimental-scope-hoisting",
     "size": "parcel build index.ts --target browser --no-source-maps --detailed-report 20 --experimental-scope-hoisting && size-limit",

@@ -8,13 +8,15 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import { PointcutsRunner } from '../../weaver/weaver';
-import { assert, getMetaOrDefault, getProto, isUndefined, Mutable } from '../../utils';
+import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
+import { Pointcut, PointcutPhase } from '../../weaver/pointcut/pointcut';
+import { pc } from '../../weaver/advices/pointcut';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -62,9 +64,19 @@ function _createAnnotationRef<A extends Annotation, D extends Decorator>(
     const annotation = (fn as any) as AnnotationRef & A;
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
     annotation.groupId = groupId;
-    annotation.toString = function() {
-        return `@${annotation.name}`;
-    };
+    Reflect.defineProperty(annotation, 'toString', {
+        enumerable: false,
+        value: function() {
+            return `@${annotation.groupId}:${annotation.name}`;
+        },
+    });
+
+    Reflect.defineProperty(annotation, Symbol.toPrimitive, {
+        enumerable: false,
+        value: function() {
+            return `@${annotation.name}`;
+        },
+    });
 
     getMetaOrDefault('aspectjs.referenceAnnotation', annotationStub, () => {
         Reflect.defineMetadata('aspectjs.referenceAnnotation', annotationStub, fn);
@@ -105,8 +117,7 @@ function _createDecorator<A extends Annotation>(
     };
 
     function _createClassDecoration<T>(target: AnnotationTarget<T, A>): Function {
-        // eslint-disable-next-line @typescript-eslint/class-name-casing
-
+        Pointcut.of(PointcutPhase.COMPILE, pc.class.annotations(annotation));
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         const ctxt = new AnnotationAspectContextImpl(annotationContext);
         runner.class.compile(ctxt);
@@ -137,7 +148,6 @@ function _createDecorator<A extends Annotation>(
         };
 
         _setFunctionName(ctor, target.proto.constructor.name, `class ${target.proto.constructor.name} {}`);
-        // target.proto.constructor = ctor;
 
         return ctor;
     }

@@ -7,6 +7,7 @@ import Spy = jasmine.Spy;
 import { WeavingError } from '../../weaving-error';
 import { Around } from './around.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
+import { pc } from '../pointcut';
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new LoadTimeWeaver().enable(...aspects);
@@ -22,7 +23,7 @@ describe('given a class configured with some class-annotation aspect', () => {
         class AroundClassAspect extends Aspect {
             name = 'AClassLabel';
 
-            @Around(AClass)
+            @Around(pc.class.annotations(AClass))
             apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
                 expect(jp).toEqual(ctxt.joinpoint);
                 expect(jpArgs).toEqual(ctxt.joinpointArgs);
@@ -176,7 +177,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 class AAspect extends Aspect {
                     name = 'aAspect';
 
-                    @Around(AClass)
+                    @Around(pc.class.annotations(AClass))
                     apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
                         labels.push('beforeA');
                         jp(aArgsOverride);
@@ -187,7 +188,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                 class BAspect extends Aspect {
                     name = 'bAspect';
 
-                    @Around(AClass)
+                    @Around(pc.class.annotations(AClass))
                     apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
                         labels.push('beforeB');
                         jp(bArgsOverride);

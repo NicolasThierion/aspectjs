@@ -5,6 +5,7 @@ import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
+import { pc } from '../pointcut';
 
 interface Labeled {
     labels?: string[];
@@ -26,7 +27,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             class AfterReturnAspect extends Aspect {
                 name = 'AClassLabel';
 
-                @AfterReturn(AClass)
+                @AfterReturn(pc.class.annotations(AClass))
                 apply(ctxt: AfterReturnContext<any, ClassAnnotation>, retVal: any): void {
                     expect(retVal).toEqual(ctxt.returnValue);
                     return afterReturn(ctxt, retVal);

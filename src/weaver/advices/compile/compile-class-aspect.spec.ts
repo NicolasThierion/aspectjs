@@ -3,10 +3,10 @@ import { Annotation, ClassAnnotation, setWeaver } from '../../../index';
 import { CompileAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { Compile } from './compile.decorator';
-import { assert } from '../../../utils';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AdviceContext } from '../advice-context';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';
+import { pc } from '../pointcut';
 
 interface Labeled {
     labels?: string[];
@@ -19,7 +19,7 @@ function setupWeaver(...aspects: Aspect[]): void {
 }
 
 let compileAdvice: CompileAdvice<any> = target => {
-    throw new Error('should configure setupAdvice');
+    throw new Error('should configure compileAdvice');
 };
 
 describe('given a class configured with some class-annotation aspect', () => {
@@ -30,7 +30,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             class CompileAspect extends Aspect {
                 name = 'AClassLabel';
 
-                @Compile(AClass)
+                @Compile(pc.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
                     return compileAdvice(ctxt);
                 }
