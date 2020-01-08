@@ -1,5 +1,3 @@
-import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
-import { Annotation } from '../annotation.types';
 import {
     AnnotationLocation,
     ClassAnnotationLocation,
@@ -7,67 +5,48 @@ import {
     ParameterAnnotationLocation,
     PropertyAnnotationLocation,
 } from '../location/location';
+import { AdviceType } from '../../weaver/advices/types';
 
-export enum AnnotationTargetType {
-    CLASS = 0,
-    PROPERTY = 1,
-    METHOD = 2,
-    PARAMETER = 3,
-}
-
-export interface AnnotationTarget<T, A extends Annotation> {
+export interface AnnotationTarget<T, A extends AdviceType> {
     readonly location: AnnotationLocation<T, A>;
-    readonly type: A extends ClassAnnotation
-        ? AnnotationTargetType.CLASS
-        : A extends PropertyAnnotation
-        ? AnnotationTargetType.PROPERTY
-        : A extends MethodAnnotation
-        ? AnnotationTargetType.METHOD
-        : A extends ParameterAnnotation
-        ? AnnotationTargetType.PARAMETER
-        : never;
+    readonly type: A;
     readonly proto: any;
     readonly name: string;
     readonly label: string;
     readonly ref: string;
 
-    readonly propertyKey: A extends PropertyAnnotation | MethodAnnotation | ParameterAnnotation ? string : never;
-    readonly descriptor: A extends MethodAnnotation ? TypedPropertyDescriptor<T> : never;
-    readonly parameterIndex: A extends ParameterAnnotation ? number : never;
-    readonly parent: A extends MethodAnnotation
-        ? AnnotationTarget<any, ClassAnnotation>
-        : A extends PropertyAnnotation
-        ? AnnotationTarget<any, ClassAnnotation>
-        : A extends ParameterAnnotation
-        ? AnnotationTarget<any, MethodAnnotation>
+    readonly propertyKey: A extends AdviceType.PROPERTY | AdviceType.METHOD | AdviceType.PARAMETER ? string : never;
+    readonly descriptor: A extends AdviceType.METHOD ? TypedPropertyDescriptor<T> : never;
+    readonly parameterIndex: A extends AdviceType.PARAMETER ? number : never;
+    readonly parent: A extends AdviceType.METHOD
+        ? AnnotationTarget<any, AdviceType.CLASS>
+        : A extends AdviceType.PROPERTY
+        ? AnnotationTarget<any, AdviceType.CLASS>
+        : A extends AdviceType.PARAMETER
+        ? AnnotationTarget<any, AdviceType.METHOD>
         : ClassAnnotationTarget<any>;
     readonly declaringClass: ClassAnnotationTarget<T>;
     readonly parentClass: ClassAnnotationTarget<T>;
 }
 
-export interface ClassAnnotationTarget<T> extends AnnotationTarget<T, ClassAnnotation> {
-    readonly type: AnnotationTargetType.CLASS;
+export interface ClassAnnotationTarget<T> extends AnnotationTarget<T, AdviceType.CLASS> {
     readonly location: ClassAnnotationLocation<T>;
     readonly parent: ClassAnnotationTarget<any>;
 }
 
-export interface PropertyAnnotationTarget<T> extends AnnotationTarget<T, PropertyAnnotation> {
-    readonly type: AnnotationTargetType.PROPERTY;
+export interface PropertyAnnotationTarget<T> extends AnnotationTarget<T, AdviceType.PROPERTY> {
     readonly propertyKey: string;
     readonly location: PropertyAnnotationLocation<T>;
     readonly parent: ClassAnnotationTarget<T>;
 }
 
-export interface MethodAnnotationTarget<T> extends AnnotationTarget<T, MethodAnnotation> {
-    readonly type: AnnotationTargetType.METHOD;
-    readonly propertyKey: string;
+export interface MethodAnnotationTarget<T> extends AnnotationTarget<T, AdviceType.METHOD> {
     readonly descriptor: TypedPropertyDescriptor<T>;
     readonly location: MethodAnnotationLocation<T>;
     readonly parent: ClassAnnotationTarget<T>;
 }
 
-export interface ParameterAnnotationTarget<T> extends AnnotationTarget<T, ParameterAnnotation> {
-    readonly type: AnnotationTargetType.PARAMETER;
+export interface ParameterAnnotationTarget<T> extends AnnotationTarget<T, AdviceType.PARAMETER> {
     readonly propertyKey: string;
     readonly parameterIndex: number;
     readonly location: ParameterAnnotationLocation<T>;

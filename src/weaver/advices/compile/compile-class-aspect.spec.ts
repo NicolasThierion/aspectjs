@@ -1,6 +1,6 @@
 import { Aspect } from '../../types';
 import { Annotation, ClassAnnotation, setWeaver } from '../../../index';
-import { CompileAdvice } from '../types';
+import { AdviceType, CompileAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { Compile } from './compile.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
@@ -18,26 +18,26 @@ function setupWeaver(...aspects: Aspect[]): void {
     weaver.load();
 }
 
-let compileAdvice: CompileAdvice<any> = target => {
+let compileAdvice: CompileAdvice<any, AdviceType.CLASS> = target => {
     throw new Error('should configure compileAdvice');
 };
 
 describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "compile" pointcut', () => {
-        let target: AnnotationTarget<any, Annotation>;
+        let target: AnnotationTarget<any, AdviceType>;
         let instance: any;
         beforeEach(() => {
             class CompileAspect extends Aspect {
                 id = 'AClassLabel';
 
                 @Compile(pc.class.annotations(AClass))
-                apply(ctxt: AdviceContext<any, ClassAnnotation>): any {
+                apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
                     return compileAdvice(ctxt);
                 }
             }
 
             compileAdvice = jasmine
-                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, ClassAnnotation>) {
+                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.CLASS>) {
                     target = ctxt.annotation.target;
                     instance = (ctxt as any).instance;
                 })
@@ -69,7 +69,7 @@ describe('given a class configured with some annotation aspect', () => {
             let ctor: Function;
             beforeEach(() => {
                 ctor = jasmine.createSpy('ctor');
-                compileAdvice = function(ctxt: AdviceContext<any, ClassAnnotation>) {
+                compileAdvice = function(ctxt: AdviceContext<any, AdviceType.CLASS>) {
                     target = ctxt.annotation.target;
                     instance = (ctxt as any).instance;
 

@@ -1,5 +1,5 @@
 import { Aspect } from '../../types';
-import { AfterAdvice } from '../types';
+import { AdviceType, AfterAdvice } from '../types';
 import { ClassAnnotation, setWeaver } from '../../../index';
 import { After } from './after.decorator';
 import { AClass } from '../../../tests/a';
@@ -28,7 +28,7 @@ describe('given a class configured with some annotation aspect', () => {
                 id = 'AClassLabel';
 
                 @After(pc.class.annotations(AClass))
-                apply(ctxt: AdviceContext<any, ClassAnnotation>): void {
+                apply(ctxt: AdviceContext<any, AdviceType.CLASS>): void {
                     afterAdvice(ctxt);
                 }
             }

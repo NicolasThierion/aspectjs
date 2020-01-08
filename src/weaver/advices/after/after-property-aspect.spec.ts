@@ -1,5 +1,5 @@
 import { Aspect } from '../../types';
-import { AfterAdvice } from '../types';
+import { AdviceType, AfterAdvice } from '../types';
 import { PropertyAnnotation, setWeaver } from '../../../index';
 import { After } from './after.decorator';
 import { AdviceContext, AfterContext } from '../advice-context';
@@ -32,13 +32,13 @@ xdescribe('given a property getter annotated with an aspect', () => {
                 name = 'APropertyLabel';
 
                 @After(pc.property.getter.annotations(AProperty))
-                apply(ctxt: AdviceContext<any, PropertyAnnotation>): void {
+                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     afterAdvice(ctxt);
                 }
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt: AfterContext<any, PropertyAnnotation>) {
+                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AdviceType.PROPERTY>) {
                     ctxt.instance.labels = ctxt.instance.labels ?? [];
                     ctxt.instance.labels.push('AProperty');
                 })

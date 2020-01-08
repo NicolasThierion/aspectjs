@@ -1,16 +1,16 @@
-import { Annotation } from '../annotation.types';
 import { AnnotationContext } from '../context/context';
 import { AnnotationLocation } from '../location/location';
+import { AdviceType } from '../../weaver/advices/types';
 
-export interface AnnotationsBundle<T> extends AnnotationContextSelector<T, Annotation> {
-    at<D extends Annotation>(location: AnnotationLocation<T, D>): AnnotationContextSelector<T, D>;
-    all(decoratorName?: string): readonly AnnotationContext<T, Annotation>[];
-    class(decoratorName?: string): readonly AnnotationContext<T, Annotation>[];
-    properties(decoratorName?: string): readonly AnnotationContext<T, Annotation>[];
-    methods(decoratorName?: string): readonly AnnotationContext<T, Annotation>[];
-    parameters(decoratorName?: string): readonly AnnotationContext<T, Annotation>[];
+export interface AnnotationsBundle<T> extends AnnotationContextSelector<T, AdviceType> {
+    at<D extends AdviceType>(location: AnnotationLocation<T, D>): AnnotationContextSelector<T, D>;
+    all(decoratorName?: string): readonly AnnotationContext<T, AdviceType>[];
+    class(decoratorName?: string): readonly AnnotationContext<T, AdviceType>[];
+    properties(decoratorName?: string): readonly AnnotationContext<T, AdviceType>[];
+    methods(decoratorName?: string): readonly AnnotationContext<T, AdviceType>[];
+    parameters(decoratorName?: string): readonly AnnotationContext<T, AdviceType>[];
 }
 
-export interface AnnotationContextSelector<T, D extends Annotation> {
+export interface AnnotationContextSelector<T, D extends AdviceType> {
     all(decoratorName?: string): readonly AnnotationContext<T, D>[];
 }

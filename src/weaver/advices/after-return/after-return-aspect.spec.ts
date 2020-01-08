@@ -1,6 +1,6 @@
 import { Aspect } from '../../types';
 import { ClassAnnotation, setWeaver } from '../../../index';
-import { AfterReturnAdvice } from '../types';
+import { AdviceType, AfterReturnAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
@@ -28,7 +28,7 @@ describe('given a class configured with some annotation aspect', () => {
                 id = 'AClassLabel';
 
                 @AfterReturn(pc.class.annotations(AClass))
-                apply(ctxt: AfterReturnContext<any, ClassAnnotation>, retVal: any): void {
+                apply(ctxt: AfterReturnContext<any, AdviceType.CLASS>, retVal: any): void {
                     expect(retVal).toEqual(ctxt.returnValue);
                     return afterReturn(ctxt, retVal);
                 }
@@ -78,7 +78,7 @@ describe('given a class configured with some annotation aspect', () => {
 
                 describe('and the aspect returns a new value', () => {
                     beforeEach(() => {
-                        afterReturn = (ctxt: AdviceContext<Labeled, ClassAnnotation>) => {
+                        afterReturn = (ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
                             return Object.assign(Object.create(ctxt.annotation.target.proto), {
                                 labels: ['ABis'],
                             });

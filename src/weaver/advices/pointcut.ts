@@ -1,12 +1,11 @@
 import { Annotation, AnnotationRef, ClassAnnotation, PropertyAnnotation } from '../..';
-import { AnnotationTargetType } from '../../annotation/target/annotation-target';
 import { assert } from '../../utils';
-import { WeavingError } from '../weaving-error';
+import { AdviceType } from './types';
 
 export abstract class PointcutExpression {
-    protected _annotations: Annotation[] = [];
+    protected _annotations: Annotation<AdviceType>[] = [];
 
-    annotations(...annotation: Annotation[]): PointcutExpression {
+    annotations(...annotation: Annotation<AdviceType>[]): PointcutExpression {
         this._annotations = annotation;
         return this;
     }
@@ -132,7 +131,7 @@ export enum PointcutPhase {
 }
 
 export interface Pointcut {
-    targetType: AnnotationTargetType;
+    targetType: AdviceType;
     annotation: AnnotationRef;
     name: string;
     phase: PointcutPhase;
@@ -145,10 +144,8 @@ export namespace Pointcut {
         const expStr = exp.toString();
 
         const pointcutRegexes = {
-            [AnnotationTargetType.CLASS]: new RegExp(
-                '(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
-            ),
-            [AnnotationTargetType.PROPERTY]: new RegExp(
+            [AdviceType.CLASS]: new RegExp('(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)'),
+            [AdviceType.PROPERTY]: new RegExp(
                 '(?:property#(?<name>(?:set|get)\\s\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
             ),
         };

@@ -1,15 +1,13 @@
-import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
 import { assert, clone, getMetaOrDefault, getProto, isNumber, isObject, isUndefined, Mutable } from '../../utils';
-import { Annotation } from '../annotation.types';
 import { AnnotationLocation } from '../location/location';
 import {
     AnnotationTarget,
-    AnnotationTargetType,
     ClassAnnotationTarget,
     MethodAnnotationTarget,
     ParameterAnnotationTarget,
     PropertyAnnotationTarget,
 } from './annotation-target';
+import { AdviceType } from '../../weaver/advices/types';
 
 const TARGET_GENERATORS = [
     _createClassAnnotationTarget,
@@ -19,7 +17,7 @@ const TARGET_GENERATORS = [
 ];
 
 const REF_GENERATORS = [
-    (d: Mutable<Partial<AnnotationTarget<any, Annotation>>>) => `c[${d.proto.constructor.name}]`,
+    (d: Mutable<Partial<ClassAnnotationTarget<any>>>) => `c[${d.proto.constructor.name}]`,
     (d: Mutable<Partial<PropertyAnnotationTarget<any>>>) => `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
     (d: Mutable<Partial<MethodAnnotationTarget<any>>>) => `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
     (d: Mutable<Partial<ParameterAnnotationTarget<any>>>) =>
@@ -27,7 +25,7 @@ const REF_GENERATORS = [
 ];
 
 export abstract class AnnotationTargetFactory {
-    static of<T, D extends Annotation>(args: any[]): AnnotationTarget<T, D> {
+    static of<T, D extends AdviceType>(args: any[]): AnnotationTarget<T, D> {
         // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
         // PropertyAnnotation = (target: Object, propertyKey: string | symbol) => void;
         // MethodAnnotation = <D>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<D>) => TypedPropertyDescriptor<D> | void;
@@ -38,7 +36,7 @@ export abstract class AnnotationTargetFactory {
         const parameterIndex: number | undefined = isNumber(args[2]) ? args[2] : undefined;
         const proto = getProto(target);
         const descriptor: object | undefined = isObject(args[2]) ? args[2] : undefined;
-        const atarget: MutableAnnotationTarget<any, Annotation> = {
+        const atarget: MutableAnnotationTarget<any, AdviceType> = {
             proto,
             propertyKey,
             parameterIndex,
@@ -53,21 +51,21 @@ export abstract class AnnotationTargetFactory {
      * @param dtarget
      * @param targetType
      */
-    static create<T, D extends Annotation>(
+    static create<T, D extends AdviceType>(
         dtarget: MutableAnnotationTarget<T, D>,
-        targetType?: AnnotationTargetType,
+        targetType?: AdviceType,
     ): AnnotationTarget<T, D> {
         if (isUndefined(targetType) && isUndefined(dtarget.type)) {
             if (isNumber(((dtarget as any) as ParameterAnnotationTarget<T>).parameterIndex)) {
-                targetType = AnnotationTargetType.PARAMETER;
+                targetType = AdviceType.PARAMETER;
             } else if (!isUndefined(((dtarget as any) as MethodAnnotationTarget<T>).propertyKey)) {
                 if (isObject(((dtarget as any) as MethodAnnotationTarget<T>).descriptor)) {
-                    targetType = AnnotationTargetType.METHOD;
+                    targetType = AdviceType.METHOD;
                 } else {
-                    targetType = AnnotationTargetType.PROPERTY;
+                    targetType = AdviceType.PROPERTY;
                 }
             } else {
-                targetType = AnnotationTargetType.CLASS;
+                targetType = AdviceType.CLASS;
             }
         } else {
             targetType = targetType ?? dtarget.type;
@@ -76,7 +74,7 @@ export abstract class AnnotationTargetFactory {
         const ref = REF_GENERATORS[targetType](dtarget as any);
 
         return getMetaOrDefault(_metaKey(ref), dtarget.proto, () => {
-            const target = TARGET_GENERATORS[targetType](dtarget as any);
+            const target = (TARGET_GENERATORS[targetType] as any)(dtarget as any);
             Reflect.setPrototypeOf(target, AnnotationTargetImpl.prototype);
 
             Object.seal(target);
@@ -85,7 +83,7 @@ export abstract class AnnotationTargetFactory {
         }) as any;
     }
 
-    static atLocation<D extends Annotation>(
+    static atLocation<D extends AdviceType>(
         target: ClassAnnotationTarget<any>,
         location: AnnotationLocation<any, D>,
     ): AnnotationTarget<any, D> {
@@ -108,12 +106,12 @@ class AnnotationTargetImpl {
     }
 }
 
-type MutableAnnotationTarget<T, D extends Annotation> = Mutable<Partial<AnnotationTarget<T, D>>>;
+type MutableAnnotationTarget<T, D extends AdviceType> = Mutable<Partial<AnnotationTarget<T, D>>>;
 
-function _createClassAnnotationTarget<T, D extends ClassAnnotation>(
+function _createClassAnnotationTarget<T, D extends AdviceType.CLASS>(
     dtarget: AnnotationTargetLike<T, D>,
 ): AnnotationTargetLike<T, D> {
-    const d = _createAnnotationTarget(dtarget, AnnotationTargetType.CLASS, ['proto']);
+    const d = _createAnnotationTarget(dtarget, AdviceType.CLASS, ['proto']);
 
     d.label = `class "${d.proto.constructor.name}"`;
     d.name = d.proto.constructor.name;
@@ -127,14 +125,10 @@ function _createClassAnnotationTarget<T, D extends ClassAnnotation>(
     return d as AnnotationTarget<T, D>;
 }
 
-function _createMethodAnnotationTarget<T, D extends MethodAnnotation>(
+function _createMethodAnnotationTarget<T, D extends AdviceType.METHOD>(
     dtarget: AnnotationTargetLike<T, D>,
 ): AnnotationTargetLike<T, D> {
-    const target = _createAnnotationTarget(dtarget, AnnotationTargetType.METHOD, [
-        'proto',
-        'propertyKey',
-        'descriptor',
-    ]);
+    const target = _createAnnotationTarget(dtarget, AdviceType.METHOD, ['proto', 'propertyKey', 'descriptor']);
 
     target.label = `method "${target.proto.constructor.name}.${String(target.propertyKey)}"`;
     target.name = target.propertyKey;
@@ -149,10 +143,10 @@ function _createMethodAnnotationTarget<T, D extends MethodAnnotation>(
     return target as AnnotationTarget<T, D>;
 }
 
-function _createPropertyAnnotationTarget<T, D extends PropertyAnnotation>(
+function _createPropertyAnnotationTarget<T, D extends AdviceType.PROPERTY>(
     dtarget: AnnotationTargetLike<T, D>,
 ): AnnotationTargetLike<T, D> {
-    const d = _createAnnotationTarget(dtarget, AnnotationTargetType.PROPERTY, ['proto', 'propertyKey']);
+    const d = _createAnnotationTarget(dtarget, AdviceType.PROPERTY, ['proto', 'propertyKey']);
 
     d.label = `property "${d.proto.constructor.name}.${String(d.propertyKey)}"`;
     Object.defineProperties(d, {
@@ -165,14 +159,10 @@ function _createPropertyAnnotationTarget<T, D extends PropertyAnnotation>(
     return d as AnnotationTarget<T, D>;
 }
 
-function _createParameterAnnotationTarget<T, D extends ParameterAnnotation>(
+function _createParameterAnnotationTarget<T, D extends AdviceType.PARAMETER>(
     dtarget: AnnotationTargetLike<T, D>,
 ): AnnotationTargetLike<T, D> {
-    const d = _createAnnotationTarget<T, D>(dtarget, AnnotationTargetType.PARAMETER, [
-        'parameterIndex',
-        'proto',
-        'propertyKey',
-    ]);
+    const d = _createAnnotationTarget<T, D>(dtarget, AdviceType.PARAMETER, ['parameterIndex', 'proto', 'propertyKey']);
 
     d.label = `parameter "${d.proto.constructor.name}.${String(d.propertyKey)}(${
         isNaN(d.parameterIndex) ? '*' : `#${d.parameterIndex}`
@@ -188,9 +178,9 @@ function _createParameterAnnotationTarget<T, D extends ParameterAnnotation>(
     return d as AnnotationTarget<T, D>;
 }
 
-function _createAnnotationTarget<T, D extends Annotation>(
+function _createAnnotationTarget<T, D extends AdviceType>(
     d: AnnotationTargetLike<T, D>,
-    type: AnnotationTargetType,
+    type: AdviceType,
     requiredProperties: (keyof AnnotationTarget<T, D>)[],
 ): AnnotationTargetLike<T, D> {
     requiredProperties.forEach(n => assert(!isUndefined(d[n]), `target.${n} is undefined`));
@@ -208,9 +198,9 @@ function _createAnnotationTarget<T, D extends Annotation>(
     return d as AnnotationTarget<T, D>;
 }
 
-type AnnotationTargetLike<T, D extends Annotation> = Mutable<Partial<AnnotationTarget<T, D>>>;
+type AnnotationTargetLike<T, D extends AdviceType> = Mutable<Partial<AnnotationTarget<T, D>>>;
 
-function _parentClassTargetProperty(dtarget: Partial<AnnotationTarget<any, Annotation>>): PropertyDescriptor {
+function _parentClassTargetProperty(dtarget: Partial<AnnotationTarget<any, AdviceType>>): PropertyDescriptor {
     return {
         get() {
             const parentProto = Reflect.getPrototypeOf(dtarget.proto);
@@ -221,15 +211,15 @@ function _parentClassTargetProperty(dtarget: Partial<AnnotationTarget<any, Annot
     } as PropertyDescriptor;
 }
 
-function _declaringClassTargetProperty(dtarget: Partial<AnnotationTarget<any, Annotation>>): PropertyDescriptor {
+function _declaringClassTargetProperty(dtarget: Partial<AnnotationTarget<any, AdviceType>>): PropertyDescriptor {
     return {
         get() {
-            return AnnotationTargetFactory.create(dtarget, AnnotationTargetType.CLASS);
+            return AnnotationTargetFactory.create(dtarget, AdviceType.CLASS);
         },
     } as PropertyDescriptor;
 }
 
-function _declaringMethodTargetProperty(dtarget: Partial<AnnotationTarget<any, Annotation>>): PropertyDescriptor {
+function _declaringMethodTargetProperty(dtarget: Partial<AnnotationTarget<any, AdviceType>>): PropertyDescriptor {
     return {
         get() {
             return AnnotationTargetFactory.of([dtarget.proto, dtarget.propertyKey]) as any;

@@ -1,6 +1,6 @@
 import { Aspect } from '../../types';
-import { Annotation, ClassAnnotation, PropertyAnnotation, setWeaver } from '../../../index';
-import { CompileAdvice, PropertyCompileAdvice } from '../types';
+import { setWeaver } from '../../../index';
+import { AdviceType, PropertyCompileAdvice } from '../types';
 import { Compile } from './compile.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AdviceContext } from '../advice-context';
@@ -24,20 +24,20 @@ let compileAdvice: PropertyCompileAdvice<any> = target => {
 
 describe('given a property configured with some annotation aspect', () => {
     describe('that leverage "compile" pointcut', () => {
-        let target: AnnotationTarget<any, Annotation>;
+        let target: AnnotationTarget<any, AdviceType>;
         let instance: any;
         beforeEach(() => {
             class CompileAspect extends Aspect {
                 id = 'APropertyLabel';
 
                 @Compile(pc.property.getter.annotations(AProperty))
-                apply(ctxt: AdviceContext<any, PropertyAnnotation>): any {
+                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
                     return compileAdvice(ctxt);
                 }
             }
 
             compileAdvice = jasmine
-                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, ClassAnnotation>) {
+                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                     target = ctxt.annotation.target;
                     instance = (ctxt as any).instance;
                 })
@@ -74,7 +74,7 @@ describe('given a property configured with some annotation aspect', () => {
         describe('when the advice returns a new property descriptor', () => {
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
-                    compileAdvice = function(ctxt: AdviceContext<any, PropertyAnnotation>) {
+                    compileAdvice = function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                         return ({
                             get: '',
                         } as any) as PropertyDescriptor;

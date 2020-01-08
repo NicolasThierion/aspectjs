@@ -1,6 +1,6 @@
 import { Aspect, JoinPoint } from '../../types';
 import { ClassAnnotation, setWeaver } from '../../../index';
-import { AroundAdvice } from '../types';
+import { AdviceType, AroundAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AroundContext } from '../advice-context';
 import Spy = jasmine.Spy;
@@ -24,7 +24,7 @@ describe('given a class configured with some annotation aspect', () => {
             id = 'AClassLabel';
 
             @Around(pc.class.annotations(AClass))
-            apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
+            apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                 expect(jp).toEqual(ctxt.joinpoint);
                 expect(jpArgs).toEqual(ctxt.joinpointArgs);
 
@@ -69,7 +69,7 @@ describe('given a class configured with some annotation aspect', () => {
 
         describe('and references "this" from before the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
+                aroundAdvice = (ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                     expect(ctxt.instance).not.toBeNull();
                     jp();
                 };
@@ -95,7 +95,7 @@ describe('given a class configured with some annotation aspect', () => {
 
         describe('and references "this" from after the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
+                aroundAdvice = (ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                     jp();
                     ctxt.instance.labels.push('a');
                 };
@@ -120,7 +120,7 @@ describe('given a class configured with some annotation aspect', () => {
 
         describe('and calls the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
+                aroundAdvice = (ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                     jp(['x']);
                     ctxt.instance.labels.push('a');
                 };
@@ -142,7 +142,7 @@ describe('given a class configured with some annotation aspect', () => {
 
         describe('and do not call the joinpoint', () => {
             beforeEach(() => {
-                aroundAdvice = (ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]) => {
+                aroundAdvice = (ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                     ctxt.instance.labels = ctxt.instance.labels ?? [];
                     ctxt.instance.labels.push('a');
                 };
@@ -178,7 +178,7 @@ describe('given a class configured with some annotation aspect', () => {
                     id = 'aAspect';
 
                     @Around(pc.class.annotations(AClass))
-                    apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
+                    apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                         labels.push('beforeA');
                         jp(aArgsOverride);
                         labels.push('afterA');
@@ -189,7 +189,7 @@ describe('given a class configured with some annotation aspect', () => {
                     id = 'bAspect';
 
                     @Around(pc.class.annotations(AClass))
-                    apply(ctxt: AroundContext<any, ClassAnnotation>, jp: JoinPoint, jpArgs: any[]): void {
+                    apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                         labels.push('beforeB');
                         jp(bArgsOverride);
                         labels.push('afterB');

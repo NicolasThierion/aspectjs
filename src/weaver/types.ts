@@ -1,5 +1,5 @@
 export abstract class Aspect {
-    id: string; // TODO Rename to 'ID'
+    id: string;
 }
 
 export type JoinPoint = (args?: any[]) => any;

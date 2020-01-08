@@ -1,35 +1,29 @@
-import {
-    Annotation,
-    ClassAnnotation,
-    MethodAnnotation,
-    ParameterAnnotation,
-    PropertyAnnotation,
-} from '../annotation.types';
+import { Annotation } from '../annotation.types';
 import {
     AnnotationTarget,
-    AnnotationTargetType,
     ClassAnnotationTarget,
     ParameterAnnotationTarget,
     PropertyAnnotationTarget,
 } from '../target/annotation-target';
 import { assert, getOrDefault, getProto } from '../../utils';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
+import { AdviceType } from '../../weaver/advices/types';
 
 export abstract class AnnotationLocationFactory {
-    static create<T, D extends Annotation>(dtarget: Partial<AnnotationTarget<T, D>>): AnnotationLocation<T, D> {
+    static create<T, D extends AdviceType>(dtarget: Partial<AnnotationTarget<T, D>>): AnnotationLocation<T, D> {
         // get the rootTarget (the target of the class) for this target
         const rootTarget = dtarget.declaringClass;
 
-        assert((dtarget.type === AnnotationTargetType.CLASS) === ((rootTarget as any) === dtarget));
+        assert((dtarget.type === AdviceType.CLASS) === ((rootTarget as any) === dtarget));
 
         // retrieve the declaringClass location (location of the declaringClass target)
         const rootLocation = getOrDefault(rootTarget, 'location', () => _createLocation(rootTarget)); // if no rootLocation exists, create a new one.
 
-        if (dtarget.type === AnnotationTargetType.CLASS) {
+        if (dtarget.type === AdviceType.CLASS) {
             return rootLocation as AnnotationLocation<T, D>;
         } else {
             // add a new location to the declaringClass location if it does not exists
-            if (dtarget.type === AnnotationTargetType.PROPERTY) {
+            if (dtarget.type === AdviceType.PROPERTY) {
                 return getOrDefault(
                     rootLocation as any,
                     ((dtarget as any) as PropertyAnnotationTarget<T>).propertyKey,
@@ -45,7 +39,7 @@ export abstract class AnnotationLocationFactory {
                             descriptor: Object.getOwnPropertyDescriptor(pdtarget.proto, pdtarget.propertyKey) as any,
                             location: new AnnotationLocationImpl() as any,
                         },
-                        AnnotationTargetType.METHOD,
+                        AdviceType.METHOD,
                     );
 
                     const ml = _createLocation(methodTarget, methodTarget.location) as MethodAnnotationLocation<T>;
@@ -65,7 +59,7 @@ export abstract class AnnotationLocationFactory {
                     return ml;
                 });
 
-                if (dtarget.type === AnnotationTargetType.METHOD) {
+                if (dtarget.type === AdviceType.METHOD) {
                     return methodLocation as MethodAnnotationLocation<T>;
                 } else {
                     return getOrDefault(
@@ -78,7 +72,7 @@ export abstract class AnnotationLocationFactory {
         }
     }
 
-    static of<T>(obj: (new () => T) | T): AnnotationLocation<T, ClassAnnotation> {
+    static of<T>(obj: (new () => T) | T): AnnotationLocation<T, AdviceType.CLASS> {
         const proto = getProto(obj);
         if (proto === Object.prototype) {
             throw new Error('given object is neither a constructor nor a class instance');
@@ -86,19 +80,19 @@ export abstract class AnnotationLocationFactory {
 
         const target = AnnotationTargetFactory.create({
             proto,
-            type: AnnotationTargetType.CLASS,
+            type: AdviceType.CLASS,
         }).declaringClass as ClassAnnotationTarget<T>;
 
         return target.location;
     }
 
-    static getTarget(loc: AnnotationLocation<any, Annotation>) {
+    static getTarget(loc: AnnotationLocation<any, AdviceType>) {
         return loc ? Object.getPrototypeOf(loc).getTarget() : undefined;
     }
 }
 
-function _createLocation<T, D extends Annotation>(
-    target: Partial<AnnotationTarget<T, Annotation>>,
+function _createLocation<T, D extends AdviceType>(
+    target: Partial<AnnotationTarget<T, AdviceType>>,
     locationStub: any = new AnnotationLocationImpl(),
 ): AnnotationLocation<T, D> {
     const proto = Object.create(Reflect.getPrototypeOf(locationStub));
@@ -111,8 +105,8 @@ function _createLocation<T, D extends Annotation>(
     return (locationStub as any) as AnnotationLocation<T, D>;
 }
 
-class AnnotationLocationImpl<T, D extends Annotation> {
-    getTarget(): AnnotationTarget<T, Annotation> {
+class AnnotationLocationImpl<T, D extends AdviceType> {
+    getTarget(): AnnotationTarget<T, AdviceType> {
         throw new Error('No target registered');
     }
 }
@@ -123,7 +117,7 @@ export namespace AnnotationLocation {
     export const getTarget = AnnotationLocationFactory.getTarget;
 }
 
-export type AnnotationLocation<T, D extends Annotation> =
+export type AnnotationLocation<T, D extends AdviceType> =
     | undefined
     | {
           [prop in keyof T]: T[prop] extends (...any: any[]) => any
@@ -131,9 +125,9 @@ export type AnnotationLocation<T, D extends Annotation> =
               : AnnotationLocation<T, any>;
       };
 
-export type ClassAnnotationLocation<T> = AnnotationLocation<T, ClassAnnotation>;
-export type MethodAnnotationLocation<T> = AnnotationLocation<T, MethodAnnotation> & {
+export type ClassAnnotationLocation<T> = AnnotationLocation<T, AdviceType.CLASS>;
+export type MethodAnnotationLocation<T> = AnnotationLocation<T, AdviceType.METHOD> & {
     args: ParameterAnnotationLocation<T> & ParameterAnnotationLocation<T>[];
 };
-export type PropertyAnnotationLocation<T> = AnnotationLocation<T, PropertyAnnotation>;
-export type ParameterAnnotationLocation<T> = AnnotationLocation<T, ParameterAnnotation>;
+export type PropertyAnnotationLocation<T> = AnnotationLocation<T, AdviceType.PROPERTY>;
+export type ParameterAnnotationLocation<T> = AnnotationLocation<T, AdviceType.PARAMETER>;

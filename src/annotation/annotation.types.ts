@@ -1,3 +1,5 @@
+import { AdviceType } from '../weaver/advices/types';
+
 export interface AnnotationRef {
     name: string;
     groupId: string;
@@ -47,7 +49,16 @@ type Provider<T> = (...args: any[]) => T;
  * An Annotation is an EcmaScript decorator with no behavior.
  * It relies on an annotation compiler with annotation processors to get the things done.
  */
-export type Annotation = (ClassAnnotation | MethodAnnotation | ParameterAnnotation | PropertyAnnotation) & Function;
+export type Annotation<T extends AdviceType> = (T extends AdviceType.CLASS
+    ? ClassAnnotation
+    : T extends AdviceType.METHOD
+    ? MethodAnnotation
+    : T extends AdviceType.PARAMETER
+    ? ParameterAnnotation
+    : T extends AdviceType.PROPERTY
+    ? PropertyAnnotation
+    : never) &
+    Function;
 
 type DecoratorType = ClassDecorator | MethodDecorator | ParameterDecorator | PropertyDecorator;
 

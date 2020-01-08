@@ -12,10 +12,10 @@ import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
-import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
+import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
-import { pc, Pointcut, PointcutPhase } from '../../weaver/advices/pointcut';
+import { AdviceType } from '../../weaver/advices/types';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -32,7 +32,7 @@ export class AnnotationFactory {
     create<A extends PropertyAnnotationStub>(annotationStub: A): A & AnnotationRef;
     create<A extends ParameterAnnotationStub>(annotationStub: A): A & AnnotationRef;
 
-    create<A extends Annotation, S extends Annotation>(annotationStub: S): S & AnnotationRef {
+    create<S extends Annotation<AdviceType>>(annotationStub: S): S & AnnotationRef {
         if (!annotationStub.name) {
             throw new TypeError('Annotation functions should have a name');
         }
@@ -53,7 +53,7 @@ export class AnnotationFactory {
     }
 }
 
-function _createAnnotationRef<A extends Annotation, D extends Decorator>(
+function _createAnnotationRef<A extends Annotation<AdviceType>, D extends Decorator>(
     fn: Function & D,
     annotationStub: A,
     groupId: string,
@@ -100,27 +100,27 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
     });
 }
 
-function _createDecorator<A extends Annotation>(
+function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvice>>(
     runner: PointcutsRunner,
     annotation: A,
     annotationArgs: any[],
 ): Decorator {
     return function(...targetArgs: any[]): Function | PropertyDescriptor {
-        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
+        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, TAdvice>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         const ctxt = new AnnotationAdviceContextImpl(annotationContext);
 
-        if (target.type === AnnotationTargetType.CLASS) {
+        if (target.type === AdviceType.CLASS) {
             return _createClassDecoration(ctxt);
-        } else if (target.type === AnnotationTargetType.PROPERTY) {
+        } else if (target.type === AdviceType.PROPERTY) {
             return _createPropertyDecoration(ctxt);
         } else {
             assert(false, 'not implemented'); // TODO
         }
     };
 
-    function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, A>): PropertyDescriptor {
+    function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): PropertyDescriptor {
         const surrogate = {};
         const target = ctxt.annotation.target;
         let propValue: unknown;
@@ -163,7 +163,7 @@ function _createDecorator<A extends Annotation>(
         return propDescriptor;
     }
 
-    function _createClassDecoration<T>(ctxt: AnnotationAdviceContextImpl<any, A>): Function {
+    function _createClassDecoration<T>(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): Function {
         runner.class.compile(ctxt);
 
         const ctor = function(...ctorArgs: any[]): T {
@@ -198,7 +198,7 @@ function _createDecorator<A extends Annotation>(
     }
 }
 
-class AnnotationAdviceContextImpl<T, A extends Annotation> implements MutableAdviceContext<A> {
+class AnnotationAdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext<A> {
     constructor(readonly annotation: AnnotationContextImpl<T, A>) {}
 
     public error?: Error;
@@ -214,12 +214,12 @@ class AnnotationAdviceContextImpl<T, A extends Annotation> implements MutableAdv
                     cpy[e[0]] = e[1];
                 }
                 return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, Annotation>>,
+            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, AdviceType>>,
         );
     }
 }
 
-class AnnotationContextImpl<T, D extends Annotation> implements AnnotationContext<T, D> {
+class AnnotationContextImpl<T, D extends AdviceType> implements AnnotationContext<T, D> {
     public readonly name: string;
     public readonly groupId: string;
 
