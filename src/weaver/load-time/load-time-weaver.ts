@@ -114,6 +114,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     getAdvices(phase: PointcutPhase.AFTERTHROW, ctxt: MutableAdviceContext<Annotation>): AfterThrowAdvice<any>[];
     getAdvices(phase: PointcutPhase.AROUND, ctxt: MutableAdviceContext<Annotation>): AroundAdvice<any>[];
     getAdvices(phase: PointcutPhase, ctxt: MutableAdviceContext<Annotation>): Advice[] {
+        assert(!!this._advices);
         return [..._getAdvicesArray(this._advices, ctxt.annotation.target.type, phase, ctxt.annotation)];
     }
 
@@ -334,7 +335,16 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _propertyCompile(ctxt: MutableAdviceContext<PropertyAnnotation>): void {
-        assert(false, 'not implemented');
+        const target = ctxt.annotation.target;
+        const newDescriptor = this.weaver
+            .getAdvices(PointcutPhase.COMPILE, ctxt)
+            .map((advice: CompileAdvice<unknown>) => advice(ctxt.freeze()))
+            .filter(c => !!c)
+            .slice(-1)[0];
+
+        if (newDescriptor) {
+            target.proto[target.propertyKey] = newDescriptor;
+        }
     }
 
     private _propertyBefore(ctxt: MutableAdviceContext<PropertyAnnotation>): void {

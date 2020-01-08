@@ -22,7 +22,7 @@ let compileAdvice: CompileAdvice<any> = target => {
     throw new Error('should configure compileAdvice');
 };
 
-describe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "compile" pointcut', () => {
         let target: AnnotationTarget<any, Annotation>;
         let instance: any;
@@ -65,7 +65,7 @@ describe('given a class configured with some class-annotation aspect', () => {
             expect(instance).toBeUndefined();
         });
 
-        fdescribe('when the advice returns a new constructor', () => {
+        describe('when the advice returns a new constructor', () => {
             let ctor: Function;
             beforeEach(() => {
                 ctor = jasmine.createSpy('ctor');
@@ -79,7 +79,7 @@ describe('given a class configured with some class-annotation aspect', () => {
                     };
                 };
             });
-            fit('should use the new constructor', () => {
+            it('should use the new constructor', () => {
                 @AClass()
                 class A implements Labeled {
                     labels?: string[];

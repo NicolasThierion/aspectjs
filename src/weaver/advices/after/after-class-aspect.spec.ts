@@ -21,7 +21,7 @@ let afterAdvice: AfterAdvice<any> = ctxt => {
     throw new Error('should configure afterThrowAdvice');
 };
 
-describe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "after" pointcut', () => {
         beforeEach(() => {
             class AfterAspect extends Aspect {

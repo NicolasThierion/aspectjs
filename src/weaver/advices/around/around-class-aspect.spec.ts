@@ -18,7 +18,7 @@ function setupWeaver(...aspects: Aspect[]) {
 let aroundAdvice: AroundAdvice<any> = (ctxt, jp, jpArgs) => {
     throw new Error('should configure aroundAdvice');
 };
-describe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some annotation aspect', () => {
     beforeEach(() => {
         class AroundClassAspect extends Aspect {
             id = 'AClassLabel';

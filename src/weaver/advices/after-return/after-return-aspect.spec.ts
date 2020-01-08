@@ -21,7 +21,7 @@ let afterReturn: AfterReturnAdvice<any> = (ctxt, retVal) => {
     throw new Error('should configure afterThrowAdvice');
 };
 
-describe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "afterReturn" pointcut', () => {
         beforeEach(() => {
             class AfterReturnAspect extends Aspect {

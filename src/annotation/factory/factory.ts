@@ -1,11 +1,9 @@
 import {
     Annotation,
     AnnotationRef,
-    ClassAnnotation,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
-    PropertyAnnotation,
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
@@ -17,9 +15,7 @@ import { getWeaver, JoinPoint } from '../../index';
 import { AnnotationTarget, AnnotationTargetType } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
-import { Pointcut, PointcutPhase } from '../../weaver/advices/pointcut';
-import { pc } from '../../weaver/advices/pointcut';
-import { Runtime } from 'inspector';
+import { pc, Pointcut, PointcutPhase } from '../../weaver/advices/pointcut';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -109,52 +105,62 @@ function _createDecorator<A extends Annotation>(
     annotation: A,
     annotationArgs: any[],
 ): Decorator {
-    return function(...targetArgs: any[]): Function {
+    return function(...targetArgs: any[]): Function | PropertyDescriptor {
         const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
-        Pointcut.of(PointcutPhase.COMPILE, pc.class.annotations(annotation));
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         const ctxt = new AnnotationAdviceContextImpl(annotationContext);
 
         if (target.type === AnnotationTargetType.CLASS) {
             return _createClassDecoration(ctxt);
         } else if (target.type === AnnotationTargetType.PROPERTY) {
-            _createPropertyDecoration(ctxt);
+            return _createPropertyDecoration(ctxt);
         } else {
             assert(false, 'not implemented'); // TODO
         }
     };
-    function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, A>): void {
-        const target = ctxt.annotation.target;
-        let refProperty = runner.property.compile(ctxt) ?? target.proto[target.propertyKey];
 
-        // test refProperty validity
+    function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, A>): PropertyDescriptor {
         const surrogate = {};
-        Object.defineProperty(surrogate, 'surrogate', refProperty);
-        refProperty = Object.getOwnPropertyDescriptor(surrogate, 'surrogate');
-
-        const propDescriptor: PropertyDescriptor = {
-            ...{
-                get() {},
-                set() {},
+        const target = ctxt.annotation.target;
+        let propValue: unknown;
+        const defaultDescriptor: PropertyDescriptor = {
+            configurable: true,
+            enumerable: true,
+            get() {
+                return propValue;
             },
-            ...refProperty,
+            set(value: any) {
+                propValue = value;
+            },
+        };
+
+        let refDescriptor = runner.property.compile(ctxt) ?? target.proto[target.propertyKey];
+        if (refDescriptor) {
+            // test property validity
+            Object.defineProperty(surrogate, 'surrogate', refDescriptor);
+            refDescriptor = Object.getOwnPropertyDescriptor(surrogate, 'surrogate');
+        }
+
+        let propDescriptor: PropertyDescriptor = {
+            ...defaultDescriptor,
+            ...refDescriptor,
         };
 
         if ((propDescriptor as Record<string, any>).hasOwnProperty('value')) {
-            const value = propDescriptor.value;
-            refProperty.get = () => value;
-            delete propDescriptor.value;
+            propValue = propDescriptor.value;
+            if ((propDescriptor as Record<string, any>).hasOwnProperty('writable') && !propDescriptor.writable) {
+                delete propDescriptor.set;
+            }
         }
 
-        propDescriptor.get = function() {
-            runner.property.before;
-            refProperty.get();
-        };
-
-        propDescriptor.set = function() {};
+        // test property validity
+        Object.defineProperty(surrogate, 'surrogate', propDescriptor);
+        propDescriptor = Object.getOwnPropertyDescriptor(surrogate, 'surrogate');
 
         target.proto[target.propertyKey] = propDescriptor;
+
+        return propDescriptor;
     }
 
     function _createClassDecoration<T>(ctxt: AnnotationAdviceContextImpl<any, A>): Function {

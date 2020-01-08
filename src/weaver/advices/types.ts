@@ -12,6 +12,15 @@ import {
 export type CompileAdvice<T> = {
     pointcut?: CompilePointcut;
 } & ((ctxt: AdviceContext<T, Annotation>) => void | Function);
+
+export type ClassCompileAdvice<T> = {
+    pointcut?: CompilePointcut;
+} & ((ctxt: AdviceContext<T, Annotation>) => void | Function);
+
+export type PropertyCompileAdvice<T> = {
+    pointcut?: CompilePointcut;
+} & ((ctxt: AdviceContext<T, Annotation>) => void | PropertyDescriptor);
+
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
 } & ((ctxt: AdviceContext<T, Annotation>) => void);

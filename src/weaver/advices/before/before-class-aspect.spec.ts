@@ -12,7 +12,7 @@ function setupWeaver(...aspects: Aspect[]) {
     weaver.load();
 }
 // TODO describe('on a class that do not extends aspect') it('should throw an error');
-describe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "before" pointcut', () => {
         const advice = jasmine.createSpy('advice');
         const ctor = jasmine.createSpy('ctor');

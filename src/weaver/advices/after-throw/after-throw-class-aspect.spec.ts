@@ -23,7 +23,7 @@ let afterThrowAdvice: AfterThrowAdvice<any> = ctxt => {
 };
 
 let afterThrowAdviceSpy: Spy;
-describe('given a class configured with some class-annotation aspect', () => {
+describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
             afterThrowAdvice = (ctxt: AfterThrowContext<Labeled, ClassAnnotation>) => {

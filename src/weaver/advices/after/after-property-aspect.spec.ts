@@ -7,7 +7,7 @@ import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AnnotationFactory } from '../../../annotation/factory/factory';
 import { pc } from '../pointcut';
 
-export const AProperty = new AnnotationFactory('tests').create(function AClass(): PropertyDecorator {
+export const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
     return;
 });
 

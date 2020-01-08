@@ -1,4 +1,4 @@
-import { Annotation, AnnotationRef } from '../..';
+import { Annotation, AnnotationRef, ClassAnnotation, PropertyAnnotation } from '../..';
 import { AnnotationTargetType } from '../../annotation/target/annotation-target';
 import { assert } from '../../utils';
 import { WeavingError } from '../weaving-error';
@@ -31,6 +31,10 @@ export class ClassPointcutExpression extends PointcutExpression {
     //     return this;
     // }
 
+    annotations(...annotations: ClassAnnotation[]): PointcutExpression {
+        return super.annotations(...annotations);
+    }
+
     toString(): string {
         return `class#${this._module}:${this._name}${this._annotations.map(a => a.toString()).join(',')}${
             this._selector ? ` ${this._selector}` : ''
@@ -54,13 +58,13 @@ export class PropertyPointcutExpression extends PointcutExpression {
     //     return new ClassPointcutExpression(this);
     // }
 
-    annotations(...annotations: Annotation[]): PropertyPointcutExpression {
+    annotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
         super.annotations(...annotations);
         return this;
     }
 
     toString(): string {
-        return `property.${this._access}#${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return `property#${this._access} ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
     }
 }
 
@@ -139,26 +143,37 @@ export namespace Pointcut {
     export function of(phase: PointcutPhase, exp: PointcutExpression): Pointcut;
     export function of(phase: PointcutPhase, exp: PointcutExpression | string): Pointcut {
         const expStr = exp.toString();
-        const CLASS_REGEXP = new RegExp('(?:class#(?<class>\\S+?:\\S+?)(?:\\@(?<classAnnotation>\\S+?:\\S+)\\s*)?)');
-        const match = CLASS_REGEXP.exec(expStr);
+
+        const pointcutRegexes = {
+            [AnnotationTargetType.CLASS]: new RegExp(
+                '(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
+            ),
+            [AnnotationTargetType.PROPERTY]: new RegExp(
+                '(?:property#(?<name>(?:set|get)\\s\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
+            ),
+        };
 
         let pointcut: Pointcut;
-        if (match.groups.class) {
-            assert(!!match.groups.classAnnotation);
-            pointcut = {
-                targetType: AnnotationTargetType.CLASS,
-                phase,
-                annotation: AnnotationRef.of(match.groups.classAnnotation),
-                name: match.groups.class,
-            };
-        } else {
-            throw new WeavingError('Only class-level aspects are supported at the moment');
+
+        for (const entry of Object.entries(pointcutRegexes)) {
+            const [targetType, regex] = entry;
+            const match = regex.exec(expStr);
+
+            if (match?.groups.name) {
+                assert(!!match.groups.annotation, 'only annotation pointcuts are supported');
+                pointcut = {
+                    targetType: +targetType,
+                    phase,
+                    annotation: AnnotationRef.of(match.groups.annotation),
+                    name: match.groups.name,
+                };
+
+                Reflect.defineProperty(pointcut, Symbol.toPrimitive, {
+                    value: () => `${phase}(${expStr})`,
+                });
+            }
         }
-
-        Reflect.defineProperty(pointcut, Symbol.toPrimitive, {
-            value: () => `${phase}(${expStr})`,
-        });
-
+        assert(!!pointcut, `expression ${expStr} not recognized as valid pointcut expression`);
         return pointcut;
     }
 }
