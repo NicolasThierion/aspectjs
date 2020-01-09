@@ -19,17 +19,6 @@ export class ClassPointcutExpression extends PointcutExpression {
     protected _name = '*';
     protected _module = '*';
 
-    // TODO enable class name filtering
-    // name(name: string): this {
-    //     this._name = name ?? '*';
-    //     return this;
-    // }
-    // TODO enable module id filtering
-    // module(moduleName: string): this {
-    //     this._module = moduleName ?? '*';
-    //     return this;
-    // }
-
     annotations(...annotations: ClassAnnotation[]): PointcutExpression {
         return super.annotations(...annotations);
     }
@@ -43,19 +32,7 @@ export class ClassPointcutExpression extends PointcutExpression {
 
 export class PropertyPointcutExpression extends PointcutExpression {
     protected _name = '*';
-
-    constructor(private _access: 'set' | 'get') {
-        super();
-    }
-
-    // name(name: string): this {
-    //     this._name = name ?? '*';
-    //     return this;
-    // }
-
-    // ofClass(): ClassPointcutExpression {
-    //     return new ClassPointcutExpression(this);
-    // }
+    public readonly setter = new PropertySetterPointcutExpression();
 
     annotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
         super.annotations(...annotations);
@@ -63,37 +40,25 @@ export class PropertyPointcutExpression extends PointcutExpression {
     }
 
     toString(): string {
-        return `property#${this._access} ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return `property#get ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+    }
+}
+
+export class PropertySetterPointcutExpression extends PointcutExpression {
+    protected _name = '*';
+
+    toString(): string {
+        return `property#set ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
     }
 }
 
 export class MethodPointcutExpression extends PointcutExpression {
-    constructor(param?: ParameterPointcutExpression) {
-        super();
-    }
-
-    protected _name = '*';
-
-    // TODO enable by method name filtering
-    // name(name: string): this {
-    //     this._name = name ?? '*';
-    //     return this;
-    // }
-
-    // ofClass(ctor: Function): ClassPointcutExpression {
-    //     return new ClassPointcutExpression();
-    // }
-
     toString(): string {
         throw new Error('not implemented');
     }
 }
 
 export class ParameterPointcutExpression extends PointcutExpression {
-    // ofMethod(): MethodPointcutExpression {
-    //     return new MethodPointcutExpression(this);
-    // }
-
     toString(): string {
         throw new Error('not implemented');
     }
@@ -105,10 +70,7 @@ class PointcutExpressionFactory {
     }
 
     get property() {
-        return {
-            getter: new PropertyPointcutExpression('get'),
-            setter: new PropertyPointcutExpression('set'),
-        };
+        return new PropertyPointcutExpression();
     }
 
     get methods() {
@@ -131,7 +93,7 @@ export enum PointcutPhase {
 }
 
 export interface Pointcut {
-    targetType: AdviceType;
+    type: AdviceType;
     annotation: AnnotationRef;
     name: string;
     phase: PointcutPhase;
@@ -153,13 +115,13 @@ export namespace Pointcut {
         let pointcut: Pointcut;
 
         for (const entry of Object.entries(pointcutRegexes)) {
-            const [targetType, regex] = entry;
+            const [type, regex] = entry;
             const match = regex.exec(expStr);
 
             if (match?.groups.name) {
                 assert(!!match.groups.annotation, 'only annotation pointcuts are supported');
                 pointcut = {
-                    targetType: +targetType,
+                    type: +type,
                     phase,
                     annotation: AnnotationRef.of(match.groups.annotation),
                     name: match.groups.name,

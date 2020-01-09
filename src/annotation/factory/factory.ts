@@ -121,7 +121,6 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
     };
 
     function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): PropertyDescriptor {
-        const surrogate = {};
         const target = ctxt.annotation.target;
         let propValue: unknown;
         const defaultDescriptor: PropertyDescriptor = {
@@ -138,8 +137,10 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
         let refDescriptor = runner.property.compile(ctxt) ?? target.proto[target.propertyKey];
         if (refDescriptor) {
             // test property validity
-            Object.defineProperty(surrogate, 'surrogate', refDescriptor);
-            refDescriptor = Object.getOwnPropertyDescriptor(surrogate, 'surrogate');
+            refDescriptor = Object.getOwnPropertyDescriptor(
+                Object.defineProperty({}, 'surrogate', refDescriptor),
+                'surrogate',
+            );
         }
 
         let propDescriptor: PropertyDescriptor = {
@@ -149,14 +150,20 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
 
         if ((propDescriptor as Record<string, any>).hasOwnProperty('value')) {
             propValue = propDescriptor.value;
-            if ((propDescriptor as Record<string, any>).hasOwnProperty('writable') && !propDescriptor.writable) {
-                delete propDescriptor.set;
+            if ((propDescriptor as Record<string, any>).hasOwnProperty('writable')) {
+                if (!propDescriptor.writable) {
+                    delete propDescriptor.set;
+                }
+                delete propDescriptor.writable;
+                delete propDescriptor.value;
             }
         }
 
         // test property validity
-        Object.defineProperty(surrogate, 'surrogate', propDescriptor);
-        propDescriptor = Object.getOwnPropertyDescriptor(surrogate, 'surrogate');
+        propDescriptor = Object.getOwnPropertyDescriptor(
+            Object.defineProperty({}, 'surrogate', propDescriptor),
+            'surrogate',
+        );
 
         target.proto[target.propertyKey] = propDescriptor;
 

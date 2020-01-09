@@ -47,7 +47,7 @@
   },
   "size-limit": [
     {
-      "limit": "400 ms",
+      "limit": "300 ms",
       "path": "dist/main*.js"
     }
   ]

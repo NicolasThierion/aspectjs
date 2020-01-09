@@ -49,32 +49,32 @@ export abstract class AnnotationTargetFactory {
     /**
      * Creates a AnnotationTarget corresponding to the given arguments
      * @param dtarget
-     * @param targetType
+     * @param type
      */
     static create<T, D extends AdviceType>(
         dtarget: MutableAnnotationTarget<T, D>,
-        targetType?: AdviceType,
+        type?: AdviceType,
     ): AnnotationTarget<T, D> {
-        if (isUndefined(targetType) && isUndefined(dtarget.type)) {
+        if (isUndefined(type) && isUndefined(dtarget.type)) {
             if (isNumber(((dtarget as any) as ParameterAnnotationTarget<T>).parameterIndex)) {
-                targetType = AdviceType.PARAMETER;
+                type = AdviceType.PARAMETER;
             } else if (!isUndefined(((dtarget as any) as MethodAnnotationTarget<T>).propertyKey)) {
                 if (isObject(((dtarget as any) as MethodAnnotationTarget<T>).descriptor)) {
-                    targetType = AdviceType.METHOD;
+                    type = AdviceType.METHOD;
                 } else {
-                    targetType = AdviceType.PROPERTY;
+                    type = AdviceType.PROPERTY;
                 }
             } else {
-                targetType = AdviceType.CLASS;
+                type = AdviceType.CLASS;
             }
         } else {
-            targetType = targetType ?? dtarget.type;
+            type = type ?? dtarget.type;
         }
 
-        const ref = REF_GENERATORS[targetType](dtarget as any);
+        const ref = REF_GENERATORS[type](dtarget as any);
 
         return getMetaOrDefault(_metaKey(ref), dtarget.proto, () => {
-            const target = (TARGET_GENERATORS[targetType] as any)(dtarget as any);
+            const target = (TARGET_GENERATORS[type] as any)(dtarget as any);
             Reflect.setPrototypeOf(target, AnnotationTargetImpl.prototype);
 
             Object.seal(target);

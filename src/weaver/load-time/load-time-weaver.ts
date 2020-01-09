@@ -68,7 +68,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
                 .reduce((pipeline: AdvicePipeline, advice: Advice) => {
                     _getAdvicesArray(
                         pipeline,
-                        advice.pointcut.targetType,
+                        advice.pointcut.type,
                         advice.pointcut.phase,
                         advice.pointcut.annotation,
                     ).push(advice);
@@ -122,11 +122,11 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
 
 function _getAdvicesArray(
     pipeline: AdvicePipeline,
-    targetType: AdviceType,
+    type: AdviceType,
     phase: PointcutPhase,
     annotation: AnnotationRef,
 ): Advice[] {
-    const targetAdvices = getOrDefault(pipeline, targetType, () => ({} as any));
+    const targetAdvices = getOrDefault(pipeline, type, () => ({} as any));
 
     const phaseAdvices = getOrDefault(
         targetAdvices,

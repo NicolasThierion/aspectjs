@@ -1,13 +1,13 @@
 import { Aspect } from '../../types';
 import { AdviceType, AfterAdvice } from '../types';
-import { PropertyAnnotation, setWeaver } from '../../../index';
+import { setWeaver } from '../../../index';
 import { After } from './after.decorator';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AnnotationFactory } from '../../../annotation/factory/factory';
 import { pc } from '../pointcut';
 
-export const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
+const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
     return;
 });
 
@@ -31,7 +31,7 @@ xdescribe('given a property getter annotated with an aspect', () => {
             class AfterAspect extends Aspect {
                 name = 'APropertyLabel';
 
-                @After(pc.property.getter.annotations(AProperty))
+                @After(pc.property.annotations(AProperty))
                 apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     afterAdvice(ctxt);
                 }

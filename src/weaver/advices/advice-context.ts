@@ -1,6 +1,5 @@
 import { AnnotationContext } from '../../annotation/context/context';
-import { Annotation, JoinPoint } from '../../index';
-import { AnnotationTarget } from '../../annotation/target/annotation-target';
+import { JoinPoint } from '../../index';
 import { AdviceType } from './types';
 
 export type AdviceContext<T, A extends AdviceType> =
@@ -52,6 +51,7 @@ export interface CompileContext<T, A extends AdviceType> {
 export type MutableAdviceContext<A extends AdviceType> = {
     annotation?: AnnotationContext<unknown, A>;
     instance?: unknown;
+    value?: unknown;
     args?: unknown[];
     error?: Error;
     returnValue?: unknown;

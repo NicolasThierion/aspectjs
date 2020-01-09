@@ -1,4 +1,4 @@
-import { Annotation, JoinPoint } from '../..';
+import { JoinPoint } from '../..';
 import { AdviceContext } from './advice-context';
 import {
     AfterPointcut,
@@ -22,13 +22,15 @@ export type CompileAdvice<T, A extends AdviceType> = A extends AdviceType.CLASS
     ? PropertyCompileAdvice<T>
     : never;
 
+export type ClassCompileAdviceFn<T> = (ctxt: AdviceContext<T, AdviceType.CLASS>) => void | Function;
 export type ClassCompileAdvice<T> = {
     pointcut?: CompilePointcut;
-} & ((ctxt: AdviceContext<T, AdviceType>) => void | Function);
+} & ClassCompileAdviceFn<T>;
 
+export type PropertyCompileAdviceFn<T> = (ctxt: AdviceContext<T, AdviceType.PROPERTY>) => void | PropertyDescriptor;
 export type PropertyCompileAdvice<T> = {
     pointcut?: CompilePointcut;
-} & ((ctxt: AdviceContext<T, AdviceType>) => void | PropertyDescriptor);
+} & PropertyCompileAdviceFn<T>;
 
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
