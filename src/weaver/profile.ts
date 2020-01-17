@@ -5,7 +5,7 @@ let profileId = 0;
 export class WeaverProfile {
     public readonly name: string;
     protected _aspects: Aspect[] = [];
-    protected _aspectsRegistry: { [aspectName: string]: Aspect } = {};
+    protected _aspectsRegistry: { [aspectId: string]: Aspect } = {};
 
     constructor(name?: string) {
         this.name = name ?? `default#${profileId++}`;
@@ -54,6 +54,6 @@ function _assertIsAspect(obj: Aspect) {
     }
 
     if (!obj.id) {
-        throw new TypeError(`Aspect "${obj.constructor.name}" can not have null "name" attribute`);
+        throw new TypeError(`Aspect "${obj.constructor.name}" can not have null "id" attribute`);
     }
 }

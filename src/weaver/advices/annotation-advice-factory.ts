@@ -9,7 +9,8 @@ export class AnnotationAdviceFactory {
         const pointcut = Pointcut.of(phase, pointcutExp);
         assert(
             !(phase == PointcutPhase.COMPILE && pointcut.type === AdviceType.PROPERTY) ||
-                pointcut.name.startsWith('get ') || pointcut.name.startsWith('set '),
+                pointcut.name.startsWith('get ') ||
+                pointcut.name.startsWith('set '),
         );
 
         return function(aspect: any, propertyKey: string | symbol) {
@@ -20,11 +21,11 @@ export class AnnotationAdviceFactory {
             advice.pointcut = pointcut;
 
             Reflect.defineProperty(advice, Symbol.toPrimitive, {
-                value: () => `${aspect.constructor.name} {${phase}(${pointcut.annotation}) ${String(propertyKey)}() }`,
+                value: () => `@${phase}(${pointcut.annotation}) ${aspect.constructor.name}.${String(propertyKey)}()`,
             });
 
             if (pointcut.name.startsWith('set ')) {
-                throw new WeavingError(`Compile advice "${advice}" cannot be applied on property setter`);
+                throw new WeavingError(`Advice "${advice}" cannot be applied on property setter`);
             }
 
             AdvicesRegistry.create(aspect, advice);

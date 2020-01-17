@@ -6,6 +6,7 @@ import { AClass } from '../../../tests/a';
 import { AdviceContext } from '../advice-context';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { pc } from '../pointcut';
+import { WeavingError } from '../../weaving-error';
 
 interface Labeled {
     labels?: string[];
@@ -41,6 +42,30 @@ describe('given a class configured with some annotation aspect', () => {
                 .and.callThrough();
 
             setupWeaver(new AfterAspect());
+        });
+
+        describe('when advice returns a value', () => {
+            it('should throw an error', () => {
+                class BadAfterAspect extends Aspect {
+                    id = 'AClassLabel';
+
+                    @After(pc.class.annotations(AClass))
+                    apply(ctxt: AdviceContext<any, AdviceType.CLASS>) {
+                        return function() {};
+                    }
+                }
+
+                setupWeaver(new BadAfterAspect());
+
+                expect(() => {
+                    @AClass()
+                    class X {}
+
+                    new X();
+                }).toThrow(
+                    new WeavingError('Returning from advice "@After(@AClass) BadAfterAspect.apply()" is not supported'),
+                );
+            });
         });
 
         describe('creating an instance of this class', () => {

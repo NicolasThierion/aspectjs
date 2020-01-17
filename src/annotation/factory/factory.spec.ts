@@ -6,10 +6,18 @@ let factory: AnnotationFactory;
 
 const FACTORY_GROUP_TEST_ID = 'testFactory';
 const WEAVER_TEST_NAME = 'testWeaver';
+
+const AClassStub = function AClass(x?: string, y?: number): ClassDecorator {
+    return;
+};
+
+const APropertyStub = function AProperty(x?: string, y?: number): PropertyDecorator {
+    return;
+};
+
 describe('Annotation Factory', () => {
-    let AClass = function AClass(x?: string, y?: number): ClassDecorator {
-        return;
-    };
+    let AClass: typeof AClassStub;
+    let AProperty: typeof APropertyStub;
 
     beforeEach(() => {
         factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
@@ -17,7 +25,7 @@ describe('Annotation Factory', () => {
     });
 
     describe('method "create"', () => {
-        describe('given a class annotation', () => {
+        describe('given any annotation', () => {
             describe('that has no name', () => {
                 it('should throw an error', () => {
                     expect(() => {
@@ -28,10 +36,33 @@ describe('Annotation Factory', () => {
                 });
             });
 
-            it('should return a class decorator', () => {
-                AClass = factory.create(AClass);
+            it('should return a decorator with the same name', () => {
+                AClass = factory.create(AClassStub);
 
-                expect(AClass('0', 0)).toEqual(jasmine.any(Function));
+                expect(AClass.name).toEqual('AClass');
+                expect(AClass('0', 0).name).toEqual('AClass');
+            });
+
+            it(`should assign a the annotation's groupId to the factory's groupId`, () => {
+                const _AClass = factory.create(AClassStub);
+
+                expect(_AClass.groupId).toEqual(FACTORY_GROUP_TEST_ID);
+            });
+        });
+        describe('given a class annotation', () => {
+            it('should return a class decorator', () => {
+                AClass = factory.create(AClassStub);
+
+                const annotation = AClass('0', 0);
+                expect(annotation).toEqual(jasmine.any(Function));
+                const ctor = (annotation as any)(class A {});
+                expect(ctor).toEqual(jasmine.any(Function));
+                expect(ctor.name).toEqual('A');
+            });
+
+            it('should not alter the class', () => {
+                AClass = factory.create(AClassStub);
+
                 @AClass('', 0)
                 class A {
                     someProp: any;
@@ -39,18 +70,32 @@ describe('Annotation Factory', () => {
 
                 expect(new A()).toEqual(jasmine.any(A));
             });
+        });
 
-            it('should return a class decorator with the same name', () => {
-                AClass = factory.create(AClass);
+        describe('given a property annotation', () => {
+            it('should return a property decorator', () => {
+                AProperty = factory.create(APropertyStub);
 
-                expect(AClass.name).toEqual('AClass');
-                expect(AClass('0', 0).name).toEqual('AClass');
+                const annotation = AProperty('0', 0);
+                expect(annotation).toEqual(jasmine.any(Function));
+                const descriptor = (annotation as any)(new (class A {})(), 'propName');
+                expect(descriptor).toEqual(jasmine.any(Object));
+                expect(descriptor.enumerable).toEqual(true);
+                expect(descriptor.configurable).toEqual(true);
             });
 
-            it(`should assign a the annotation's groupId to the factory's groupId`, () => {
-                const _AClass = factory.create(AClass);
+            it('should not alter the property', () => {
+                AProperty = factory.create(APropertyStub);
 
-                expect(_AClass.groupId).toEqual(FACTORY_GROUP_TEST_ID);
+                class A {
+                    @AProperty()
+                    someProp: any;
+                }
+
+                const a = new A();
+                expect(a.someProp).toEqual(undefined);
+                a.someProp = 'somePropValue';
+                expect(a.someProp).toEqual('somePropValue');
             });
         });
     });

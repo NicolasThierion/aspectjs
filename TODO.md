@@ -17,8 +17,33 @@
 - `@Bind`
 - `@Cloneable`
 
+### Pointcuts: 
+ - beforeProperty
+ - aroundProperty
+ - afterThrowProperty
+ - afterProperty
+ - compilePropertySetter
+ - beforePropertySetter
+ - aroundPropertySetter
+ - afterReturnPropertySetter
+ - afterThrowPropertySetter
+ - afterPropertySetter
+ - compileMethod
+ - beforeMethod
+ - aroundMethod
+ - afterReturnMethod
+ - afterThrowMethod
+ - afterMethod
+ - compileParameter
+ - beforeParameter
+ - aroundParameter
+ - afterReturnParameter
+ - afterThrowParameter
+ - afterParameter
+
 ### Aspects
  - DuplicateAspectHandler
+ - advice static methods?
 
 ## Chore
 - remove lodash dependency
@@ -26,5 +51,6 @@
 ## Refactor
 - remove {priority: number} in favor of { appliesBefore: Decorators[], appliesAfter: Decorators[] }
 - use AnnotationRef = {module, name} in bundles & contexts
-- create 'AdvicePipeline' = Array<(ctxt) => advice(ctxt)>
-- freeze instead of seal
+- move ctxt.annotation.target into ctxt.target
+- add priority on advices
+- move target out of ctxt.annotation

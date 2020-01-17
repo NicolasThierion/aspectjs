@@ -4,8 +4,20 @@ import { MutableAdviceContext } from './advices/advice-context';
 import { PointcutPhase } from './advices/pointcut';
 
 type _PointcutsRunners = {
-    [type in 'class' | 'property' | 'method' | 'parameter']: {
+    [type in 'class' | 'method' | 'parameter']: {
         [k in PointcutPhase]: (ctxt: MutableAdviceContext<any>) => any;
+    };
+} & {
+    property: {
+        [k in 'getter' | 'setter']: {
+            [PointcutPhase.AROUND]: (ctxt: MutableAdviceContext<any>) => any;
+            [PointcutPhase.BEFORE]: (ctxt: MutableAdviceContext<any>) => any;
+            [PointcutPhase.AFTERRETURN]: (ctxt: MutableAdviceContext<any>) => any;
+            [PointcutPhase.AFTER]: (ctxt: MutableAdviceContext<any>) => any;
+            [PointcutPhase.AFTERTHROW]: (ctxt: MutableAdviceContext<any>) => any;
+        };
+    } & {
+        [PointcutPhase.COMPILE]: (ctxt: MutableAdviceContext<any>) => any;
     };
 };
 

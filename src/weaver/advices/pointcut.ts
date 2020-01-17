@@ -84,12 +84,12 @@ class PointcutExpressionFactory {
 export const pc = new PointcutExpressionFactory();
 
 export enum PointcutPhase {
-    COMPILE = 'compile',
-    AROUND = 'around',
-    BEFORE = 'before',
-    AFTERRETURN = 'afterReturn',
-    AFTER = 'after',
-    AFTERTHROW = 'afterThrow',
+    COMPILE = 'Compile',
+    AROUND = 'Around',
+    BEFORE = 'Before',
+    AFTERRETURN = 'AfterReturn',
+    AFTER = 'After',
+    AFTERTHROW = 'AfterThrow',
 }
 
 export interface Pointcut {

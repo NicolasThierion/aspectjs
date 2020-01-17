@@ -16,6 +16,7 @@ import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
 import { AdviceType } from '../../weaver/advices/types';
+import { PointcutPhase } from '../../weaver/advices/pointcut';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -122,41 +123,64 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
 
     function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): PropertyDescriptor {
         const target = ctxt.annotation.target;
-        let propValue: unknown;
         const defaultDescriptor: PropertyDescriptor = {
             configurable: true,
             enumerable: true,
             get() {
-                return propValue;
+                return Reflect.getOwnMetadata(`aspectjs.propValue#${ctxt.annotation.target.propertyKey}`, this);
             },
             set(value: any) {
-                propValue = value;
+                Reflect.defineMetadata(`aspectjs.propValue#${ctxt.annotation.target.propertyKey}`, value, this);
             },
         };
 
-        let refDescriptor = runner.property.compile(ctxt) ?? target.proto[target.propertyKey];
-        if (refDescriptor) {
-            // test property validity
-            refDescriptor = Object.getOwnPropertyDescriptor(
-                Object.defineProperty({}, 'surrogate', refDescriptor),
-                'surrogate',
-            );
-        }
+        let refDescriptor = runner.property[PointcutPhase.COMPILE](ctxt) ?? target.proto[target.propertyKey];
 
-        let propDescriptor: PropertyDescriptor = {
+        refDescriptor = {
             ...defaultDescriptor,
             ...refDescriptor,
         };
 
-        if ((propDescriptor as Record<string, any>).hasOwnProperty('value')) {
-            propValue = propDescriptor.value;
-            if ((propDescriptor as Record<string, any>).hasOwnProperty('writable')) {
-                if (!propDescriptor.writable) {
-                    delete propDescriptor.set;
+        if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
+            const propValue = refDescriptor.value;
+            refDescriptor.get = () => propValue;
+            delete refDescriptor.value;
+
+            if ((refDescriptor as Record<string, any>).hasOwnProperty('writable')) {
+                if (!refDescriptor.writable) {
+                    delete refDescriptor.set;
                 }
-                delete propDescriptor.writable;
-                delete propDescriptor.value;
+                delete refDescriptor.writable;
             }
+        }
+
+        let propDescriptor: PropertyDescriptor = {
+            ...refDescriptor,
+        };
+        propDescriptor.get = function() {
+            try {
+                ctxt.instance = this;
+                // runner.property.getter.before(ctxt); // TODO
+                ctxt.value = refDescriptor.get.bind(ctxt.instance)();
+
+                return runner.property.getter[PointcutPhase.AFTERRETURN](ctxt);
+            } catch (e) {
+                return runner.property.getter[PointcutPhase.AFTERTHROW](ctxt);
+            } finally {
+                runner.property.getter[PointcutPhase.AFTER](ctxt);
+            }
+        };
+
+        if ((propDescriptor as Record<string, any>).hasOwnProperty('writable')) {
+            if (propDescriptor.writable) {
+                propDescriptor.set = function(value: any) {
+                    ctxt.instance = this;
+                    throw new Error('not implemented');
+                };
+            } else {
+                delete propDescriptor.set;
+            }
+            delete propDescriptor.writable;
         }
 
         // test property validity
@@ -171,17 +195,18 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
     }
 
     function _createClassDecoration<T>(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): Function {
-        runner.class.compile(ctxt);
+        runner.class[PointcutPhase.COMPILE](ctxt);
 
         const ctor = function(...ctorArgs: any[]): T {
             ctxt.args = ctorArgs;
 
             try {
-                runner.class.before(ctxt);
+                runner.class[PointcutPhase.BEFORE](ctxt);
                 ctxt.instance = this;
-                runner.class.around(ctxt);
 
-                runner.class.afterReturn(ctxt);
+                runner.class[PointcutPhase.AROUND](ctxt);
+
+                runner.class[PointcutPhase.AFTERRETURN](ctxt);
 
                 return ctxt.instance;
             } catch (e) {
@@ -191,15 +216,24 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
                 }
 
                 ctxt.error = e;
-                runner.class.afterThrow(ctxt);
+                runner.class[PointcutPhase.AFTERTHROW](ctxt);
                 return ctxt.instance;
             } finally {
-                runner.class.after(ctxt);
+                runner.class[PointcutPhase.AFTER](ctxt);
             }
         };
 
         const ctorName = ctxt.annotation.target.proto.constructor.name;
         _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
+
+        Reflect.defineMetadata('aspectjs.referenceProto', ctor.prototype, ctxt.annotation.target.proto);
+        Reflect.defineMetadata(
+            'aspectjs.referenceCtor',
+            ctxt.annotation.target.proto.constructor,
+            ctxt.annotation.target.proto,
+        );
+        ctor.prototype = ctxt.annotation.target.proto;
+        ctor.prototype.constructor = ctor;
 
         return ctor;
     }
@@ -210,19 +244,28 @@ class AnnotationAdviceContextImpl<T, A extends AdviceType> implements MutableAdv
 
     public error?: Error;
     public instance?: T;
+    public value?: T | unknown;
     public args?: any[];
     public joinpoint?: JoinPoint;
-    public returnValue?: unknown;
 
     freeze(): AdviceContext<T, A> {
-        return Object.freeze(
-            Object.entries(this).reduce((cpy, e) => {
-                if (!isUndefined(e[1])) {
-                    cpy[e[0]] = e[1];
+        const frozenCtxt: any = { ...this };
+        Object.keys(frozenCtxt)
+            .filter(k => k !== 'value')
+            .forEach(k => {
+                if (isUndefined(frozenCtxt[k])) {
+                    delete frozenCtxt[k];
+                } else {
+                    Object.defineProperty(frozenCtxt, k, {
+                        value: frozenCtxt[k],
+                        writable: false,
+                    });
                 }
-                return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, AdviceType>>,
-        );
+            });
+
+        Object.seal(frozenCtxt);
+
+        return frozenCtxt;
     }
 }
 

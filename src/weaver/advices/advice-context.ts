@@ -25,7 +25,7 @@ export interface AfterReturnContext<T, A extends AdviceType> {
     readonly annotation: AnnotationContext<T, A>;
     readonly instance: T;
     readonly args: any[];
-    readonly returnValue: any;
+    value: any;
 }
 
 export interface AfterThrowContext<T, A extends AdviceType> {
@@ -33,6 +33,7 @@ export interface AfterThrowContext<T, A extends AdviceType> {
     readonly instance: T;
     readonly args: any[];
     readonly error: Error;
+    value: any;
 }
 
 export interface AroundContext<T, A extends AdviceType> {
@@ -54,7 +55,6 @@ export type MutableAdviceContext<A extends AdviceType> = {
     value?: unknown;
     args?: unknown[];
     error?: Error;
-    returnValue?: unknown;
     joinpoint?: JoinPoint;
     joinpointArgs?: any[];
     freeze(): AdviceContext<unknown, A>;

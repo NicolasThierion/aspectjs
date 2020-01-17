@@ -190,7 +190,7 @@ describe('given a property configured with some annotation aspect', () => {
                     }
                 }).toThrow(
                     new WeavingError(
-                        'Compile advice "BadAspect {compile(@AProperty) apply() }" cannot be applied on property setter',
+                        'Advice "@Compile(@AProperty) BadAspect.apply()" cannot be applied on property setter',
                     ),
                 );
             });

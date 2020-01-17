@@ -26,11 +26,7 @@ let afterThrowAdviceSpy: Spy;
 describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "afterThrow" pointcut', () => {
         beforeEach(() => {
-            afterThrowAdvice = (ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>) => {
-                ctxt.instance.labels = ctxt.instance.labels ?? [];
-                ctxt.instance.labels.push('A');
-            };
-            afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', afterThrowAdvice).and.callThrough();
+            afterThrowAdviceSpy = jasmine.createSpy('afterThrowAdvice', function() {}).and.callThrough();
             class AfterThrowAspect extends Aspect {
                 id = 'AClassLabel';
 

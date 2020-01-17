@@ -87,7 +87,7 @@ describe('given a class configured with some annotation aspect', () => {
                     new A();
                 }).toThrow(
                     new WeavingError(
-                        'In @Around advice "AroundClassAspect {around(@AClass) apply() }": Cannot get "this" instance of constructor before calling constructor joinpoint',
+                        'In advice "@Around(@AClass) AroundClassAspect.apply()": Cannot get "this" instance of constructor before calling constructor joinpoint',
                     ),
                 );
             });

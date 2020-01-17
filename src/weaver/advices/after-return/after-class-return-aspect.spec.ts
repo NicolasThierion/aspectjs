@@ -29,7 +29,7 @@ describe('given a class configured with some annotation aspect', () => {
 
                 @AfterReturn(pc.class.annotations(AClass))
                 apply(ctxt: AfterReturnContext<any, AdviceType.CLASS>, retVal: any): void {
-                    expect(retVal).toEqual(ctxt.returnValue);
+                    expect(retVal).toEqual(ctxt.value);
                     return afterReturn(ctxt, retVal);
                 }
             }
