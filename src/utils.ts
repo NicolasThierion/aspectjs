@@ -1,5 +1,3 @@
-import clone from 'lodash/clone';
-
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
@@ -80,4 +78,6 @@ export function isEmpty(value: any): boolean {
     return value.length === 0;
 }
 
-export { clone };
+export function clone<T>(obj: T): T {
+    return { ...obj };
+}

@@ -201,13 +201,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _beforeClass<T>(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
-        const frozenCtxt = ctxt.freeze();
-        this.weaver.getAdvices(PointcutPhase.BEFORE, ctxt).forEach((advice: BeforeAdvice<unknown>) => {
-            const retVal = advice(frozenCtxt) as any;
-            if (retVal) {
-                throw new WeavingError(`Returning from advice "${advice}" is not supported`);
-            }
-        });
+        this._applyNonReturningAdvice(ctxt, PointcutPhase.BEFORE);
     }
 
     private _aroundClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
@@ -337,13 +331,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _afterClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
-        const frozenCtxt = ctxt.freeze();
-        this.weaver.getAdvices(PointcutPhase.AFTER, ctxt).forEach((advice: AfterAdvice<unknown>) => {
-            const retVal = advice(frozenCtxt) as any;
-            if (retVal) {
-                throw new WeavingError(`Returning from advice "${advice}" is not supported`);
-            }
-        });
+        this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER);
     }
 
     private _compileProperty(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
@@ -374,48 +362,21 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _afterReturnPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
-        const frozenCtxt = ctxt.freeze() as AfterReturnContext<any, AdviceType.PROPERTY>;
-        ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-
-        this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt).forEach((advice: AfterReturnAdvice<unknown>) => {
-            const retVal = advice(frozenCtxt, frozenCtxt.value);
-            if (!isUndefined(retVal)) {
-                frozenCtxt.value = retVal;
-            }
-        });
-
-        return frozenCtxt.value;
+        return this._applyAfterReturnAdvice(ctxt, PointcutPhase.AFTERRETURN);
     }
 
     private _afterThrowPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
-        const instance = ctxt.instance;
-        ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-        const frozenCtxt = ctxt.freeze() as AfterThrowContext<any, AdviceType.PROPERTY>;
-
         const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
         if (!afterThrowAdvices.length) {
             // pass-trough errors by default
             throw ctxt.error;
         } else {
-            afterThrowAdvices.forEach((advice: AfterThrowAdvice<unknown>) => {
-                const retVal = advice.bind(instance)(frozenCtxt);
-                if (!isUndefined(retVal)) {
-                    frozenCtxt.value = retVal;
-                }
-            });
+            return this._applyAfterReturnAdvice(ctxt, PointcutPhase.AFTERTHROW);
         }
-
-        return frozenCtxt.value;
     }
 
     private _afterPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
-        const frozenCtxt = ctxt.freeze();
-        this.weaver.getAdvices(PointcutPhase.AFTER, ctxt).forEach((advice: AfterAdvice<unknown>) => {
-            const retVal = advice(frozenCtxt) as any;
-            if (!isUndefined(retVal)) {
-                throw new WeavingError(`Returning from advice "${advice}" is not supported`);
-            }
-        });
+        this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER);
     }
 
     private _beforePropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
@@ -484,6 +445,31 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     private _afterParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
         assert(false, 'not implemented');
+    }
+
+    private _applyNonReturningAdvice(ctxt: MutableAdviceContext<any>, phase: PointcutPhase) {
+        const frozenCtxt = ctxt.freeze();
+        this.weaver.getAdvices(phase, ctxt).forEach((advice: AfterAdvice<unknown>) => {
+            const retVal = advice(frozenCtxt) as any;
+            if (!isUndefined(retVal)) {
+                throw new WeavingError(`Returning from advice "${advice}" is not supported`);
+            }
+        });
+    }
+
+    private _applyAfterReturnAdvice(ctxt: MutableAdviceContext<AdviceType>, phase: PointcutPhase) {
+        ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
+        const frozenCtxt = ctxt.freeze() as AfterReturnContext<any, AdviceType>;
+        const instance = ctxt.instance;
+
+        this.weaver.getAdvices(phase, ctxt).forEach((advice: AfterReturnAdvice<unknown>) => {
+            const retVal = advice.bind(instance)(frozenCtxt, frozenCtxt.value);
+            if (!isUndefined(retVal)) {
+                frozenCtxt.value = retVal;
+            }
+        });
+
+        return frozenCtxt.value;
     }
 }
 
