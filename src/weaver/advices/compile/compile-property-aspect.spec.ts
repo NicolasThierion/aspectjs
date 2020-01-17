@@ -40,6 +40,8 @@ describe('given a property configured with some annotation aspect', () => {
 
                 @Compile(pc.property.annotations(AProperty))
                 apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
+                    expect(this).toEqual(jasmine.any(CompileAspect));
+
                     return compileAdvice(ctxt);
                 }
             }

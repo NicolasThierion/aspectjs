@@ -154,20 +154,23 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             }
         }
 
+        Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.annotation.target.proto);
         let propDescriptor: PropertyDescriptor = {
             ...refDescriptor,
         };
         propDescriptor.get = function() {
+            const r = runner.property.getter;
             try {
                 ctxt.instance = this;
                 // runner.property.getter.before(ctxt); // TODO
-                ctxt.value = refDescriptor.get.bind(ctxt.instance)();
 
-                return runner.property.getter[PointcutPhase.AFTERRETURN](ctxt);
+                r[PointcutPhase.AROUND](ctxt);
+
+                return r[PointcutPhase.AFTERRETURN](ctxt);
             } catch (e) {
-                return runner.property.getter[PointcutPhase.AFTERTHROW](ctxt);
+                return r[PointcutPhase.AFTERTHROW](ctxt);
             } finally {
-                runner.property.getter[PointcutPhase.AFTER](ctxt);
+                r[PointcutPhase.AFTER](ctxt);
             }
         };
 

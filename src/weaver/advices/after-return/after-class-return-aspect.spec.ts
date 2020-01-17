@@ -1,5 +1,5 @@
 import { Aspect } from '../../types';
-import { ClassAnnotation, setWeaver } from '../../../index';
+import { setWeaver } from '../../../index';
 import { AdviceType, AfterReturnAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
@@ -29,6 +29,7 @@ describe('given a class configured with some annotation aspect', () => {
 
                 @AfterReturn(pc.class.annotations(AClass))
                 apply(ctxt: AfterReturnContext<any, AdviceType.CLASS>, retVal: any): void {
+                    expect(this).toEqual(jasmine.any(AfterReturnAspect));
                     expect(retVal).toEqual(ctxt.value);
                     return afterReturn(ctxt, retVal);
                 }

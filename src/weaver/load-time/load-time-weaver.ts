@@ -62,18 +62,25 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
             console.debug('weaver is loading...');
             this._aspects = this._aspects.filter(a => !!this._aspectsRegistry[a.id]);
 
-            this._advices = this._aspects
-                .map(AdvicesRegistry.getAdvices)
-                .flat()
-                .reduce((pipeline: AdvicePipeline, advice: Advice) => {
-                    _getAdvicesArray(
-                        pipeline,
-                        advice.pointcut.type,
-                        advice.pointcut.phase,
-                        advice.pointcut.annotation,
-                    ).push(advice);
-                    return pipeline;
-                }, {} as AdvicePipeline);
+            this._advices = this._aspects.reduce((pipeline: AdvicePipeline, aspect: Aspect) => {
+                const advices = AdvicesRegistry.getAdvices(aspect);
+
+                advices
+                    .map((advice: any) => {
+                        const bound = advice.bind(aspect);
+                        Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
+                        return bound;
+                    })
+                    .forEach(advice => {
+                        _getAdvicesArray(
+                            pipeline,
+                            advice.pointcut.type,
+                            advice.pointcut.phase,
+                            advice.pointcut.annotation,
+                        ).push(advice);
+                    });
+                return pipeline;
+            }, {} as AdvicePipeline);
             console.debug('weaver loaded. You can now use aspects.');
         }
 
@@ -210,15 +217,13 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         // this partial instance will take place until ctor is called
         const partialThis = Object.create(proto);
 
-        const jpf = new JoinpointFactory();
-
         const ctorArgs = ctxt.args;
 
         const refCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.annotation.target.proto);
         assert(!!refCtor);
 
         // create ctor joinpoint
-        let jp = jpf.create(
+        let jp = JoinpointFactory.create(
             (args: any[]) => new refCtor(...args),
             () => ctorArgs,
         );
@@ -232,7 +237,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
             let wasRead = false;
             // ensure 'this' instance has not been read before joinpoint gets called.
-            jp = jpf.create(
+            jp = JoinpointFactory.create(
                 (args: any[]) => {
                     if (wasRead) {
                         throw new Error(
@@ -253,7 +258,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 const previousJp = jp;
 
                 // replace args that may have been passed from calling advice's joinpoint
-                jp = jpf.create(
+                jp = JoinpointFactory.create(
                     (...args: any[]) => {
                         previousArgs = args ?? previousArgs;
                         ctxt.joinpoint = previousJp;
@@ -336,8 +341,8 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     private _compileProperty(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
         const target = ctxt.annotation.target;
-        let newDescriptor = this.weaver
-            .getAdvices(PointcutPhase.COMPILE, ctxt)
+        const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
+        let newDescriptor = compileAdvices
             .map((advice: CompileAdvice<unknown, AdviceType.PROPERTY>) => advice(ctxt.freeze()))
             .filter(c => !!c)
             .slice(-1)[0];
@@ -358,7 +363,38 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _aroundPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
-        assert(false, 'not implemented');
+        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.annotation.target.proto);
+        assert(!!refDescriptor);
+
+        const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
+
+        if (aroundAdvices.length) {
+            const refGetter = refDescriptor.get.bind(ctxt.instance);
+
+            // create getter joinpoint
+            let jp = JoinpointFactory.create(() => refGetter());
+
+            let aroundAdvice = aroundAdvices.shift();
+
+            // nest all around advices into each others
+            while (aroundAdvices.length) {
+                const previousAroundAdvice = aroundAdvice;
+                aroundAdvice = aroundAdvices.shift();
+                const previousJp = jp;
+
+                // replace args that may have been passed from calling advice's joinpoint
+                jp = JoinpointFactory.create((...args: any[]) => {
+                    ctxt.joinpoint = previousJp;
+                    ctxt.joinpointArgs = args;
+                    previousAroundAdvice(ctxt.freeze(), previousJp, args);
+                });
+            }
+
+            ctxt.joinpoint = jp;
+            aroundAdvice(ctxt.freeze(), jp, undefined);
+        } else {
+            return (ctxt.value = refDescriptor.get.bind(ctxt.instance)());
+        }
     }
 
     private _afterReturnPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
@@ -460,10 +496,9 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     private _applyAfterReturnAdvice(ctxt: MutableAdviceContext<AdviceType>, phase: PointcutPhase) {
         ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
         const frozenCtxt = ctxt.freeze() as AfterReturnContext<any, AdviceType>;
-        const instance = ctxt.instance;
 
         this.weaver.getAdvices(phase, ctxt).forEach((advice: AfterReturnAdvice<unknown>) => {
-            const retVal = advice.bind(instance)(frozenCtxt, frozenCtxt.value);
+            const retVal = advice(frozenCtxt, frozenCtxt.value);
             if (!isUndefined(retVal)) {
                 frozenCtxt.value = retVal;
             }
@@ -474,7 +509,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 }
 
 class JoinpointFactory<T> {
-    create(fn: (...args: any[]) => any, argsProvider: () => any[]): JoinPoint {
+    static create(fn: (...args: any[]) => any, argsProvider: () => any[] = () => []): JoinPoint {
         const alreadyCalledFn = (): void => {
             throw new WeavingError(`joinPoint already proceeded`);
         };

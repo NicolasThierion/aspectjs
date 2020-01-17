@@ -1,13 +1,14 @@
 import { Aspect, JoinPoint } from '../../types';
-import { ClassAnnotation, setWeaver } from '../../../index';
+import { setWeaver } from '../../../index';
 import { AdviceType, AroundAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AroundContext } from '../advice-context';
-import Spy = jasmine.Spy;
 import { WeavingError } from '../../weaving-error';
 import { Around } from './around.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { pc } from '../pointcut';
+import { AnnotationFactory } from '../../../annotation/factory/factory';
+import Spy = jasmine.Spy;
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new LoadTimeWeaver().enable(...aspects);
@@ -15,17 +16,27 @@ function setupWeaver(...aspects: Aspect[]) {
     weaver.load();
 }
 
+interface Labeled {
+    labels?: string[];
+}
+
+const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
+    return;
+});
+
+let a: Labeled;
 let aroundAdvice: AroundAdvice<any> = (ctxt, jp, jpArgs) => {
     throw new Error('should configure aroundAdvice');
 };
-describe('given a class configured with some annotation aspect', () => {
+xdescribe('given a property configured with some annotation aspect', () => {
     beforeEach(() => {
-        class AroundClassAspect extends Aspect {
-            id = 'AClassLabel';
+        class AroundPropertyAspect extends Aspect {
+            id = 'APropertyLabel';
 
-            @Around(pc.class.annotations(AClass))
+            @Around(pc.property.annotations(AProperty))
             apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
-                expect(this).toEqual(jasmine.any(AroundClassAspect));
+                expect(this).toEqual(jasmine.any(AroundPropertyAspect));
+
                 expect(jp).toEqual(ctxt.joinpoint);
                 expect(jpArgs).toEqual(ctxt.joinpointArgs);
 
@@ -33,39 +44,29 @@ describe('given a class configured with some annotation aspect', () => {
             }
         }
 
-        setupWeaver(new AroundClassAspect());
+        setupWeaver(new AroundPropertyAspect());
     });
     describe('that leverage "around" pointcut', () => {
         let beforeAdvice: Spy;
-        let ctor: Spy;
         let afterAdvice: Spy;
 
         beforeEach(() => {
-            beforeAdvice = jasmine.createSpy('beforeAdvice');
-            ctor = jasmine.createSpy('ctor');
-            afterAdvice = jasmine.createSpy('afterAdvice');
-
-            aroundAdvice = (ctxt, jp) => {
-                beforeAdvice();
-                jp();
-                afterAdvice();
-            };
+            aroundAdvice = jasmine
+                .createSpy('aroundAdvice', function(ctxt, jp) {
+                    return jp();
+                })
+                .and.callThrough();
         });
 
-        it('should call the aspect around the constructor', () => {
-            @AClass()
-            class A {
-                constructor() {
-                    ctor();
-                }
+        it('should call the aspect around the property', () => {
+            class A implements Labeled {
+                @AProperty()
+                public labels: string[] = [];
             }
 
-            new A();
-            expect(beforeAdvice).toHaveBeenCalled();
-            expect(afterAdvice).toHaveBeenCalled();
-            expect(ctor).toHaveBeenCalled();
-            expect(beforeAdvice).toHaveBeenCalledBefore(ctor);
-            expect(ctor).toHaveBeenCalledBefore(afterAdvice);
+            const a = new A();
+            console.log(a.labels);
+            expect(aroundAdvice).toHaveBeenCalled();
         });
 
         describe('and references "this" from before the joinpoint', () => {
@@ -76,17 +77,8 @@ describe('given a class configured with some annotation aspect', () => {
                 };
             });
 
-            it('should throw', () => {
-                expect(() => {
-                    @AClass()
-                    class A {
-                        constructor() {
-                            ctor();
-                        }
-                    }
-
-                    new A();
-                }).toThrow(
+            xit('should throw', () => {
+                expect(() => {}).toThrow(
                     new WeavingError(
                         'In advice "@Around(@AClass) AroundClassAspect.apply()": Cannot get "this" instance of constructor before calling constructor joinpoint',
                     ),
@@ -102,20 +94,10 @@ describe('given a class configured with some annotation aspect', () => {
                 };
             });
 
-            it('should not throw', () => {
-                @AClass()
-                class A {
-                    labels: string[];
-                    constructor() {
-                        ctor();
-                        this.labels = ['ctor'];
-                    }
-                }
-                expect(() => {
-                    new A();
-                }).not.toThrow();
+            xit('should not throw', () => {
+                expect(() => {}).not.toThrow();
 
-                expect(new A().labels).toEqual(['ctor', 'a']);
+                expect(a.labels).toEqual(['ctor', 'a']);
             });
         });
 
@@ -127,17 +109,8 @@ describe('given a class configured with some annotation aspect', () => {
                 };
             });
 
-            it('should call the original ctor with given args', () => {
-                @AClass()
-                class A {
-                    labels: string[];
-                    constructor(label: string) {
-                        ctor();
-                        this.labels = [label];
-                    }
-                }
-
-                expect(new A('ctor').labels).toEqual(['x', 'a']);
+            xit('should call the original ctor with given args', () => {
+                expect(a.labels).toEqual(['x', 'a']);
             });
         });
 
@@ -149,19 +122,7 @@ describe('given a class configured with some annotation aspect', () => {
                 };
             });
 
-            it('should not call through original ctor', () => {
-                @AClass()
-                class A {
-                    labels: string[];
-                    constructor(label: string) {
-                        ctor();
-                        this.labels = [label];
-                    }
-                }
-
-                expect(ctor).not.toHaveBeenCalled();
-                expect(new A('ctor').labels).toEqual(['a']);
-            });
+            xit('should not call through original ctor', () => {});
         });
     });
 
@@ -198,16 +159,8 @@ describe('given a class configured with some annotation aspect', () => {
                 }
                 setupWeaver(new AAspect(), new BAspect());
             });
-            it('should call them nested, in declaration order', () => {
-                @AClass()
-                class A {
-                    constructor(label: string) {
-                        labels.push(label);
-                    }
-                }
-
-                new A('ctor');
-                expect(labels).toEqual(['beforeB', 'beforeA', 'ctor', 'afterA', 'afterB']);
+            xit('should call them nested, in declaration order', () => {
+                expect(a.labels).toEqual(['beforeB', 'beforeA', 'ctor', 'afterA', 'afterB']);
             });
 
             describe('with joinpoint arguments override', () => {

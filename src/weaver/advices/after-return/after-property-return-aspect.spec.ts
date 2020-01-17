@@ -41,6 +41,8 @@ describe('given a property configured with some annotation aspect', () => {
                         id = 'PropAspect';
                         @Compile(pc.property.annotations(AProperty))
                         compile() {
+                            expect(this).toEqual(jasmine.any(PropAspect));
+
                             return {
                                 get() {
                                     throw new Error('expected');

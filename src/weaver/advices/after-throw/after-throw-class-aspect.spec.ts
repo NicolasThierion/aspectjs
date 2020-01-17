@@ -32,6 +32,8 @@ describe('given a class configured with some annotation aspect', () => {
 
                 @AfterThrow(pc.class.annotations(AClass))
                 apply(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
+                    expect(this).toEqual(jasmine.any(AfterThrowAspect));
+
                     return afterThrowAdviceSpy(ctxt);
                 }
             }

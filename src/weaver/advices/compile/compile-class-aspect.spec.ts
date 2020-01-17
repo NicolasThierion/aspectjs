@@ -32,6 +32,8 @@ describe('given a class configured with some annotation aspect', () => {
 
                 @Compile(pc.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
+                    expect(this).toEqual(jasmine.any(CompileAspect));
+
                     return compileAdvice(ctxt);
                 }
             }

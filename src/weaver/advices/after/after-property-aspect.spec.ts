@@ -34,6 +34,8 @@ describe('given a property getter annotated with an aspect', () => {
 
                 @After(pc.property.annotations(AProperty))
                 apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
+                    expect(this).toEqual(jasmine.any(AfterAspect));
+
                     afterAdvice(ctxt);
                 }
             }

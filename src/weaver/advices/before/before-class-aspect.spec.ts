@@ -23,6 +23,8 @@ describe('given a class configured with some annotation aspect', () => {
 
                 @Before(pc.class.annotations(AClass))
                 applyBefore(ctxt: AdviceContext<any, AdviceType.CLASS>): void {
+                    expect(this).toEqual(jasmine.any(AAspect));
+
                     advice(ctxt);
                 }
             }

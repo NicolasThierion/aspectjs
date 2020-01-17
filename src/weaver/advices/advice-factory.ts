@@ -4,7 +4,7 @@ import { AdvicesRegistry } from './advice-registry';
 import { Pointcut, PointcutExpression, PointcutPhase } from './pointcut';
 import { WeavingError } from '../weaving-error';
 
-export class AnnotationAdviceFactory {
+export class AdviceFactory {
     static create(pointcutExp: PointcutExpression, phase: PointcutPhase): MethodDecorator {
         const pointcut = Pointcut.of(phase, pointcutExp);
         assert(
@@ -17,7 +17,6 @@ export class AnnotationAdviceFactory {
             assert(isFunction(aspect[propertyKey]));
 
             const advice = aspect[propertyKey] as Advice;
-
             advice.pointcut = pointcut;
 
             Reflect.defineProperty(advice, Symbol.toPrimitive, {

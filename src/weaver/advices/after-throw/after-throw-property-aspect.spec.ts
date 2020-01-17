@@ -46,7 +46,7 @@ class AfterThrowAspect extends Aspect {
     @AfterThrow(pc.property.annotations(AProperty))
     afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
         afterThrowAdviceSpy(ctxt, error);
-        return Reflect.getOwnMetadata(ctxt.annotation.target.propertyKey, this);
+        return Reflect.getOwnMetadata(ctxt.annotation.target.propertyKey, ctxt.instance);
     }
 }
 
