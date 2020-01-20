@@ -92,7 +92,28 @@ describe('given a property configured with some annotation aspect', () => {
             });
         });
 
-        xdescribe('and do not return a value', () => {});
+        describe('and do not return a value', () => {
+            beforeEach(() => {
+                class AroundPropertyAspect extends Aspect {
+                    id = 'APropertyLabel';
+
+                    @Around(pc.property.annotations(AProperty))
+                    apply(): void {}
+                }
+
+                setupWeaver(new AroundPropertyAspect());
+
+                class A implements Labeled {
+                    @AProperty()
+                    public labels: string[] = ['value'];
+                }
+
+                a = new A();
+            });
+            it('should return undefined', () => {
+                expect(a.labels).toEqual(undefined);
+            });
+        });
     });
     describe('when multiple "around" advices are configured', () => {
         describe('and joinpoint has been called', () => {

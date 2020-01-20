@@ -9,6 +9,7 @@ import { pc } from '../pointcut';
 import { AnnotationFactory } from '../../../annotation/factory/factory';
 import { Compile } from '../compile/compile.decorator';
 import Spy = jasmine.Spy;
+import { Mutable } from '../../../utils';
 
 interface Labeled {
     labels?: string[];
@@ -34,7 +35,7 @@ class PropertyThrowAspect extends Aspect {
                 throw new Error('expected');
             },
             set(val) {
-                Reflect.defineMetadata(ctxt.annotation.target.propertyKey, val, this);
+                Reflect.defineMetadata(ctxt.target.propertyKey, val, this);
             },
         };
     }
@@ -46,7 +47,7 @@ class AfterThrowAspect extends Aspect {
     @AfterThrow(pc.property.annotations(AProperty))
     afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
         afterThrowAdviceSpy(ctxt, error);
-        return Reflect.getOwnMetadata(ctxt.annotation.target.propertyKey, ctxt.instance);
+        return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
     }
 }
 
@@ -141,7 +142,7 @@ describe('given a property configured with some annotation aspect', () => {
 
                         @AfterThrow(pc.property.annotations(AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
-                            ctxt.value = ['newValue'];
+                            (ctxt as Mutable<AfterThrowContext<any, AdviceType.PROPERTY>>).value = ['newValue'];
                         }
                     }
 

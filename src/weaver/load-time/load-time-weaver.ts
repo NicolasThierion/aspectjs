@@ -115,7 +115,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     getAdvices<A extends AdviceType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[];
     getAdvices<A extends AdviceType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[] {
         assert(!!this._advices);
-        return [..._getAdvicesArray(this._advices, ctxt.annotation.target.type, phase, ctxt.annotation)];
+        return [..._getAdvicesArray(this._advices, ctxt.target.type, phase, ctxt.annotation)];
     }
 
     private _assertNotLoaded(msg: string): void {
@@ -200,7 +200,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             .slice(-1)[0];
 
         if (newCtor) {
-            ctxt.annotation.target.proto.constructor = newCtor;
+            ctxt.target.proto.constructor = newCtor;
         }
     }
 
@@ -209,14 +209,14 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _aroundClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
-        const proto = ctxt.annotation.target.proto;
+        const proto = ctxt.target.proto;
 
         // this partial instance will take place until ctor is called
         const partialThis = Object.create(proto);
 
         const ctorArgs = ctxt.args;
 
-        const refCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.annotation.target.proto);
+        const refCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.target.proto);
         assert(!!refCtor);
 
         // create ctor joinpoint
@@ -337,7 +337,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _compileProperty(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
-        const target = ctxt.annotation.target;
+        const target = ctxt.target;
         const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
         let newDescriptor = compileAdvices
             .map((advice: CompileAdvice<unknown, AdviceType.PROPERTY>) => advice(ctxt.freeze()))
@@ -360,7 +360,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _aroundPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.annotation.target.proto);
+        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
         assert(!!refDescriptor);
 
         const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);

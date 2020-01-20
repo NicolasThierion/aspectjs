@@ -5,7 +5,7 @@ import { AClass } from '../../../tests/a';
 import { Compile } from './compile.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AdviceContext } from '../advice-context';
-import { AnnotationTarget } from '../../../annotation/target/annotation-target';
+import { AdviceTarget } from '../../../annotation/target/advice-target';
 import { pc } from '../pointcut';
 
 interface Labeled {
@@ -24,7 +24,7 @@ let compileAdvice: CompileAdvice<any, AdviceType.CLASS> = target => {
 
 describe('given a class configured with some annotation aspect', () => {
     describe('that leverage "compile" pointcut', () => {
-        let target: AnnotationTarget<any, AdviceType>;
+        let target: AdviceTarget<any, AdviceType>;
         let instance: any;
         beforeEach(() => {
             class CompileAspect extends Aspect {
@@ -40,7 +40,7 @@ describe('given a class configured with some annotation aspect', () => {
 
             compileAdvice = jasmine
                 .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.CLASS>) {
-                    target = ctxt.annotation.target;
+                    target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
                 .and.callThrough();
@@ -72,7 +72,7 @@ describe('given a class configured with some annotation aspect', () => {
             beforeEach(() => {
                 ctor = jasmine.createSpy('ctor');
                 compileAdvice = function(ctxt: AdviceContext<any, AdviceType.CLASS>) {
-                    target = ctxt.annotation.target;
+                    target = ctxt.target;
                     instance = (ctxt as any).instance;
 
                     return function() {

@@ -51,6 +51,4 @@
 ## Refactor
 - remove {priority: number} in favor of { appliesBefore: Decorators[], appliesAfter: Decorators[] }
 - use AnnotationRef = {module, name} in bundles & contexts
-- move ctxt.annotation.target into ctxt.target
 - add priority on advices
-- move target out of ctxt.annotation

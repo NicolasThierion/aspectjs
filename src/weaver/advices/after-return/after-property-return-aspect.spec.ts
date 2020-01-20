@@ -7,6 +7,7 @@ import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { pc } from '../pointcut';
 import { AnnotationFactory } from '../../../annotation/factory/factory';
 import { Compile } from '../compile/compile.decorator';
+import { Mutable } from '../../../utils';
 
 const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
     return;
@@ -136,7 +137,7 @@ describe('given a property configured with some annotation aspect', () => {
 
                             @AfterReturn(pc.property.annotations(AProperty))
                             after(ctxt: AfterReturnContext<any, any>, returnValue: any) {
-                                ctxt.value = undefined;
+                                (ctxt as Mutable<AfterReturnContext<any, any>>).value = undefined;
                             }
                         }
                         setupWeaver(new PropAspect());

@@ -1,12 +1,12 @@
-import { AnnotationTarget, ClassAnnotationTarget } from '../target/annotation-target';
+import { AdviceTarget, ClassAdviceTarget } from '../target/advice-target';
 import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../utils';
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
 import { AnnotationContext, ClassAnnotationContext } from '../context/context';
-import { AnnotationLocation, AnnotationLocationFactory } from '../location/location';
+import { AdviceLocation, AdviceLocationFactory } from '../location/location';
 import { AdviceType } from '../../weaver/advices/types';
 
 export abstract class AnnotationBundleFactory {
-    static of<T>(target: AnnotationTarget<T, any>): AnnotationsBundle<T> | undefined {
+    static of<T>(target: AdviceTarget<T, any>): AnnotationsBundle<T> | undefined {
         return getMetaOrDefault(
             'aspectjs.bundle',
             target.proto,
@@ -36,7 +36,7 @@ function _createContextsHolder<T, D extends AdviceType>(): AnnotationContextsHol
 }
 
 export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
-    private _target: AnnotationTarget<T, AdviceType.CLASS>;
+    private _target: AdviceTarget<T, AdviceType.CLASS>;
 
     private _contextHolders: AnnotationContextsHolder<any, any>[] = new Array(4)
         .fill(() => _createContextsHolder<any, any>())
@@ -44,12 +44,12 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
 
     private _global = _createContextsHolder<T, AdviceType>();
 
-    constructor(target: ClassAnnotationTarget<T>) {
+    constructor(target: ClassAdviceTarget<T>) {
         this._target = target;
     }
 
-    at<D extends AdviceType>(location: AnnotationLocation<T, D>): AnnotationContextSelector<T, D> {
-        const target = AnnotationLocationFactory.getTarget(location);
+    at<D extends AdviceType>(location: AdviceLocation<T, D>): AnnotationContextSelector<T, D> {
+        const target = AdviceLocationFactory.getTarget(location);
 
         return new AnnotationContextSelectorImpl<T, D>(
             target ? this._getContextHolders(target, false)[0] : _createContextsHolder(),
@@ -62,7 +62,7 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         const holders = this._getContextHolders(ctxt.target, true);
 
         holders.forEach(holder => {
-            AnnotationLocationFactory.create(ctxt.target);
+            AdviceLocationFactory.create(ctxt.target);
             getOrDefault(holder.byAnnotationName, name, () => []).push(ctxt);
             holder.all.push(ctxt as ClassAnnotationContext<T>);
         });
@@ -79,7 +79,7 @@ export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
 
     @Enumerable(false)
     private _getContextHolders<D extends AdviceType>(
-        target: AnnotationTarget<T, D>,
+        target: AdviceTarget<T, D>,
         save: boolean,
     ): AnnotationContextsHolder<T, D>[] {
         if (!target) {

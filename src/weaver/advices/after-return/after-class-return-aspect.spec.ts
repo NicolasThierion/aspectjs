@@ -80,7 +80,7 @@ describe('given a class configured with some annotation aspect', () => {
                 describe('and the aspect returns a new value', () => {
                     beforeEach(() => {
                         afterReturn = (ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
-                            return Object.assign(Object.create(ctxt.annotation.target.proto), {
+                            return Object.assign(Object.create(ctxt.target.proto), {
                                 labels: ['ABis'],
                             });
                         };

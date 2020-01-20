@@ -10,9 +10,9 @@ import { WeavingError } from '../../weaver/weaving-error';
 import { PointcutsRunner } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
-import { AnnotationTargetFactory } from '../target/annotation-target-factory';
+import { AdviceTargetFactory } from '../target/advice-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
-import { AnnotationTarget } from '../target/annotation-target';
+import { AdviceTarget } from '../target/advice-target';
 import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
 import { AdviceType } from '../../weaver/advices/types';
@@ -107,10 +107,10 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
     annotationArgs: any[],
 ): Decorator {
     return function(...targetArgs: any[]): Function | PropertyDescriptor {
-        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, TAdvice>;
+        const target = AdviceTargetFactory.of(targetArgs) as AdviceTarget<any, TAdvice>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
-        const ctxt = new AnnotationAdviceContextImpl(annotationContext);
+        const ctxt = new AdviceContextImpl(annotationContext);
 
         if (target.type === AdviceType.CLASS) {
             return _createClassDecoration(ctxt);
@@ -121,16 +121,16 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
         }
     };
 
-    function _createPropertyDecoration(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): PropertyDescriptor {
-        const target = ctxt.annotation.target;
+    function _createPropertyDecoration(ctxt: AdviceContextImpl<any, TAdvice>): PropertyDescriptor {
+        const target = ctxt.target;
         const defaultDescriptor: PropertyDescriptor = {
             configurable: true,
             enumerable: true,
             get() {
-                return Reflect.getOwnMetadata(`aspectjs.propValue#${ctxt.annotation.target.propertyKey}`, this);
+                return Reflect.getOwnMetadata(`aspectjs.propValue#${ctxt.target.propertyKey}`, this);
             },
             set(value: any) {
-                Reflect.defineMetadata(`aspectjs.propValue#${ctxt.annotation.target.propertyKey}`, value, this);
+                Reflect.defineMetadata(`aspectjs.propValue#${ctxt.target.propertyKey}`, value, this);
             },
         };
 
@@ -154,7 +154,7 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             }
         }
 
-        Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.annotation.target.proto);
+        Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.target.proto);
         let propDescriptor: PropertyDescriptor = {
             ...refDescriptor,
         };
@@ -198,7 +198,7 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
         return propDescriptor;
     }
 
-    function _createClassDecoration<T>(ctxt: AnnotationAdviceContextImpl<any, TAdvice>): Function {
+    function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, TAdvice>): Function {
         runner.class[PointcutPhase.COMPILE](ctxt);
 
         const ctor = function(...ctorArgs: any[]): T {
@@ -227,30 +227,30 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             }
         };
 
-        const ctorName = ctxt.annotation.target.proto.constructor.name;
+        const ctorName = ctxt.target.proto.constructor.name;
         _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
 
-        Reflect.defineMetadata('aspectjs.referenceProto', ctor.prototype, ctxt.annotation.target.proto);
-        Reflect.defineMetadata(
-            'aspectjs.referenceCtor',
-            ctxt.annotation.target.proto.constructor,
-            ctxt.annotation.target.proto,
-        );
-        ctor.prototype = ctxt.annotation.target.proto;
+        Reflect.defineMetadata('aspectjs.referenceProto', ctor.prototype, ctxt.target.proto);
+        Reflect.defineMetadata('aspectjs.referenceCtor', ctxt.target.proto.constructor, ctxt.target.proto);
+        ctor.prototype = ctxt.target.proto;
         ctor.prototype.constructor = ctor;
 
         return ctor;
     }
 }
 
-class AnnotationAdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext<A> {
-    constructor(readonly annotation: AnnotationContextImpl<T, A>) {}
-
+class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext<A> {
     public error?: Error;
     public instance?: T;
     public value?: T | unknown;
     public args?: any[];
     public joinpoint?: JoinPoint;
+    public joinpointArgs?: any[];
+    public target: AdviceTarget<T, A>;
+
+    constructor(readonly annotation: AnnotationContextImpl<T, A>) {
+        this.target = annotation.target;
+    }
 
     freeze(): AdviceContext<T, A> {
         return Object.freeze(
@@ -259,8 +259,8 @@ class AnnotationAdviceContextImpl<T, A extends AdviceType> implements MutableAdv
                     cpy[e[0]] = e[1];
                 }
                 return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, AdviceType>>,
-        );
+            }, Object.create(Reflect.getPrototypeOf(this))) as AdviceContext<any, AdviceType>,
+        ) as any;
     }
 }
 
@@ -268,11 +268,7 @@ class AnnotationContextImpl<T, D extends AdviceType> implements AnnotationContex
     public readonly name: string;
     public readonly groupId: string;
 
-    constructor(
-        public readonly target: AnnotationTarget<T, D>,
-        public readonly args: any[],
-        annotation: AnnotationRef,
-    ) {
+    constructor(public readonly target: AdviceTarget<T, D>, public readonly args: any[], annotation: AnnotationRef) {
         this.name = annotation.name;
         this.groupId = annotation.groupId;
     }

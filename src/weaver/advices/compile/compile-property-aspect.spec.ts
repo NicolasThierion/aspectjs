@@ -4,7 +4,7 @@ import { AdviceType, PropertyCompileAdvice } from '../types';
 import { Compile } from './compile.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { AdviceContext } from '../advice-context';
-import { AnnotationTarget } from '../../../annotation/target/annotation-target';
+import { AdviceTarget } from '../../../annotation/target/advice-target';
 import { pc } from '../pointcut';
 import { AnnotationFactory } from '../../../annotation/factory/factory';
 import { WeavingError } from '../../weaving-error';
@@ -32,7 +32,7 @@ let compileAdvice: PropertyCompileAdvice<any> = target => {
 
 describe('given a property configured with some annotation aspect', () => {
     describe('that leverage "compile" pointcut', () => {
-        let target: AnnotationTarget<any, AdviceType>;
+        let target: AdviceTarget<any, AdviceType>;
         let instance: any;
         beforeEach(() => {
             class CompileAspect extends Aspect {
@@ -48,7 +48,7 @@ describe('given a property configured with some annotation aspect', () => {
 
             compileAdvice = jasmine
                 .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
-                    target = ctxt.annotation.target;
+                    target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
                 .and.callThrough();

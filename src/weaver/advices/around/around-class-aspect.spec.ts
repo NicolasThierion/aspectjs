@@ -1,13 +1,13 @@
 import { Aspect, JoinPoint } from '../../types';
-import { ClassAnnotation, setWeaver } from '../../../index';
+import { setWeaver } from '../../../index';
 import { AdviceType, AroundAdvice } from '../types';
 import { AClass } from '../../../tests/a';
 import { AroundContext } from '../advice-context';
-import Spy = jasmine.Spy;
 import { WeavingError } from '../../weaving-error';
 import { Around } from './around.decorator';
 import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
 import { pc } from '../pointcut';
+import Spy = jasmine.Spy;
 
 function setupWeaver(...aspects: Aspect[]) {
     const weaver = new LoadTimeWeaver().enable(...aspects);

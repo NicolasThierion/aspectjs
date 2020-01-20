@@ -1,6 +1,7 @@
 import { AnnotationContext } from '../../annotation/context/context';
 import { JoinPoint } from '../../index';
 import { AdviceType } from './types';
+import { AdviceTarget } from '../../annotation/target/advice-target';
 
 export type AdviceContext<T, A extends AdviceType> =
     | AfterContext<T, A>
@@ -14,18 +15,21 @@ export interface AfterContext<T, A extends AdviceType> {
     readonly annotation: AnnotationContext<T, A>;
     readonly instance: T;
     readonly args: any[];
+    readonly target: AdviceTarget<T, A>;
 }
 
 export interface BeforeContext<T, A extends AdviceType> {
     readonly annotation: AnnotationContext<T, A>;
     readonly args: any[];
+    readonly target: AdviceTarget<T, A>;
 }
 
 export interface AfterReturnContext<T, A extends AdviceType> {
     readonly annotation: AnnotationContext<T, A>;
     readonly instance: T;
     readonly args: any[];
-    value: any;
+    readonly target: AdviceTarget<T, A>;
+    readonly value: any;
 }
 
 export interface AfterThrowContext<T, A extends AdviceType> {
@@ -33,7 +37,8 @@ export interface AfterThrowContext<T, A extends AdviceType> {
     readonly instance: T;
     readonly args: any[];
     readonly error: Error;
-    value: any;
+    readonly target: AdviceTarget<T, A>;
+    readonly value: any;
 }
 
 export interface AroundContext<T, A extends AdviceType> {
@@ -43,10 +48,12 @@ export interface AroundContext<T, A extends AdviceType> {
     readonly error: Error;
     readonly joinpoint: JoinPoint;
     readonly joinpointArgs: any[];
+    readonly target: AdviceTarget<T, A>;
 }
 
 export interface CompileContext<T, A extends AdviceType> {
     readonly annotation: AnnotationContext<T, A>;
+    readonly target: AdviceTarget<T, A>;
 }
 
 export type MutableAdviceContext<A extends AdviceType> = {
@@ -57,5 +64,7 @@ export type MutableAdviceContext<A extends AdviceType> = {
     error?: Error;
     joinpoint?: JoinPoint;
     joinpointArgs?: any[];
+    target: AdviceTarget<any, A>;
+
     freeze(): AdviceContext<unknown, A>;
 };
