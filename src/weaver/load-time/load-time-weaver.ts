@@ -3,7 +3,7 @@ import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
 import { Aspect, JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
 import { AnnotationRef } from '../..';
-import { AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
+import { AfterReturnContext, MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
     AdviceType,
@@ -11,7 +11,6 @@ import {
     AfterReturnAdvice,
     AfterThrowAdvice,
     AroundAdvice,
-    BeforeAdvice,
     BeforeClassAdvice,
     CompileAdvice,
 } from '../advices/types';
@@ -59,7 +58,6 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
 
     load(): PointcutsRunner {
         if (!this._advices) {
-            console.debug('weaver is loading...');
             this._aspects = this._aspects.filter(a => !!this._aspectsRegistry[a.id]);
 
             this._advices = this._aspects.reduce((pipeline: AdvicePipeline, aspect: Aspect) => {
@@ -81,7 +79,6 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
                     });
                 return pipeline;
             }, {} as AdvicePipeline);
-            console.debug('weaver loaded. You can now use aspects.');
         }
 
         return this._runner;
@@ -259,7 +256,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
                 // replace args that may have been passed from calling advice's joinpoint
                 jp = JoinpointFactory.create(
-                    (...args: any[]) => {
+                    (args: any[]) => {
                         previousArgs = args ?? previousArgs;
                         ctxt.joinpoint = previousJp;
                         ctxt.joinpointArgs = args;
@@ -383,15 +380,15 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 const previousJp = jp;
 
                 // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create((...args: any[]) => {
+                jp = JoinpointFactory.create((args: any[]) => {
                     ctxt.joinpoint = previousJp;
                     ctxt.joinpointArgs = args;
-                    previousAroundAdvice(ctxt.freeze(), previousJp, args);
+                    return previousAroundAdvice(ctxt.freeze(), previousJp, args);
                 });
             }
 
             ctxt.joinpoint = jp;
-            aroundAdvice(ctxt.freeze(), jp, undefined);
+            return (ctxt.value = aroundAdvice(ctxt.freeze(), jp, undefined));
         } else {
             return (ctxt.value = refDescriptor.get.bind(ctxt.instance)());
         }
@@ -498,13 +495,10 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         const frozenCtxt = ctxt.freeze() as AfterReturnContext<any, AdviceType>;
 
         this.weaver.getAdvices(phase, ctxt).forEach((advice: AfterReturnAdvice<unknown>) => {
-            const retVal = advice(frozenCtxt, frozenCtxt.value);
-            if (!isUndefined(retVal)) {
-                frozenCtxt.value = retVal;
-            }
+            ctxt.value = advice(frozenCtxt, frozenCtxt.value);
         });
 
-        return frozenCtxt.value;
+        return ctxt.value;
     }
 }
 

@@ -168,6 +168,7 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
 
                 return r[PointcutPhase.AFTERRETURN](ctxt);
             } catch (e) {
+                ctxt.error = e;
                 return r[PointcutPhase.AFTERTHROW](ctxt);
             } finally {
                 r[PointcutPhase.AFTER](ctxt);
@@ -252,23 +253,14 @@ class AnnotationAdviceContextImpl<T, A extends AdviceType> implements MutableAdv
     public joinpoint?: JoinPoint;
 
     freeze(): AdviceContext<T, A> {
-        const frozenCtxt: any = { ...this };
-        Object.keys(frozenCtxt)
-            .filter(k => k !== 'value')
-            .forEach(k => {
-                if (isUndefined(frozenCtxt[k])) {
-                    delete frozenCtxt[k];
-                } else {
-                    Object.defineProperty(frozenCtxt, k, {
-                        value: frozenCtxt[k],
-                        writable: false,
-                    });
+        return Object.freeze(
+            Object.entries(this).reduce((cpy, e) => {
+                if (!isUndefined(e[1])) {
+                    cpy[e[0]] = e[1];
                 }
-            });
-
-        Object.seal(frozenCtxt);
-
-        return frozenCtxt;
+                return cpy;
+            }, Object.create(Reflect.getPrototypeOf(this))) as Mutable<AdviceContext<any, AdviceType>>,
+        );
     }
 }
 

@@ -135,7 +135,7 @@ describe('given a property configured with some annotation aspect', () => {
             });
 
             describe('and the aspect set a new ctxt.value', () => {
-                it('should use the returned value', () => {
+                it('should throw an error', () => {
                     class ReturnNewValueAspect extends Aspect {
                         id = 'APropertyLabel';
 
@@ -152,7 +152,29 @@ describe('given a property configured with some annotation aspect', () => {
                         public labels: string[];
                     }
                     const a = new A();
-                    expect(a.labels).toEqual(['newValue']);
+                    expect(() => a.labels).toThrow(
+                        new TypeError('Cannot add property value, object is not extensible'),
+                    );
+                });
+            });
+
+            describe('and the aspect do not return a value', () => {
+                it('should throw an error', () => {
+                    class ReturnNewValueAspect extends Aspect {
+                        id = 'APropertyLabel';
+
+                        @AfterThrow(pc.property.annotations(AProperty))
+                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {}
+                    }
+
+                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[];
+                    }
+                    const a = new A();
+                    expect(a.labels).toEqual(undefined);
                 });
             });
         });

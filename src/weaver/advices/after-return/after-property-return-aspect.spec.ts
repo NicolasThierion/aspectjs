@@ -29,7 +29,11 @@ let afterReturn: AfterReturnAdvice<any> = (ctxt, retVal) => {
 describe('given a property configured with some annotation aspect', () => {
     describe('that leverage "afterReturn" pointcut', () => {
         beforeEach(() => {
-            afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt, retVal: any[]) {}).and.callThrough();
+            afterReturn = jasmine
+                .createSpy('afterReturnAdvice', function(ctxt, retVal: any[]) {
+                    return retVal;
+                })
+                .and.callThrough();
         });
 
         describe('getting the property', () => {
@@ -144,8 +148,8 @@ describe('given a property configured with some annotation aspect', () => {
                         a = new A();
                     });
 
-                    it('should return the value returned by the advice', () => {
-                        expect(a.labels).toEqual(undefined);
+                    it('should throw', () => {
+                        expect(() => a.labels).toThrow();
                     });
                 });
             });
