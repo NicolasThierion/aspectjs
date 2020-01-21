@@ -356,7 +356,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _beforePropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
-        assert(false, 'not implemented');
+        this._applyNonReturningAdvice(ctxt, PointcutPhase.BEFORE);
     }
 
     private _aroundPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {

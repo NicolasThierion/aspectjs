@@ -20,6 +20,7 @@ export interface AfterContext<T, A extends AdviceType> {
 
 export interface BeforeContext<T, A extends AdviceType> {
     readonly annotation: AnnotationContext<T, A>;
+    readonly instance: A extends AdviceType.CLASS ? never : T;
     readonly args: any[];
     readonly target: AdviceTarget<T, A>;
 }

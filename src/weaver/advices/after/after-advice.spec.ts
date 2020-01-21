@@ -1,34 +1,22 @@
 import { Aspect } from '../../types';
-import { AdviceType, AfterAdvice } from '../types';
-import { ClassAnnotation, setWeaver } from '../../../index';
+import { AdviceType } from '../types';
 import { After } from './after.decorator';
 import { AClass } from '../../../tests/a';
-import { AdviceContext } from '../advice-context';
-import { LoadTimeWeaver } from '../../load-time/load-time-weaver';
-import { pc } from '../pointcut';
+import { AdviceContext, AfterContext } from '../advice-context';
+import { on } from '../pointcut';
 import { WeavingError } from '../../weaving-error';
+import Spy = jasmine.Spy;
+import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 
-interface Labeled {
-    labels?: string[];
-}
+let afterAdvice: Spy;
 
-function setupWeaver(...aspects: Aspect[]): void {
-    const weaver = new LoadTimeWeaver().enable(...aspects);
-    setWeaver(weaver);
-    weaver.load();
-}
-
-let afterAdvice: AfterAdvice<any> = ctxt => {
-    throw new Error('should configure afterThrowAdvice');
-};
-
-describe('given a class configured with some annotation aspect', () => {
-    describe('that leverage "after" pointcut', () => {
+describe('@After advice', () => {
+    describe('applied on a class', () => {
         beforeEach(() => {
             class AfterAspect extends Aspect {
                 id = 'AClassLabel';
 
-                @After(pc.class.annotations(AClass))
+                @After(on.class.annotations(AClass))
                 apply(ctxt: AdviceContext<any, AdviceType.CLASS>): void {
                     expect(this).toEqual(jasmine.any(AfterAspect));
                     afterAdvice(ctxt);
@@ -50,7 +38,7 @@ describe('given a class configured with some annotation aspect', () => {
                 class BadAfterAspect extends Aspect {
                     id = 'AClassLabel';
 
-                    @After(pc.class.annotations(AClass))
+                    @After(on.class.annotations(AClass))
                     apply(ctxt: AdviceContext<any, AdviceType.CLASS>) {
                         return function() {};
                     }
@@ -130,6 +118,80 @@ describe('given a class configured with some annotation aspect', () => {
                     } catch (e) {}
                     expect(afterAdvice).toHaveBeenCalled();
                 });
+            });
+        });
+    });
+
+    describe('applied on a property', () => {
+        beforeEach(() => {
+            class AfterAspect extends Aspect {
+                id = 'APropertyLabel';
+
+                @After(on.property.annotations(AProperty))
+                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
+                    expect(this).toEqual(jasmine.any(AfterAspect));
+
+                    afterAdvice(ctxt);
+                }
+            }
+
+            afterAdvice = jasmine
+                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AdviceType.PROPERTY>) {})
+                .and.callThrough();
+
+            setupWeaver(new AfterAspect());
+        });
+
+        describe('getting the annotated property', () => {
+            it('should invoke the aspect', () => {
+                class A implements Labeled {
+                    @AProperty()
+                    labels?: string[];
+                }
+
+                const instance = new A() as Labeled;
+                const labels = instance.labels;
+
+                expect(afterAdvice).toHaveBeenCalled();
+            });
+
+            it("should return the original property's value", () => {
+                class A implements Labeled {
+                    @AProperty()
+                    labels = ['a'];
+                }
+
+                const instance = new A() as Labeled;
+                const labels = instance.labels;
+
+                expect(labels).toEqual(['a']);
+            });
+        });
+
+        describe('when the advice returns a value', () => {
+            it('should throw an error', () => {
+                class BadAfterAspect extends Aspect {
+                    id = 'APropertyLabel';
+
+                    @After(on.property.annotations(AProperty))
+                    apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
+                        return Object.getOwnPropertyDescriptor({ test: 'test' }, 'test');
+                    }
+                }
+
+                setupWeaver(new BadAfterAspect());
+                expect(() => {
+                    class X {
+                        @AProperty()
+                        someProp: string;
+                    }
+
+                    const prop = new X().someProp;
+                }).toThrow(
+                    new WeavingError(
+                        'Returning from advice "@After(@AProperty) BadAfterAspect.apply()" is not supported',
+                    ),
+                );
             });
         });
     });

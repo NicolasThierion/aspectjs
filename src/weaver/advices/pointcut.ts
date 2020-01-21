@@ -81,7 +81,7 @@ class PointcutExpressionFactory {
     }
 }
 
-export const pc = new PointcutExpressionFactory();
+export const on = new PointcutExpressionFactory();
 
 export enum PointcutPhase {
     COMPILE = 'Compile',

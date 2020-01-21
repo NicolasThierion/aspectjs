@@ -162,7 +162,7 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             const r = runner.property.getter;
             try {
                 ctxt.instance = this;
-                // runner.property.getter.before(ctxt); // TODO
+                r[PointcutPhase.BEFORE](ctxt);
 
                 r[PointcutPhase.AROUND](ctxt);
 

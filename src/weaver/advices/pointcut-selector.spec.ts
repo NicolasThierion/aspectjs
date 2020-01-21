@@ -1,5 +1,5 @@
 import { AnnotationFactory } from '../../annotation/factory/factory';
-import { pc } from './pointcut';
+import { on } from './pointcut';
 
 describe('PointcutExpression', () => {
     const AProperty = new AnnotationFactory('test').create(function AProperty(): PropertyDecorator {
@@ -8,16 +8,16 @@ describe('PointcutExpression', () => {
 
     describe('for a property getter', function() {
         it('should toString the property name', () => {
-            expect(pc.property.toString()).toEqual('property#get *');
+            expect(on.property.toString()).toEqual('property#get *');
         });
 
         it('should toString the annotation name', () => {
-            expect(pc.property.annotations(AProperty).toString()).toEqual('property#get *@test:AProperty');
+            expect(on.property.annotations(AProperty).toString()).toEqual('property#get *@test:AProperty');
         });
 
         xit('should toString the parent class name', () => {
             expect(
-                pc.property
+                on.property
                     .annotations(AProperty)
                     // .declaringClass()
                     // .name('*Service')
