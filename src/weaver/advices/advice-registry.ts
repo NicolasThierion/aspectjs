@@ -1,6 +1,7 @@
 import { Advice } from './types';
 import { Aspect } from '../types';
 import { assert, getMetaOrDefault, getProto } from '../../utils';
+
 export class AdvicesRegistry {
     static create(aspect: Aspect, advice: Advice) {
         getMetaOrDefault('aspectjs.advices', getProto(aspect), () => []).push(advice);

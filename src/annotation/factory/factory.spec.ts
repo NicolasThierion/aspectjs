@@ -26,16 +26,6 @@ describe('Annotation Factory', () => {
 
     describe('method "create"', () => {
         describe('given any annotation', () => {
-            describe('that has no name', () => {
-                it('should throw an error', () => {
-                    expect(() => {
-                        AClass = factory.create(function(): ClassDecorator {
-                            return;
-                        });
-                    }).toThrow(new TypeError('Annotation functions should have a name'));
-                });
-            });
-
             it('should return a decorator with the same name', () => {
                 AClass = factory.create(AClassStub);
 

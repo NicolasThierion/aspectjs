@@ -67,5 +67,5 @@ export type MutableAdviceContext<A extends AdviceType> = {
     joinpointArgs?: any[];
     target: AdviceTarget<any, A>;
 
-    freeze(): AdviceContext<unknown, A>;
+    clone(): AdviceContext<unknown, A>;
 };

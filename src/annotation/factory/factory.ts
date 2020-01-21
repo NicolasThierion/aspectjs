@@ -8,7 +8,7 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import { PointcutsRunner } from '../../weaver/weaver';
-import { assert, getMetaOrDefault, isUndefined, Mutable } from '../../utils';
+import { assert, getMetaOrDefault } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AdviceTargetFactory } from '../target/advice-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
@@ -20,6 +20,7 @@ import { PointcutPhase } from '../../weaver/advices/pointcut';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
+let generatedId = 0;
 /**
  * Factory to create some {@link Annotation}.
  */
@@ -35,7 +36,9 @@ export class AnnotationFactory {
 
     create<S extends Annotation<AdviceType>>(annotationStub: S): S & AnnotationRef {
         if (!annotationStub.name) {
-            throw new TypeError('Annotation functions should have a name');
+            Reflect.defineProperty(annotationStub, 'name', {
+                value: `anonymousAnnotation#${generatedId++}`,
+            });
         }
         const groupId = this._groupId;
 
@@ -252,15 +255,8 @@ class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext
         this.target = annotation.target;
     }
 
-    freeze(): AdviceContext<T, A> {
-        return Object.freeze(
-            Object.entries(this).reduce((cpy, e) => {
-                if (!isUndefined(e[1])) {
-                    cpy[e[0]] = e[1];
-                }
-                return cpy;
-            }, Object.create(Reflect.getPrototypeOf(this))) as AdviceContext<any, AdviceType>,
-        ) as any;
+    clone(): AdviceContext<T, A> {
+        return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as AdviceContext<any, AdviceType>, this);
     }
 }
 
