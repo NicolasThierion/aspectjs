@@ -121,7 +121,7 @@ export namespace Pointcut {
             if (match?.groups.name) {
                 assert(!!match.groups.annotation, 'only annotation pointcuts are supported');
                 pointcut = {
-                    type: +type,
+                    type: type as AdviceType,
                     phase,
                     annotation: AnnotationRef.of(match.groups.annotation),
                     name: match.groups.name,

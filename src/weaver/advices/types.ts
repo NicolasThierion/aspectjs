@@ -10,10 +10,10 @@ import {
 } from './pointcut';
 
 export enum AdviceType {
-    CLASS = 0,
-    PROPERTY = 1,
-    METHOD = 2,
-    PARAMETER = 3,
+    CLASS = 'CLASS',
+    PROPERTY = 'PROPERTY',
+    METHOD = 'METHOD',
+    PARAMETER = 'PARAMETER',
 }
 
 export type CompileAdvice<T, A extends AdviceType> = A extends AdviceType.CLASS

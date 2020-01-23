@@ -344,38 +344,38 @@ describe('@Around advice', () => {
                     expect(a.labels).toEqual(undefined);
                 });
             });
-        });
-        describe('when multiple "around" advices are configured', () => {
-            describe('and joinpoint has been called', () => {
-                beforeEach(() => {
-                    class AAspect extends Aspect {
-                        id = 'aAspect';
+            describe('when multiple "around" advices are configured', () => {
+                describe('and joinpoint has been called', () => {
+                    beforeEach(() => {
+                        class AAspect extends Aspect {
+                            id = 'aAspect';
 
-                        @Around(on.property.annotations(AProperty))
-                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
-                            return ['beforeA'].concat(jp() as []).concat('afterA');
+                            @Around(on.property.annotations(AProperty))
+                            apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
+                                return ['beforeA'].concat(jp() as []).concat('afterA');
+                            }
                         }
-                    }
 
-                    class BAspect extends Aspect {
-                        id = 'bAspect';
+                        class BAspect extends Aspect {
+                            id = 'bAspect';
 
-                        @Around(on.property.annotations(AProperty))
-                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
-                            return ['beforeB'].concat(jp() as []).concat('afterB');
+                            @Around(on.property.annotations(AProperty))
+                            apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
+                                return ['beforeB'].concat(jp() as []).concat('afterB');
+                            }
                         }
-                    }
-                    setupWeaver(new AAspect(), new BAspect());
+                        setupWeaver(new AAspect(), new BAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
-                        public labels: string[] = ['value'];
-                    }
+                        class A implements Labeled {
+                            @AProperty()
+                            public labels: string[] = ['value'];
+                        }
 
-                    a = new A();
-                });
-                it('should call them nested, in declaration order', () => {
-                    expect(a.labels).toEqual(['beforeB', 'beforeA', 'value', 'afterA', 'afterB']);
+                        a = new A();
+                    });
+                    it('should call them nested, in declaration order', () => {
+                        expect(a.labels).toEqual(['beforeB', 'beforeA', 'value', 'afterA', 'afterB']);
+                    });
                 });
             });
         });

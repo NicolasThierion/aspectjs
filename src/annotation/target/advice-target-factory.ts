@@ -9,20 +9,22 @@ import {
 } from './advice-target';
 import { AdviceType } from '../../weaver/advices/types';
 
-const TARGET_GENERATORS = [
-    _createClassAnnotationTarget,
-    _createPropertyAnnotationTarget,
-    _createMethodAnnotationTarget,
-    _createParameterAnnotationTarget,
-];
+const TARGET_GENERATORS = {
+    [AdviceType.CLASS]: _createClassAnnotationTarget,
+    [AdviceType.PROPERTY]: _createPropertyAnnotationTarget,
+    [AdviceType.METHOD]: _createMethodAnnotationTarget,
+    [AdviceType.PARAMETER]: _createParameterAnnotationTarget,
+};
 
-const REF_GENERATORS = [
-    (d: Mutable<Partial<ClassAdviceTarget<any>>>) => `c[${d.proto.constructor.name}]`,
-    (d: Mutable<Partial<PropertyAdviceTarget<any>>>) => `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
-    (d: Mutable<Partial<MethodAdviceTarget<any>>>) => `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
-    (d: Mutable<Partial<ParameterAdviceTarget<any>>>) =>
+const REF_GENERATORS = {
+    [AdviceType.CLASS]: (d: Mutable<Partial<ClassAdviceTarget<any>>>) => `c[${d.proto.constructor.name}]`,
+    [AdviceType.PROPERTY]: (d: Mutable<Partial<PropertyAdviceTarget<any>>>) =>
+        `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
+    [AdviceType.METHOD]: (d: Mutable<Partial<MethodAdviceTarget<any>>>) =>
+        `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
+    [AdviceType.PARAMETER]: (d: Mutable<Partial<ParameterAdviceTarget<any>>>) =>
         `c[${d.proto.constructor.name}].p[${d.propertyKey}].a[${d.parameterIndex}]`,
-];
+};
 
 export abstract class AdviceTargetFactory {
     static of<T, D extends AdviceType>(args: any[]): AdviceTarget<T, D> {

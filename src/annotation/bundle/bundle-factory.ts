@@ -38,9 +38,12 @@ function _createContextsHolder<T, D extends AdviceType>(): AnnotationContextsHol
 export class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
     private _target: AdviceTarget<T, AdviceType.CLASS>;
 
-    private _contextHolders: AnnotationContextsHolder<any, any>[] = new Array(4)
-        .fill(() => _createContextsHolder<any, any>())
-        .map(c => c());
+    private _contextHolders = {
+        [AdviceType.PROPERTY]: _createContextsHolder<any, any>(),
+        [AdviceType.CLASS]: _createContextsHolder<any, any>(),
+        [AdviceType.METHOD]: _createContextsHolder<any, any>(),
+        [AdviceType.PARAMETER]: _createContextsHolder<any, any>(),
+    };
 
     private _global = _createContextsHolder<T, AdviceType>();
 
