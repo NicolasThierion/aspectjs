@@ -196,15 +196,94 @@ describe('@AfterReturn advice', () => {
                     expect(a.labels).toEqual(['x', 'a']);
                 });
             });
+        });
+    });
 
-            describe('and the aspect changes ctxt.value', () => {
+    xdescribe('applied on a property setter', () => {
+        beforeEach(() => {
+            afterReturn = jasmine
+                .createSpy('afterReturnAdvice', function(ctxt) {
+                    return ctxt.value;
+                })
+                .and.callThrough();
+        });
+
+        let a: Labeled;
+
+        describe('that throws', () => {
+            beforeEach(() => {
+                class PropAspect extends Aspect {
+                    id = 'PropAspect';
+                    @Compile(on.property.annotations(AProperty))
+                    compile() {
+                        expect(this).toEqual(jasmine.any(PropAspect));
+
+                        return {
+                            set() {
+                                throw new Error('expected');
+                            },
+                        };
+                    }
+
+                    @AfterReturn(on.property.setter.annotations(AProperty))
+                    after() {
+                        afterReturn(null, null);
+                    }
+                }
+                setupWeaver(new PropAspect());
+
+                class A implements Labeled {
+                    @AProperty()
+                    labels: string[];
+                }
+                a = new A();
+            });
+
+            it('should not call the aspect', () => {
+                expect(() => {
+                    a.labels = [];
+                }).toThrow();
+                expect(afterReturn).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('that do not throws', () => {
+            beforeEach(() => {
+                class PropAspect extends Aspect {
+                    id = 'PropAspect';
+
+                    @AfterReturn(on.property.annotations(AProperty))
+                    after(ctxt: AdviceContext<any, any>, returnValue: any) {
+                        return afterReturn(ctxt, returnValue);
+                    }
+                }
+                setupWeaver(new PropAspect());
+
+                class A implements Labeled {
+                    @AProperty()
+                    labels: string[] = ['x'];
+                }
+                a = new A();
+            });
+
+            it('should call the aspect', () => {
+                expect(afterReturn).not.toHaveBeenCalled();
+                const labels = a.labels;
+                expect(afterReturn).toHaveBeenCalled();
+            });
+
+            it('should return the original value', () => {
+                expect(a.labels).toEqual(['x']);
+            });
+
+            describe('and the aspect returns a new value', () => {
                 beforeEach(() => {
                     class PropAspect extends Aspect {
                         id = 'PropAspect';
 
                         @AfterReturn(on.property.annotations(AProperty))
-                        after(ctxt: AfterReturnContext<any, any>, returnValue: any) {
-                            (ctxt as Mutable<AfterReturnContext<any, any>>).value = undefined;
+                        after(ctxt: AdviceContext<any, any>, returnValue: any) {
+                            return returnValue.concat('a');
                         }
                     }
                     setupWeaver(new PropAspect());
@@ -216,8 +295,8 @@ describe('@AfterReturn advice', () => {
                     a = new A();
                 });
 
-                xit('should throw', () => {
-                    expect(() => a.labels).toThrow();
+                it('should return the value returned by the advice', () => {
+                    expect(a.labels).toEqual(['x', 'a']);
                 });
             });
         });

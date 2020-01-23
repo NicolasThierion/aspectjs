@@ -2,6 +2,14 @@ import { Annotation, AnnotationRef, ClassAnnotation, PropertyAnnotation } from '
 import { assert } from '../../utils';
 import { AdviceType } from './types';
 
+export interface Pointcut {
+    type: AdviceType;
+    annotation: AnnotationRef;
+    name: string;
+    phase: PointcutPhase;
+    ref: string;
+}
+
 export abstract class PointcutExpression {
     protected _annotations: Annotation<AdviceType>[] = [];
 
@@ -40,7 +48,7 @@ export class PropertyPointcutExpression extends PointcutExpression {
     }
 
     toString(): string {
-        return `property#get ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return `property:get# ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
     }
 }
 
@@ -48,7 +56,7 @@ export class PropertySetterPointcutExpression extends PointcutExpression {
     protected _name = '*';
 
     toString(): string {
-        return `property#set ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return `property:set# ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
     }
 }
 
@@ -92,23 +100,16 @@ export enum PointcutPhase {
     AFTERTHROW = 'AfterThrow',
 }
 
-export interface Pointcut {
-    type: AdviceType;
-    annotation: AnnotationRef;
-    name: string;
-    phase: PointcutPhase;
-}
-
 export namespace Pointcut {
     export function of(phase: PointcutPhase, exp: string): Pointcut;
     export function of(phase: PointcutPhase, exp: PointcutExpression): Pointcut;
     export function of(phase: PointcutPhase, exp: PointcutExpression | string): Pointcut {
-        const expStr = exp.toString();
+        const ref = exp.toString();
 
         const pointcutRegexes = {
             [AdviceType.CLASS]: new RegExp('(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)'),
             [AdviceType.PROPERTY]: new RegExp(
-                '(?:property#(?<name>(?:set|get)\\s\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
+                '(?:property:(?:set|get)#(?<name>\\s\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
             ),
         };
 
@@ -116,7 +117,7 @@ export namespace Pointcut {
 
         for (const entry of Object.entries(pointcutRegexes)) {
             const [type, regex] = entry;
-            const match = regex.exec(expStr);
+            const match = regex.exec(ref);
 
             if (match?.groups.name) {
                 assert(!!match.groups.annotation, 'only annotation pointcuts are supported');
@@ -125,14 +126,15 @@ export namespace Pointcut {
                     phase,
                     annotation: AnnotationRef.of(match.groups.annotation),
                     name: match.groups.name,
+                    ref,
                 };
 
                 Reflect.defineProperty(pointcut, Symbol.toPrimitive, {
-                    value: () => `${phase}(${expStr})`,
+                    value: () => `${phase}(${ref})`,
                 });
             }
         }
-        assert(!!pointcut, `expression ${expStr} not recognized as valid pointcut expression`);
+        assert(!!pointcut, `expression ${ref} not recognized as valid pointcut expression`);
         return pointcut;
     }
 }

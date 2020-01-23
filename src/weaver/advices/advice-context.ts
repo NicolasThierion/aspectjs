@@ -48,7 +48,6 @@ export interface AroundContext<T, A extends AdviceType> {
     readonly args: any[];
     readonly error: Error;
     readonly joinpoint: JoinPoint;
-    readonly joinpointArgs: any[];
     readonly target: AdviceTarget<T, A>;
 }
 
@@ -64,8 +63,7 @@ export type MutableAdviceContext<A extends AdviceType> = {
     args?: unknown[];
     error?: Error;
     joinpoint?: JoinPoint;
-    joinpointArgs?: any[];
     target: AdviceTarget<any, A>;
 
-    clone(): AdviceContext<unknown, A>;
+    clone(): AdviceContext<any, A>;
 };

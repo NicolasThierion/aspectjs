@@ -2,7 +2,7 @@ import { AnnotationFactory } from './src/annotation/factory/factory';
 import 'reflect-metadata';
 import { on } from './src/weaver/advices/pointcut';
 import { Before } from './src/weaver/advices/before/before.decorator';
-import { Aspect, getWeaver, JoinPoint, setWeaver } from './src';
+import { Aspect, JoinPoint, setWeaver } from './src';
 import { After } from './src/weaver/advices/after/after.decorator';
 import { AfterContext, AroundContext, BeforeContext } from './src/weaver/advices/advice-context';
 import { Around } from './src/weaver/advices/around/around.decorator';

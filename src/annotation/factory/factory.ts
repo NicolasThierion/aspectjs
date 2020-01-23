@@ -130,31 +130,24 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             configurable: true,
             enumerable: true,
             get() {
-                return Reflect.getOwnMetadata(`aspectjs.propValue#${ctxt.target.propertyKey}`, this);
+                const _Reflect = Reflect; // TODO
+                return _Reflect.getOwnMetadata(`aspectjs.propValue`, this, ctxt.target.propertyKey);
             },
             set(value: any) {
-                Reflect.defineMetadata(`aspectjs.propValue#${ctxt.target.propertyKey}`, value, this);
+                const _Reflect = Reflect; // TODO
+                _Reflect.defineMetadata(`aspectjs.propValue`, value, this, ctxt.target.propertyKey);
             },
         };
 
-        let refDescriptor = runner.property[PointcutPhase.COMPILE](ctxt) ?? target.proto[target.propertyKey];
-
-        refDescriptor = {
-            ...defaultDescriptor,
-            ...refDescriptor,
+        const refDescriptor = {
+            ...(runner.property[PointcutPhase.COMPILE](ctxt) ?? target.proto[target.propertyKey] ?? defaultDescriptor),
         };
 
         if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
             const propValue = refDescriptor.value;
             refDescriptor.get = () => propValue;
+            delete refDescriptor.writable;
             delete refDescriptor.value;
-
-            if ((refDescriptor as Record<string, any>).hasOwnProperty('writable')) {
-                if (!refDescriptor.writable) {
-                    delete refDescriptor.set;
-                }
-                delete refDescriptor.writable;
-            }
         }
 
         Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.target.proto);
@@ -162,34 +155,48 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             ...refDescriptor,
         };
         propDescriptor.get = function() {
+            const _ctxt = ctxt.clone();
             const r = runner.property.getter;
             try {
-                ctxt.instance = this;
-                r[PointcutPhase.BEFORE](ctxt);
+                _ctxt.instance = this;
+                r[PointcutPhase.BEFORE](_ctxt);
 
-                r[PointcutPhase.AROUND](ctxt);
+                r[PointcutPhase.AROUND](_ctxt);
 
-                return r[PointcutPhase.AFTERRETURN](ctxt);
+                return r[PointcutPhase.AFTERRETURN](_ctxt);
             } catch (e) {
-                ctxt.error = e;
-                return r[PointcutPhase.AFTERTHROW](ctxt);
+                _ctxt.error = e;
+                return r[PointcutPhase.AFTERTHROW](_ctxt);
             } finally {
-                r[PointcutPhase.AFTER](ctxt);
+                r[PointcutPhase.AFTER](_ctxt);
             }
         };
 
-        if ((propDescriptor as Record<string, any>).hasOwnProperty('writable')) {
-            if (propDescriptor.writable) {
-                propDescriptor.set = function(value: any) {
-                    ctxt.instance = this;
-                    throw new Error('not implemented');
-                };
-            } else {
-                delete propDescriptor.set;
-            }
-            delete propDescriptor.writable;
-        }
+        if (_isWritable(propDescriptor)) {
+            propDescriptor.set = function(...args: any[]) {
+                const _ctxt = ctxt.clone();
 
+                const r = runner.property.setter;
+                try {
+                    _ctxt.args = args;
+                    _ctxt.instance = this;
+                    r[PointcutPhase.BEFORE](_ctxt);
+
+                    r[PointcutPhase.AROUND](_ctxt);
+
+                    return r[PointcutPhase.AFTERRETURN](_ctxt);
+                } catch (e) {
+                    _ctxt.error = e;
+                    // return r[PointcutPhase.AFTERTHROW](_ctxt);
+                } finally {
+                    // r[PointcutPhase.AFTER](_ctxt);
+                }
+            };
+
+            delete propDescriptor.writable;
+        } else {
+            delete propDescriptor.set;
+        }
         // test property validity
         propDescriptor = Object.getOwnPropertyDescriptor(
             Object.defineProperty({}, 'surrogate', propDescriptor),
@@ -199,6 +206,11 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
         target.proto[target.propertyKey] = propDescriptor;
 
         return propDescriptor;
+
+        function _isWritable(propDescriptor: PropertyDescriptor) {
+            const desc = propDescriptor as Record<string, any>;
+            return !desc || (desc.hasOwnProperty('writable') && desc.writable) || desc.hasOwnProperty('set');
+        }
     }
 
     function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, TAdvice>): Function {
@@ -248,14 +260,13 @@ class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext
     public value?: T | unknown;
     public args?: any[];
     public joinpoint?: JoinPoint;
-    public joinpointArgs?: any[];
     public target: AdviceTarget<T, A>;
 
     constructor(readonly annotation: AnnotationContextImpl<T, A>) {
         this.target = annotation.target;
     }
 
-    clone(): AdviceContext<T, A> {
+    clone(): this {
         return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as AdviceContext<any, AdviceType>, this);
     }
 }

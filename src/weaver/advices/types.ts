@@ -49,7 +49,7 @@ export type AfterThrowAdvice<T> = {
 } & ((ctxt: AdviceContext<T, AdviceType>) => T | null | undefined);
 export type AroundAdvice<T> = {
     pointcut?: AroundPointcut;
-} & ((ctxt: AdviceContext<T, AdviceType>, joinPoint: JoinPoint, joinpointArgs: any[]) => any); // TODO change return value;
+} & ((ctxt: AdviceContext<T, AdviceType>, joinPoint: JoinPoint, args: any[]) => any); // TODO change return value;
 
 export type Advice =
     | CompileAdvice<any, AdviceType>

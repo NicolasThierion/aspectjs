@@ -37,7 +37,7 @@ describe('@Around advice', () => {
                 apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(this).toEqual(jasmine.any(AroundClassAspect));
                     expect(jp).toEqual(ctxt.joinpoint);
-                    expect(jpArgs).toEqual(ctxt.joinpointArgs);
+                    expect(jpArgs).toEqual(ctxt.args);
 
                     return aroundAdvice(ctxt, jp, jpArgs);
                 }
@@ -257,7 +257,7 @@ describe('@Around advice', () => {
                     expect(this).toEqual(jasmine.any(AroundPropertyAspect));
 
                     expect(jp).toEqual(ctxt.joinpoint);
-                    expect(jpArgs).toEqual(ctxt.joinpointArgs);
+                    expect(jpArgs).toEqual(ctxt.args);
 
                     return aroundAdvice(ctxt, jp, jpArgs);
                 }
@@ -376,6 +376,156 @@ describe('@Around advice', () => {
                     it('should call them nested, in declaration order', () => {
                         expect(a.labels).toEqual(['beforeB', 'beforeA', 'value', 'afterA', 'afterB']);
                     });
+                });
+            });
+        });
+    });
+
+    describe('applied on a property setter', () => {
+        let a: Labeled;
+        beforeEach(() => {
+            class AroundPropertyAspect extends Aspect {
+                id = 'APropertyLabel';
+
+                @Around(on.property.setter.annotations(AProperty))
+                apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                    expect(this).toEqual(jasmine.any(AroundPropertyAspect));
+
+                    expect(jp).toEqual(ctxt.joinpoint);
+                    expect(jpArgs).toEqual(ctxt.args);
+
+                    return aroundAdvice(ctxt, jp, jpArgs);
+                }
+            }
+
+            setupWeaver(new AroundPropertyAspect());
+
+            class A implements Labeled {
+                @AProperty()
+                public labels: string[] = ['value'];
+            }
+
+            a = new A();
+        });
+        describe('that leverage "around" advice', () => {
+            beforeEach(() => {
+                aroundAdvice = jasmine
+                    .createSpy('aroundAdvice', function(ctxt, jp) {
+                        return jp();
+                    })
+                    .and.callThrough();
+            });
+
+            it('should call the aspect', () => {
+                expect(aroundAdvice).not.toHaveBeenCalled();
+                a.labels = ['newValue'];
+                expect(aroundAdvice).toHaveBeenCalled();
+            });
+
+            it('should call set the property to the value returned by the advice', () => {
+                a.labels = ['newValue'];
+                expect(a.labels).toEqual(['newValue']);
+            });
+
+            describe('and do not invoke the joinpoint', () => {
+                beforeEach(() => {
+                    aroundAdvice = jasmine
+                        .createSpy(
+                            'aroundAdvice',
+                            (ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                                expect(ctxt.instance).not.toBeNull();
+                                return ['around'];
+                            },
+                        )
+                        .and.callThrough();
+                });
+
+                it('should not call the original property setter', () => {
+                    a.labels = ['newValue'];
+                    expect(a.labels).toEqual(['around']);
+                });
+            });
+
+            describe('and do invoke the joinpoint', () => {
+                beforeEach(() => {
+                    aroundAdvice = jasmine
+                        .createSpy(
+                            'aroundAdvice',
+                            (ctxt: AroundContext<Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                                expect(ctxt.instance).not.toBeNull();
+                                return jp([
+                                    []
+                                        .concat('beforeAround')
+                                        .concat(ctxt.instance.labels)
+                                        .concat(jpArgs[0])
+                                        .concat('overrideArgs')
+                                        .concat('afterAround'),
+                                ]);
+                            },
+                        )
+                        .and.callThrough();
+                });
+
+                fit('should not get the original property value', () => {
+                    a.labels = ['newValue'];
+                    expect(a.labels).toEqual(['beforeAround', 'value', 'newValue', 'overrideArgs', 'afterAround']);
+                });
+            });
+
+            describe('and do not return a value', () => {
+                beforeEach(() => {
+                    class AroundPropertyAspect extends Aspect {
+                        id = 'APropertyLabel';
+
+                        @Around(on.property.annotations(AProperty))
+                        apply(): void {}
+                    }
+
+                    setupWeaver(new AroundPropertyAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[] = ['value'];
+                    }
+
+                    a = new A();
+                });
+                it('should return undefined', () => {
+                    expect(a.labels).toEqual(undefined);
+                });
+            });
+        });
+        describe('when multiple "around" advices are configured', () => {
+            describe('and joinpoint has been called', () => {
+                beforeEach(() => {
+                    class AAspect extends Aspect {
+                        id = 'aAspect';
+
+                        @Around(on.property.annotations(AProperty))
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
+                            return ['beforeA'].concat(jp() as []).concat('afterA');
+                        }
+                    }
+
+                    class BAspect extends Aspect {
+                        id = 'bAspect';
+
+                        @Around(on.property.annotations(AProperty))
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
+                            return ['beforeB'].concat(jp() as []).concat('afterB');
+                        }
+                    }
+                    setupWeaver(new AAspect(), new BAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[] = ['value'];
+                    }
+
+                    a = new A();
+                });
+                it('should call them nested, in declaration order', () => {
+                    expect(a.labels).toEqual(['beforeB', 'beforeA', 'value', 'afterA', 'afterB']);
                 });
             });
         });

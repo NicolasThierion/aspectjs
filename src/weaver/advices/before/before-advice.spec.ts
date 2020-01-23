@@ -100,4 +100,48 @@ describe('@Before advice', () => {
             expect(thisInstance).toEqual(a);
         });
     });
+
+    describe('applied on a property setter', () => {
+        let a: Labeled;
+
+        beforeEach(() => {
+            class AAspect extends Aspect {
+                id = 'AClassLabel';
+
+                @Before(on.property.setter.annotations(AProperty))
+                applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
+                    expect(this).toEqual(jasmine.any(AAspect));
+
+                    advice(ctxt);
+                }
+            }
+
+            setupWeaver(new AAspect());
+
+            class A implements Labeled {
+                @AProperty()
+                labels: string[] = [];
+            }
+
+            a = new A();
+            advice = jasmine.createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {}).and.callThrough();
+        });
+
+        it('should call the aspect before the property is set', () => {
+            expect(advice).not.toHaveBeenCalled();
+            a.labels = ['set'];
+            expect(advice).toHaveBeenCalled();
+        });
+
+        it('should have a non null context.instance', () => {
+            let thisInstance: any;
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
+                    thisInstance = ctxt.instance;
+                })
+                .and.callThrough();
+            const labels = a.labels;
+            expect(thisInstance).toEqual(a);
+        });
+    });
 });
