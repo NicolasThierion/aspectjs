@@ -1,5 +1,5 @@
 import { Aspect, JoinPoint } from '../../types';
-import { AdviceType, AroundAdvice } from '../types';
+import { AdviceType } from '../types';
 import { AClass } from '../../../tests/a';
 import { AroundContext } from '../advice-context';
 import { WeavingError } from '../../weaving-error';
@@ -442,7 +442,7 @@ describe('@Around advice', () => {
 
                 it('should not call the original property setter', () => {
                     a.labels = ['newValue'];
-                    expect(a.labels).toEqual(['around']);
+                    expect(a.labels).toEqual(['value']);
                 });
             });
 
@@ -466,32 +466,9 @@ describe('@Around advice', () => {
                         .and.callThrough();
                 });
 
-                fit('should not get the original property value', () => {
+                it('should not get the original property value', () => {
                     a.labels = ['newValue'];
                     expect(a.labels).toEqual(['beforeAround', 'value', 'newValue', 'overrideArgs', 'afterAround']);
-                });
-            });
-
-            describe('and do not return a value', () => {
-                beforeEach(() => {
-                    class AroundPropertyAspect extends Aspect {
-                        id = 'APropertyLabel';
-
-                        @Around(on.property.annotations(AProperty))
-                        apply(): void {}
-                    }
-
-                    setupWeaver(new AroundPropertyAspect());
-
-                    class A implements Labeled {
-                        @AProperty()
-                        public labels: string[] = ['value'];
-                    }
-
-                    a = new A();
-                });
-                it('should return undefined', () => {
-                    expect(a.labels).toEqual(undefined);
                 });
             });
         });
@@ -501,31 +478,34 @@ describe('@Around advice', () => {
                     class AAspect extends Aspect {
                         id = 'aAspect';
 
-                        @Around(on.property.annotations(AProperty))
-                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
-                            return ['beforeA'].concat(jp() as []).concat('afterA');
+                        @Around(on.property.setter.annotations(AProperty))
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                            jpArgs[0].push('aroundA');
+                            jp(jpArgs);
                         }
                     }
 
                     class BAspect extends Aspect {
                         id = 'bAspect';
 
-                        @Around(on.property.annotations(AProperty))
-                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
-                            return ['beforeB'].concat(jp() as []).concat('afterB');
+                        @Around(on.property.setter.annotations(AProperty))
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                            jpArgs[0].push('aroundB');
+                            jp(jpArgs);
                         }
                     }
                     setupWeaver(new AAspect(), new BAspect());
 
                     class A implements Labeled {
                         @AProperty()
-                        public labels: string[] = ['value'];
+                        public labels: string[];
                     }
 
                     a = new A();
                 });
                 it('should call them nested, in declaration order', () => {
-                    expect(a.labels).toEqual(['beforeB', 'beforeA', 'value', 'afterA', 'afterB']);
+                    a.labels = ['newValue'];
+                    expect(a.labels).toEqual(['newValue', 'aroundB', 'aroundA']);
                 });
             });
         });

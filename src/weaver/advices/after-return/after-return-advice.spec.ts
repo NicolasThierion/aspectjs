@@ -161,6 +161,9 @@ describe('@AfterReturn advice', () => {
                     labels: string[] = ['x'];
                 }
                 a = new A();
+                // afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {
+                //     return ctxt.value;
+                // });
             });
 
             it('should call the aspect', () => {

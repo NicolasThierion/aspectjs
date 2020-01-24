@@ -9,8 +9,8 @@ export class AdviceFactory {
         const pointcut = Pointcut.of(phase, pointcutExp);
         assert(
             !(pointcut.type === AdviceType.PROPERTY) ||
-                pointcut.ref.startsWith('property:get') ||
-                pointcut.ref.startsWith('property:set'),
+                pointcut.ref.startsWith('property#get') ||
+                pointcut.ref.startsWith('property#set'),
         );
 
         return function(aspect: any, propertyKey: string | symbol) {
@@ -23,7 +23,7 @@ export class AdviceFactory {
                 value: () => `@${phase}(${pointcut.annotation}) ${aspect.constructor.name}.${String(propertyKey)}()`,
             });
 
-            if (pointcut.name.startsWith('set ') && phase === PointcutPhase.COMPILE) {
+            if (pointcut.ref.startsWith('property#set') && phase === PointcutPhase.COMPILE) {
                 throw new WeavingError(`Advice "${advice}" cannot be applied on property setter`);
             }
 

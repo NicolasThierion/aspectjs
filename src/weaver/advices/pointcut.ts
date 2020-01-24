@@ -48,7 +48,7 @@ export class PropertyPointcutExpression extends PointcutExpression {
     }
 
     toString(): string {
-        return `property:get# ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return `property#get ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
     }
 }
 
@@ -56,7 +56,7 @@ export class PropertySetterPointcutExpression extends PointcutExpression {
     protected _name = '*';
 
     toString(): string {
-        return `property:set# ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return `property#set ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
     }
 }
 
@@ -109,7 +109,7 @@ export namespace Pointcut {
         const pointcutRegexes = {
             [AdviceType.CLASS]: new RegExp('(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)'),
             [AdviceType.PROPERTY]: new RegExp(
-                '(?:property:(?:set|get)#(?<name>\\s\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
+                '(?:property#(?:set|get)\\s(?<name>\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
             ),
         };
 

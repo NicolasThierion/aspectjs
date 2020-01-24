@@ -18,16 +18,6 @@
 - `@Cloneable`
 
 ### Pointcuts: 
- - beforeProperty
- - aroundProperty
- - afterThrowProperty
- - afterProperty
- - compilePropertySetter
- - beforePropertySetter
- - aroundPropertySetter
- - afterReturnPropertySetter
- - afterThrowPropertySetter
- - afterPropertySetter
  - compileMethod
  - beforeMethod
  - aroundMethod

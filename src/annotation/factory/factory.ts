@@ -8,7 +8,7 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import { PointcutsRunner } from '../../weaver/weaver';
-import { assert, getMetaOrDefault } from '../../utils';
+import { assert, getMetaOrDefault, isFunction } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AdviceTargetFactory } from '../target/advice-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
@@ -130,12 +130,10 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             configurable: true,
             enumerable: true,
             get() {
-                const _Reflect = Reflect; // TODO
-                return _Reflect.getOwnMetadata(`aspectjs.propValue`, this, ctxt.target.propertyKey);
+                return Reflect.getOwnMetadata(`aspectjs.propValue`, this, ctxt.target.propertyKey);
             },
             set(value: any) {
-                const _Reflect = Reflect; // TODO
-                _Reflect.defineMetadata(`aspectjs.propValue`, value, this, ctxt.target.propertyKey);
+                Reflect.defineMetadata(`aspectjs.propValue`, value, this, ctxt.target.propertyKey);
             },
         };
 
@@ -209,7 +207,7 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
 
         function _isWritable(propDescriptor: PropertyDescriptor) {
             const desc = propDescriptor as Record<string, any>;
-            return !desc || (desc.hasOwnProperty('writable') && desc.writable) || desc.hasOwnProperty('set');
+            return !desc || (desc.hasOwnProperty('writable') && desc.writable) || isFunction(desc.set);
         }
     }
 

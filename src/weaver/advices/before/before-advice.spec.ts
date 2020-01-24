@@ -140,7 +140,7 @@ describe('@Before advice', () => {
                     thisInstance = ctxt.instance;
                 })
                 .and.callThrough();
-            const labels = a.labels;
+            a.labels = [];
             expect(thisInstance).toEqual(a);
         });
     });
