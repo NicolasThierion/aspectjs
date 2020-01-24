@@ -46,7 +46,7 @@ export type AfterReturnAdvice<T> = {
 } & ((ctxt: AdviceContext<T, AdviceType>, returnValue: any) => T | null | undefined);
 export type AfterThrowAdvice<T> = {
     pointcut?: AfterThrowPointcut;
-} & ((ctxt: AdviceContext<T, AdviceType>) => T | null | undefined);
+} & ((ctxt: AdviceContext<T, AdviceType>, thrownError: Error) => T | null | undefined);
 export type AroundAdvice<T> = {
     pointcut?: AroundPointcut;
 } & ((ctxt: AdviceContext<T, AdviceType>, joinPoint: JoinPoint, args: any[]) => any); // TODO change return value;

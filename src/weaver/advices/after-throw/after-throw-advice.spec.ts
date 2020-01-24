@@ -8,11 +8,16 @@ import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import Spy = jasmine.Spy;
 import { Compile } from '../compile/compile.decorator';
 import { Mutable } from '../../../utils';
+import { WeavingError } from '../../weaving-error';
+
+const thrownError = new Error('expected');
 
 describe('@AfterThrow advice', () => {
     let afterThrowAdvice: Spy;
+    let adviceError: Error;
     beforeEach(() => {
         afterThrowAdvice = jasmine.createSpy('afterThrowAdvice', function() {}).and.callThrough();
+        adviceError = undefined;
     });
 
     describe('configured on some class', () => {
@@ -21,10 +26,13 @@ describe('@AfterThrow advice', () => {
                 id = 'AClassLabel';
 
                 @AfterThrow(on.class.annotations(AClass))
-                apply(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
+                apply(ctxt: AfterThrowContext<any, AdviceType.CLASS>, error: Error): void {
                     expect(this).toEqual(jasmine.any(AfterThrowAspect));
 
-                    return afterThrowAdvice(ctxt);
+                    expect(error).toEqual(ctxt.error);
+                    adviceError = error;
+
+                    return afterThrowAdvice(ctxt, error);
                 }
             }
 
@@ -33,29 +41,44 @@ describe('@AfterThrow advice', () => {
 
         describe('when an instance of this class is created', () => {
             describe('with a constructor that throws', () => {
+                let A: any;
                 beforeEach(() => {
                     afterThrowAdvice = jasmine
-                        .createSpy('afterThrowAdvice', function(ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>) {
+                        .createSpy('afterThrowAdvice', function(
+                            ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>,
+                            error: Error,
+                        ) {
                             ctxt.instance.labels = ctxt.instance.labels ?? [];
                             ctxt.instance.labels.push('A');
+
                             throw ctxt.error;
                         })
                         .and.callThrough();
-                });
 
-                it('should call the aspect', () => {
                     @AClass()
-                    class A implements Labeled {
+                    // eslint-disable-next-line @typescript-eslint/class-name-casing
+                    class A_ implements Labeled {
                         public labels: string[];
                         constructor(label: string) {
                             this.labels = [label];
                             throw new Error('expected');
                         }
                     }
+                    A = A_;
+                });
 
+                it('should call the aspect', () => {
                     expect(() => {
                         new A('ctor');
                     }).toThrow();
+                    expect(afterThrowAdvice).toHaveBeenCalled();
+                });
+
+                it('should pass the error as 2nd parameter of advice', () => {
+                    try {
+                        new A('ctor');
+                    } catch (e) {}
+                    expect(adviceError).toEqual(thrownError);
                     expect(afterThrowAdvice).toHaveBeenCalled();
                 });
 
@@ -177,6 +200,7 @@ describe('@AfterThrow advice', () => {
                 });
 
                 it('should not call the aspect', () => {
+                    const labels = a.labels;
                     expect(afterThrowAdvice).not.toHaveBeenCalled();
                 });
 
@@ -237,6 +261,176 @@ describe('@AfterThrow advice', () => {
                     }
                     const a = new A();
                     expect(a.labels).toEqual(['newValue']);
+                });
+            });
+
+            describe('and the aspect set a new ctxt.value', () => {
+                xit('should throw an error', () => {
+                    class ReturnNewValueAspect extends Aspect {
+                        id = 'APropertyLabel';
+
+                        @AfterThrow(on.property.annotations(AProperty))
+                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
+                            (ctxt as Mutable<AfterThrowContext<any, AdviceType.PROPERTY>>).value = ['newValue'];
+                        }
+                    }
+
+                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[];
+                    }
+                    const a = new A();
+                    expect(() => a.labels).toThrow();
+                });
+            });
+
+            describe('and the aspect do not return a value', () => {
+                it('should throw an error', () => {
+                    class ReturnNewValueAspect extends Aspect {
+                        id = 'APropertyLabel';
+
+                        @AfterThrow(on.property.annotations(AProperty))
+                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {}
+                    }
+
+                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[];
+                    }
+                    const a = new A();
+                    expect(a.labels).toEqual(undefined);
+                });
+            });
+        });
+    });
+
+    describe('applied on a property setter', () => {
+        class PropertyThrowAspect extends Aspect {
+            id = 'PropertyThrow';
+
+            @Compile(on.property.annotations(AProperty))
+            compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
+                return {
+                    get() {
+                        return this._val;
+                    },
+                    set(val) {
+                        this._val = val;
+                        throw thrownError;
+                    },
+                };
+            }
+        }
+
+        class AfterThrowAspect extends Aspect {
+            id = 'APropertyLabel';
+
+            @AfterThrow(on.property.setter.annotations(AProperty))
+            afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
+                afterThrowAdvice(ctxt, error);
+                return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
+            }
+        }
+
+        let a: Labeled;
+
+        describe('setting this property', () => {
+            describe('with a descriptor that do not throws', () => {
+                beforeEach(() => {
+                    setupWeaver(new AfterThrowAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[];
+                    }
+
+                    a = new A();
+                });
+
+                it('should not call the aspect', () => {
+                    a.labels = [];
+                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                });
+
+                it('should assign the value', () => {
+                    a.labels = ['newValue'];
+                    expect(a.labels).toEqual(['newValue']);
+                });
+            });
+
+            describe('with a descriptor that throws', () => {
+                beforeEach(() => {
+                    setupWeaver(new AfterThrowAspect(), new PropertyThrowAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[];
+                    }
+
+                    a = new A();
+
+                    afterThrowAdvice = jasmine
+                        .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                            adviceError = error;
+                        })
+                        .and.callThrough();
+                });
+
+                it('should call the aspect', () => {
+                    try {
+                        a.labels = [];
+                    } catch (e) {}
+                    expect(afterThrowAdvice).toHaveBeenCalled();
+                });
+
+                it('should pass the error as 2nd parameter of advice', () => {
+                    try {
+                        a.labels = [];
+                    } catch (e) {}
+                    expect(adviceError).toEqual(thrownError);
+                    expect(afterThrowAdvice).toHaveBeenCalled();
+                });
+
+                describe('when the aspect swallows the exception', () => {
+                    it('should not throw', () => {
+                        expect(() => {
+                            a.labels = ['newValue'];
+                        }).not.toThrow();
+
+                        expect(a.labels).toEqual(['newValue']);
+                    });
+                });
+            });
+
+            describe('and the aspect returns a new value', () => {
+                it('should throw an error', () => {
+                    class ReturnNewValueAspect extends Aspect {
+                        id = 'APropertyLabel';
+
+                        @AfterThrow(on.property.setter.annotations(AProperty))
+                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
+                            return ['newValue'];
+                        }
+                    }
+
+                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+
+                    class A implements Labeled {
+                        @AProperty()
+                        public labels: string[];
+                    }
+                    const a = new A();
+                    expect(() => {
+                        a.labels = [];
+                    }).toThrow(
+                        new WeavingError(
+                            'Returning from advice "@AfterThrow(@AProperty) ReturnNewValueAspect.afterThrow()" is not supported',
+                        ),
+                    );
                 });
             });
 

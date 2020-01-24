@@ -8,6 +8,7 @@ import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
 import { Mutable } from '../../../utils';
 import Spy = jasmine.Spy;
+import { WeavingError } from '../../weaving-error';
 
 describe('@AfterReturn advice', () => {
     let afterReturn: Spy;
@@ -202,7 +203,7 @@ describe('@AfterReturn advice', () => {
         });
     });
 
-    xdescribe('applied on a property setter', () => {
+    describe('applied on a property setter', () => {
         beforeEach(() => {
             afterReturn = jasmine
                 .createSpy('afterReturnAdvice', function(ctxt) {
@@ -255,7 +256,7 @@ describe('@AfterReturn advice', () => {
                 class PropAspect extends Aspect {
                     id = 'PropAspect';
 
-                    @AfterReturn(on.property.annotations(AProperty))
+                    @AfterReturn(on.property.setter.annotations(AProperty))
                     after(ctxt: AdviceContext<any, any>, returnValue: any) {
                         return afterReturn(ctxt, returnValue);
                     }
@@ -267,16 +268,19 @@ describe('@AfterReturn advice', () => {
                     labels: string[] = ['x'];
                 }
                 a = new A();
+
+                afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {});
             });
 
             it('should call the aspect', () => {
                 expect(afterReturn).not.toHaveBeenCalled();
-                const labels = a.labels;
+                a.labels = ['newValue'];
                 expect(afterReturn).toHaveBeenCalled();
             });
 
-            it('should return the original value', () => {
-                expect(a.labels).toEqual(['x']);
+            it('should return the new value', () => {
+                a.labels = ['newValue'];
+                expect(a.labels).toEqual(['newValue']);
             });
 
             describe('and the aspect returns a new value', () => {
@@ -284,22 +288,26 @@ describe('@AfterReturn advice', () => {
                     class PropAspect extends Aspect {
                         id = 'PropAspect';
 
-                        @AfterReturn(on.property.annotations(AProperty))
-                        after(ctxt: AdviceContext<any, any>, returnValue: any) {
-                            return returnValue.concat('a');
+                        @AfterReturn(on.property.setter.annotations(AProperty))
+                        after(ctxt: AdviceContext<any, any>) {
+                            return ['afterReturnValue'];
                         }
                     }
                     setupWeaver(new PropAspect());
 
                     class A implements Labeled {
                         @AProperty()
-                        labels: string[] = ['x'];
+                        labels: string[];
                     }
                     a = new A();
                 });
 
-                it('should return the value returned by the advice', () => {
-                    expect(a.labels).toEqual(['x', 'a']);
+                it('should throw an error', () => {
+                    expect(() => (a.labels = ['newValue'])).toThrow(
+                        new WeavingError(
+                            'Returning from advice "@AfterReturn(@AProperty) PropAspect.after()" is not supported',
+                        ),
+                    );
                 });
             });
         });

@@ -43,4 +43,4 @@
 - use AnnotationRef = {module, name} in bundles & contexts
 - add priority on advices
 - do not nest decorators when multiple annotations on the same symbol
-+ test on.X.annotations(<empty>) returns all advices
+- test on.X.annotations(<empty>) returns all advices

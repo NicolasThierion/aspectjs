@@ -212,10 +212,12 @@ describe('@Compile advice', () => {
 
             describe('that sets "get = () => any" along with set = () => any', () => {
                 let a: Labeled;
+                let val: string[];
                 beforeEach(() => {
+                    val = ['propAspect'];
+
                     compileAdvice = jasmine
                         .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
-                            let val = ['propAspect'];
                             return {
                                 get: () => val,
                                 set: (_val: any) => (val = _val),
@@ -232,7 +234,20 @@ describe('@Compile advice', () => {
                 });
 
                 it('should allow getting the property', () => {
-                    expect(a.labels).toEqual(['propAspect']);
+                    expect(a.labels).toEqual(val);
+                });
+
+                describe('getting the property', () => {
+                    it('should call through the getter', () => {
+                        expect(a.labels).toEqual(val);
+                    });
+                });
+
+                describe('setting the property', () => {
+                    it('should call through the setter', () => {
+                        a.labels = ['newProp'];
+                        expect(val).toEqual(['newProp']);
+                    });
                 });
 
                 it('should allow setting the property', () => {

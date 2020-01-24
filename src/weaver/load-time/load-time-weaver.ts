@@ -3,7 +3,7 @@ import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
 import { Aspect, JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
 import { AnnotationRef } from '../..';
-import { AfterReturnContext, MutableAdviceContext } from '../advices/advice-context';
+import { AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
     AdviceType,
@@ -320,7 +320,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         } else {
             let newInstance = ctxt.instance;
             afterThrowAdvices.forEach(advice => {
-                newInstance = advice(ctxt.clone());
+                newInstance = advice(ctxt.clone(), ctxt.error);
                 if (!isUndefined(newInstance)) {
                     ctxt.instance = newInstance;
                 }
@@ -401,7 +401,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             // pass-trough errors by default
             throw ctxt.error;
         } else {
-            return this._applyAfterReturnAdvice(ctxt, PointcutPhase.AFTERTHROW, _isPropertyGet);
+            return this._applyAfterThrowAdvice(ctxt, PointcutPhase.AFTERTHROW, _isPropertyGet);
         }
     }
 
@@ -452,11 +452,17 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _afterReturnPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
-        return this._applyAfterReturnAdvice(ctxt, PointcutPhase.AFTERRETURN, _isPropertySet);
+        return this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTERRETURN, _isPropertySet);
     }
 
-    private _afterThrowPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
-        assert(false, 'not implemented');
+    private _afterThrowPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
+        const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt).filter(_isPropertySet);
+        if (!afterThrowAdvices.length) {
+            // pass-trough errors by default
+            throw ctxt.error;
+        } else {
+            this._applyAfterThrowAdvice(ctxt, PointcutPhase.AFTERTHROW, _isPropertySet, true);
+        }
     }
 
     private _afterPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
@@ -538,15 +544,44 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     ) {
         let advices = this.weaver.getAdvices(phase, ctxt);
 
+        if (filter) {
+            advices = advices.filter(filter);
+        }
+
         if (advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
             const frozenCtxt = ctxt.clone() as AfterReturnContext<any, AdviceType>;
-            if (filter) {
-                advices = advices.filter(filter);
-            }
 
             advices.forEach((advice: AfterReturnAdvice<unknown>) => {
                 ctxt.value = advice(frozenCtxt, frozenCtxt.value);
+            });
+        }
+
+        return ctxt.value;
+    }
+
+    private _applyAfterThrowAdvice(
+        ctxt: MutableAdviceContext<AdviceType>,
+        phase: PointcutPhase,
+        filter?: (a: Advice) => boolean,
+        prohibitReturn = false,
+    ) {
+        let advices = this.weaver.getAdvices(phase, ctxt);
+
+        if (filter) {
+            advices = advices.filter(filter);
+        }
+
+        if (advices.length) {
+            ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
+            const frozenCtxt = ctxt.clone() as AfterThrowContext<any, AdviceType>;
+
+            advices.forEach((advice: AfterThrowAdvice<unknown>) => {
+                ctxt.value = advice(frozenCtxt, frozenCtxt.error);
+
+                if (prohibitReturn && !isUndefined(ctxt.value)) {
+                    throw new WeavingError(`Returning from advice "${advice}" is not supported`);
+                }
             });
         }
 

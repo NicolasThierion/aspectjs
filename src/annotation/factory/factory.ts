@@ -185,9 +185,9 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
                     return r[PointcutPhase.AFTERRETURN](_ctxt);
                 } catch (e) {
                     _ctxt.error = e;
-                    // return r[PointcutPhase.AFTERTHROW](_ctxt);
+                    return r[PointcutPhase.AFTERTHROW](_ctxt);
                 } finally {
-                    // r[PointcutPhase.AFTER](_ctxt);
+                    r[PointcutPhase.AFTER](_ctxt);
                 }
             };
 
