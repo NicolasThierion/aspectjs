@@ -1,5 +1,3 @@
-import { Aspect } from '../../types';
-import { AdviceType } from '../types';
 import { AdviceContext, AfterThrowContext, CompileContext } from '../advice-context';
 import { AClass } from '../../../tests/a';
 import { AfterThrow } from './after-throw.decorator';
@@ -9,6 +7,8 @@ import Spy = jasmine.Spy;
 import { Compile } from '../compile/compile.decorator';
 import { Mutable } from '../../../utils';
 import { WeavingError } from '../../weaving-error';
+import { Aspect } from '../aspect';
+import { AnnotationType } from '../../..';
 
 const thrownError = new Error('expected');
 
@@ -22,11 +22,10 @@ describe('@AfterThrow advice', () => {
 
     describe('configured on some class', () => {
         beforeEach(() => {
-            class AfterThrowAspect extends Aspect {
-                id = 'AClassLabel';
-
+            @Aspect('AClassLabel')
+            class AfterThrowAspect {
                 @AfterThrow(on.class.annotations(AClass))
-                apply(ctxt: AfterThrowContext<any, AdviceType.CLASS>, error: Error): void {
+                apply(ctxt: AfterThrowContext<any, AnnotationType.CLASS>, error: Error): void {
                     expect(this).toEqual(jasmine.any(AfterThrowAspect));
 
                     expect(error).toEqual(ctxt.error);
@@ -45,7 +44,7 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     afterThrowAdvice = jasmine
                         .createSpy('afterThrowAdvice', function(
-                            ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>,
+                            ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>,
                             error: Error,
                         ) {
                             ctxt.instance.labels = ctxt.instance.labels ?? [];
@@ -85,7 +84,7 @@ describe('@AfterThrow advice', () => {
                 describe('when the aspect swallows the exception', () => {
                     beforeEach(() => {
                         afterThrowAdvice = jasmine
-                            .createSpy('afterThrowAdvice', (ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>) => {
+                            .createSpy('afterThrowAdvice', (ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) => {
                                 ctxt.instance.labels = ctxt.instance.labels ?? [];
                                 ctxt.instance.labels.push('A');
                             })
@@ -118,7 +117,7 @@ describe('@AfterThrow advice', () => {
             describe('and the aspect returns a new value', () => {
                 beforeEach(() => {
                     afterThrowAdvice = jasmine
-                        .createSpy('afterThrowAdvice', (ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
+                        .createSpy('afterThrowAdvice', (ctxt: AdviceContext<Labeled, AnnotationType.CLASS>) => {
                             return Object.assign(Object.create(ctxt.target.proto), {
                                 labels: ['ABis'],
                             });
@@ -158,11 +157,10 @@ describe('@AfterThrow advice', () => {
     });
 
     describe('applied on a property', () => {
-        class PropertyThrowAspect extends Aspect {
-            id = 'PropertyThrow';
-
+        @Aspect('PropertyThrow')
+        class PropertyThrowAspect {
             @Compile(on.property.annotations(AProperty))
-            compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
+            compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
                 return {
                     get() {
                         throw new Error('expected');
@@ -174,11 +172,10 @@ describe('@AfterThrow advice', () => {
             }
         }
 
-        class AfterThrowAspect extends Aspect {
-            id = 'APropertyLabel';
-
+        @Aspect('APropertyLabel')
+        class AfterThrowAspect {
             @AfterThrow(on.property.annotations(AProperty))
-            afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
+            afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
                 afterThrowAdvice(ctxt, error);
                 return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
             }
@@ -244,11 +241,10 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect returns a new value', () => {
                 it('should use the returned value', () => {
-                    class ReturnNewValueAspect extends Aspect {
-                        id = 'APropertyLabel';
-
+                    @Aspect('APropertyLabel')
+                    class ReturnNewValueAspect {
                         @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
+                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
                     }
@@ -266,12 +262,11 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect set a new ctxt.value', () => {
                 xit('should throw an error', () => {
-                    class ReturnNewValueAspect extends Aspect {
-                        id = 'APropertyLabel';
-
+                    @Aspect('APropertyLabel')
+                    class ReturnNewValueAspect {
                         @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
-                            (ctxt as Mutable<AfterThrowContext<any, AdviceType.PROPERTY>>).value = ['newValue'];
+                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
+                            (ctxt as Mutable<AfterThrowContext<any, AnnotationType.PROPERTY>>).value = ['newValue'];
                         }
                     }
 
@@ -288,11 +283,10 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect do not return a value', () => {
                 it('should throw an error', () => {
-                    class ReturnNewValueAspect extends Aspect {
-                        id = 'APropertyLabel';
-
+                    @Aspect('APropertyLabel')
+                    class ReturnNewValueAspect {
                         @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {}
+                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {}
                     }
 
                     setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
@@ -309,11 +303,10 @@ describe('@AfterThrow advice', () => {
     });
 
     describe('applied on a property setter', () => {
-        class PropertyThrowAspect extends Aspect {
-            id = 'PropertyThrow';
-
+        @Aspect('PropertyThrow')
+        class PropertyThrowAspect {
             @Compile(on.property.annotations(AProperty))
-            compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
+            compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
                 return {
                     get() {
                         return this._val;
@@ -326,11 +319,10 @@ describe('@AfterThrow advice', () => {
             }
         }
 
-        class AfterThrowAspect extends Aspect {
-            id = 'APropertyLabel';
-
+        @Aspect('APropertyLabel')
+        class AfterThrowAspect {
             @AfterThrow(on.property.setter.annotations(AProperty))
-            afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
+            afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
                 afterThrowAdvice(ctxt, error);
                 return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
             }
@@ -408,11 +400,10 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect returns a new value', () => {
                 it('should throw an error', () => {
-                    class ReturnNewValueAspect extends Aspect {
-                        id = 'APropertyLabel';
-
+                    @Aspect('APropertyLabel')
+                    class ReturnNewValueAspect {
                         @AfterThrow(on.property.setter.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
+                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
                     }
@@ -436,12 +427,11 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect set a new ctxt.value', () => {
                 xit('should throw an error', () => {
-                    class ReturnNewValueAspect extends Aspect {
-                        id = 'APropertyLabel';
-
+                    @Aspect('APropertyLabel')
+                    class ReturnNewValueAspect {
                         @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
-                            (ctxt as Mutable<AfterThrowContext<any, AdviceType.PROPERTY>>).value = ['newValue'];
+                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
+                            (ctxt as Mutable<AfterThrowContext<any, AnnotationType.PROPERTY>>).value = ['newValue'];
                         }
                     }
 
@@ -458,11 +448,10 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect do not return a value', () => {
                 it('should throw an error', () => {
-                    class ReturnNewValueAspect extends Aspect {
-                        id = 'APropertyLabel';
-
+                    @Aspect('APropertyLabel')
+                    class ReturnNewValueAspect {
                         @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {}
+                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {}
                     }
 
                     setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());

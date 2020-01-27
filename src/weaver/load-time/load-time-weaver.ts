@@ -1,12 +1,11 @@
 import { WeaverProfile } from '../profile';
 import { assert, getOrDefault, isArray, isUndefined } from '../../utils';
-import { Aspect, JoinPoint } from '../types';
+import { JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
-import { AnnotationRef } from '../..';
+import { AnnotationRef, AnnotationType } from '../..';
 import { AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
-    AdviceType,
     AfterAdvice,
     AfterReturnAdvice,
     AfterThrowAdvice,
@@ -19,7 +18,7 @@ import { PointcutsRunner, Weaver } from '../weaver';
 import { PointcutPhase } from '../advices/pointcut';
 
 type AdvicePipeline = {
-    [target in AdviceType]: {
+    [target in AnnotationType]: {
         [phase in PointcutPhase]: {
             byAnnotation: {
                 [annotationRef: string]: Advice[];
@@ -36,12 +35,12 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         super(name);
     }
 
-    enable(...aspects: Aspect[]): this {
+    enable(...aspects: object[]): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot enable or disable aspects`);
         return super.enable(...aspects);
     }
 
-    disable(...aspects: Aspect[]): this {
+    disable(...aspects: object[]): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot enable or disable aspects`);
         return super.disable(...aspects);
     }
@@ -58,28 +57,29 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
 
     load(): PointcutsRunner {
         if (!this._advices) {
-            this._aspects = this._aspects.filter(a => !!this._aspectsRegistry[a.id]);
+            this._advices = Object.values(this._aspectsRegistry)
+                .sort(ao => ao.order)
+                .map(ao => ao.aspect)
+                .reduce((pipeline: AdvicePipeline, aspect: object) => {
+                    const advices = AdvicesRegistry.getAdvices(aspect);
 
-            this._advices = this._aspects.reduce((pipeline: AdvicePipeline, aspect: Aspect) => {
-                const advices = AdvicesRegistry.getAdvices(aspect);
-
-                advices
-                    .map((advice: any) => {
-                        const bound = advice.bind(aspect);
-                        Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
-                        return bound;
-                    })
-                    .forEach(advice => {
-                        _getAdvicesArray(
-                            pipeline,
-                            advice.pointcut.type,
-                            advice.pointcut.phase,
-                            advice.pointcut.annotation,
-                            true,
-                        ).push(advice);
-                    });
-                return pipeline;
-            }, {} as AdvicePipeline);
+                    advices
+                        .map((advice: any) => {
+                            const bound = advice.bind(aspect);
+                            Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
+                            return bound;
+                        })
+                        .forEach(advice => {
+                            _getAdvicesArray(
+                                pipeline,
+                                advice.pointcut.type,
+                                advice.pointcut.phase,
+                                advice.pointcut.annotation,
+                                true,
+                            ).push(advice);
+                        });
+                    return pipeline;
+                }, {} as AdvicePipeline);
         }
 
         return this._runner;
@@ -96,26 +96,29 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         return !!this._advices;
     }
 
-    getAdvices<A extends AdviceType>(
+    getAdvices<A extends AnnotationType>(
         phase: PointcutPhase.COMPILE,
         ctxt: MutableAdviceContext<A>,
     ): CompileAdvice<any, A>[];
-    getAdvices<A extends AdviceType>(
+    getAdvices<A extends AnnotationType>(
         phase: PointcutPhase.BEFORE,
         ctxt: MutableAdviceContext<A>,
     ): BeforeClassAdvice<any>[];
-    getAdvices<A extends AdviceType>(phase: PointcutPhase.AFTER, ctxt: MutableAdviceContext<A>): AfterAdvice<any>[];
-    getAdvices<A extends AdviceType>(
+    getAdvices<A extends AnnotationType>(phase: PointcutPhase.AFTER, ctxt: MutableAdviceContext<A>): AfterAdvice<any>[];
+    getAdvices<A extends AnnotationType>(
         phase: PointcutPhase.AFTERRETURN,
         ctxt: MutableAdviceContext<A>,
     ): AfterReturnAdvice<any>[];
-    getAdvices<A extends AdviceType>(
+    getAdvices<A extends AnnotationType>(
         phase: PointcutPhase.AFTERTHROW,
         ctxt: MutableAdviceContext<A>,
     ): AfterThrowAdvice<any>[];
-    getAdvices<A extends AdviceType>(phase: PointcutPhase.AROUND, ctxt: MutableAdviceContext<A>): AroundAdvice<any>[];
-    getAdvices<A extends AdviceType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[];
-    getAdvices<A extends AdviceType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[] {
+    getAdvices<A extends AnnotationType>(
+        phase: PointcutPhase.AROUND,
+        ctxt: MutableAdviceContext<A>,
+    ): AroundAdvice<any>[];
+    getAdvices<A extends AnnotationType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[];
+    getAdvices<A extends AnnotationType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[] {
         assert(!!this._advices);
 
         return _getAdvicesArray(this._advices, ctxt.target.type, phase, ctxt.annotation, false);
@@ -130,7 +133,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
 
 function _getAdvicesArray(
     pipeline: AdvicePipeline,
-    type: AdviceType,
+    type: AnnotationType,
     phase: PointcutPhase,
     annotation: AnnotationRef,
     save: boolean,
@@ -199,10 +202,10 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     constructor(private weaver: LoadTimeWeaver) {}
 
-    private _compileClass<T>(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
+    private _compileClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         const newCtor = this.weaver
             .getAdvices(PointcutPhase.COMPILE, ctxt)
-            .map((advice: CompileAdvice<unknown, AdviceType.CLASS>) => advice(ctxt.clone()))
+            .map((advice: CompileAdvice<unknown, AnnotationType.CLASS>) => advice(ctxt.clone()))
             .filter(c => !!c)
             .slice(-1)[0];
 
@@ -211,11 +214,11 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _beforeClass<T>(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
+    private _beforeClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         this._applyNonReturningAdvice(ctxt, PointcutPhase.BEFORE);
     }
 
-    private _aroundClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
+    private _aroundClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         const proto = ctxt.target.proto;
 
         // this partial instance will take place until ctor is called
@@ -297,7 +300,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         // TODO what in case advice returns brand new 'this'?
     }
 
-    private _afterReturnClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): any {
+    private _afterReturnClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): any {
         let newInstance = ctxt.instance;
 
         const advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
@@ -312,7 +315,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         return ctxt.instance;
     }
 
-    private _afterThrowClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
+    private _afterThrowClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
         if (!afterThrowAdvices.length) {
             // pass-trough errors by default
@@ -328,15 +331,15 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _afterClass(ctxt: MutableAdviceContext<AdviceType.CLASS>): void {
+    private _afterClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER);
     }
 
-    private _compileProperty(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _compileProperty(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         const target = ctxt.target;
         const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
         let newDescriptor = compileAdvices
-            .map((advice: CompileAdvice<unknown, AdviceType.PROPERTY>) => advice(ctxt.clone()))
+            .map((advice: CompileAdvice<unknown, AnnotationType.PROPERTY>) => advice(ctxt.clone()))
             .filter(c => !!c)
             .slice(-1)[0];
 
@@ -351,11 +354,11 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _beforePropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _beforePropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         this._applyNonReturningAdvice(ctxt, PointcutPhase.BEFORE, _isPropertyGet);
     }
 
-    private _aroundPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _aroundPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
         assert(!!refDescriptor);
 
@@ -391,11 +394,11 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _afterReturnPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
+    private _afterReturnPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
         return this._applyAfterReturnAdvice(ctxt, PointcutPhase.AFTERRETURN, _isPropertyGet);
     }
 
-    private _afterThrowPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
+    private _afterThrowPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
         const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt).filter(_isPropertyGet);
         if (!afterThrowAdvices.length) {
             // pass-trough errors by default
@@ -405,15 +408,15 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _afterPropertyGet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _afterPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER, _isPropertyGet);
     }
 
-    private _beforePropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _beforePropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         this._applyNonReturningAdvice(ctxt, PointcutPhase.BEFORE, _isPropertySet);
     }
 
-    private _aroundPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _aroundPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
         assert(!!refDescriptor);
 
@@ -451,11 +454,11 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _afterReturnPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
+    private _afterReturnPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
         return this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTERRETURN, _isPropertySet);
     }
 
-    private _afterThrowPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): any {
+    private _afterThrowPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
         const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt).filter(_isPropertySet);
         if (!afterThrowAdvices.length) {
             // pass-trough errors by default
@@ -465,55 +468,55 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
     }
 
-    private _afterPropertySet(ctxt: MutableAdviceContext<AdviceType.PROPERTY>): void {
+    private _afterPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
         this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER);
     }
 
-    private _compileMethod(ctxt: MutableAdviceContext<AdviceType.METHOD>): void {
+    private _compileMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {
         assert(false, 'not implemented');
     }
 
-    private _beforeMethod(ctxt: MutableAdviceContext<AdviceType.METHOD>): void {
+    private _beforeMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {
         assert(false, 'not implemented');
     }
 
-    private _aroundMethod(ctxt: MutableAdviceContext<AdviceType.METHOD>): void {
+    private _aroundMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {
         assert(false, 'not implemented');
     }
 
-    private _afterReturnMethod(ctxt: MutableAdviceContext<AdviceType.METHOD>): void {
+    private _afterReturnMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {
         assert(false, 'not implemented');
     }
 
-    private _afterThrowMethod(ctxt: MutableAdviceContext<AdviceType.METHOD>): void {
+    private _afterThrowMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {
         assert(false, 'not implemented');
     }
 
-    private _afterMethod(ctxt: MutableAdviceContext<AdviceType.METHOD>): void {
+    private _afterMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {
         assert(false, 'not implemented');
     }
 
-    private _compileParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
+    private _compileParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): void {
         assert(false, 'not implemented');
     }
 
-    private _beforeParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
+    private _beforeParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): void {
         assert(false, 'not implemented');
     }
 
-    private _aroundParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
+    private _aroundParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): void {
         assert(false, 'not implemented');
     }
 
-    private _afterReturnParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
+    private _afterReturnParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): void {
         assert(false, 'not implemented');
     }
 
-    private _afterThrowParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
+    private _afterThrowParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): void {
         assert(false, 'not implemented');
     }
 
-    private _afterParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
+    private _afterParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): void {
         assert(false, 'not implemented');
     }
 
@@ -538,7 +541,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _applyAfterReturnAdvice(
-        ctxt: MutableAdviceContext<AdviceType>,
+        ctxt: MutableAdviceContext<AnnotationType>,
         phase: PointcutPhase,
         filter?: (a: Advice) => boolean,
     ) {
@@ -550,7 +553,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
         if (advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-            const frozenCtxt = ctxt.clone() as AfterReturnContext<any, AdviceType>;
+            const frozenCtxt = ctxt.clone() as AfterReturnContext<any, AnnotationType>;
 
             advices.forEach((advice: AfterReturnAdvice<unknown>) => {
                 ctxt.value = advice(frozenCtxt, frozenCtxt.value);
@@ -561,7 +564,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _applyAfterThrowAdvice(
-        ctxt: MutableAdviceContext<AdviceType>,
+        ctxt: MutableAdviceContext<AnnotationType>,
         phase: PointcutPhase,
         filter?: (a: Advice) => boolean,
         prohibitReturn = false,
@@ -574,7 +577,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
         if (advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-            const frozenCtxt = ctxt.clone() as AfterThrowContext<any, AdviceType>;
+            const frozenCtxt = ctxt.clone() as AfterThrowContext<any, AnnotationType>;
 
             advices.forEach((advice: AfterThrowAdvice<unknown>) => {
                 ctxt.value = advice(frozenCtxt, frozenCtxt.error);

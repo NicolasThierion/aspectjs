@@ -1,8 +1,8 @@
 import { AnnotationFactory } from '../../annotation/factory/factory';
 import { setWeaver } from '../../index';
-import { Aspect } from '../types';
 import { WeavingError } from '../weaving-error';
 import { LoadTimeWeaver } from './load-time-weaver';
+import { Aspect } from '../advices/aspect';
 
 let weaver: LoadTimeWeaver;
 
@@ -25,9 +25,8 @@ describe('LoadTimeWeaver', () => {
             });
             it('should throw an error', () => {
                 expect(() => {
-                    class AAspect extends Aspect {
-                        id = 'AClassLabel';
-                    }
+                    @Aspect('AClassLabel')
+                    class AAspect {}
                     weaver.enable(new AAspect());
                 }).toThrow(new WeavingError('Weaver "testWeaver" already loaded: Cannot enable or disable aspects'));
             });

@@ -1,14 +1,13 @@
-import { Aspect } from '../../types';
-import { AdviceType } from '../types';
 import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
 import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
-import { Mutable } from '../../../utils';
-import Spy = jasmine.Spy;
 import { WeavingError } from '../../weaving-error';
+import Spy = jasmine.Spy;
+import { Aspect } from '../aspect';
+import { AnnotationType } from '../../..';
 
 describe('@AfterReturn advice', () => {
     let afterReturn: Spy;
@@ -17,11 +16,10 @@ describe('@AfterReturn advice', () => {
     });
     describe('applied on some class', () => {
         beforeEach(() => {
-            class AfterReturnAspect extends Aspect {
-                id = 'AClassLabel';
-
+            @Aspect('AClassLabel')
+            class AfterReturnAspect {
                 @AfterReturn(on.class.annotations(AClass))
-                apply(ctxt: AfterReturnContext<any, AdviceType.CLASS>, retVal: any): void {
+                apply(ctxt: AfterReturnContext<any, AnnotationType.CLASS>, retVal: any): void {
                     expect(this).toEqual(jasmine.any(AfterReturnAspect));
                     expect(retVal).toEqual(ctxt.value);
                     return afterReturn(ctxt, retVal);
@@ -73,7 +71,7 @@ describe('@AfterReturn advice', () => {
                 describe('and the aspect returns a new value', () => {
                     beforeEach(() => {
                         afterReturn = jasmine
-                            .createSpy('afterReturn', (ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
+                            .createSpy('afterReturn', (ctxt: AdviceContext<Labeled, AnnotationType.CLASS>) => {
                                 return Object.assign(Object.create(ctxt.target.proto), {
                                     labels: ['ABis'],
                                 });
@@ -110,8 +108,8 @@ describe('@AfterReturn advice', () => {
 
         describe('that throws', () => {
             beforeEach(() => {
-                class PropAspect extends Aspect {
-                    id = 'PropAspect';
+                @Aspect('PropAspect')
+                class PropAspect {
                     @Compile(on.property.annotations(AProperty))
                     compile() {
                         expect(this).toEqual(jasmine.any(PropAspect));
@@ -147,9 +145,8 @@ describe('@AfterReturn advice', () => {
 
         describe('that do not throws', () => {
             beforeEach(() => {
-                class PropAspect extends Aspect {
-                    id = 'PropAspect';
-
+                @Aspect('PropAspect')
+                class PropAspect {
                     @AfterReturn(on.property.annotations(AProperty))
                     after(ctxt: AdviceContext<any, any>, returnValue: any) {
                         return afterReturn(ctxt, returnValue);
@@ -179,9 +176,8 @@ describe('@AfterReturn advice', () => {
 
             describe('and the aspect returns a new value', () => {
                 beforeEach(() => {
-                    class PropAspect extends Aspect {
-                        id = 'PropAspect';
-
+                    @Aspect('PropAspect')
+                    class PropAspect {
                         @AfterReturn(on.property.annotations(AProperty))
                         after(ctxt: AdviceContext<any, any>, returnValue: any) {
                             return returnValue.concat('a');
@@ -216,8 +212,8 @@ describe('@AfterReturn advice', () => {
 
         describe('that throws', () => {
             beforeEach(() => {
-                class PropAspect extends Aspect {
-                    id = 'PropAspect';
+                @Aspect('PropAspect')
+                class PropAspect {
                     @Compile(on.property.annotations(AProperty))
                     compile() {
                         expect(this).toEqual(jasmine.any(PropAspect));
@@ -253,9 +249,8 @@ describe('@AfterReturn advice', () => {
 
         describe('that do not throws', () => {
             beforeEach(() => {
-                class PropAspect extends Aspect {
-                    id = 'PropAspect';
-
+                @Aspect('PropAspect')
+                class PropAspect {
                     @AfterReturn(on.property.setter.annotations(AProperty))
                     after(ctxt: AdviceContext<any, any>, returnValue: any) {
                         return afterReturn(ctxt, returnValue);
@@ -285,9 +280,8 @@ describe('@AfterReturn advice', () => {
 
             describe('and the aspect returns a new value', () => {
                 beforeEach(() => {
-                    class PropAspect extends Aspect {
-                        id = 'PropAspect';
-
+                    @Aspect('PropAspect')
+                    class PropAspect {
                         @AfterReturn(on.property.setter.annotations(AProperty))
                         after(ctxt: AdviceContext<any, any>) {
                             return ['afterReturnValue'];

@@ -2,11 +2,12 @@ import { AnnotationFactory } from './src/annotation/factory/factory';
 import 'reflect-metadata';
 import { on } from './src/weaver/advices/pointcut';
 import { Before } from './src/weaver/advices/before/before.decorator';
-import { Aspect, JoinPoint, setWeaver } from './src';
+import { JoinPoint, setWeaver } from './src';
 import { After } from './src/weaver/advices/after/after.decorator';
 import { AfterContext, AroundContext, BeforeContext } from './src/weaver/advices/advice-context';
 import { Around } from './src/weaver/advices/around/around.decorator';
 import { LoadTimeWeaver } from './src/weaver/load-time/load-time-weaver';
+import { Aspect } from './src/weaver/advices/aspect';
 
 const iterations = 1000000;
 
@@ -45,10 +46,8 @@ function withAop(iterations = 10000) {
     const ClassHooks = af.create(function ClassHooks(): ClassDecorator {
         return;
     });
-
-    class ClassAspect extends Aspect {
-        id = 'ClassAspect';
-
+    @Aspect('ClassAspect')
+    class ClassAspect {
         @Before(on.class.annotations(ClassHooks))
         before(ctxt: BeforeContext<any, any>) {}
 

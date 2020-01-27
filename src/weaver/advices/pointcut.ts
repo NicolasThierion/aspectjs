@@ -1,9 +1,8 @@
-import { Annotation, AnnotationRef, ClassAnnotation, PropertyAnnotation } from '../..';
+import { Annotation, AnnotationRef, AnnotationType, ClassAnnotation, PropertyAnnotation } from '../..';
 import { assert } from '../../utils';
-import { AdviceType } from './types';
 
 export interface Pointcut {
-    type: AdviceType;
+    type: AnnotationType;
     annotation: AnnotationRef;
     name: string;
     phase: PointcutPhase;
@@ -11,9 +10,9 @@ export interface Pointcut {
 }
 
 export abstract class PointcutExpression {
-    protected _annotations: Annotation<AdviceType>[] = [];
+    protected _annotations: Annotation<AnnotationType>[] = [];
 
-    annotations(...annotation: Annotation<AdviceType>[]): PointcutExpression {
+    annotations(...annotation: Annotation<AnnotationType>[]): PointcutExpression {
         this._annotations = annotation;
         return this;
     }
@@ -107,9 +106,9 @@ export namespace Pointcut {
         const ref = exp.toString();
 
         const pointcutRegexes = {
-            [AdviceType.CLASS]: new RegExp('(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)'),
-            [AdviceType.PROPERTY]: new RegExp(
-                '(?:property#(?:set|get)\\s(?<name>\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
+            [AnnotationType.CLASS]: new RegExp('(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)'),
+            [AnnotationType.PROPERTY]: new RegExp(
+                '(?:property#(?:get|set)\\s(?<name>\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
             ),
         };
 
@@ -122,7 +121,7 @@ export namespace Pointcut {
             if (match?.groups.name) {
                 assert(!!match.groups.annotation, 'only annotation pointcuts are supported');
                 pointcut = {
-                    type: type as AdviceType,
+                    type: type as AnnotationType,
                     phase,
                     annotation: AnnotationRef.of(match.groups.annotation),
                     name: match.groups.name,

@@ -1,6 +1,7 @@
 import {
     Annotation,
     AnnotationRef,
+    AnnotationType,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
@@ -12,10 +13,9 @@ import { assert, getMetaOrDefault, isFunction } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AdviceTargetFactory } from '../target/advice-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
-import { AdviceTarget } from '../target/advice-target';
-import { AnnotationBundleFactory, AnnotationsBundleImpl } from '../bundle/bundle-factory';
+import { AnnotationTarget } from '../target/annotation-target';
+import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
-import { AdviceType } from '../../weaver/advices/types';
 import { PointcutPhase } from '../../weaver/advices/pointcut';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
@@ -34,7 +34,7 @@ export class AnnotationFactory {
     create<A extends PropertyAnnotationStub>(annotationStub: A): A & AnnotationRef;
     create<A extends ParameterAnnotationStub>(annotationStub: A): A & AnnotationRef;
 
-    create<S extends Annotation<AdviceType>>(annotationStub: S): S & AnnotationRef {
+    create<S extends Annotation<AnnotationType>>(annotationStub: S): S & AnnotationRef {
         if (!annotationStub.name) {
             Reflect.defineProperty(annotationStub, 'name', {
                 value: `anonymousAnnotation#${generatedId++}`,
@@ -57,7 +57,7 @@ export class AnnotationFactory {
     }
 }
 
-function _createAnnotationRef<A extends Annotation<AdviceType>, D extends Decorator>(
+function _createAnnotationRef<A extends Annotation<AnnotationType>, D extends Decorator>(
     fn: Function & D,
     annotationStub: A,
     groupId: string,
@@ -104,58 +104,171 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
     });
 }
 
-function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvice>>(
+function _createDecorator<A extends AnnotationType>(
     runner: PointcutsRunner,
-    annotation: A,
+    annotation: Annotation<A>,
     annotationArgs: any[],
 ): Decorator {
+    const GENERATORS = {
+        [AnnotationType.CLASS]: _createClassDecoration,
+        [AnnotationType.PROPERTY]: _createPropertyDecoration,
+        [AnnotationType.METHOD]: () => {
+            throw new Error('not implemented');
+        },
+        [AnnotationType.PARAMETER]: () => {
+            throw new Error('not implemented');
+        },
+    };
+
     return function(...targetArgs: any[]): Function | PropertyDescriptor {
-        const target = AdviceTargetFactory.of(targetArgs) as AdviceTarget<any, TAdvice>;
+        const target = AdviceTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
+        AnnotationBundleRegistry.addContext(target, annotationContext);
+
         const ctxt = new AdviceContextImpl(annotationContext);
 
-        if (target.type === AdviceType.CLASS) {
-            return _createClassDecoration(ctxt);
-        } else if (target.type === AdviceType.PROPERTY) {
-            return _createPropertyDecoration(ctxt);
-        } else {
-            assert(false, 'not implemented'); // TODO
+        const generator = GENERATORS[ctxt.target.type];
+        return generator(ctxt as AdviceContextImpl<any, any>, runner);
+    };
+}
+
+class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceContext<A> {
+    public error?: Error;
+    public instance?: T;
+    public value?: T | unknown;
+    public args?: any[];
+    public joinpoint?: JoinPoint;
+    public target: AnnotationTarget<T, A>;
+
+    constructor(public annotation: AnnotationContext<T, A>) {
+        this.target = annotation.target;
+    }
+
+    clone(): this {
+        return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as AdviceContext<any, AnnotationType>, this);
+    }
+}
+
+class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
+    public readonly name: string;
+    public readonly groupId: string;
+    private readonly _annotation: AnnotationRef;
+
+    constructor(
+        public readonly target: AnnotationTarget<T, D>,
+        public readonly args: any[],
+        annotation: AnnotationRef,
+    ) {
+        this.name = annotation.name;
+        this.groupId = annotation.groupId;
+        this._annotation = annotation;
+    }
+
+    toString(): string {
+        return this._annotation.toString();
+    }
+}
+
+function _createClassDecoration<T>(
+    ctxt: AdviceContextImpl<any, AnnotationType.CLASS>,
+    runner: PointcutsRunner,
+): Function {
+    runner.class[PointcutPhase.COMPILE](ctxt);
+    const ctorName = ctxt.target.proto.constructor.name;
+
+    const ctor = function(...ctorArgs: any[]): T {
+        ctxt.args = ctorArgs;
+
+        try {
+            runner.class[PointcutPhase.BEFORE](ctxt);
+            ctxt.instance = this;
+
+            runner.class[PointcutPhase.AROUND](ctxt);
+
+            runner.class[PointcutPhase.AFTERRETURN](ctxt);
+
+            return ctxt.instance;
+        } catch (e) {
+            // consider WeavingErrors as not recoverable by an aspect
+            if (e instanceof WeavingError) {
+                throw e;
+            }
+
+            ctxt.error = e;
+            runner.class[PointcutPhase.AFTERTHROW](ctxt);
+            return ctxt.instance;
+        } finally {
+            runner.class[PointcutPhase.AFTER](ctxt);
         }
     };
 
-    function _createPropertyDecoration(ctxt: AdviceContextImpl<any, TAdvice>): PropertyDescriptor {
-        const target = ctxt.target;
-        const defaultDescriptor: PropertyDescriptor = {
-            configurable: true,
-            enumerable: true,
-            get() {
-                return Reflect.getOwnMetadata(`aspectjs.propValue`, this, ctxt.target.propertyKey);
-            },
-            set(value: any) {
-                Reflect.defineMetadata(`aspectjs.propValue`, value, this, ctxt.target.propertyKey);
-            },
-        };
+    _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
 
-        const refDescriptor = {
-            ...(runner.property[PointcutPhase.COMPILE](ctxt) ?? target.proto[target.propertyKey] ?? defaultDescriptor),
-        };
+    Reflect.defineMetadata('aspectjs.referenceProto', ctor.prototype, ctxt.target.proto);
+    Reflect.defineMetadata('aspectjs.referenceCtor', ctxt.target.proto.constructor, ctxt.target.proto);
+    ctor.prototype = ctxt.target.proto;
+    ctor.prototype.constructor = ctor;
 
-        if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
-            const propValue = refDescriptor.value;
-            refDescriptor.get = () => propValue;
-            delete refDescriptor.writable;
-            delete refDescriptor.value;
+    return ctor;
+}
+
+function _createPropertyDecoration(
+    ctxt: AdviceContextImpl<any, AnnotationType.PROPERTY>,
+    runner: PointcutsRunner,
+): PropertyDescriptor {
+    const target = ctxt.target;
+    const defaultDescriptor: PropertyDescriptor = {
+        configurable: true,
+        enumerable: true,
+        get() {
+            return Reflect.getOwnMetadata(`aspectjs.propValue`, this, ctxt.target.propertyKey);
+        },
+        set(value: any) {
+            Reflect.defineMetadata(`aspectjs.propValue`, value, this, ctxt.target.propertyKey);
+        },
+    };
+
+    const refDescriptor = {
+        ...(runner.property[PointcutPhase.COMPILE](ctxt) ?? target.proto[target.propertyKey] ?? defaultDescriptor),
+    };
+
+    if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
+        const propValue = refDescriptor.value;
+        refDescriptor.get = () => propValue;
+        delete refDescriptor.writable;
+        delete refDescriptor.value;
+    }
+
+    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.target.proto);
+    let propDescriptor: PropertyDescriptor = {
+        ...refDescriptor,
+    };
+    propDescriptor.get = function() {
+        const _ctxt = ctxt.clone();
+        const r = runner.property.getter;
+        try {
+            _ctxt.instance = this;
+            r[PointcutPhase.BEFORE](_ctxt);
+
+            r[PointcutPhase.AROUND](_ctxt);
+
+            return r[PointcutPhase.AFTERRETURN](_ctxt);
+        } catch (e) {
+            _ctxt.error = e;
+            return r[PointcutPhase.AFTERTHROW](_ctxt);
+        } finally {
+            r[PointcutPhase.AFTER](_ctxt);
         }
+    };
 
-        Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.target.proto);
-        let propDescriptor: PropertyDescriptor = {
-            ...refDescriptor,
-        };
-        propDescriptor.get = function() {
+    if (_isWritable(propDescriptor)) {
+        propDescriptor.set = function(...args: any[]) {
             const _ctxt = ctxt.clone();
-            const r = runner.property.getter;
+
+            const r = runner.property.setter;
             try {
+                _ctxt.args = args;
                 _ctxt.instance = this;
                 r[PointcutPhase.BEFORE](_ctxt);
 
@@ -170,119 +283,22 @@ function _createDecorator<TAdvice extends AdviceType, A extends Annotation<TAdvi
             }
         };
 
-        if (_isWritable(propDescriptor)) {
-            propDescriptor.set = function(...args: any[]) {
-                const _ctxt = ctxt.clone();
-
-                const r = runner.property.setter;
-                try {
-                    _ctxt.args = args;
-                    _ctxt.instance = this;
-                    r[PointcutPhase.BEFORE](_ctxt);
-
-                    r[PointcutPhase.AROUND](_ctxt);
-
-                    return r[PointcutPhase.AFTERRETURN](_ctxt);
-                } catch (e) {
-                    _ctxt.error = e;
-                    return r[PointcutPhase.AFTERTHROW](_ctxt);
-                } finally {
-                    r[PointcutPhase.AFTER](_ctxt);
-                }
-            };
-
-            delete propDescriptor.writable;
-        } else {
-            delete propDescriptor.set;
-        }
-        // test property validity
-        propDescriptor = Object.getOwnPropertyDescriptor(
-            Object.defineProperty({}, 'surrogate', propDescriptor),
-            'surrogate',
-        );
-
-        target.proto[target.propertyKey] = propDescriptor;
-
-        return propDescriptor;
-
-        function _isWritable(propDescriptor: PropertyDescriptor) {
-            const desc = propDescriptor as Record<string, any>;
-            return !desc || (desc.hasOwnProperty('writable') && desc.writable) || isFunction(desc.set);
-        }
+        delete propDescriptor.writable;
+    } else {
+        delete propDescriptor.set;
     }
+    // test property validity
+    propDescriptor = Object.getOwnPropertyDescriptor(
+        Object.defineProperty({}, 'surrogate', propDescriptor),
+        'surrogate',
+    );
 
-    function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, TAdvice>): Function {
-        runner.class[PointcutPhase.COMPILE](ctxt);
+    target.proto[target.propertyKey] = propDescriptor;
 
-        const ctor = function(...ctorArgs: any[]): T {
-            ctxt.args = ctorArgs;
+    return propDescriptor;
 
-            try {
-                runner.class[PointcutPhase.BEFORE](ctxt);
-                ctxt.instance = this;
-
-                runner.class[PointcutPhase.AROUND](ctxt);
-
-                runner.class[PointcutPhase.AFTERRETURN](ctxt);
-
-                return ctxt.instance;
-            } catch (e) {
-                // consider WeavingErrors as not recoverable by an aspect
-                if (e instanceof WeavingError) {
-                    throw e;
-                }
-
-                ctxt.error = e;
-                runner.class[PointcutPhase.AFTERTHROW](ctxt);
-                return ctxt.instance;
-            } finally {
-                runner.class[PointcutPhase.AFTER](ctxt);
-            }
-        };
-
-        const ctorName = ctxt.target.proto.constructor.name;
-        _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
-
-        Reflect.defineMetadata('aspectjs.referenceProto', ctor.prototype, ctxt.target.proto);
-        Reflect.defineMetadata('aspectjs.referenceCtor', ctxt.target.proto.constructor, ctxt.target.proto);
-        ctor.prototype = ctxt.target.proto;
-        ctor.prototype.constructor = ctor;
-
-        return ctor;
-    }
-}
-
-class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext<A> {
-    public error?: Error;
-    public instance?: T;
-    public value?: T | unknown;
-    public args?: any[];
-    public joinpoint?: JoinPoint;
-    public target: AdviceTarget<T, A>;
-
-    constructor(readonly annotation: AnnotationContextImpl<T, A>) {
-        this.target = annotation.target;
-    }
-
-    clone(): this {
-        return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as AdviceContext<any, AdviceType>, this);
-    }
-}
-
-class AnnotationContextImpl<T, D extends AdviceType> implements AnnotationContext<T, D> {
-    public readonly name: string;
-    public readonly groupId: string;
-
-    constructor(public readonly target: AdviceTarget<T, D>, public readonly args: any[], annotation: AnnotationRef) {
-        this.name = annotation.name;
-        this.groupId = annotation.groupId;
-    }
-
-    toString(): string {
-        return this.target.toString();
-    }
-
-    get bundle() {
-        return AnnotationBundleFactory.of(this.target) as AnnotationsBundleImpl<any>;
+    function _isWritable(propDescriptor: PropertyDescriptor) {
+        const desc = propDescriptor as Record<string, any>;
+        return !desc || (desc.hasOwnProperty('writable') && desc.writable) || isFunction(desc.set);
     }
 }

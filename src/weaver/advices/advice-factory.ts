@@ -1,14 +1,15 @@
-import { Advice, AdviceType } from './types';
+import { Advice } from './types';
 import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
 import { Pointcut, PointcutExpression, PointcutPhase } from './pointcut';
 import { WeavingError } from '../weaving-error';
+import { AnnotationType } from '../..';
 
 export class AdviceFactory {
     static create(pointcutExp: PointcutExpression, phase: PointcutPhase): MethodDecorator {
         const pointcut = Pointcut.of(phase, pointcutExp);
         assert(
-            !(pointcut.type === AdviceType.PROPERTY) ||
+            !(pointcut.type === AnnotationType.PROPERTY) ||
                 pointcut.ref.startsWith('property#get') ||
                 pointcut.ref.startsWith('property#set'),
         );

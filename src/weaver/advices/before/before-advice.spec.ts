@@ -1,11 +1,11 @@
-import { Aspect } from '../../types';
 import { AClass } from '../../../tests/a';
 import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { on } from '../pointcut';
-import { AdviceType } from '../types';
 import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import Spy = jasmine.Spy;
+import { Aspect } from '../aspect';
+import { AnnotationType } from '../../..';
 
 describe('@Before advice', () => {
     let advice: Spy;
@@ -19,11 +19,10 @@ describe('@Before advice', () => {
         let thisInstance: any;
 
         beforeEach(() => {
-            class AAspect extends Aspect {
-                id = 'AClassLabel';
-
+            @Aspect('AClassLabel')
+            class AAspect {
                 @Before(on.class.annotations(AClass))
-                applyBefore(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
+                applyBefore(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
                     thisInstance = ctxt.instance;
 
@@ -62,11 +61,10 @@ describe('@Before advice', () => {
         let a: Labeled;
 
         beforeEach(() => {
-            class AAspect extends Aspect {
-                id = 'AClassLabel';
-
+            @Aspect('AClassLabel')
+            class AAspect {
                 @Before(on.property.annotations(AProperty))
-                applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
+                applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
 
                     advice(ctxt);
@@ -105,11 +103,10 @@ describe('@Before advice', () => {
         let a: Labeled;
 
         beforeEach(() => {
-            class AAspect extends Aspect {
-                id = 'AClassLabel';
-
+            @Aspect('AClassLabel')
+            class AAspect {
                 @Before(on.property.setter.annotations(AProperty))
-                applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
+                applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
 
                     advice(ctxt);

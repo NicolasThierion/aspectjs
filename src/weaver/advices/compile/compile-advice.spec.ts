@@ -1,25 +1,24 @@
-import { Aspect } from '../../types';
-import { AdviceType, CompileAdvice } from '../types';
 import { Compile } from './compile.decorator';
 import { AdviceContext } from '../advice-context';
-import { AdviceTarget } from '../../../annotation/target/advice-target';
 import { on } from '../pointcut';
 import { AClass, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { WeavingError } from '../../weaving-error';
+import { Aspect } from '../aspect';
+import { AnnotationTarget } from '../../../annotation/target/annotation-target';
+import { AnnotationType } from '../../..';
 
 let compileAdvice = jasmine.createSpy('compileAdvice');
 
 describe('@Compile advice', () => {
-    let target: AdviceTarget<any, AdviceType>;
+    let target: AnnotationTarget<any, AnnotationType>;
     let instance: any;
 
     describe('applied on a class', () => {
         beforeEach(() => {
-            class CompileAspect extends Aspect {
-                id = 'AClassLabel';
-
+            @Aspect('AClassLabel')
+            class CompileAspect {
                 @Compile(on.class.annotations(AClass))
-                apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
+                apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): any {
                     expect(this).toEqual(jasmine.any(CompileAspect));
 
                     return compileAdvice(ctxt);
@@ -27,7 +26,7 @@ describe('@Compile advice', () => {
             }
 
             compileAdvice = jasmine
-                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.CLASS>) {
+                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
@@ -60,7 +59,7 @@ describe('@Compile advice', () => {
             beforeEach(() => {
                 ctor = jasmine.createSpy('ctor');
                 compileAdvice = jasmine
-                    .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.CLASS>) {
+                    .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                         target = ctxt.target;
                         instance = (ctxt as any).instance;
 
@@ -86,11 +85,10 @@ describe('@Compile advice', () => {
 
     describe('applied on a property', () => {
         beforeEach(() => {
-            class CompileAspect extends Aspect {
-                id = 'APropertyLabel';
-
+            @Aspect('APropertyLabel')
+            class CompileAspect {
                 @Compile(on.property.annotations(AProperty))
-                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
+                apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): any {
                     expect(this).toEqual(jasmine.any(CompileAspect));
 
                     return compileAdvice(ctxt);
@@ -98,7 +96,7 @@ describe('@Compile advice', () => {
             }
 
             compileAdvice = jasmine
-                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
+                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
@@ -136,7 +134,7 @@ describe('@Compile advice', () => {
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
                     compileAdvice = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
+                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return ({
                                 get: '',
                             } as any) as PropertyDescriptor;
@@ -158,7 +156,7 @@ describe('@Compile advice', () => {
                 let a: Labeled;
                 beforeEach(() => {
                     compileAdvice = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
+                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 value: ['propAspect'],
                             };
@@ -186,7 +184,7 @@ describe('@Compile advice', () => {
 
                 beforeEach(() => {
                     compileAdvice = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
+                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 get: () => ['propAspect'],
                             };
@@ -217,7 +215,7 @@ describe('@Compile advice', () => {
                     val = ['propAspect'];
 
                     compileAdvice = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
+                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 get: () => val,
                                 set: (_val: any) => (val = _val),
@@ -261,7 +259,8 @@ describe('@Compile advice', () => {
     describe('applied on a property setter', () => {
         it('should throw an error', () => {
             expect(() => {
-                class BadAspect extends Aspect {
+                @Aspect('BadAspect')
+                class BadAspect {
                     @Compile(on.property.setter.annotations(AProperty))
                     apply() {}
                 }

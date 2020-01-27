@@ -1,30 +1,29 @@
 import {
-    AdviceTarget,
+    AnnotationTarget,
     ClassAdviceTarget,
     MethodAdviceTarget,
     ParameterAdviceTarget,
     PropertyAdviceTarget,
-} from '../target/advice-target';
-import { AnnotationRef } from '../annotation.types';
-import { AdviceType } from '../../weaver/advices/types';
+} from '../target/annotation-target';
+import { AnnotationRef, AnnotationType } from '../annotation.types';
 
-export interface AnnotationContext<T, D extends AdviceType> extends AnnotationRef {
+export interface AnnotationContext<T, A extends AnnotationType> extends AnnotationRef {
     readonly args: any[];
-    readonly target: AdviceTarget<T, AdviceType>;
+    readonly target: AnnotationTarget<T, A>;
 }
 
-export interface ClassAnnotationContext<T> extends AnnotationContext<T, AdviceType.CLASS> {
+export interface ClassAnnotationContext<T> extends AnnotationContext<T, AnnotationType.CLASS> {
     readonly target: ClassAdviceTarget<T>;
 }
 
-export interface MethodAnnotationContext<T> extends AnnotationContext<T, AdviceType.METHOD> {
+export interface MethodAnnotationContext<T> extends AnnotationContext<T, AnnotationType.METHOD> {
     readonly target: MethodAdviceTarget<T>;
 }
 
-export interface PropertyAnnotationContext<T> extends AnnotationContext<T, AdviceType.PROPERTY> {
+export interface PropertyAnnotationContext<T> extends AnnotationContext<T, AnnotationType.PROPERTY> {
     readonly target: PropertyAdviceTarget<T>;
 }
 
-export interface ParameterAnnotationContext<T> extends AnnotationContext<T, AdviceType.PARAMETER> {
+export interface ParameterAnnotationContext<T> extends AnnotationContext<T, AnnotationType.PARAMETER> {
     readonly target: ParameterAdviceTarget<T>;
 }
