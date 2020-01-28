@@ -271,4 +271,14 @@ describe('@Compile advice', () => {
             );
         });
     });
+
+    describe('applied on a method', () => {
+        // @Aspect()
+        // class CompileMethodAspect {
+        //     @Compile(on.method.annotations())
+        //     compileMethod() {
+        //
+        //     }
+        // }
+    });
 });

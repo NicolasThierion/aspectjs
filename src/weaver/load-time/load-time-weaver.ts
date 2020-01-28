@@ -469,7 +469,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _afterPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
-        this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER);
+        this._applyNonReturningAdvice(ctxt, PointcutPhase.AFTER, _isPropertySet);
     }
 
     private _compileMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): void {

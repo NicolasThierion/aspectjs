@@ -15,7 +15,7 @@ describe('given several aspects', () => {
 
     beforeEach(() => {
         labels = [];
-        setupWeaver(new LabelAspect('A'));
+        setupWeaver(new LabelAspect('A'), new LabelAspect('B'));
     });
 
     @Aspect()
@@ -80,28 +80,28 @@ describe('given several aspects', () => {
 
         @Before(on.property.setter.annotations(AProperty))
         beforePropertySet(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_beforeProperty`);
+            labels.push(`${this.id}_beforeSetProperty`);
         }
 
         @Around(on.property.setter.annotations(AProperty))
         aroundPropertySet(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AroundProperty`);
+            labels.push(`${this.id}_AroundSetProperty`);
             return ctxt.joinpoint();
         }
 
         @After(on.property.setter.annotations(AProperty))
         afterPropertySet(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterProperty`);
+            labels.push(`${this.id}_AfterSetProperty`);
         }
 
         @AfterReturn(on.property.setter.annotations(AProperty))
         afterReturnPropertySet(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterReturnProperty`);
+            labels.push(`${this.id}_AfterReturnSetProperty`);
         }
 
         @AfterThrow(on.property.setter.annotations(AProperty))
         afterThrowPropertySet(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterThrowProperty`);
+            labels.push(`${this.id}_AfterThrowSetProperty`);
             throw ctxt.error;
         }
     }
@@ -110,8 +110,12 @@ describe('given several aspects', () => {
         let A: any;
 
         beforeEach(() => {
+            @AClass()
             // eslint-disable-next-line @typescript-eslint/class-name-casing
-            class A_ {}
+            class A_ {
+                @AProperty()
+                labels: string[];
+            }
 
             A = A_;
         });
@@ -119,6 +123,52 @@ describe('given several aspects', () => {
         it('should advices across all aspects in order', () => {
             expect(labels).toEqual([]);
             const a = new A();
+            const expectedLabels = [
+                'A_beforeClass',
+                'B_beforeClass',
+                'B_AroundClass',
+                'A_AroundClass',
+                'A_AfterReturnClass',
+                'B_AfterReturnClass',
+                'A_AfterClass',
+                'B_AfterClass',
+                // 'A_AfterThrowClass',
+                // 'B_AfterThrowClass',
+            ];
+
+            expect(labels).toEqual(expectedLabels);
+
+            console.log(a.labels);
+            expectedLabels.push(
+                'A_beforeProperty',
+                'B_beforeProperty',
+                'B_AroundProperty',
+                'A_AroundProperty',
+                'A_AfterReturnProperty',
+                'B_AfterReturnProperty',
+                'A_AfterProperty',
+                'B_AfterProperty',
+                // 'A_AfterThrowProperty',
+                // 'B_AfterThrowProperty',
+            );
+
+            expect(labels).toEqual(expectedLabels);
+            a.labels = [];
+
+            expectedLabels.push(
+                'A_beforeSetProperty',
+                'B_beforeSetProperty',
+                'B_AroundSetProperty',
+                'A_AroundSetProperty',
+                'A_AfterReturnSetProperty',
+                'B_AfterReturnSetProperty',
+                'A_AfterSetProperty',
+                'B_AfterSetProperty',
+                // 'A_AfterThrowSetProperty',
+                // 'B_AfterThrowSetProperty',
+            );
+
+            expect(labels).toEqual(expectedLabels);
         });
     });
 });

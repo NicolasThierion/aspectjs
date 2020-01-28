@@ -260,27 +260,6 @@ describe('@AfterThrow advice', () => {
                 });
             });
 
-            describe('and the aspect set a new ctxt.value', () => {
-                xit('should throw an error', () => {
-                    @Aspect('APropertyLabel')
-                    class ReturnNewValueAspect {
-                        @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
-                            (ctxt as Mutable<AfterThrowContext<any, AnnotationType.PROPERTY>>).value = ['newValue'];
-                        }
-                    }
-
-                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
-
-                    class A implements Labeled {
-                        @AProperty()
-                        public labels: string[];
-                    }
-                    const a = new A();
-                    expect(() => a.labels).toThrow();
-                });
-            });
-
             describe('and the aspect do not return a value', () => {
                 it('should throw an error', () => {
                     @Aspect('APropertyLabel')
@@ -422,27 +401,6 @@ describe('@AfterThrow advice', () => {
                             'Returning from advice "@AfterThrow(@AProperty) ReturnNewValueAspect.afterThrow()" is not supported',
                         ),
                     );
-                });
-            });
-
-            describe('and the aspect set a new ctxt.value', () => {
-                xit('should throw an error', () => {
-                    @Aspect('APropertyLabel')
-                    class ReturnNewValueAspect {
-                        @AfterThrow(on.property.annotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
-                            (ctxt as Mutable<AfterThrowContext<any, AnnotationType.PROPERTY>>).value = ['newValue'];
-                        }
-                    }
-
-                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
-
-                    class A implements Labeled {
-                        @AProperty()
-                        public labels: string[];
-                    }
-                    const a = new A();
-                    expect(() => a.labels).toThrow();
                 });
             });
 

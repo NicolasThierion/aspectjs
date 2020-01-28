@@ -80,7 +80,7 @@ class PointcutExpressionFactory {
         return new PropertyPointcutExpression();
     }
 
-    get methods() {
+    get method() {
         return new MethodPointcutExpression();
     }
     get args() {
