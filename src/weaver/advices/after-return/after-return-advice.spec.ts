@@ -18,7 +18,7 @@ describe('@AfterReturn advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AfterReturnAspect {
-                @AfterReturn(on.class.annotations(AClass))
+                @AfterReturn(on.class.withAnnotations(AClass))
                 apply(ctxt: AfterReturnContext<any, AnnotationType.CLASS>, retVal: any): void {
                     expect(this).toEqual(jasmine.any(AfterReturnAspect));
                     expect(retVal).toEqual(ctxt.value);
@@ -110,7 +110,7 @@ describe('@AfterReturn advice', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @Compile(on.property.annotations(AProperty))
+                    @Compile(on.property.withAnnotations(AProperty))
                     compile() {
                         expect(this).toEqual(jasmine.any(PropAspect));
 
@@ -121,7 +121,7 @@ describe('@AfterReturn advice', () => {
                         };
                     }
 
-                    @AfterReturn(on.property.annotations(AProperty))
+                    @AfterReturn(on.property.withAnnotations(AProperty))
                     after() {
                         afterReturn(null, null);
                     }
@@ -147,7 +147,7 @@ describe('@AfterReturn advice', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @AfterReturn(on.property.annotations(AProperty))
+                    @AfterReturn(on.property.withAnnotations(AProperty))
                     after(ctxt: AdviceContext<any, any>, returnValue: any) {
                         return afterReturn(ctxt, returnValue);
                     }
@@ -178,7 +178,7 @@ describe('@AfterReturn advice', () => {
                 beforeEach(() => {
                     @Aspect('PropAspect')
                     class PropAspect {
-                        @AfterReturn(on.property.annotations(AProperty))
+                        @AfterReturn(on.property.withAnnotations(AProperty))
                         after(ctxt: AdviceContext<any, any>, returnValue: any) {
                             return returnValue.concat('a');
                         }
@@ -214,7 +214,7 @@ describe('@AfterReturn advice', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @Compile(on.property.annotations(AProperty))
+                    @Compile(on.property.withAnnotations(AProperty))
                     compile() {
                         expect(this).toEqual(jasmine.any(PropAspect));
 
@@ -225,7 +225,7 @@ describe('@AfterReturn advice', () => {
                         };
                     }
 
-                    @AfterReturn(on.property.setter.annotations(AProperty))
+                    @AfterReturn(on.property.setter.withAnnotations(AProperty))
                     after() {
                         afterReturn(null, null);
                     }
@@ -251,7 +251,7 @@ describe('@AfterReturn advice', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @AfterReturn(on.property.setter.annotations(AProperty))
+                    @AfterReturn(on.property.setter.withAnnotations(AProperty))
                     after(ctxt: AdviceContext<any, any>, returnValue: any) {
                         return afterReturn(ctxt, returnValue);
                     }
@@ -282,7 +282,7 @@ describe('@AfterReturn advice', () => {
                 beforeEach(() => {
                     @Aspect('PropAspect')
                     class PropAspect {
-                        @AfterReturn(on.property.setter.annotations(AProperty))
+                        @AfterReturn(on.property.setter.withAnnotations(AProperty))
                         after(ctxt: AdviceContext<any, any>) {
                             return ['afterReturnValue'];
                         }

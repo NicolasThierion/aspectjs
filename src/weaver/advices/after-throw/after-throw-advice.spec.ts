@@ -24,7 +24,7 @@ describe('@AfterThrow advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AfterThrowAspect {
-                @AfterThrow(on.class.annotations(AClass))
+                @AfterThrow(on.class.withAnnotations(AClass))
                 apply(ctxt: AfterThrowContext<any, AnnotationType.CLASS>, error: Error): void {
                     expect(this).toEqual(jasmine.any(AfterThrowAspect));
 
@@ -159,7 +159,7 @@ describe('@AfterThrow advice', () => {
     describe('applied on a property', () => {
         @Aspect('PropertyThrow')
         class PropertyThrowAspect {
-            @Compile(on.property.annotations(AProperty))
+            @Compile(on.property.withAnnotations(AProperty))
             compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
                 return {
                     get() {
@@ -174,7 +174,7 @@ describe('@AfterThrow advice', () => {
 
         @Aspect('APropertyLabel')
         class AfterThrowAspect {
-            @AfterThrow(on.property.annotations(AProperty))
+            @AfterThrow(on.property.withAnnotations(AProperty))
             afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
                 afterThrowAdvice(ctxt, error);
                 return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
@@ -243,7 +243,7 @@ describe('@AfterThrow advice', () => {
                 it('should use the returned value', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
-                        @AfterThrow(on.property.annotations(AProperty))
+                        @AfterThrow(on.property.withAnnotations(AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
@@ -264,7 +264,7 @@ describe('@AfterThrow advice', () => {
                 it('should throw an error', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
-                        @AfterThrow(on.property.annotations(AProperty))
+                        @AfterThrow(on.property.withAnnotations(AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {}
                     }
 
@@ -284,7 +284,7 @@ describe('@AfterThrow advice', () => {
     describe('applied on a property setter', () => {
         @Aspect('PropertyThrow')
         class PropertyThrowAspect {
-            @Compile(on.property.annotations(AProperty))
+            @Compile(on.property.withAnnotations(AProperty))
             compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
                 return {
                     get() {
@@ -300,7 +300,7 @@ describe('@AfterThrow advice', () => {
 
         @Aspect('APropertyLabel')
         class AfterThrowAspect {
-            @AfterThrow(on.property.setter.annotations(AProperty))
+            @AfterThrow(on.property.setter.withAnnotations(AProperty))
             afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
                 afterThrowAdvice(ctxt, error);
                 return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
@@ -381,7 +381,7 @@ describe('@AfterThrow advice', () => {
                 it('should throw an error', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
-                        @AfterThrow(on.property.setter.annotations(AProperty))
+                        @AfterThrow(on.property.setter.withAnnotations(AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
@@ -408,7 +408,7 @@ describe('@AfterThrow advice', () => {
                 it('should throw an error', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
-                        @AfterThrow(on.property.annotations(AProperty))
+                        @AfterThrow(on.property.withAnnotations(AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {}
                     }
 

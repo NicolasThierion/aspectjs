@@ -12,7 +12,7 @@ export interface Pointcut {
 export abstract class PointcutExpression {
     protected _annotations: Annotation<AnnotationType>[] = [];
 
-    annotations(...annotation: Annotation<AnnotationType>[]): PointcutExpression {
+    withAnnotations(...annotation: Annotation<AnnotationType>[]): PointcutExpression {
         this._annotations = annotation;
         return this;
     }
@@ -26,8 +26,8 @@ export class ClassPointcutExpression extends PointcutExpression {
     protected _name = '*';
     protected _module = '*';
 
-    annotations(...annotations: ClassAnnotation[]): PointcutExpression {
-        return super.annotations(...annotations);
+    withAnnotations(...annotations: ClassAnnotation[]): PointcutExpression {
+        return super.withAnnotations(...annotations);
     }
 
     toString(): string {
@@ -41,8 +41,8 @@ export class PropertyPointcutExpression extends PointcutExpression {
     protected _name = '*';
     public readonly setter = new PropertySetterPointcutExpression();
 
-    annotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
-        super.annotations(...annotations);
+    withAnnotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
+        super.withAnnotations(...annotations);
         return this;
     }
 

@@ -33,7 +33,7 @@ describe('@Around advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AroundClassAspect {
-                @Around(on.class.annotations(AClass))
+                @Around(on.class.withAnnotations(AClass))
                 apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(this).toEqual(jasmine.any(AroundClassAspect));
                     expect(jp).toEqual(ctxt.joinpoint);
@@ -192,7 +192,7 @@ describe('@Around advice', () => {
 
                 @Aspect('aAspect')
                 class AAspect {
-                    @Around(on.class.annotations(AClass))
+                    @Around(on.class.withAnnotations(AClass))
                     apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                         labels.push('beforeA');
                         jp(aArgsOverride);
@@ -202,7 +202,7 @@ describe('@Around advice', () => {
 
                 @Aspect('bAspect')
                 class BAspect {
-                    @Around(on.class.annotations(AClass))
+                    @Around(on.class.withAnnotations(AClass))
                     apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                         labels.push('beforeB');
                         jp(bArgsOverride);
@@ -249,7 +249,7 @@ describe('@Around advice', () => {
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class AroundPropertyAspect {
-                @Around(on.property.annotations(AProperty))
+                @Around(on.property.withAnnotations(AProperty))
                 apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(this).toEqual(jasmine.any(AroundPropertyAspect));
 
@@ -323,7 +323,7 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     @Aspect('APropertyLabel')
                     class AroundPropertyAspect {
-                        @Around(on.property.annotations(AProperty))
+                        @Around(on.property.withAnnotations(AProperty))
                         apply(): void {}
                     }
 
@@ -345,7 +345,7 @@ describe('@Around advice', () => {
                     beforeEach(() => {
                         @Aspect('aAspect')
                         class AAspect {
-                            @Around(on.property.annotations(AProperty))
+                            @Around(on.property.withAnnotations(AProperty))
                             apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
                                 return ['beforeA'].concat(jp() as []).concat('afterA');
                             }
@@ -353,7 +353,7 @@ describe('@Around advice', () => {
 
                         @Aspect('bAspect')
                         class BAspect {
-                            @Around(on.property.annotations(AProperty))
+                            @Around(on.property.withAnnotations(AProperty))
                             apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
                                 return ['beforeB'].concat(jp() as []).concat('afterB');
                             }
@@ -380,7 +380,7 @@ describe('@Around advice', () => {
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class AroundPropertyAspect {
-                @Around(on.property.setter.annotations(AProperty))
+                @Around(on.property.setter.withAnnotations(AProperty))
                 apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(this).toEqual(jasmine.any(AroundPropertyAspect));
 
@@ -470,7 +470,7 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     @Aspect('aAspect')
                     class AAspect {
-                        @Around(on.property.setter.annotations(AProperty))
+                        @Around(on.property.setter.withAnnotations(AProperty))
                         apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs[0].push('aroundA');
                             jp(jpArgs);
@@ -479,7 +479,7 @@ describe('@Around advice', () => {
 
                     @Aspect('bAspect')
                     class BAspect {
-                        @Around(on.property.setter.annotations(AProperty))
+                        @Around(on.property.setter.withAnnotations(AProperty))
                         apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs[0].push('aroundB');
                             jp(jpArgs);

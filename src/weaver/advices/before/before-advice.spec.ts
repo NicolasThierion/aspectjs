@@ -21,7 +21,7 @@ describe('@Before advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
-                @Before(on.class.annotations(AClass))
+                @Before(on.class.withAnnotations(AClass))
                 applyBefore(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
                     thisInstance = ctxt.instance;
@@ -63,7 +63,7 @@ describe('@Before advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
-                @Before(on.property.annotations(AProperty))
+                @Before(on.property.withAnnotations(AProperty))
                 applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
 
@@ -105,7 +105,7 @@ describe('@Before advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
-                @Before(on.property.setter.annotations(AProperty))
+                @Before(on.property.setter.withAnnotations(AProperty))
                 applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
 

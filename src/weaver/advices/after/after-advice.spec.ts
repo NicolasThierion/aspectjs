@@ -15,7 +15,7 @@ describe('@After advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AfterAspect {
-                @After(on.class.annotations(AClass))
+                @After(on.class.withAnnotations(AClass))
                 apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): void {
                     expect(this).toEqual(jasmine.any(AfterAspect));
                     afterAdvice(ctxt);
@@ -36,7 +36,7 @@ describe('@After advice', () => {
             it('should throw an error', () => {
                 @Aspect('AClassLabel')
                 class BadAfterAspect {
-                    @After(on.class.annotations(AClass))
+                    @After(on.class.withAnnotations(AClass))
                     apply(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                         return function() {};
                     }
@@ -124,7 +124,7 @@ describe('@After advice', () => {
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class AfterAspect {
-                @After(on.property.annotations(AProperty))
+                @After(on.property.withAnnotations(AProperty))
                 apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
                     expect(this).toEqual(jasmine.any(AfterAspect));
 
@@ -169,7 +169,7 @@ describe('@After advice', () => {
             it('should throw an error', () => {
                 @Aspect('APropertyLabel')
                 class BadAfterAspect {
-                    @After(on.property.annotations(AProperty))
+                    @After(on.property.withAnnotations(AProperty))
                     apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                         return Object.getOwnPropertyDescriptor({ test: 'test' }, 'test');
                     }

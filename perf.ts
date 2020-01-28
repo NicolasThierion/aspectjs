@@ -48,13 +48,13 @@ function withAop(iterations = 10000) {
     });
     @Aspect('ClassAspect')
     class ClassAspect {
-        @Before(on.class.annotations(ClassHooks))
+        @Before(on.class.withAnnotations(ClassHooks))
         before(ctxt: BeforeContext<any, any>) {}
 
-        @After(on.class.annotations(ClassHooks))
+        @After(on.class.withAnnotations(ClassHooks))
         after(ctxt: AfterContext<any, any>) {}
 
-        @Around(on.class.annotations(ClassHooks))
+        @Around(on.class.withAnnotations(ClassHooks))
         around(ctxt: AroundContext<any, any>, jp: JoinPoint) {
             return jp();
         }

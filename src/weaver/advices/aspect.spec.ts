@@ -22,84 +22,84 @@ describe('given several aspects', () => {
     class LabelAspect {
         constructor(public id: string) {}
 
-        @Before(on.class.annotations(AClass))
+        @Before(on.class.withAnnotations(AClass))
         beforeClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
             labels.push(`${this.id}_beforeClass`);
         }
 
-        @Around(on.class.annotations(AClass))
+        @Around(on.class.withAnnotations(AClass))
         aroundClass(ctxt: AroundContext<Labeled, AnnotationType.CLASS>) {
             labels.push(`${this.id}_AroundClass`);
             return ctxt.joinpoint();
         }
 
-        @After(on.class.annotations(AClass))
+        @After(on.class.withAnnotations(AClass))
         afterClass(ctxt: AfterContext<Labeled, AnnotationType.CLASS>) {
             labels.push(`${this.id}_AfterClass`);
         }
 
-        @AfterReturn(on.class.annotations(AClass))
+        @AfterReturn(on.class.withAnnotations(AClass))
         afterReturnClass(ctxt: AfterReturnContext<Labeled, AnnotationType.CLASS>) {
             labels.push(`${this.id}_AfterReturnClass`);
             return ctxt.value;
         }
 
-        @AfterThrow(on.class.annotations(AClass))
+        @AfterThrow(on.class.withAnnotations(AClass))
         afterThrowClass(ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) {
             labels.push(`${this.id}_AfterThrowClass`);
             throw ctxt.error;
         }
 
-        @Before(on.property.annotations(AProperty))
+        @Before(on.property.withAnnotations(AProperty))
         beforeProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_beforeProperty`);
         }
 
-        @Around(on.property.annotations(AProperty))
+        @Around(on.property.withAnnotations(AProperty))
         aroundProperty(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AroundProperty`);
             return ctxt.joinpoint();
         }
 
-        @After(on.property.annotations(AProperty))
+        @After(on.property.withAnnotations(AProperty))
         afterProperty(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AfterProperty`);
         }
 
-        @AfterReturn(on.property.annotations(AProperty))
+        @AfterReturn(on.property.withAnnotations(AProperty))
         afterReturnProperty(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AfterReturnProperty`);
             return ctxt.value;
         }
 
-        @AfterThrow(on.property.annotations(AProperty))
+        @AfterThrow(on.property.withAnnotations(AProperty))
         afterThrowProperty(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AfterThrowProperty`);
             throw ctxt.error;
         }
 
-        @Before(on.property.setter.annotations(AProperty))
+        @Before(on.property.setter.withAnnotations(AProperty))
         beforePropertySet(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_beforeSetProperty`);
         }
 
-        @Around(on.property.setter.annotations(AProperty))
+        @Around(on.property.setter.withAnnotations(AProperty))
         aroundPropertySet(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AroundSetProperty`);
             return ctxt.joinpoint();
         }
 
-        @After(on.property.setter.annotations(AProperty))
+        @After(on.property.setter.withAnnotations(AProperty))
         afterPropertySet(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AfterSetProperty`);
         }
 
-        @AfterReturn(on.property.setter.annotations(AProperty))
+        @AfterReturn(on.property.setter.withAnnotations(AProperty))
         afterReturnPropertySet(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AfterReturnSetProperty`);
         }
 
-        @AfterThrow(on.property.setter.annotations(AProperty))
+        @AfterThrow(on.property.setter.withAnnotations(AProperty))
         afterThrowPropertySet(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
             labels.push(`${this.id}_AfterThrowSetProperty`);
             throw ctxt.error;

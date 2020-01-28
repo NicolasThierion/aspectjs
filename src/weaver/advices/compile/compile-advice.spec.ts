@@ -17,7 +17,7 @@ describe('@Compile advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class CompileAspect {
-                @Compile(on.class.annotations(AClass))
+                @Compile(on.class.withAnnotations(AClass))
                 apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): any {
                     expect(this).toEqual(jasmine.any(CompileAspect));
 
@@ -87,7 +87,7 @@ describe('@Compile advice', () => {
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class CompileAspect {
-                @Compile(on.property.annotations(AProperty))
+                @Compile(on.property.withAnnotations(AProperty))
                 apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): any {
                     expect(this).toEqual(jasmine.any(CompileAspect));
 
@@ -261,7 +261,7 @@ describe('@Compile advice', () => {
             expect(() => {
                 @Aspect('BadAspect')
                 class BadAspect {
-                    @Compile(on.property.setter.annotations(AProperty))
+                    @Compile(on.property.setter.withAnnotations(AProperty))
                     apply() {}
                 }
             }).toThrow(
@@ -275,7 +275,7 @@ describe('@Compile advice', () => {
     describe('applied on a method', () => {
         // @Aspect()
         // class CompileMethodAspect {
-        //     @Compile(on.method.annotations())
+        //     @Compile(on.method.withAnnotations())
         //     compileMethod() {
         //
         //     }

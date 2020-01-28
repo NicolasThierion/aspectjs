@@ -13,40 +13,40 @@
 //     apply(hooks: AspectHooks): void {
 //         // hooks.compile.handlers.enable(...)
 //         // hooks.compile.handlers.disable(...)
-//         // // hooks.load.annotations(...).config()
-//         // // hooks.load.annotations().beforeAdd()
-//         // // hooks.load.annotations(...).beforeAdd()
-//         // hooks.compile.annotations(AClass).onAdd(this.addLabels);
-//         // // hooks.load.annotations().afterAdd()
-//         // // hooks.load.annotations(...).afterAdd()
+//         // // hooks.load.withAnnotations(...).config()
+//         // // hooks.load.withAnnotations().beforeAdd()
+//         // // hooks.load.withAnnotations(...).beforeAdd()
+//         // hooks.compile.withAnnotations(AClass).onAdd(this.addLabels);
+//         // // hooks.load.withAnnotations().afterAdd()
+//         // // hooks.load.withAnnotations(...).afterAdd()
 //         //
-//         // // hooks.exec.annotations().around()
-//         // // hooks.exec.annotations(...).around()
-//         // // hooks.exec.annotations(AClass).before(this.addLabels);
-//         // // hooks.exec.annotations(...).before()
-//         // // hooks.exec.annotations().afterReturn()
-//         // // hooks.exec.annotations(...).afterReturn()
-//         // // hooks.exec.annotations().after()
-//         // // hooks.exec.annotations(...).after()
-//         // // hooks.exec.annotations().afterThrow()
-//         // // hooks.exec.annotations(...).afterThrow()
+//         // // hooks.exec.withAnnotations().around()
+//         // // hooks.exec.withAnnotations(...).around()
+//         // // hooks.exec.withAnnotations(AClass).before(this.addLabels);
+//         // // hooks.exec.withAnnotations(...).before()
+//         // // hooks.exec.withAnnotations().afterReturn()
+//         // // hooks.exec.withAnnotations(...).afterReturn()
+//         // // hooks.exec.withAnnotations().after()
+//         // // hooks.exec.withAnnotations(...).after()
+//         // // hooks.exec.withAnnotations().afterThrow()
+//         // // hooks.exec.withAnnotations(...).afterThrow()
 //         //
-//         // // // hooks.annotations(...).config({});
+//         // // // hooks.withAnnotations(...).config({});
 //         // // // hooks.config.provide(...);
-//         // // hooks.annotations().load.beforeAdd();
-//         // // hooks.annotations(...).load.afterAdd();
-//         // // hooks.annotations().exec.around(() => {});
-//         // // hooks.annotations(...).exec.around(() => {});
-//         // // hooks.annotations().exec.before(() => {});
-//         // // hooks.annotations(...).exec.before(() => {});
-//         // // hooks.annotations().exec.after(() => {});
-//         // // hooks.annotations(...).exec.after(() => {});
-//         // // hooks.annotations().exec.afterReturn(() => {});
-//         // // hooks.annotations(...).exec.afterReturn(() => {});
-//         // // hooks.annotations().exec.afterThrow(() => {});
-//         // // hooks.annotations(...).exec.afterThrow(() => {});
+//         // // hooks.withAnnotations().load.beforeAdd();
+//         // // hooks.withAnnotations(...).load.afterAdd();
+//         // // hooks.withAnnotations().exec.around(() => {});
+//         // // hooks.withAnnotations(...).exec.around(() => {});
+//         // // hooks.withAnnotations().exec.before(() => {});
+//         // // hooks.withAnnotations(...).exec.before(() => {});
+//         // // hooks.withAnnotations().exec.after(() => {});
+//         // // hooks.withAnnotations(...).exec.after(() => {});
+//         // // hooks.withAnnotations().exec.afterReturn(() => {});
+//         // // hooks.withAnnotations(...).exec.afterReturn(() => {});
+//         // // hooks.withAnnotations().exec.afterThrow(() => {});
+//         // // hooks.withAnnotations(...).exec.afterThrow(() => {});
 //
-//         hooks.annotations(AClass).before(this.addLabels);
+//         hooks.withAnnotations(AClass).before(this.addLabels);
 //         // throw new Error('not implemented');
 //     }
 //
