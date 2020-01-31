@@ -1,11 +1,11 @@
 import { Compile } from './compile.decorator';
-import { AdviceContext } from '../advice-context';
+import { AdviceContext, CompileContext } from '../advice-context';
 import { on } from '../pointcut';
-import { AClass, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { WeavingError } from '../../weaving-error';
 import { Aspect } from '../aspect';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';
-import { AnnotationType } from '../../..';
+import { AnnotationRef, AnnotationType } from '../../..';
 
 let compileAdvice = jasmine.createSpy('compileAdvice');
 
@@ -38,12 +38,14 @@ describe('@Compile advice', () => {
         it('should call the aspect upon compilation of annotated class', () => {
             @AClass()
             class A {}
+
             expect(compileAdvice).toHaveBeenCalled();
         });
 
         it('should pass annotation target', () => {
             @AClass()
             class A {}
+
             expect(target).toBeDefined();
             expect(target.proto.constructor.name).toEqual(A.name);
         });
@@ -51,6 +53,7 @@ describe('@Compile advice', () => {
         it('should not pass context instance', () => {
             @AClass()
             class A {}
+
             expect(instance).toBeUndefined();
         });
 
@@ -79,6 +82,21 @@ describe('@Compile advice', () => {
                 const a = new A();
                 expect(ctor).toHaveBeenCalled();
                 expect(a.labels).toEqual(['replacedCtor']);
+            });
+        });
+
+        describe('when the advice does not return a new constructor', () => {
+            beforeEach(() => {
+                compileAdvice = jasmine.createSpy('compileAdvice');
+            });
+            it('should use the new constructor', () => {
+                @AClass()
+                class A implements Labeled {
+                    labels?: string[];
+                }
+
+                const a = new A();
+                expect(Reflect.getPrototypeOf(a).constructor).toEqual(A);
             });
         });
     });
@@ -273,12 +291,135 @@ describe('@Compile advice', () => {
     });
 
     describe('applied on a method', () => {
-        // @Aspect()
-        // class CompileMethodAspect {
-        //     @Compile(on.method.withAnnotations())
-        //     compileMethod() {
-        //
-        //     }
-        // }
+        let annotation: AnnotationRef;
+        let target: AnnotationTarget<unknown, AnnotationType.METHOD>;
+
+        beforeEach(() => {
+            @Aspect()
+            class CompileAspect {
+                @Compile(on.method.withAnnotations(AMethod))
+                compileMethod(ctxt: CompileContext<Labeled, AnnotationType.PROPERTY>) {
+                    return compileAdvice(ctxt);
+                }
+            }
+
+            compileAdvice = jasmine
+                .createSpy('compileAdvice', function(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                    target = ctxt.target;
+                    instance = (ctxt as any).instance;
+                    annotation = ctxt.annotation;
+                })
+                .and.callThrough();
+
+            setupWeaver(new CompileAspect());
+        });
+
+        it('should call the aspect upon compilation of annotated class', () => {
+            class A {
+                @AMethod()
+                addLabel(): void {}
+            }
+
+            expect(compileAdvice).toHaveBeenCalled();
+        });
+
+        it('should pass annotation target', () => {
+            class A {
+                @AMethod()
+                addLabel(): void {}
+            }
+
+            expect(target).toBeDefined();
+            expect(target.proto.constructor.name).toEqual(A.name);
+        });
+
+        it('should not pass context instance', () => {
+            class A {
+                @AMethod()
+                addLabel(): void {}
+            }
+
+            expect(instance).toBeUndefined();
+        });
+
+        describe('when the advice returns a new property descriptor', () => {
+            describe('and the descriptor is valid', () => {
+                beforeEach(() => {
+                    compileAdvice = jasmine
+                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                            const descriptor = {
+                                ...Reflect.getOwnPropertyDescriptor(ctxt.target.proto, ctxt.target.propertyKey),
+                            };
+                            descriptor.value = function() {
+                                this.labels = ['methodAdvice'];
+                            };
+                            return descriptor;
+                        })
+                        .and.callThrough();
+                });
+                it('should use the new method descriptor', () => {
+                    class A implements Labeled {
+                        labels: string[] = [];
+
+                        @AMethod()
+                        addLabel() {}
+                    }
+
+                    const a = new A();
+                    expect(a.labels).toEqual([]);
+                    a.addLabel();
+                    expect(a.labels).toEqual(['methodAdvice']);
+                });
+            });
+
+            describe('and the descriptor is invalid', () => {
+                beforeEach(() => {
+                    compileAdvice = jasmine
+                        .createSpy('compileAdvice', function() {
+                            return {
+                                value: () => {},
+                                get: () => {},
+                            };
+                        })
+                        .and.callThrough();
+                });
+
+                it('should throw an error', () => {
+                    expect(() => {
+                        class A {
+                            @AMethod()
+                            addLabel() {}
+                        }
+                    }).toThrow(
+                        new TypeError(
+                            'Invalid property descriptor. Cannot both specify accessors and a value or writable attribute, #<Object>',
+                        ),
+                    );
+                });
+            });
+
+            describe('and the descriptor is not a method descriptor', () => {
+                beforeEach(() => {
+                    compileAdvice = jasmine
+                        .createSpy('compileAdvice', function() {
+                            return {};
+                        })
+                        .and.callThrough();
+                });
+
+                it('should throw an error', () => {
+                    expect(() => {
+                        class A {
+                            @AMethod()
+                            addLabel() {}
+                        }
+                    }).toThrow(
+                        new WeavingError(
+                            'Expected @Compile(@AMethod) CompileAspect.compileMethod() to return a method descriptor. Got: undefined',
+                        ),
+                    );
+                });
+            });
+        });
     });
 });

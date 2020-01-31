@@ -12,7 +12,7 @@ describe('PointcutExpression', () => {
         });
 
         it('should toString the annotation name', () => {
-            expect(on.property.withAnnotations(AProperty).toString()).toEqual('property#get *@test:AProperty');
+            expect(on.property.withAnnotations(AProperty).toString()).toEqual('property#get @test:AProperty *');
         });
 
         xit('should toString the parent class name', () => {

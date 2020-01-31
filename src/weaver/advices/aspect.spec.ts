@@ -9,6 +9,7 @@ import { AfterReturn } from './after-return/after-return.decorator';
 import { AfterThrow } from './after-throw/after-throw.decorator';
 import { AnnotationType } from '../..';
 import { Aspect } from './aspect';
+import { Compile } from './compile/compile.decorator';
 
 describe('given several aspects', () => {
     let labels: string[];
@@ -21,6 +22,14 @@ describe('given several aspects', () => {
     @Aspect()
     class LabelAspect {
         constructor(public id: string) {}
+
+        @Compile(on.class.withAnnotations(AClass))
+        compileClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
+            const id = this.id;
+            return function() {
+                labels.push(`${id}_compileClass`);
+            };
+        }
 
         @Before(on.class.withAnnotations(AClass))
         beforeClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
@@ -50,58 +59,71 @@ describe('given several aspects', () => {
             throw ctxt.error;
         }
 
+        @Compile(on.property.withAnnotations(AProperty))
+        compileProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
+            const id = this.id;
+
+            return {
+                get() {
+                    labels.push(`${id}_compilePropertyGet`);
+                },
+                set() {
+                    labels.push(`${id}_compilePropertySet`);
+                },
+            };
+        }
         @Before(on.property.withAnnotations(AProperty))
         beforeProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_beforeProperty`);
+            labels.push(`${this.id}_beforePropertyGet`);
         }
 
         @Around(on.property.withAnnotations(AProperty))
         aroundProperty(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AroundProperty`);
+            labels.push(`${this.id}_AroundPropertyGet`);
             return ctxt.joinpoint();
         }
 
         @After(on.property.withAnnotations(AProperty))
         afterProperty(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterProperty`);
+            labels.push(`${this.id}_AfterPropertyGet`);
         }
 
         @AfterReturn(on.property.withAnnotations(AProperty))
         afterReturnProperty(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterReturnProperty`);
+            labels.push(`${this.id}_AfterReturnPropertyGet`);
             return ctxt.value;
         }
 
         @AfterThrow(on.property.withAnnotations(AProperty))
         afterThrowProperty(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterThrowProperty`);
+            labels.push(`${this.id}_AfterThrowPropertyGet`);
             throw ctxt.error;
         }
 
         @Before(on.property.setter.withAnnotations(AProperty))
         beforePropertySet(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_beforeSetProperty`);
+            labels.push(`${this.id}_beforePropertySet`);
         }
 
         @Around(on.property.setter.withAnnotations(AProperty))
         aroundPropertySet(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AroundSetProperty`);
+            labels.push(`${this.id}_AroundPropertySet`);
             return ctxt.joinpoint();
         }
 
         @After(on.property.setter.withAnnotations(AProperty))
         afterPropertySet(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterSetProperty`);
+            labels.push(`${this.id}_AfterPropertySet`);
         }
 
         @AfterReturn(on.property.setter.withAnnotations(AProperty))
         afterReturnPropertySet(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterReturnSetProperty`);
+            labels.push(`${this.id}_AfterReturnPropertySet`);
         }
 
         @AfterThrow(on.property.setter.withAnnotations(AProperty))
         afterThrowPropertySet(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
-            labels.push(`${this.id}_AfterThrowSetProperty`);
+            labels.push(`${this.id}_AfterThrowPropertySet`);
             throw ctxt.error;
         }
     }
@@ -128,6 +150,7 @@ describe('given several aspects', () => {
                 'B_beforeClass',
                 'B_AroundClass',
                 'A_AroundClass',
+                'B_compileClass',
                 'A_AfterReturnClass',
                 'B_AfterReturnClass',
                 'A_AfterClass',
@@ -140,32 +163,34 @@ describe('given several aspects', () => {
 
             console.log(a.labels);
             expectedLabels.push(
-                'A_beforeProperty',
-                'B_beforeProperty',
-                'B_AroundProperty',
-                'A_AroundProperty',
-                'A_AfterReturnProperty',
-                'B_AfterReturnProperty',
-                'A_AfterProperty',
-                'B_AfterProperty',
-                // 'A_AfterThrowProperty',
-                // 'B_AfterThrowProperty',
+                'A_beforePropertyGet',
+                'B_beforePropertyGet',
+                'B_AroundPropertyGet',
+                'A_AroundPropertyGet',
+                'B_compilePropertyGet',
+                'A_AfterReturnPropertyGet',
+                'B_AfterReturnPropertyGet',
+                'A_AfterPropertyGet',
+                'B_AfterPropertyGet',
+                // 'A_AfterThrowPropertyGet',
+                // 'B_AfterThrowPropertyGet',
             );
 
             expect(labels).toEqual(expectedLabels);
             a.labels = [];
 
             expectedLabels.push(
-                'A_beforeSetProperty',
-                'B_beforeSetProperty',
-                'B_AroundSetProperty',
-                'A_AroundSetProperty',
-                'A_AfterReturnSetProperty',
-                'B_AfterReturnSetProperty',
-                'A_AfterSetProperty',
-                'B_AfterSetProperty',
-                // 'A_AfterThrowSetProperty',
-                // 'B_AfterThrowSetProperty',
+                'A_beforePropertySet',
+                'B_beforePropertySet',
+                'B_AroundPropertySet',
+                'A_AroundPropertySet',
+                'B_compilePropertySet',
+                'A_AfterReturnPropertySet',
+                'B_AfterReturnPropertySet',
+                'A_AfterPropertySet',
+                'B_AfterPropertySet',
+                // 'A_AfterThrowPropertySet',
+                // 'B_AfterThrowPropertySet',
             );
 
             expect(labels).toEqual(expectedLabels);

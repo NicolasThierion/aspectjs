@@ -9,21 +9,9 @@ import {
     CompilePointcut,
 } from './pointcut';
 
-export type CompileAdvice<T, A extends AnnotationType> = A extends AnnotationType.CLASS
-    ? ClassCompileAdvice<T>
-    : A extends AnnotationType.PROPERTY
-    ? PropertyCompileAdvice<T>
-    : never;
-
-export type ClassCompileAdviceFn<T> = (ctxt: AdviceContext<T, AnnotationType.CLASS>) => void | Function;
-export type ClassCompileAdvice<T> = {
+export type CompileAdvice<T, A extends AnnotationType> = {
     pointcut?: CompilePointcut;
-} & ClassCompileAdviceFn<T>;
-
-export type PropertyCompileAdviceFn<T> = (ctxt: AdviceContext<T, AnnotationType.PROPERTY>) => void | PropertyDescriptor;
-export type PropertyCompileAdvice<T> = {
-    pointcut?: CompilePointcut;
-} & PropertyCompileAdviceFn<T>;
+} & ((ctxt: AdviceContext<T, A>) => void | Function | PropertyDescriptor);
 
 export type BeforeAdvice<T> = {
     pointcut?: BeforePointcut;
@@ -42,7 +30,7 @@ export type AfterThrowAdvice<T> = {
 } & ((ctxt: AdviceContext<T, AnnotationType>, thrownError: Error) => T | null | undefined);
 export type AroundAdvice<T> = {
     pointcut?: AroundPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>, joinPoint: JoinPoint, args: any[]) => any); // TODO change return value;
+} & ((ctxt: AdviceContext<T, AnnotationType>, joinPoint: JoinPoint, args: any[]) => any);
 
 export type Advice =
     | CompileAdvice<any, AnnotationType>

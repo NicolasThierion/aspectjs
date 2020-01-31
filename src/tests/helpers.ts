@@ -4,6 +4,7 @@ import { AnnotationFactory } from '../annotation/factory/factory';
 
 export interface Labeled {
     labels?: string[];
+    addLabel?: (...args: any[]) => any;
 }
 
 export function setupWeaver(...aspects: object[]): void {
@@ -12,10 +13,14 @@ export function setupWeaver(...aspects: object[]): void {
     weaver.load();
 }
 
+export const AClass = new AnnotationFactory('tests').create(function AClass(): ClassDecorator {
+    return;
+});
+
 export const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
     return;
 });
 
-export const AClass = new AnnotationFactory('tests').create(function AClass(): ClassDecorator {
+export const AMethod = new AnnotationFactory('tests').create(function AMethod(): MethodDecorator {
     return;
 });

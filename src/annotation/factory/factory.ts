@@ -45,7 +45,7 @@ export class AnnotationFactory {
         // create the annotation (ie: decorator provider)
         const annotation = function(...annotationArgs: any[]): Decorator {
             // assert the weaver is loaded before invoking the underlying decorator
-            const weaver = getWeaver(groupId) ?? getWeaver();
+            const weaver = getWeaver();
 
             const decorator = _createDecorator(weaver.load(), annotation as any, annotationArgs);
             _createAnnotationRef(decorator, annotationStub, groupId);
@@ -112,9 +112,7 @@ function _createDecorator<A extends AnnotationType>(
     const GENERATORS = {
         [AnnotationType.CLASS]: _createClassDecoration,
         [AnnotationType.PROPERTY]: _createPropertyDecoration,
-        [AnnotationType.METHOD]: () => {
-            throw new Error('not implemented');
-        },
+        [AnnotationType.METHOD]: _createMethodDecoration,
         [AnnotationType.PARAMETER]: () => {
             throw new Error('not implemented');
         },
@@ -222,15 +220,17 @@ function _createPropertyDecoration(
         configurable: true,
         enumerable: true,
         get() {
-            return Reflect.getOwnMetadata(`aspectjs.propValue`, this, ctxt.target.propertyKey);
+            return Reflect.getOwnMetadata(`aspectjs.propValue`, this, target.propertyKey);
         },
         set(value: any) {
-            Reflect.defineMetadata(`aspectjs.propValue`, value, this, ctxt.target.propertyKey);
+            Reflect.defineMetadata(`aspectjs.propValue`, value, this, target.propertyKey);
         },
     };
 
     const refDescriptor = {
-        ...(runner.property[PointcutPhase.COMPILE](ctxt) ?? target.proto[target.propertyKey] ?? defaultDescriptor),
+        ...(runner.property[PointcutPhase.COMPILE](ctxt) ??
+            Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) ??
+            defaultDescriptor),
     };
 
     if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
@@ -240,7 +240,7 @@ function _createPropertyDecoration(
         delete refDescriptor.value;
     }
 
-    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, ctxt.target.proto);
+    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto);
     let propDescriptor: PropertyDescriptor = {
         ...refDescriptor,
     };
@@ -293,7 +293,7 @@ function _createPropertyDecoration(
         'surrogate',
     );
 
-    target.proto[target.propertyKey] = propDescriptor;
+    Reflect.defineProperty(target.proto, target.propertyKey, propDescriptor);
 
     return propDescriptor;
 
@@ -301,4 +301,43 @@ function _createPropertyDecoration(
         const desc = propDescriptor as Record<string, any>;
         return !desc || (desc.hasOwnProperty('writable') && desc.writable) || isFunction(desc.set);
     }
+}
+
+function _createMethodDecoration(
+    ctxt: AdviceContextImpl<any, AnnotationType.METHOD>,
+    runner: PointcutsRunner,
+): PropertyDescriptor {
+    const target = ctxt.target;
+
+    // invoke compile method or get default descriptor
+    const refDescriptor =
+        runner.method[PointcutPhase.COMPILE](ctxt) ??
+        Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey);
+
+    assert(!!refDescriptor);
+
+    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto);
+
+    const newDescriptor = { ...refDescriptor };
+    newDescriptor.value = function(...args: any[]) {
+        const _ctxt = ctxt.clone();
+
+        const r = runner.method;
+        try {
+            _ctxt.args = args;
+            _ctxt.instance = this;
+            r[PointcutPhase.BEFORE](_ctxt);
+
+            r[PointcutPhase.AROUND](_ctxt);
+
+            return r[PointcutPhase.AFTERRETURN](_ctxt);
+        } catch (e) {
+            _ctxt.error = e;
+            return r[PointcutPhase.AFTERTHROW](_ctxt);
+        } finally {
+            r[PointcutPhase.AFTER](_ctxt);
+        }
+    };
+
+    return newDescriptor;
 }

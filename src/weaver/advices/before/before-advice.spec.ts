@@ -2,7 +2,7 @@ import { AClass } from '../../../tests/a';
 import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { on } from '../pointcut';
-import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../..';
@@ -138,6 +138,51 @@ describe('@Before advice', () => {
                 })
                 .and.callThrough();
             a.labels = [];
+            expect(thisInstance).toEqual(a);
+        });
+    });
+
+    describe('applied on a method', () => {
+        let a: any;
+
+        beforeEach(() => {
+            @Aspect('AClassLabel')
+            class AAspect {
+                @Before(on.method.withAnnotations(AMethod))
+                applyBefore(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
+                    expect(this).toEqual(jasmine.any(AAspect));
+
+                    advice(ctxt);
+                }
+            }
+
+            setupWeaver(new AAspect());
+
+            class A {
+                @AMethod()
+                addLabel(): any {}
+            }
+
+            a = new A();
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, AnnotationType.METHOD>) => {})
+                .and.callThrough();
+        });
+
+        it('should call the aspect before the method is called', () => {
+            expect(advice).not.toHaveBeenCalled();
+            a.addLabel();
+            expect(advice).toHaveBeenCalled();
+        });
+
+        it('should have a non null context.instance', () => {
+            let thisInstance: any;
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
+                    thisInstance = ctxt.instance;
+                })
+                .and.callThrough();
+            a.addLabel();
             expect(thisInstance).toEqual(a);
         });
     });

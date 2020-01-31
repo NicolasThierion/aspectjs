@@ -1,5 +1,6 @@
 import { Annotation, AnnotationRef, AnnotationType, ClassAnnotation, PropertyAnnotation } from '../..';
 import { assert } from '../../utils';
+import { WeavingError } from '../weaving-error';
 
 export interface Pointcut {
     type: AnnotationType;
@@ -11,6 +12,7 @@ export interface Pointcut {
 
 export abstract class PointcutExpression {
     protected _annotations: Annotation<AnnotationType>[] = [];
+    protected _name = '*';
 
     withAnnotations(...annotation: Annotation<AnnotationType>[]): PointcutExpression {
         this._annotations = annotation;
@@ -23,22 +25,20 @@ export class ClassPointcutExpression extends PointcutExpression {
         super();
     }
 
-    protected _name = '*';
-    protected _module = '*';
-
     withAnnotations(...annotations: ClassAnnotation[]): PointcutExpression {
         return super.withAnnotations(...annotations);
     }
 
     toString(): string {
-        return `class#${this._module}:${this._name}${this._annotations.map(a => a.toString()).join(',')}${
-            this._selector ? ` ${this._selector}` : ''
-        }`;
+        return _trimSpaces(
+            `class ${this._annotations.map(a => a.toString()).join(',')}${this._selector ? ` ${this._selector}` : ''} ${
+                this._name
+            }`,
+        );
     }
 }
 
 export class PropertyPointcutExpression extends PointcutExpression {
-    protected _name = '*';
     public readonly setter = new PropertySetterPointcutExpression();
 
     withAnnotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
@@ -47,28 +47,31 @@ export class PropertyPointcutExpression extends PointcutExpression {
     }
 
     toString(): string {
-        return `property#get ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return _trimSpaces(`property#get ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
     }
 }
 
 export class PropertySetterPointcutExpression extends PointcutExpression {
-    protected _name = '*';
-
     toString(): string {
-        return `property#set ${this._name}${this._annotations.map(a => a.toString()).join(',')}`;
+        return _trimSpaces(`property#set ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
     }
 }
 
 export class MethodPointcutExpression extends PointcutExpression {
     toString(): string {
-        throw new Error('not implemented');
+        return _trimSpaces(`method ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
     }
 }
 
 export class ParameterPointcutExpression extends PointcutExpression {
     toString(): string {
-        throw new Error('not implemented');
+        assert(false, 'not implemented');
+        return _trimSpaces('');
     }
+}
+
+function _trimSpaces(s: string) {
+    return s.replace(/\s+/, ' ');
 }
 
 class PointcutExpressionFactory {
@@ -106,9 +109,12 @@ export namespace Pointcut {
         const ref = exp.toString();
 
         const pointcutRegexes = {
-            [AnnotationType.CLASS]: new RegExp('(?:class#(?<name>\\S+?:\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)'),
+            [AnnotationType.CLASS]: new RegExp('class(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*'),
             [AnnotationType.PROPERTY]: new RegExp(
-                '(?:property#(?:get|set)\\s(?<name>\\S+?)(?:\\@(?<annotation>\\S+?:\\S+)\\s*)?)',
+                'property#(?:get|set)(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
+            ),
+            [AnnotationType.METHOD]: new RegExp(
+                'method(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
             ),
         };
 
@@ -131,10 +137,12 @@ export namespace Pointcut {
                 Reflect.defineProperty(pointcut, Symbol.toPrimitive, {
                     value: () => `${phase}(${ref})`,
                 });
+
+                return pointcut;
             }
         }
-        assert(!!pointcut, `expression ${ref} not recognized as valid pointcut expression`);
-        return pointcut;
+
+        throw new WeavingError(`expression ${ref} not recognized as valid pointcut expression`);
     }
 }
 

@@ -2,13 +2,12 @@ import { AdviceContext, AfterThrowContext, CompileContext } from '../advice-cont
 import { AClass } from '../../../tests/a';
 import { AfterThrow } from './after-throw.decorator';
 import { on } from '../pointcut';
-import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
-import Spy = jasmine.Spy;
+import { AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
-import { Mutable } from '../../../utils';
 import { WeavingError } from '../../weaving-error';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../..';
+import Spy = jasmine.Spy;
 
 const thrownError = new Error('expected');
 
@@ -259,25 +258,6 @@ describe('@AfterThrow advice', () => {
                     expect(a.labels).toEqual(['newValue']);
                 });
             });
-
-            describe('and the aspect do not return a value', () => {
-                it('should throw an error', () => {
-                    @Aspect('APropertyLabel')
-                    class ReturnNewValueAspect {
-                        @AfterThrow(on.property.withAnnotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {}
-                    }
-
-                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
-
-                    class A implements Labeled {
-                        @AProperty()
-                        public labels: string[];
-                    }
-                    const a = new A();
-                    expect(a.labels).toEqual(undefined);
-                });
-            });
         });
     });
 
@@ -403,23 +383,106 @@ describe('@AfterThrow advice', () => {
                     );
                 });
             });
+        });
+    });
 
-            describe('and the aspect do not return a value', () => {
-                it('should throw an error', () => {
-                    @Aspect('APropertyLabel')
-                    class ReturnNewValueAspect {
-                        @AfterThrow(on.property.withAnnotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {}
-                    }
+    describe('applied on a method', () => {
+        @Aspect('AfterThrowAspect')
+        class AfterThrowAspect {
+            @AfterThrow(on.method.withAnnotations(AMethod))
+            afterThrow(ctxt: AfterThrowContext<any, AnnotationType.METHOD>, error: Error): void {
+                return afterThrowAdvice(ctxt, error);
+            }
+        }
+        let a: Labeled;
+        beforeEach(() => {
+            setupWeaver(new AfterThrowAspect());
 
-                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+            afterThrowAdvice = jasmine
+                .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                    adviceError = error;
+                })
+                .and.callThrough();
+        });
 
+        describe('calling the method', () => {
+            describe('when the method do not throws', () => {
+                beforeEach(() => {
                     class A implements Labeled {
-                        @AProperty()
                         public labels: string[];
+
+                        @AMethod()
+                        addLabel() {}
                     }
-                    const a = new A();
-                    expect(a.labels).toEqual(undefined);
+                    a = new A();
+                });
+
+                it('should not call the aspect', () => {
+                    a.addLabel();
+                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('when the method throws', () => {
+                beforeEach(() => {
+                    class A implements Labeled {
+                        public labels: string[];
+
+                        @AMethod()
+                        addLabel() {
+                            throw new Error('expected');
+                        }
+                    }
+                    a = new A();
+                });
+                it('should call the aspect', () => {
+                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                    try {
+                        a.addLabel();
+                    } catch (e) {}
+                    expect(afterThrowAdvice).toHaveBeenCalled();
+                });
+
+                it('should pass the error as 2nd parameter of advice', () => {
+                    expect(adviceError).not.toEqual(thrownError);
+
+                    try {
+                        a.addLabel();
+                    } catch (e) {}
+                    expect(adviceError).toEqual(thrownError);
+                });
+
+                describe('and the aspect swallows the exception', () => {
+                    it('should not throw', () => {
+                        expect(() => {
+                            a.addLabel();
+                        }).not.toThrow();
+                    });
+
+                    it('should return the value returned by the aspect', () => {
+                        afterThrowAdvice = jasmine
+                            .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                                return 'newValue';
+                            })
+                            .and.callThrough();
+
+                        expect(a.addLabel()).toEqual('newValue');
+                    });
+                });
+
+                describe('and the aspect throws a new exception', () => {
+                    beforeEach(() => {
+                        afterThrowAdvice = jasmine
+                            .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                                throw new Error('new Error');
+                            })
+                            .and.callThrough();
+                    });
+                    it('should throw the new error', () => {
+                        expect(() => {
+                            a.addLabel();
+                        }).toThrow(new Error('new Error'));
+                    });
                 });
             });
         });

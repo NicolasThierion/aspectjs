@@ -1,5 +1,4 @@
 import { WeaverProfile } from './profile';
-import { Aspect } from './types';
 import { MutableAdviceContext } from './advices/advice-context';
 import { PointcutPhase } from './advices/pointcut';
 
@@ -25,8 +24,8 @@ type _PointcutsRunners = {
 export interface PointcutsRunner extends _PointcutsRunners {}
 
 export interface Weaver extends WeaverProfile {
-    enable(...aspects: Aspect[]): this;
-    disable(...aspects: Aspect[]): this;
+    enable(...aspects: any[]): this;
+    disable(...aspects: any[]): this;
     merge(...profiles: WeaverProfile[]): this;
     setProfile(profile: WeaverProfile): this;
     load(): PointcutsRunner;
