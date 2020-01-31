@@ -398,13 +398,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _afterThrowPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
-        const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt).filter(_isPropertyGet);
-        if (!afterThrowAdvices.length) {
-            // pass-trough errors by default
-            throw ctxt.error;
-        } else {
-            return this._applyAfterThrowAdvice(ctxt, _isPropertyGet);
-        }
+        return this._applyAfterThrowAdvice(ctxt, _isPropertyGet);
     }
 
     private _afterPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
@@ -462,13 +456,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _afterThrowPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
-        const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt).filter(_isPropertySet);
-        if (!afterThrowAdvices.length) {
-            // pass-trough errors by default
-            throw ctxt.error;
-        } else {
-            this._applyAfterThrowAdvice(ctxt, _isPropertySet, true);
-        }
+        this._applyAfterThrowAdvice(ctxt, _isPropertySet, true);
     }
 
     private _afterPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
@@ -661,9 +649,13 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                     throw new WeavingError(`Returning from advice "${advice}" is not supported`);
                 }
             });
-        }
 
-        return ctxt.value;
+            return ctxt.value;
+        } else {
+            assert(!!ctxt.error);
+            // pass-trough errors by default
+            throw ctxt.error;
+        }
     }
 }
 

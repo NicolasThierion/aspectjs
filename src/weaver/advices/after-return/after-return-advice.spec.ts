@@ -2,7 +2,7 @@ import { AClass } from '../../../tests/a';
 import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
-import { AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
 import { WeavingError } from '../../weaving-error';
 import Spy = jasmine.Spy;
@@ -307,110 +307,81 @@ describe('@AfterReturn advice', () => {
         });
     });
 
-    xdescribe('applied on a method', () => {
+    describe('applied on a method', () => {
         beforeEach(() => {
             afterReturn = jasmine
                 .createSpy('afterReturnAdvice', function(ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
+
+            @Aspect('MethodAspect')
+            class MethodAspect {
+                @AfterReturn(on.method.withAnnotations(AMethod))
+                after(ctxt: AfterReturnContext<any, any>, returnValue: any) {
+                    return afterReturn(ctxt, returnValue);
+                }
+            }
+            setupWeaver(new MethodAspect());
         });
 
         let a: Labeled;
 
         describe('that throws', () => {
             beforeEach(() => {
-                @Aspect('PropAspect')
-                class PropAspect {
-                    @Compile(on.property.withAnnotations(AProperty))
-                    compile() {
-                        expect(this).toEqual(jasmine.any(PropAspect));
-
-                        return {
-                            set() {
-                                throw new Error('expected');
-                            },
-                        };
-                    }
-
-                    @AfterReturn(on.property.setter.withAnnotations(AProperty))
-                    after() {
-                        afterReturn(null, null);
-                    }
-                }
-                setupWeaver(new PropAspect());
-
                 class A implements Labeled {
-                    @AProperty()
-                    labels: string[];
+                    @AMethod()
+                    addLabel() {
+                        throw new Error('expected');
+                    }
                 }
                 a = new A();
             });
 
             it('should not call the aspect', () => {
                 expect(() => {
-                    a.labels = [];
+                    a.addLabel();
                 }).toThrow();
                 expect(afterReturn).not.toHaveBeenCalled();
             });
         });
 
         describe('that do not throws', () => {
+            let returnValue: any;
             beforeEach(() => {
-                @Aspect('PropAspect')
-                class PropAspect {
-                    @AfterReturn(on.property.setter.withAnnotations(AProperty))
-                    after(ctxt: AdviceContext<any, any>, returnValue: any) {
-                        return afterReturn(ctxt, returnValue);
-                    }
-                }
-                setupWeaver(new PropAspect());
-
+                returnValue = undefined;
                 class A implements Labeled {
-                    @AProperty()
-                    labels: string[] = ['x'];
+                    labels: string[] = [];
+                    @AMethod()
+                    addLabel(...args: string[]) {
+                        return (this.labels = this.labels.concat(args));
+                    }
                 }
                 a = new A();
 
-                afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {});
+                afterReturn = jasmine
+                    .createSpy('afterReturnAdvice', function(ctxt, _returnValue) {
+                        returnValue = _returnValue;
+                        return ctxt.value.concat('afterReturn');
+                    })
+                    .and.callThrough();
             });
 
             it('should call the aspect', () => {
                 expect(afterReturn).not.toHaveBeenCalled();
-                a.labels = ['newValue'];
+                a.addLabel('newValue');
                 expect(afterReturn).toHaveBeenCalled();
             });
 
             it('should return the new value', () => {
-                a.labels = ['newValue'];
-                expect(a.labels).toEqual(['newValue']);
+                expect(a.labels).toEqual([]);
+                expect(a.addLabel('newValue')).toEqual(['newValue', 'afterReturn']);
             });
 
-            describe('and the aspect returns a new value', () => {
-                beforeEach(() => {
-                    @Aspect('PropAspect')
-                    class PropAspect {
-                        @AfterReturn(on.property.setter.withAnnotations(AProperty))
-                        after(ctxt: AdviceContext<any, any>) {
-                            return ['afterReturnValue'];
-                        }
-                    }
-                    setupWeaver(new PropAspect());
-
-                    class A implements Labeled {
-                        @AProperty()
-                        labels: string[];
-                    }
-                    a = new A();
-                });
-
-                it('should throw an error', () => {
-                    expect(() => (a.labels = ['newValue'])).toThrow(
-                        new WeavingError(
-                            'Returning from advice "@AfterReturn(@AProperty) PropAspect.after()" is not supported',
-                        ),
-                    );
-                });
+            it('should pass to advice the original returned value as 2nd parameter', () => {
+                expect(returnValue).toEqual(undefined);
+                a.addLabel('newValue');
+                expect(returnValue).toEqual(['newValue']);
             });
         });
     });
