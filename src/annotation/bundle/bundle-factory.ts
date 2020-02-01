@@ -3,7 +3,7 @@ import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../utils
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
 import { AnnotationContext, ClassAnnotationContext } from '../context/context';
 import { AnnotationLocation, AnnotationLocationFactory } from '../location/location';
-import { AnnotationType } from '../annotation.types';
+import { Annotation, AnnotationType } from '../annotation.types';
 
 export abstract class AnnotationBundleRegistry {
     static of<T>(target: AnnotationTarget<T, any>): AnnotationsBundle<T> {
@@ -141,34 +141,34 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         assert(false, `unknown decorator type: ${target.type}`);
     }
 
-    all(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
-        return new AnnotationContextSelectorImpl(this._global).all(decoratorName);
+    all<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._global).all(annotation);
     }
 
-    class(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
-        return new AnnotationContextSelectorImpl<T, AnnotationType>(this._contextHolders[AnnotationType.CLASS]).all(
-            decoratorName,
-        );
+    class<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.CLASS]).all(annotation);
     }
-    properties(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
-        return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationType.PROPERTY]).all(decoratorName);
+    properties<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.PROPERTY]).all(annotation);
     }
-    methods(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
-        return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationType.METHOD]).all(decoratorName);
+    methods<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.METHOD]).all(annotation);
     }
-    parameters(decoratorName?: string): readonly AnnotationContext<T, AnnotationType>[] {
-        return new AnnotationContextSelectorImpl(this._contextHolders[AnnotationType.PARAMETER]).all(decoratorName);
+    parameters<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.PARAMETER]).all(annotation);
     }
 }
 
 class AnnotationContextSelectorImpl<T, A extends AnnotationType> implements AnnotationContextSelector<T, A> {
-    constructor(private _holder: AnnotationContextsHolder<T, A>) {
+    constructor(private _holder: AnnotationContextsHolder<T, AnnotationType>) {
         assert(!!this._holder);
     }
-    all(decoratorName?: string): readonly AnnotationContext<T, A>[] {
+    all(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
         return Object.freeze([
-            ...(isUndefined(decoratorName) ? this._holder.all : this._holder.byAnnotationName[decoratorName] ?? []),
-        ]);
+            ...(isUndefined(annotation)
+                ? this._holder.all
+                : this._holder.byAnnotationName[annotation.toString()] ?? []),
+        ]) as AnnotationContext<T, A>[];
     }
 }
 

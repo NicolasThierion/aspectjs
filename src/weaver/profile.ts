@@ -1,7 +1,7 @@
-import { AnnotationLocation, AnnotationLocationFactory } from '../annotation/location/location';
-import { AnnotationBundleRegistry } from '../annotation/bundle/bundle-factory';
+import { AnnotationLocation } from '../annotation/location/location';
 import { isString, isUndefined } from '../utils';
 import { WeavingError } from './weaving-error';
+import { AnnotationFactory } from '../annotation/factory/factory';
 
 let profileId = 0;
 
@@ -62,10 +62,10 @@ let _globalAspectId = 0;
 
 function _getAspectId(obj: object): string {
     const location = AnnotationLocation.of(Reflect.getPrototypeOf(obj).constructor);
-    const dtarget = AnnotationLocationFactory.getTarget(location);
-    const bundle = AnnotationBundleRegistry.of(dtarget);
+    const ctxt = AnnotationFactory.getBundle(obj)
+        .at(location)
+        .all('@aspectjs:Aspect')[0];
 
-    const ctxt = bundle.at(location).all('@aspectjs:Aspect')[0];
     if (!ctxt) {
         throw new TypeError(`${obj.constructor.name} is not an Aspect`);
     }

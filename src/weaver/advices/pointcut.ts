@@ -1,4 +1,12 @@
-import { Annotation, AnnotationRef, AnnotationType, ClassAnnotation, PropertyAnnotation } from '../..';
+import {
+    Annotation,
+    AnnotationRef,
+    AnnotationType,
+    ClassAnnotation,
+    MethodAnnotation,
+    ParameterAnnotation,
+    PropertyAnnotation,
+} from '../..';
 import { assert } from '../../utils';
 import { WeavingError } from '../weaving-error';
 
@@ -25,10 +33,6 @@ export class ClassPointcutExpression extends PointcutExpression {
         super();
     }
 
-    withAnnotations(...annotations: ClassAnnotation[]): PointcutExpression {
-        return super.withAnnotations(...annotations);
-    }
-
     toString(): string {
         return _trimSpaces(
             `class ${this._annotations.map(a => a.toString()).join(',')}${this._selector ? ` ${this._selector}` : ''} ${
@@ -36,18 +40,22 @@ export class ClassPointcutExpression extends PointcutExpression {
             }`,
         );
     }
+
+    withAnnotations(...annotations: ClassAnnotation[]): ClassPointcutExpression {
+        return super.withAnnotations(...annotations);
+    }
 }
 
 export class PropertyPointcutExpression extends PointcutExpression {
     public readonly setter = new PropertySetterPointcutExpression();
 
+    toString(): string {
+        return _trimSpaces(`property#get ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
+    }
+
     withAnnotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
         super.withAnnotations(...annotations);
         return this;
-    }
-
-    toString(): string {
-        return _trimSpaces(`property#get ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
     }
 }
 
@@ -55,18 +63,29 @@ export class PropertySetterPointcutExpression extends PointcutExpression {
     toString(): string {
         return _trimSpaces(`property#set ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
     }
+
+    withAnnotations(...annotation: PropertyAnnotation[]): PropertySetterPointcutExpression {
+        return super.withAnnotations(...annotation);
+    }
 }
 
 export class MethodPointcutExpression extends PointcutExpression {
     toString(): string {
         return _trimSpaces(`method ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
     }
+
+    withAnnotations(...annotation: MethodAnnotation[]): MethodPointcutExpression {
+        return super.withAnnotations(...annotation);
+    }
 }
 
 export class ParameterPointcutExpression extends PointcutExpression {
     toString(): string {
-        throw new WeavingError('Parameter advices are not supported yet');
-        return _trimSpaces('');
+        return _trimSpaces(`parameter ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
+    }
+
+    withAnnotations(...annotation: ParameterAnnotation[]): ParameterPointcutExpression {
+        return super.withAnnotations(...annotation);
     }
 }
 
@@ -86,7 +105,7 @@ class PointcutExpressionFactory {
     get method() {
         return new MethodPointcutExpression();
     }
-    get args() {
+    get parameter() {
         return new ParameterPointcutExpression();
     }
 }
@@ -115,6 +134,9 @@ export namespace Pointcut {
             ),
             [AnnotationType.METHOD]: new RegExp(
                 'method(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
+            ),
+            [AnnotationType.PARAMETER]: new RegExp(
+                'parameter(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
             ),
         };
 

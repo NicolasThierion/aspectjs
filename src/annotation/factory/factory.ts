@@ -9,7 +9,7 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import { PointcutsRunner } from '../../weaver/weaver';
-import { assert, getMetaOrDefault, isFunction } from '../../utils';
+import { assert, getMetaOrDefault, getProto, isFunction } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AdviceTargetFactory } from '../target/advice-target-factory';
 import { getWeaver, JoinPoint } from '../../index';
@@ -17,6 +17,7 @@ import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
 import { PointcutPhase } from '../../weaver/advices/pointcut';
+import { AnnotationsBundle } from '../bundle/bundle';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -54,6 +55,16 @@ export class AnnotationFactory {
         };
 
         return _createAnnotationRef(annotation, annotationStub, groupId);
+    }
+
+    static getBundle<T>(target: (new () => T) | T): AnnotationsBundle<any> {
+        const proto = getProto(target);
+        return AnnotationBundleRegistry.of(
+            AdviceTargetFactory.create({
+                proto,
+                type: AnnotationType.CLASS,
+            }),
+        );
     }
 }
 
@@ -113,12 +124,10 @@ function _createDecorator<A extends AnnotationType>(
         [AnnotationType.CLASS]: _createClassDecoration,
         [AnnotationType.PROPERTY]: _createPropertyDecoration,
         [AnnotationType.METHOD]: _createMethodDecoration,
-        [AnnotationType.PARAMETER]: () => {
-            throw new Error('not implemented');
-        },
+        [AnnotationType.PARAMETER]: _createParameterDecoration,
     };
 
-    return function(...targetArgs: any[]): Function | PropertyDescriptor {
+    return function(...targetArgs: any[]): Function | PropertyDescriptor | void {
         const target = AdviceTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
@@ -340,4 +349,11 @@ function _createMethodDecoration(
     };
 
     return newDescriptor;
+}
+
+function _createParameterDecoration(
+    ctxt: AdviceContextImpl<any, AnnotationType.METHOD>,
+    runner: PointcutsRunner,
+): void {
+    _createMethodDecoration(ctxt as any, runner);
 }

@@ -259,4 +259,72 @@ describe('@After advice', () => {
             });
         });
     });
+
+    xdescribe('applied on a method parameter', () => {
+        let a: Labeled;
+        beforeEach(() => {
+            @Aspect('AMethod')
+            class AfterAspect {
+                @After(on.method.withAnnotations(AMethod))
+                apply(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
+                    expect(this).toEqual(jasmine.any(AfterAspect));
+
+                    afterAdvice(ctxt);
+                }
+            }
+
+            afterAdvice = jasmine
+                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
+                .and.callThrough();
+
+            setupWeaver(new AfterAspect());
+
+            class A implements Labeled {
+                @AMethod()
+                addLabel() {
+                    return ['value'];
+                }
+            }
+
+            a = new A() as Labeled;
+        });
+
+        describe('calling the method', () => {
+            it('should invoke the aspect', () => {
+                expect(afterAdvice).not.toHaveBeenCalled();
+                a.addLabel();
+                expect(afterAdvice).toHaveBeenCalled();
+            });
+
+            it("should return the original property's value", () => {
+                expect(a.addLabel()).toEqual(['value']);
+            });
+        });
+
+        describe('when the advice returns a value', () => {
+            it('should throw an error', () => {
+                @Aspect('AMethod')
+                class BadAfterAspect {
+                    @After(on.method.withAnnotations(AMethod))
+                    apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        return Object.getOwnPropertyDescriptor({ test: 'test' }, 'test');
+                    }
+                }
+
+                setupWeaver(new BadAfterAspect());
+                expect(() => {
+                    class X implements Labeled {
+                        @AMethod()
+                        addLabel() {}
+                    }
+
+                    const prop = new X().addLabel();
+                }).toThrow(
+                    new WeavingError(
+                        'Returning from advice "@After(@AMethod) BadAfterAspect.apply()" is not supported',
+                    ),
+                );
+            });
+        });
+    });
 });

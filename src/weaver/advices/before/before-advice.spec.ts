@@ -186,4 +186,49 @@ describe('@Before advice', () => {
             expect(thisInstance).toEqual(a);
         });
     });
+
+    xdescribe('applied on a method parameter', () => {
+        let a: any;
+
+        beforeEach(() => {
+            @Aspect('AClassLabel')
+            class AAspect {
+                @Before(on.method.withAnnotations(AMethod))
+                applyBefore(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
+                    expect(this).toEqual(jasmine.any(AAspect));
+
+                    advice(ctxt);
+                }
+            }
+
+            setupWeaver(new AAspect());
+
+            class A {
+                @AMethod()
+                addLabel(): any {}
+            }
+
+            a = new A();
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, AnnotationType.METHOD>) => {})
+                .and.callThrough();
+        });
+
+        it('should call the aspect before the method is called', () => {
+            expect(advice).not.toHaveBeenCalled();
+            a.addLabel();
+            expect(advice).toHaveBeenCalled();
+        });
+
+        it('should have a non null context.instance', () => {
+            let thisInstance: any;
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
+                    thisInstance = ctxt.instance;
+                })
+                .and.callThrough();
+            a.addLabel();
+            expect(thisInstance).toEqual(a);
+        });
+    });
 });

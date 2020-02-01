@@ -1,16 +1,16 @@
 import { AnnotationContext } from '../context/context';
 import { AnnotationLocation } from '../location/location';
-import { AnnotationType } from '../annotation.types';
+import { Annotation, AnnotationType } from '../annotation.types';
 
 export interface AnnotationsBundle<T> extends AnnotationContextSelector<T, AnnotationType> {
-    at<D extends AnnotationType>(location: AnnotationLocation<T, D>): AnnotationContextSelector<T, D>;
-    all(annotationName?: string): readonly AnnotationContext<T, AnnotationType>[];
-    class(annotationName?: string): readonly AnnotationContext<T, AnnotationType>[];
-    properties(annotationName?: string): readonly AnnotationContext<T, AnnotationType>[];
-    methods(annotationName?: string): readonly AnnotationContext<T, AnnotationType>[];
-    parameters(annotationName?: string): readonly AnnotationContext<T, AnnotationType>[];
+    at<A extends AnnotationType>(location: AnnotationLocation<T, A>): AnnotationContextSelector<T, A>;
+    all<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[];
+    class<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[];
+    properties<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[];
+    methods<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[];
+    parameters<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[];
 }
 
-export interface AnnotationContextSelector<T, D extends AnnotationType> {
-    all(annotationName?: string): readonly AnnotationContext<T, D>[];
+export interface AnnotationContextSelector<T, A extends AnnotationType> {
+    all(annotation?: Annotation<A> | string): readonly AnnotationContext<T, A>[];
 }

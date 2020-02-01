@@ -8,6 +8,7 @@ export enum AnnotationType {
 export interface AnnotationRef {
     name: string;
     groupId: string;
+    toString(): string;
 }
 
 export namespace AnnotationRef {
