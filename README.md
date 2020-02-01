@@ -5,6 +5,7 @@
 npm install @aspectjs/core
 ```
 
+
 **For typescript:** 
 - Please enable decorators support in your `tsconfig.json`:
     ```json
@@ -16,6 +17,7 @@ npm install @aspectjs/core
     }
     ```
 ## Abstract
+
 ### What is it ?
 
 @AspectJS leverages [ES8 decorators stage 1](https://github.com/tc39/proposal-decorators)
@@ -29,7 +31,8 @@ so it has a smooth learning curve and it is easy to both use or create aspects.
 Aspect Oriented programming litteraly changed our way to design software.
 It allows **strong cohesion* and clean **separation of concerns** for your code.
 
-#### There are several of aspect libraries in javascript. Why another one?
+#### Comparison with other libraries
+There are several of aspect libraries in javascript. Why another one?
  - [aspectjs](https://www.npmjs.com/package/aspectjs):  
    Do not use es decorators.
  - [aspect.js](https://www.npmjs.com/package/aspect-js) by mgechev:  
@@ -127,11 +130,15 @@ Here is a list of all the pointcut you can configure;
         /* ... */
     }
     ```
+    > ![warning] Multiple `@Compile` advices on the same pointcut will always override each other. 
+    
   - Before class constructor:
     ```typescript
     @Before(on.class./*... */)
-    advice(ctxt: BeforeContext) { /* ... */}
+    advice(ctxt: BeforeContext) { /* ... */}    
     ```
+    > ![warning] `context.instance` is not available in `@Before` class advices.
+
   - Around class constructor:
     ```typescript
     @Around(on.class./*... */)
@@ -142,6 +149,9 @@ Here is a list of all the pointcut you can configure;
         return instance;
     }
     ```
+    you may or may not call the joinpoint to invoke the original constructor. 
+    However, if you call the join
+    
   - After class constructor did return:
     ```typescript
     @AfterReturn(on.class./*... */)
@@ -328,3 +338,14 @@ getWeaver() // get the global weaver instance
 
 It is important you do the weaver configuration before you apply any annotation aspect.
 Once configured, or once an annotation has been applied, the weaver configuration cannot be changed anymore. 
+
+
+
+[info]: docs/.README/info.png
+[warning]: docs/.README/warning.png
+[tip]: docs/.README/success.png
+[danger]: docs/.README/danger.png
+[error]: docs/.README/error.png
+[question]: docs/.README/question.png
+[troubleshoot]: docs/.README/error.png
+[commit]: docs/.README/commit.png

@@ -65,7 +65,7 @@ export class MethodPointcutExpression extends PointcutExpression {
 
 export class ParameterPointcutExpression extends PointcutExpression {
     toString(): string {
-        assert(false, 'not implemented');
+        throw new WeavingError('Parameter advices are not supported yet');
         return _trimSpaces('');
     }
 }

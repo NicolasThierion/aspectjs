@@ -18,12 +18,6 @@
 - `@Cloneable`
 
 ### Pointcuts: 
- - compileMethod
- - beforeMethod
- - aroundMethod
- - afterReturnMethod
- - afterThrowMethod
- - afterMethod
  - compileParameter
  - beforeParameter
  - aroundParameter
@@ -34,9 +28,6 @@
 ### Aspects
  - DuplicateAspectHandler
  - advice static methods?
-
-## Chore
-- remove lodash dependency
 
 ## Refactor
 - remove {priority: number} in favor of { appliesBefore: Decorators[], appliesAfter: Decorators[] }
