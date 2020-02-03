@@ -1,6 +1,6 @@
 import { AdviceFactory } from '../advice-factory';
-import { PointcutExpression, PointcutPhase } from '../pointcut';
+import { Pointcut, PointcutExpression, PointcutOption, PointcutPhase } from '../pointcut';
 
-export function AfterThrow(pointcut: PointcutExpression): MethodDecorator {
-    return AdviceFactory.create(pointcut, PointcutPhase.AFTERTHROW);
+export function AfterThrow(pointcutExp: PointcutExpression, options?: PointcutOption): MethodDecorator {
+    return AdviceFactory.create(Pointcut.of(PointcutPhase.AFTERTHROW, pointcutExp, options));
 }

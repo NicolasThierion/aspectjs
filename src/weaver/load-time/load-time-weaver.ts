@@ -1,9 +1,9 @@
 import { WeaverProfile } from '../profile';
-import { assert, getOrDefault, isArray, isFunction, isUndefined } from '../../utils';
+import { assert, getMetaOrDefault, getOrDefault, isArray, isFunction, isUndefined } from '../../utils';
 import { JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
 import { AnnotationRef, AnnotationType } from '../..';
-import { AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
+import { AdviceContext, AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
     AfterAdvice,
@@ -16,6 +16,9 @@ import {
 import { AdvicesRegistry } from '../advices/advice-registry';
 import { PointcutsRunner, Weaver } from '../weaver';
 import { PointcutPhase } from '../advices/pointcut';
+import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
+import { AdviceTargetFactory } from '../../annotation/target/advice-target-factory';
+import { Aspect, AspectOptions } from '../advices/aspect';
 
 type AdvicePipeline = {
     [target in AnnotationType]: {
@@ -58,16 +61,24 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     load(): PointcutsRunner {
         if (!this._advices) {
             this._advices = Object.values(this._aspectsRegistry)
-                .sort(ao => ao.order)
-                .map(ao => ao.aspect)
+                .sort((a1: any, a2: any) => {
+                    // sort by aspect priority
+                    const [o1, o2] = [
+                        Reflect.getOwnMetadata(`aspectjs.aspect.options`, a1.constructor),
+                        Reflect.getOwnMetadata(`aspectjs.aspect.options`, a2.constructor),
+                    ] as AspectOptions[];
+                    const [p1, p2] = [o1?.priority ?? 0, o2?.priority ?? 0];
+
+                    return p2 - p1;
+                })
                 .reduce((pipeline: AdvicePipeline, aspect: object) => {
                     const advices = AdvicesRegistry.getAdvices(aspect);
 
                     advices
-                        .map((advice: any) => {
+                        .map((advice: Advice) => {
                             const bound = advice.bind(aspect);
                             Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
-                            return bound;
+                            return bound as Advice;
                         })
                         .forEach(advice => {
                             _getAdvicesArray(
@@ -121,7 +132,19 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     getAdvices<A extends AnnotationType>(phase: PointcutPhase, ctxt: MutableAdviceContext<A>): Advice[] {
         assert(!!this._advices);
 
-        return _getAdvicesArray(this._advices, ctxt.target.type, phase, ctxt.annotation, false);
+        // get all advices that correspond to all the annotations of this context
+        return getMetaOrDefault(`aspectjs.aspects(${phase}, ${ctxt.target.ref})`, ctxt.target.proto, () => {
+            const bundle = AnnotationBundleRegistry.of(ctxt.target).at(ctxt.target.location);
+            const annotations = bundle.all();
+
+            return annotations
+                .map(annotation => _getAdvicesArray(this._advices, ctxt.target.type, phase, annotation, false))
+                .flat()
+                .sort((a1: Advice, a2: Advice) => {
+                    const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
+                    return !p2 && !p2 ? 0 : p2 - p1;
+                });
+        });
     }
 
     private _assertNotLoaded(msg: string): void {
@@ -130,7 +153,6 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         }
     }
 }
-
 function _getAdvicesArray(
     pipeline: AdvicePipeline,
     type: AnnotationType,
@@ -156,7 +178,6 @@ function _getAdvicesArray(
 function _annotationId(annotation: AnnotationRef): string {
     return `${annotation.groupId}:${annotation.name}`;
 }
-
 class PointcutsRunnersImpl implements PointcutsRunner {
     class = {
         [PointcutPhase.COMPILE]: this._compileClass.bind(this),
@@ -205,8 +226,9 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     private _compileClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         const newCtor = this.weaver
             .getAdvices(PointcutPhase.COMPILE, ctxt)
-            .map((advice: CompileAdvice<unknown, AnnotationType.CLASS>) => advice(ctxt.clone()))
-            .filter(c => !!c)
+            .map((advice: CompileAdvice<unknown, AnnotationType.CLASS>) => {
+                return (ctxt.target.proto.constructor = advice(ctxt.clone()) ?? ctxt.target.proto.constructor);
+            })
             .slice(-1)[0];
 
         if (newCtor) {
@@ -529,10 +551,10 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         }
 
         if (aroundAdvices.length) {
-            let aroundAdvice = aroundAdvices[0];
+            let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
 
             // nest all around advices into each others
-            for (let i = 1; i < aroundAdvices.length; ++i) {
+            for (let i = aroundAdvices.length - 2; i > -1; --i) {
                 const previousAroundAdvice = aroundAdvice;
                 aroundAdvice = aroundAdvices[i];
                 const previousJp = jp;
@@ -656,6 +678,17 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             // pass-trough errors by default
             throw ctxt.error;
         }
+    }
+
+    private _applyOnce(fn: Function, phase: PointcutPhase) {
+        return (ctxt: AdviceContext<any, any>, ...args: any[]) => {
+            const key = `aspectjs.isAdviced(${phase})`;
+            const applied = Reflect.getOwnMetadata(key, ctxt.target.proto, ctxt.target.propertyKey);
+            if (!applied) {
+                Reflect.defineMetadata(key, true, ctxt.target.proto, ctxt.target.propertyKey);
+                return fn.call(this, ctxt, ...args);
+            }
+        };
     }
 }
 

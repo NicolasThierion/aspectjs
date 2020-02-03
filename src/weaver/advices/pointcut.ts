@@ -11,11 +11,16 @@ import { assert } from '../../utils';
 import { WeavingError } from '../weaving-error';
 
 export interface Pointcut {
+    options: PointcutOption;
     type: AnnotationType;
     annotation: AnnotationRef;
     name: string;
     phase: PointcutPhase;
     ref: string;
+}
+
+export interface PointcutOption {
+    priority?: number;
 }
 
 export abstract class PointcutExpression {
@@ -122,9 +127,9 @@ export enum PointcutPhase {
 }
 
 export namespace Pointcut {
-    export function of(phase: PointcutPhase, exp: string): Pointcut;
-    export function of(phase: PointcutPhase, exp: PointcutExpression): Pointcut;
-    export function of(phase: PointcutPhase, exp: PointcutExpression | string): Pointcut {
+    export function of(phase: PointcutPhase, exp: string, options: PointcutOption): Pointcut;
+    export function of(phase: PointcutPhase, exp: PointcutExpression, options: PointcutOption): Pointcut;
+    export function of(phase: PointcutPhase, exp: PointcutExpression | string, options: PointcutOption = {}): Pointcut {
         const ref = exp.toString();
 
         const pointcutRegexes = {
@@ -154,6 +159,7 @@ export namespace Pointcut {
                     annotation: AnnotationRef.of(match.groups.annotation),
                     name: match.groups.name,
                     ref,
+                    options,
                 };
 
                 Reflect.defineProperty(pointcut, Symbol.toPrimitive, {

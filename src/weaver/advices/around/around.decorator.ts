@@ -1,6 +1,6 @@
 import { AdviceFactory } from '../advice-factory';
-import { PointcutExpression, PointcutPhase } from '../pointcut';
+import { Pointcut, PointcutExpression, PointcutOption, PointcutPhase } from '../pointcut';
 
-export function Around(pointcutExp: PointcutExpression): MethodDecorator {
-    return AdviceFactory.create(pointcutExp, PointcutPhase.AROUND);
+export function Around(pointcutExp: PointcutExpression, options?: PointcutOption): MethodDecorator {
+    return AdviceFactory.create(Pointcut.of(PointcutPhase.AROUND, pointcutExp, options));
 }

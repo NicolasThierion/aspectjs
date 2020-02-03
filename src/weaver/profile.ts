@@ -1,5 +1,5 @@
 import { AnnotationLocation } from '../annotation/location/location';
-import { isString, isUndefined } from '../utils';
+import { isString } from '../utils';
 import { WeavingError } from './weaving-error';
 import { AnnotationFactory } from '../annotation/factory/factory';
 
@@ -8,12 +8,8 @@ let profileId = 0;
 export class WeaverProfile {
     public readonly name: string;
     protected _aspectsRegistry: {
-        [aspectId: string]: {
-            order: number;
-            aspect: any;
-        };
+        [aspectId: string]: any;
     } = {};
-    private _globalOrder: number;
 
     constructor(name?: string) {
         this.name = name ?? `default#${profileId++}`;
@@ -27,12 +23,11 @@ export class WeaverProfile {
         return this;
     }
     merge(...profiles: WeaverProfile[]): this {
-        profiles.forEach(p => Object.values(p._aspectsRegistry).forEach(p => this.enable(p.aspect)));
+        profiles.forEach(p => Object.values(p._aspectsRegistry).forEach(p => this.enable(p)));
         return this;
     }
     reset(): this {
         this._aspectsRegistry = {};
-        this._globalOrder = 0;
         return this;
     }
     setEnabled(aspect: object, enabled: boolean): this {
@@ -41,15 +36,12 @@ export class WeaverProfile {
             const oldAspect = this._aspectsRegistry[id];
             if (oldAspect) {
                 console.warn(
-                    `Aspect ${aspect.constructor.name} overrides aspect "${oldAspect.aspect?.constructor.name ??
+                    `Aspect ${aspect.constructor.name} overrides aspect "${oldAspect?.constructor.name ??
                         'unknown'}" already registered for name ${id}`,
                 );
             }
 
-            this._aspectsRegistry[id] = {
-                aspect,
-                order: this._globalOrder++,
-            };
+            this._aspectsRegistry[id] = aspect;
         } else {
             delete this._aspectsRegistry[id];
         }
@@ -61,23 +53,16 @@ export class WeaverProfile {
 let _globalAspectId = 0;
 
 function _getAspectId(obj: object): string {
-    const location = AnnotationLocation.of(Reflect.getPrototypeOf(obj).constructor);
-    const ctxt = AnnotationFactory.getBundle(obj)
-        .at(location)
-        .all('@aspectjs:Aspect')[0];
-
-    if (!ctxt) {
+    const options = Reflect.getOwnMetadata('aspectjs.aspect.options', obj.constructor);
+    if (!options) {
         throw new TypeError(`${obj.constructor.name} is not an Aspect`);
     }
-
-    const args = ctxt.args;
-    if (!args.length || isUndefined(args[0])) {
-        args.push(`AnonymousAspect#${_globalAspectId++}`);
+    if (!options.id) {
+        return `AnonymousAspect#${_globalAspectId++}`;
     } else {
-        const id = args[0];
-        if (!isString(id)) {
-            throw new WeavingError(`Aspect ${obj.constructor.name} should have a string id. Got: ${id}`);
+        if (!isString(options.id)) {
+            throw new WeavingError(`Aspect ${obj.constructor.name} should have a string id. Got: ${options.id}`);
         }
-        return id;
     }
+    return options.id;
 }
