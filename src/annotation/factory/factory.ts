@@ -255,6 +255,7 @@ function _createPropertyDecoration(
     };
     propDescriptor.get = function() {
         const _ctxt = ctxt.clone();
+        _ctxt.args = [];
         const r = runner.property.getter;
         try {
             _ctxt.instance = this;

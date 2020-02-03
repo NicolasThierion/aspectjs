@@ -220,7 +220,7 @@ describe('@Around advice', () => {
                 }
 
                 new A('ctor');
-                expect(labels).toEqual(['beforeB', 'beforeA', 'ctor', 'afterA', 'afterB']);
+                expect(labels).toEqual(['beforeA', 'beforeB', 'ctor', 'afterB', 'afterA']);
             });
 
             describe('with joinpoint arguments override', () => {
@@ -238,7 +238,7 @@ describe('@Around advice', () => {
                     }
 
                     new A('ctor');
-                    expect(labels).toEqual(['beforeB', 'beforeA', 'aArgs', 'afterA', 'afterB']);
+                    expect(labels).toEqual(['beforeA', 'beforeB', 'aArgs', 'afterB', 'afterA']);
                 });
             });
         });
@@ -368,7 +368,7 @@ describe('@Around advice', () => {
                         a = new A();
                     });
                     it('should call them nested, in declaration order', () => {
-                        expect(a.labels).toEqual(['beforeB', 'beforeA', 'value', 'afterA', 'afterB']);
+                        expect(a.labels).toEqual(['beforeA', 'beforeB', 'value', 'afterB', 'afterA']);
                     });
                 });
             });
@@ -496,7 +496,7 @@ describe('@Around advice', () => {
                 });
                 it('should call them nested, in declaration order', () => {
                     a.labels = ['newValue'];
-                    expect(a.labels).toEqual(['newValue', 'aroundB', 'aroundA']);
+                    expect(a.labels).toEqual(['newValue', 'aroundA', 'aroundB']);
                 });
             });
         });
@@ -639,7 +639,7 @@ describe('@Around advice', () => {
                 });
                 it('should call them nested, in declaration order', () => {
                     a.addLabel('newValue');
-                    expect(a.labels).toEqual(['newValue', 'aroundB', 'aroundA']);
+                    expect(a.labels).toEqual(['newValue', 'aroundA', 'aroundB']);
                 });
             });
         });

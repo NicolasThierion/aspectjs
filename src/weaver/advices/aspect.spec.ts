@@ -151,8 +151,8 @@ describe('given several aspects', () => {
                 const expectedLabels = [
                     'A_beforeClass',
                     'B_beforeClass',
-                    'B_AroundClass',
                     'A_AroundClass',
+                    'B_AroundClass',
                     'B_compileClass',
                     'A_AfterReturnClass',
                     'B_AfterReturnClass',
@@ -168,8 +168,8 @@ describe('given several aspects', () => {
                 expectedLabels.push(
                     'A_beforePropertyGet',
                     'B_beforePropertyGet',
-                    'B_AroundPropertyGet',
                     'A_AroundPropertyGet',
+                    'B_AroundPropertyGet',
                     'B_compilePropertyGet',
                     'A_AfterReturnPropertyGet',
                     'B_AfterReturnPropertyGet',
@@ -185,8 +185,8 @@ describe('given several aspects', () => {
                 expectedLabels.push(
                     'A_beforePropertySet',
                     'B_beforePropertySet',
-                    'B_AroundPropertySet',
                     'A_AroundPropertySet',
+                    'B_AroundPropertySet',
                     'B_compilePropertySet',
                     'A_AfterReturnPropertySet',
                     'B_AfterReturnPropertySet',
@@ -242,7 +242,7 @@ describe('given several aspects', () => {
             a = new A();
             expect(labels).toEqual(['B_beforeClass', 'A_beforeClass']);
             console.log(a.labels);
-            expect(labels).toEqual(['B_beforeClass', 'A_beforeClass', 'A_AroundPropertyGet', 'B_AroundPropertyGet']);
+            expect(labels).toEqual(['B_beforeClass', 'A_beforeClass', 'B_AroundPropertyGet', 'A_AroundPropertyGet']);
         });
     });
     describe('when the aspects specify a priority', () => {
@@ -276,7 +276,7 @@ describe('given several aspects', () => {
             }
             setupWeaver(new AAspect(), new BAspect());
         });
-        fit('should call the advices in priority order', () => {
+        it('should call the advices in priority order', () => {
             @AClass()
             class A implements Labeled {
                 @AProperty()

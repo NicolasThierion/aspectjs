@@ -3,7 +3,13 @@ import { assert, getMetaOrDefault, getOrDefault, isArray, isFunction, isUndefine
 import { JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
 import { AnnotationRef, AnnotationType } from '../..';
-import { AdviceContext, AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
+import {
+    AdviceContext,
+    AfterReturnContext,
+    AfterThrowContext,
+    AroundContext,
+    MutableAdviceContext,
+} from '../advices/advice-context';
 import {
     Advice,
     AfterAdvice,
@@ -252,49 +258,39 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         assert(!!refCtor);
 
         // create ctor joinpoint
-        let jp = JoinpointFactory.create(undefined, (...args: any[]) => new refCtor(...args), ctorArgs);
+        let jp = JoinpointFactory.create(ctxt, (...args: any[]) => new refCtor(...args));
 
         const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
         const originalThis = ctxt.instance;
 
         if (aroundAdvices.length) {
             const oldJp = jp;
-            let aroundAdvice = aroundAdvices[0];
+            let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
 
             let wasRead = false;
             // ensure 'this' instance has not been read before joinpoint gets called.
-            jp = JoinpointFactory.create(
-                ctxt.instance,
-                (...args: any[]) => {
-                    if (wasRead) {
-                        throw new Error(
-                            `In advice "${aroundAdvice}": Cannot get "this" instance of constructor before calling constructor joinpoint`,
-                        );
-                    }
+            jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
+                if (wasRead) {
+                    throw new Error(
+                        `In advice "${aroundAdvice}": Cannot get "this" instance of constructor before calling constructor joinpoint`,
+                    );
+                }
 
-                    ctxt.instance = oldJp(args);
-                },
-                ctorArgs,
-            );
+                ctxt.instance = oldJp(args);
+            });
 
-            let previousArgs = ctorArgs;
             // nest all around advices into each others
-            for (let i = 1; i < aroundAdvices.length; ++i) {
+            for (let i = aroundAdvices.length - 2; i > -1; --i) {
                 const previousAroundAdvice = aroundAdvice;
                 aroundAdvice = aroundAdvices[i];
                 const previousJp = jp;
 
                 // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create(
-                    ctxt.instance,
-                    (...args: any[]) => {
-                        previousArgs = args ?? previousArgs;
-                        ctxt.joinpoint = previousJp;
-                        ctxt.args = args;
-                        previousAroundAdvice(ctxt.clone(), previousJp, args);
-                    },
-                    previousArgs,
-                );
+                jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
+                    ctxt.joinpoint = previousJp;
+                    ctxt.args = args;
+                    previousAroundAdvice(ctxt.clone(), previousJp, args);
+                });
             }
 
             try {
@@ -440,30 +436,24 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         const refSetter = refDescriptor.set.bind(ctxt.instance);
 
         // create getter joinpoint
-        let jp = JoinpointFactory.create(ctxt.instance, refSetter, ctxt.args);
+        let jp = JoinpointFactory.create(ctxt, refSetter);
 
         if (aroundAdvices.length) {
-            let aroundAdvice = aroundAdvices[0];
+            let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
 
             // nest all around advices into each others
-            let previousArgs = ctxt.args;
 
-            for (let i = 1; i < aroundAdvices.length; ++i) {
+            for (let i = aroundAdvices.length - 2; i > -1; --i) {
                 const previousAroundAdvice = aroundAdvice;
                 aroundAdvice = aroundAdvices[i];
                 const previousJp = jp;
 
                 // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create(
-                    ctxt.instance,
-                    (...args: any[]) => {
-                        previousArgs = args ?? previousArgs;
-                        ctxt.joinpoint = previousJp;
-                        ctxt.args = args;
-                        return previousAroundAdvice(ctxt.clone(), previousJp, args);
-                    },
-                    previousArgs,
-                );
+                jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
+                    ctxt.joinpoint = previousJp;
+                    ctxt.args = args;
+                    return previousAroundAdvice(ctxt.clone(), previousJp, args);
+                });
             }
 
             ctxt.joinpoint = jp;
@@ -543,7 +533,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         filter?: (advice: Advice) => boolean,
     ): void {
         // create method joinpoint
-        let jp = JoinpointFactory.create(ctxt.instance, refMethod);
+        let jp = JoinpointFactory.create(ctxt, refMethod);
 
         let aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
         if (filter) {
@@ -560,7 +550,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 const previousJp = jp;
 
                 // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create(ctxt.instance, (...args: any[]) => {
+                jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
                     ctxt.joinpoint = previousJp;
                     ctxt.args = args;
                     return previousAroundAdvice(ctxt.clone(), previousJp, args);
@@ -693,19 +683,19 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 }
 
 class JoinpointFactory<T> {
-    static create(instance: any, fn: (...args: any[]) => any, defaultArgs: any[] = []): JoinPoint {
+    static create(ctxt: MutableAdviceContext<any>, fn: (...args: any[]) => any): JoinPoint {
         const alreadyCalledFn = (): void => {
             throw new WeavingError(`joinPoint already proceeded`);
         };
 
         const jp = function(args?: any[]) {
-            args = args ?? defaultArgs;
+            args = args ?? ctxt.args;
             if (!isArray(args)) {
                 throw new TypeError(`Joinpoint arguments expected to be array. Got: ${args}`);
             }
             const jp = fn;
             fn = alreadyCalledFn as any;
-            return jp.bind(instance)(...args);
+            return jp.bind(ctxt.instance)(...args);
         };
 
         return jp;
