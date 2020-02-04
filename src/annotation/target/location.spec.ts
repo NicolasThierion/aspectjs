@@ -1,7 +1,7 @@
 import { AnnotationFactory } from '../factory/factory';
-import { AnnotationLocation } from './location';
+import { AnnotationLocationFactory } from './annotation-target.factory';
 
-describe('AnnotationLocation', () => {
+describe('AnnotationLocationFactory', () => {
     class Decorated {
         value: any;
 
@@ -24,7 +24,7 @@ describe('AnnotationLocation', () => {
                     method() {},
                 };
 
-                expect(() => AnnotationLocation.of(x)).toThrow(
+                expect(() => AnnotationLocationFactory.of(x)).toThrow(
                     new Error('given object is neither a constructor nor a class instance'),
                 );
             });
@@ -37,7 +37,7 @@ describe('AnnotationLocation', () => {
                     method() {},
                 };
 
-                expect(() => AnnotationLocation.of(x)).toThrow(
+                expect(() => AnnotationLocationFactory.of(x)).toThrow(
                     new Error('given object is neither a constructor nor a class instance'),
                 );
             });
@@ -57,7 +57,7 @@ describe('AnnotationLocation', () => {
                 });
 
                 it('should return an empty location', () => {
-                    const loc = AnnotationLocation.of(a);
+                    const loc = AnnotationLocationFactory.of(a);
 
                     expect(Object.values(loc).length).toEqual(0);
                 });
@@ -72,8 +72,8 @@ describe('AnnotationLocation', () => {
 
                 const a = new AClass('value');
 
-                const loc = AnnotationLocation.of(a);
-                expect(loc).toBe(AnnotationLocation.of(new AClass(null)));
+                const loc = AnnotationLocationFactory.of(a);
+                expect(loc).toBe(AnnotationLocationFactory.of(new AClass(null)));
             });
             describe('that uses decorators on properties', () => {
                 let a: Decorated;
@@ -91,7 +91,7 @@ describe('AnnotationLocation', () => {
                 });
 
                 it('should return an empty location', () => {
-                    const loc = AnnotationLocation.of(a);
+                    const loc = AnnotationLocationFactory.of(a);
 
                     expect(loc.value).toBeDefined();
                 });

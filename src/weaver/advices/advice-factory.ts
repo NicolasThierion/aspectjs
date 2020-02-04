@@ -3,7 +3,7 @@ import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
 import { Pointcut, PointcutPhase } from './pointcut';
 import { WeavingError } from '../weaving-error';
-import { AnnotationType } from '../..';
+import { AnnotationType } from '../../annotation/annotation.types';
 
 export class AdviceFactory {
     static create(pointcut: Pointcut): MethodDecorator {

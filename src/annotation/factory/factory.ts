@@ -11,13 +11,14 @@ import { WeavingError } from '../../weaver/weaving-error';
 import { PointcutsRunner } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, getProto, isFunction } from '../../utils';
 import { AnnotationContext } from '../context/context';
-import { AdviceTargetFactory } from '../target/advice-target-factory';
-import { getWeaver, JoinPoint } from '../../index';
+import { AnnotationTargetFactory } from '../target/annotation-target.factory';
+import { getWeaver } from '../../lib';
 import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
 import { PointcutPhase } from '../../weaver/advices/pointcut';
 import { AnnotationsBundle } from '../bundle/bundle';
+import { JoinPoint } from '../../weaver/types';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -60,7 +61,7 @@ export class AnnotationFactory {
     static getBundle<T>(target: (new () => T) | T): AnnotationsBundle<any> {
         const proto = getProto(target);
         return AnnotationBundleRegistry.of(
-            AdviceTargetFactory.create({
+            AnnotationTargetFactory.create({
                 proto,
                 type: AnnotationType.CLASS,
             }),
@@ -128,7 +129,7 @@ function _createDecorator<A extends AnnotationType>(
     };
 
     return function(...targetArgs: any[]): Function | PropertyDescriptor | void {
-        const target = AdviceTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
+        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         AnnotationBundleRegistry.addContext(target, annotationContext);

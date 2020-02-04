@@ -1,11 +1,10 @@
-import { AClass } from '../../../tests/a';
 import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { on } from '../pointcut';
-import { AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../..';
+import { AnnotationType } from '../../../annotation/annotation.types';
 
 describe('@Before advice', () => {
     let advice: Spy;

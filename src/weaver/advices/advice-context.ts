@@ -1,6 +1,7 @@
 import { AnnotationContext } from '../../annotation/context/context';
-import { AnnotationType, JoinPoint } from '../../index';
 import { AnnotationTarget } from '../../annotation/target/annotation-target';
+import { AnnotationType } from '../../annotation/annotation.types';
+import { JoinPoint } from '../types';
 
 export type AdviceContext<T, A extends AnnotationType> =
     | AfterContext<T, A>

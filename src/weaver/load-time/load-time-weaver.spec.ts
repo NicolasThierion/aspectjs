@@ -1,5 +1,5 @@
 import { AnnotationFactory } from '../../annotation/factory/factory';
-import { setWeaver } from '../../index';
+import { setWeaver } from '../../lib';
 import { WeavingError } from '../weaving-error';
 import { LoadTimeWeaver } from './load-time-weaver';
 import { Aspect } from '../advices/aspect';

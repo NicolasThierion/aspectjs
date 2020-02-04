@@ -1,10 +1,3 @@
-import {
-    AnnotationLocation,
-    ClassAnnotationLocation,
-    MethodAnnotationLocation,
-    ParameterAnnotationLocation,
-    PropertyAnnotationLocation,
-} from '../location/location';
 import { AnnotationType } from '../annotation.types';
 
 export interface AnnotationTarget<T, A extends AnnotationType> {
@@ -54,3 +47,18 @@ export interface ParameterAdviceTarget<T> extends AnnotationTarget<T, Annotation
     readonly location: ParameterAnnotationLocation<T>;
     readonly parent: MethodAdviceTarget<T>;
 }
+
+export type AnnotationLocation<T, D extends AnnotationType> =
+    | undefined
+    | {
+          [prop in keyof T]: T[prop] extends (...any: any[]) => any
+              ? MethodAnnotationLocation<T>
+              : AnnotationLocation<T, any>;
+      };
+
+export type ClassAnnotationLocation<T> = AnnotationLocation<T, AnnotationType.CLASS>;
+export type MethodAnnotationLocation<T> = AnnotationLocation<T, AnnotationType.METHOD> & {
+    args: ParameterAnnotationLocation<T> & ParameterAnnotationLocation<T>[];
+};
+export type PropertyAnnotationLocation<T> = AnnotationLocation<T, AnnotationType.PROPERTY>;
+export type ParameterAnnotationLocation<T> = AnnotationLocation<T, AnnotationType.PARAMETER>;

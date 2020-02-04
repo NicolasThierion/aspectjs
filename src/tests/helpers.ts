@@ -1,4 +1,4 @@
-import { setWeaver } from '..';
+import { setWeaver } from '../lib';
 import { LoadTimeWeaver } from '../weaver/load-time/load-time-weaver';
 import { AnnotationFactory } from '../annotation/factory/factory';
 

@@ -1,7 +1,5 @@
-import { AnnotationLocation } from '../annotation/location/location';
 import { isString } from '../utils';
 import { WeavingError } from './weaving-error';
-import { AnnotationFactory } from '../annotation/factory/factory';
 
 let profileId = 0;
 

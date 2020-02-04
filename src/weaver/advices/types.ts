@@ -1,4 +1,3 @@
-import { AnnotationType, JoinPoint } from '../..';
 import { AdviceContext } from './advice-context';
 import {
     AfterPointcut,
@@ -8,6 +7,8 @@ import {
     BeforePointcut,
     CompilePointcut,
 } from './pointcut';
+import { AnnotationType } from '../../annotation/annotation.types';
+import { JoinPoint } from '../types';
 
 export type CompileAdvice<T, A extends AnnotationType> = {
     pointcut?: CompilePointcut;

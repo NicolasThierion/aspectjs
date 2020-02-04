@@ -1,15 +1,18 @@
 import { Before } from './before/before.decorator';
 import { on } from './pointcut';
-import { AClass } from '../../tests/a';
 import { AfterContext, AfterReturnContext, AfterThrowContext, AroundContext, BeforeContext } from './advice-context';
-import { AProperty, Labeled, setupWeaver } from '../../tests/helpers';
+import { AClass, AProperty, Labeled, setupWeaver } from '../../tests/helpers';
 import { Around } from './around/around.decorator';
 import { After } from './after/after.decorator';
 import { AfterReturn } from './after-return/after-return.decorator';
 import { AfterThrow } from './after-throw/after-throw.decorator';
-import { AnnotationType } from '../..';
 import { Aspect } from './aspect';
 import { Compile } from './compile/compile.decorator';
+import { AnnotationType } from '../../annotation/annotation.types';
+import { AnnotationFactory } from '../../annotation/factory/factory';
+import { getWeaver, setWeaver } from '../../lib';
+import { LoadTimeWeaver } from '../load-time/load-time-weaver';
+import { JoinPoint } from '../types';
 
 describe('given several aspects', () => {
     let labels: string[];

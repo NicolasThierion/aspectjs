@@ -2,14 +2,7 @@ import { WeaverProfile } from '../profile';
 import { assert, getMetaOrDefault, getOrDefault, isArray, isFunction, isUndefined } from '../../utils';
 import { JoinPoint } from '../types';
 import { WeavingError } from '../weaving-error';
-import { AnnotationRef, AnnotationType } from '../..';
-import {
-    AdviceContext,
-    AfterReturnContext,
-    AfterThrowContext,
-    AroundContext,
-    MutableAdviceContext,
-} from '../advices/advice-context';
+import { AdviceContext, AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
 import {
     Advice,
     AfterAdvice,
@@ -23,8 +16,8 @@ import { AdvicesRegistry } from '../advices/advice-registry';
 import { PointcutsRunner, Weaver } from '../weaver';
 import { PointcutPhase } from '../advices/pointcut';
 import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
-import { AdviceTargetFactory } from '../../annotation/target/advice-target-factory';
-import { Aspect, AspectOptions } from '../advices/aspect';
+import { AspectOptions } from '../advices/aspect';
+import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
 
 type AdvicePipeline = {
     [target in AnnotationType]: {

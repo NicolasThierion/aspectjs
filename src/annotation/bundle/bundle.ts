@@ -1,6 +1,6 @@
 import { AnnotationContext } from '../context/context';
-import { AnnotationLocation } from '../location/location';
 import { Annotation, AnnotationType } from '../annotation.types';
+import { AnnotationLocation } from '../target/annotation-target';
 
 export interface AnnotationsBundle<T> extends AnnotationContextSelector<T, AnnotationType> {
     at<A extends AnnotationType>(location: AnnotationLocation<T, A>): AnnotationContextSelector<T, A>;

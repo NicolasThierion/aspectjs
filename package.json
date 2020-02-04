@@ -2,51 +2,53 @@
   "name": "@aspectjs/core",
   "version": "1.0.0",
   "license": "MIT",
-  "source": "main.ts",
-  "main": "dist/main.js",
-  "module": "dist/main.mjs",
+  "main": "dist/bundles/aspectjs-core.umd.js",
+  "module": "dist/esm/aspectjs-core.mjs",
+  "unpgk": "dist/bundles/aspectjs-core.umd.min.js",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
-    "dev": "nodemon --ext ts --exec 'npm run test && parcel build index.ts --target browser --no-source-maps && size-limit'",
-    "build": "parcel build index.ts --target node --detailed-report",
-    "build:prod": "parcel build index.ts --target node --no-source-maps --detailed-report",
-    "size": "parcel build index.ts --target browser --no-source-maps --detailed-report 20 && size-limit",
-    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
-    "perf": "nodemon --ext ts --exec 'parcel build --no-minify perf.ts --target browser && node dist/perf.js'"
+    "dev": "nodemon  --ignore dist --ext ts --exec 'npm run test && npm run size'",
+    "build": "rollup --config rollup.config.js ",
+    "size": "rollup --config rollup.config.js && size-limit",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix"
   },
   "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/preset-env": "^7.8.4",
     "@size-limit/preset-big-lib": "^2.2.1",
     "@types/jasmine": "^3.4.0",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^12.7.5",
-    "@types/qs": "^6.9.0",
-    "@types/window-or-global": "^1.0.0",
+    "@types/rollup": "^0.54.0",
     "@typescript-eslint/eslint-plugin": "^2.11.0",
     "@typescript-eslint/parser": "^2.11.0",
-    "cross-fetch": "^3.0.4",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-prettier": "^3.1.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
     "jasmine-ts": "^0.3.0",
+    "lodash": "^4.17.15",
     "nodemon": "^2.0.2",
-    "parcel": "^2.0.0-alpha.3.2",
-    "parcel-bundler": "^1.12.3",
-    "parcel-plugin-bundle-visualiser": "^1.2.0",
     "prettier": "^1.19.1",
     "reflect-metadata": "^0.1.13",
+    "rollup": "^1.31.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-cleaner": "^1.0.0",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-terser": "^5.2.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "rollup-plugin-visualizer": "^3.3.1",
+    "ts-loader": "^6.2.1",
     "ts-node": "^8.3.0",
-    "typescript": "^3.7.2"
+    "tslib": "^1.10.0",
+    "typescript": "^3.7.5"
   },
-  "dependencies": {
-  },
-  "optionalDependencies": {
-    "qs": "^6.9.1"
-  },
+  "dependencies": {},
   "size-limit": [
     {
       "limit": "400 ms",
-      "path": "dist/main*.js"
+      "path": "dist/esm/aspectjs-core.mjs"
     }
   ]
 }

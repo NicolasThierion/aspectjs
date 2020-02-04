@@ -1,7 +1,7 @@
 import { AnnotationFactory } from '../factory/factory';
-import { AnnotationLocation, AnnotationLocationFactory } from '../location/location';
 import { AnnotationsBundle } from './bundle';
 import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
+import { AnnotationLocationFactory } from '../target/annotation-target.factory';
 
 describe('given a class', () => {
     class X {
@@ -67,12 +67,12 @@ describe('given a class', () => {
             });
 
             it('should return an empty array', () => {
-                expect(Object.keys(bundle.at(AnnotationLocation.of(x)).all()).length).toEqual(0);
+                expect(Object.keys(bundle.at(AnnotationLocationFactory.of(x)).all()).length).toEqual(0);
             });
 
             describe('given a method location', () => {
                 it('should return an empty array', () => {
-                    expect(Object.keys(bundle.at(AnnotationLocation.of(x).someMethod).all()).length).toEqual(0);
+                    expect(Object.keys(bundle.at(AnnotationLocationFactory.of(x).someMethod).all()).length).toEqual(0);
                 });
             });
         });
@@ -177,7 +177,7 @@ describe('given a class', () => {
 
             describe('.all()', () => {
                 it('should return all class annotations', () => {
-                    const annotations = bundle.at(AnnotationLocation.of(A)).all();
+                    const annotations = bundle.at(AnnotationLocationFactory.of(A)).all();
                     expect(annotations).toBeDefined();
                     expect(annotations).toEqual(jasmine.any(Array));
                     expect(annotations.length).toEqual(2);
@@ -189,7 +189,7 @@ describe('given a class', () => {
 
             describe('.all()', () => {
                 it('should get the class annotations with this name"', () => {
-                    const annotations = bundle.at(AnnotationLocation.of(A)).all(AClassDecorator);
+                    const annotations = bundle.at(AnnotationLocationFactory.of(A)).all(AClassDecorator);
                     expect(annotations).toBeDefined();
                     expect(annotations).toEqual(jasmine.any(Array));
                     expect(annotations.length).toEqual(1);

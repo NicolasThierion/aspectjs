@@ -1,9 +1,9 @@
-import { AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
+import { AnnotationLocation, AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
 import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../utils';
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
 import { AnnotationContext, ClassAnnotationContext } from '../context/context';
-import { AnnotationLocation, AnnotationLocationFactory } from '../location/location';
 import { Annotation, AnnotationType } from '../annotation.types';
+import { AnnotationLocationFactory } from '../target/annotation-target.factory';
 
 export abstract class AnnotationBundleRegistry {
     static of<T>(target: AnnotationTarget<T, any>): AnnotationsBundle<T> {

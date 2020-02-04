@@ -1,12 +1,11 @@
 import { After } from './after.decorator';
-import { AClass } from '../../../tests/a';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
 import { WeavingError } from '../../weaving-error';
 import Spy = jasmine.Spy;
-import { AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../..';
+import { AnnotationType } from '../../../annotation/annotation.types';
 
 let afterAdvice: Spy;
 

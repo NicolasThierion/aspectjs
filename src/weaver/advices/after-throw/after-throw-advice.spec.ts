@@ -1,13 +1,12 @@
 import { AdviceContext, AfterThrowContext, CompileContext } from '../advice-context';
-import { AClass } from '../../../tests/a';
 import { AfterThrow } from './after-throw.decorator';
 import { on } from '../pointcut';
-import { AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
 import { WeavingError } from '../../weaving-error';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../..';
 import Spy = jasmine.Spy;
+import { AnnotationType } from '../../../annotation/annotation.types';
 
 const thrownError = new Error('expected');
 

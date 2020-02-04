@@ -1,3 +1,5 @@
+import { assert } from '../../utils';
+import { WeavingError } from '../weaving-error';
 import {
     Annotation,
     AnnotationRef,
@@ -6,9 +8,7 @@ import {
     MethodAnnotation,
     ParameterAnnotation,
     PropertyAnnotation,
-} from '../..';
-import { assert } from '../../utils';
-import { WeavingError } from '../weaving-error';
+} from '../../annotation/annotation.types';
 
 export interface Pointcut {
     options: PointcutOption;
@@ -98,24 +98,44 @@ function _trimSpaces(s: string) {
     return s.replace(/\s+/, ' ');
 }
 
-class PointcutExpressionFactory {
+// TODO Causes backward incompatibilities between typescript 3.7 & typescript <=3.5 .d.ts files.
+// class PointcutExpressionFactory {
+//     get class() {
+//         return new ClassPointcutExpression();
+//     }
+//
+//     get property() {
+//         return new PropertyPointcutExpression();
+//     }
+//
+//     get method() {
+//         return new MethodPointcutExpression();
+//     }
+//     get parameter() {
+//         return new ParameterPointcutExpression();
+//     }
+// }
+
+interface PointcutExpressionFactory {
+    readonly class: ClassPointcutExpression;
+    readonly property: PropertyPointcutExpression;
+    readonly method: MethodPointcutExpression;
+    readonly parameter: ParameterPointcutExpression;
+}
+export const on: PointcutExpressionFactory = new (class implements PointcutExpressionFactory {
     get class() {
         return new ClassPointcutExpression();
     }
-
-    get property() {
-        return new PropertyPointcutExpression();
-    }
-
     get method() {
         return new MethodPointcutExpression();
     }
     get parameter() {
         return new ParameterPointcutExpression();
     }
-}
-
-export const on = new PointcutExpressionFactory();
+    get property() {
+        return new PropertyPointcutExpression();
+    }
+})();
 
 export enum PointcutPhase {
     COMPILE = 'Compile',

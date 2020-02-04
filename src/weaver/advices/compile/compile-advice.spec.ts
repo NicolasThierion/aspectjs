@@ -5,8 +5,8 @@ import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '..
 import { WeavingError } from '../../weaving-error';
 import { Aspect } from '../aspect';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';
-import { AnnotationRef, AnnotationType } from '../../..';
 import { AnnotationContext } from '../../../annotation/context/context';
+import { AnnotationRef, AnnotationType } from '../../../annotation/annotation.types';
 
 let compileAdvice = jasmine.createSpy('compileAdvice');
 
