@@ -13,7 +13,7 @@ export const LsMemo = af.create(function LsMemo(): MethodDecorator {
     return;
 });
 
-@Aspect('MemoImpl')
+@Aspect('Memo.Sync')
 export class LocalStorageMemo {
     private ls: typeof localStorage;
     constructor(localStorageImpl?: typeof localStorage) {

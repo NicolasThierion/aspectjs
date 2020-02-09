@@ -17,6 +17,11 @@ const baseConfig = {
         typescript({
             objectHashIgnoreUnknownHack: true,
             clean: true,
+            tsconfigOverride: {
+                compilerOptions: {
+                    module: 'esnext',
+                },
+            },
         }),
     ],
 };

@@ -1,0 +1,71 @@
+image: node:13-alpine
+
+# workflow:
+#   rules:
+#     - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/ && $CI_COMMIT_BRANCH == "ci"'
+#       when: always
+#     - when: never
+
+stages:
+  - prepare
+  - build
+  - test
+  - publish
+
+install:
+  stage: prepare
+  script:
+    - npm install
+    - npm install puppeteer --only=dev
+
+bundle:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+lint:
+  stage: build
+  script:
+    - npm run lint
+
+test:
+  stage: test
+  script:
+    - npm run test
+
+integration-test:
+  image: buildkite/puppeteer:v1.15.0
+  stage: test
+  script:
+    - npm run test:angular
+  dependencies:
+    - bundle
+
+size-test:
+  image: buildkite/puppeteer:v1.15.0
+  stage: test
+  script:
+    - npm i size-limit && npm run size
+  dependencies:
+    - bundle
+
+github:push:
+  stage: publish
+  image: alpine:3
+  script:
+    - apk add git
+    - mkdir ~/.ssh
+    - echo $ID_RSA | base64 -d > ~/.ssh/id_rsa_github
+    - echo -e 'host github.com
+      HostName github.com
+      IdentityFile ~/.ssh/id_rsa_github
+      User git' >> ~/.ssh/config
+    - git remote add github git@github.com:NicolasThierion/aspectjs.git
+    - git push --mirror github
+
+cache:
+  paths:
+    - node_modules/

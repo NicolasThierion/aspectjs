@@ -9,6 +9,8 @@
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "importHelpers": true,
+    "module": "commonjs",
+//    "moduleResolution": "node",
     "lib": [
       "es2019.array"
     ],
