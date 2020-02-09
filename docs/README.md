@@ -1,6 +1,6 @@
 # Abstract
 
-@AspectJS brings aspect-oriented programming to your Javascript and Typescript code.
+`@AspectJS` brings aspect-oriented programming to your Javascript and Typescript code.
 
 With ease-of-use in mind, it leverages [ES8 decorators stage 1](https://github.com/tc39/proposal-decorators)
 to offer an API that mimics the popular the popular [AspectJ](https://www.eclipse.org/aspectj/) java library,

@@ -1,10 +1,15 @@
 # @Aspectjs/core
 
 ## Installation
+
+### **with npm**
 ```
 npm install @aspectjs/core
 ```
-
+### **with yarn**
+```
+yarn add @aspectjs/core
+```
 
 **For typescript:** 
 - Please enable decorators support in your `tsconfig.json`:
@@ -18,93 +23,69 @@ npm install @aspectjs/core
     ```
 ## Abstract
 
-### What is it ?
+`@AspectJS` brings aspect-oriented programming to your Javascript and Typescript code.
 
-@AspectJS leverages [ES8 decorators stage 1](https://github.com/tc39/proposal-decorators)
-to superpower your Javascript and Typescript code with a bit of aspect-oriented programming. 
-
-@AspectJS has been designed to share some similarities with the popular [AspectJ](https://www.eclipse.org/aspectj/) java library, 
-so it has a smooth learning curve and it is easy to both use or create aspects.      
+With ease-of-use in mind, it leverages [ES8 decorators stage 1](https://github.com/tc39/proposal-decorators)
+to offer an API that mimics the popular the popular [AspectJ](https://www.eclipse.org/aspectj/) java library,
+so it is easy to both use or create aspects.      
 
 ### Why ?
 
-Aspect Oriented programming litteraly changed our way to design software.
-It allows **strong cohesion* and clean **separation of concerns** for your code.
+Aspect Oriented programming is a clean way to address cross-cutting concerns, while keeping **strong cohesion*  and **loose coupling**.
+AspectJ changed the way java developers design software, and permitted the emergence quality frameworks that inter-operate with each other.
 
-#### Comparison with other libraries
-There are several of aspect libraries in javascript. Why another one?
- - [aspectjs](https://www.npmjs.com/package/aspectjs):  
-   Do not use es decorators.
- - [aspect.js](https://www.npmjs.com/package/aspect-js) by mgechev:  
-   Aspects are not plug & play. Pointcuts are based on namoing pattern rather than annotations
- - [AspectJS](https://www.aspectjs.com/index) by Dodeca Technologies Ltd:  
-  It is a commercial product, and we don't have access to the sources.
+@AspectJS make it is easy to define standard annotations, that can be reused and re-purposed with various dynamic aspects. 
 
-#### What's wrong with standard ES decorators
+### Example
 
-Decorators are great; they already allow us to add cross-cutting behavior into our code.
-However, unlike java annotation that are just empty interfaces, an ES decorator comes with its behavior built-in,
-and there is no possibility to make the decorator do something else.
-
-Let's consider a `@Sealed()` decorator:
+#### **javascript**
 ```js
-function Sealed(ctor) {
-    Object.seal(ctor);
+import { 
+    on,
+    AnnotationFactory, 
+    getWeaver,
+    Aspect 
+} from '@aspectjs/core';
 
-    return function(...args) {
-        const obj = new ctor(args)
-        Object.seal(obj);
-        return obj;
+const Monitored = new AnnotationFactory('test')
+    .create(function Monitored(maxTime) { });
+
+@Aspect()
+class MonitoredAspect {
+    @Around(on.method.withAnnotations(Monitored))
+    aroundMonitoredAdvice(ctxt, jp) {
+        const t = new Date().getTime();
+
+        const result = jp();
+        const elapsed = new Date().getTime() - t;
+
+        const timeout = ctxt.annotation.args[0];
+        if (timeout && timeout < elapsed) {
+            throw new Error(`${ctxt.target.label} exceeded ${timeout} ms`);
+        }
+        console.log(`${ctxt.target} executed in ${elapsed} ms`);
+        return result;
     }
 }
 
-@Sealed()
-class People {
-    constructor(name, age) {
-        this.name = name;
-        this.age = age;
+getWeaver().enable(new MonitoredAspect());
+
+class Processor {
+    @Monitored(10)
+    process() {
+        console.log('processing...');
+        for (let i = 0; i < 10000000; ++i) {}
     }
 }
+
+new Processor().process();
 ```
-
-This decorator calls `Object.seal()` on a people instance upon construction to prevent adding non-supported fields to it?
-While this is useful to prevent developers mistakes, it may not worth the extra overhead once going in production, 
-but in no way we can dynamically swap `@Sealed` behaviour with an empty implementation.
-
-**@AspectJS** introduces "Annotations" to javascript, that are basically empty ES decorators.
-Any library/framework may define standard annotations, 
-and it is up to you to choose the aspects you want to dynamically bind to these annotations.
 
 ## Usage
 
-### Create an annotation
-- with ES6+
-```js
-import { AnnotationFactory } from '@aspectjs/core';
-const factory = new AnnotationFactory('my-project-namespace');
-const MyAnnotation = factory.create(function MyAnnotation(param1, param2) { /* empty body */});
+### Create an aspect
 
-@MyAnnotation('string', 0)
-class Data {
-}
-```
-- with Typescript
-```typescript
-import { AnnotationFactory } from '@aspectjs/core';
-
-const factory = new AnnotationFactory('my-project-namespace');
-const MyAnnotation = factory.create(function MyAnnotation(param1: string, param2: number): ClassDecorator { return; });
-
-@MyAnnotation('string', 0)
-class Data {
-}
-```
-AnnotationFactory takes a mandatory `groupId` parameter, 
-used to differentiate your `@MyAnnotation` with some `@MyAnnotation` from other libraries.
-
-### Define an aspect
-
-An @AspectJS aspect is an class with the `@Aspect()` annotation. 
+An @AspectJS aspect is a class with the `@Aspect()` annotation. 
 ```js
 import { on } from '@aspectjs/core';
 
@@ -116,140 +97,259 @@ class MyAspect {
     }
 }
 ```
-An Aspect that specifies an ID will replace any already configured aspect with the same ID.
-This is useful if you want an annotation configured by default with an aspect, that is yet customizable.
+>![info] An Aspect may specifies an ID. If so, it will override any aspect already configured with the same ID.
 
-The `@Before` decorator configures a pointcut on all classes annotated with `@MyAnnotation`. 
-Here is a list of all the pointcut you can configure;  
+### Enable an aspect
 
-- **Class advices**
-  - Replace class constructor:
+Aspects are not picked up automatically,
+meaning that you have the choice to enhance or not to enhance your classes with aspects.
+
+The magic happens when you configure a `Weaver` to load the aspect, as follows: 
+```js
+import { getWeaver } from '@aspectjs/core';
+
+getWeaver() // get the global weaver instance
+    .enable(new MyAspect());    // enable the aspect
+```
+
+> ![danger] You should do the weaver configuration before you apply any annotation aspect.
+Once configured, or once an annotation has been applied, the weaver configuration cannot be changed anymore. 
+
+The `@Before` decorator used in the example above configures a pointcut on all classes annotated with `@MyAnnotation`.
+The following pointcut are supported: 
+ - `@Compile`
+ - `@Before`
+ - `@Around`
+ - `@AfterReturn`
+ - `@AfterThrow`
+ - `@After`
+
+An **advice** is a method of an **aspect** annotated with one of the aforementioned pointcut annotation.
+
+An advice is called within an **AdviceContext**, that is always provided as 1st parameter.
+
+### AdviceContext
+```typescript
+type AdviceContext<A extends AnnotationType> = {
+    annotation?: AnnotationContext<unknown, A>;
+    instance?: unknown;
+    value?: unknown;
+    args?: unknown[];
+    error?: Error;
+    joinpoint?: JoinPoint;
+    target: AnnotationTarget<any, A>;
+};
+```
+
+> ![danger] Based on the pointcut type, an advice may or may not return a value, the shape of AdviceContext will vary.
+
+Here is a list of all the pointcut you can configure:
+
+#### Class advices
+
+- ##### `@Compile`
     ```typescript
     @Compile(on.class./*... */)
-    advice(ctxt: CompileContext) { 
+    advice(ctxt: CompileContext): Function { 
         /* ... */
     }
     ```
-    > ![warning] Multiple `@Compile` advices on the same pointcut will always override each other. 
+    Replaces the class constructor.
+    > ![danger] Multiple `@Compile` advices on the same pointcut will always override each other. 
     
-  - Before class constructor:
+- ##### `@Before`
     ```typescript
     @Before(on.class./*... */)
-    advice(ctxt: BeforeContext) { /* ... */}    
+    advice(ctxt: BeforeContext): void { /* ... */}    
     ```
-    > ![warning] `context.instance` is not available in `@Before` class advices.
+    Applied before class constructor gets called.
 
-  - Around class constructor:
+    > ![danger] `context.instance` is not available in `@Before` class advices.
+
+- ##### `@Around`
     ```typescript
     @Around(on.class./*... */)
-    advice(ctxt: AroundContext, jp: Joinpoint, jpArgs: any[]) {
+    advice(ctxt: AroundContext, jp: Joinpoint, jpArgs: any[]): any {
         // do something before constructor
         const instance = jp(); // invoke original constructor (eventually)
         // do domething after constructor
         return instance;
     }
     ```
-    you may or may not call the joinpoint to invoke the original constructor. 
-    However, if you call the join
-    
-  - After class constructor did return:
+    Applied around class constructor.
+    You may or may not call the joinpoint to invoke the original constructor. 
+    > ![info] Calling the joinpoint without arguments will by default pass the original arguments.
+    > You can replace arguments by passing an array to the joinpoint. 
+
+    > ![danger] If you call the joinpoint, you cannot reference `context.instance` before calling it. 
+   
+- ##### `@AfterReturn`
     ```typescript
     @AfterReturn(on.class./*... */)
-    advice(ctxt: AfterReturnContext, returnValue: any) {
+    advice(ctxt: AfterReturnContext, returnValue: any): any {
         return returnValue++; // return a new value 
     }
     ```
-  - after class constructor did throw:
+    Called after class constructor returns.
+    > ![info] `context.value` and `returnValue` are the same.
+
+- ##### `@AfterThrow`
     ```typescript
     @AfterThrow(on.class./*...*/)
-    advice((ctxt: AfterThrowContext, error: Error) {
+    advice((ctxt: AfterThrowContext, error: Error): any {
         console.error(error.message); // handle the error
         // do not throw => swallows the error
     }
      ```             
-  - After class constructor dif returb or throw:
+    Called after class constructor throws.
+    > ![info] `context.error` and `error` are the same.
+
+    > ![info] If an `@AfterThrow` advice do not throws itself, 
+    > it will swallow the original exception.
+
+- ##### `@After`
     ```typescript
     @After(on.class./*... */)
-    advice((ctxt: AfterContext) { /* ... */ }
+    advice((ctxt: AfterContext): void { /* ... */ }
     ```
-- **Property getter advices**
-  - Replace property descriptor:
+    Called after class constructor throws or returns normally.
+
+#### Property getter advices
+
+- ##### `@Compile`
     ```typescript
     @Compile(on.property./*... */)
-    advice(ctxt: CompileContext) { /* ... */}
+    advice(ctxt: CompileContext): Function { 
+        /* ... */
+    }
     ```
-  - Before property is get:
+    Replace property descriptor. 
+    > ![info] This advice can both act on property getter and property setter.
+
+    > ![danger] Multiple `@Compile` advices on the same pointcut will always override each other. 
+    
+- ##### `@Before`
     ```typescript
     @Before(on.property./*... */)
-    advice(ctxt: BeforeContext) { /* ... */}
+    advice(ctxt: BeforeContext): void { /* ... */}    
     ```
-  - Around property getter:
+    Applied before property gets read.
+
+- ##### `@Around`
     ```typescript
     @Around(on.property./*... */)
-    advice(ctxt: AroundContext, jp: Joinpoint, jpArgs: any[]) {
+    advice(ctxt: AroundContext, jp: Joinpoint, jpArgs: any[]): any {
         // do something before getter
-        const value = jp();   // invoke original getter (eventually)
+        const result = jp(); // invoke original getter (eventually)
         // do domething after getter
-        return value++;       // return the new value
+        return result;
     }
     ```
-  - After property getter did return:
+    Applied around a property getter.
+    
+    > ![info] Calling the joinpoint without arguments will by default pass the original arguments.
+    > You can replace arguments by passing an array to the joinpoint. 
+    
+- ##### `@AfterReturn`
     ```typescript
     @AfterReturn(on.property./*... */)
-    advice(ctxt: AfterReturnContext, returnValue: any) {
+    advice(ctxt: AfterReturnContext, returnValue: any): any {
         return returnValue++; // return a new value 
     }
     ```
-  - after property getter did throw:
+    Called after a property has been read.
+    
+    > ![info] `context.value` and `returnValue` are the same.
+
+- ##### `@AfterThrow`
     ```typescript
     @AfterThrow(on.property./*...*/)
-    advice((ctxt: AfterThrowContext, error: Error) {
+    advice((ctxt: AfterThrowContext, error: Error): any {
         console.error(error.message); // handle the error
         // do not throw => swallows the error
     }
      ```             
-  - After property getter did return or throw:
+    Called after class getter throws.
+    > ![info] `context.error` and `error` are the same.
+
+    > ![info] If an `@AfterThrow` advice do not throws itself, 
+    > it will swallow the original exception.
+
+- ##### `@After`
     ```typescript
     @After(on.property./*... */)
-    advice((ctxt: AfterContext) { /* ... */ }
+    advice((ctxt: AfterContext): void { /* ... */ }
     ```
+    Called after property getter throws or returns normally.
 
-- **Property setter advices**
-  - Before property is set:
+#### Property getter advices
+
+- ##### `@Compile`
     ```typescript
-    @Before(on.property.setter./*... */)
-    advice(ctxt: BeforeContext) { /* ... */}
-    ```
-  - Around property setter:
-    ```typescript
-    @Around(on.property.setter./*... */)
-    advice(ctxt: AroundContext, jp: Joinpoint, jpArgs: any[]) {
-        // do something before getter
-        jp();   // invoke original setter (eventually)
-        // do domething after getter
-        return value++;       // return the new value
+    @Compile(on.property.setter./*... */)
+    advice(ctxt: CompileContext): Function { 
+        /* ... */
     }
     ```
-  - After property setter did return:
+    Replace property descriptor. 
+    > ![info] This advice can both act on property getter and property setter.
+
+    > ![danger] Multiple `@Compile` advices on the same pointcut will always override each other. 
+    
+- ##### `@Before`
+    ```typescript
+    @Before(on.property.setter./*... */)
+    advice(ctxt: BeforeContext): void { /* ... */}    
+    ```
+    Applied before property is set.
+
+- ##### `@Around`
+    ```typescript
+    @Around(on.property.setter./*... */)
+    advice(ctxt: AroundContext, jp: Joinpoint, jpArgs: any[]): any {
+        // do something before setter
+        const result = jp(); // invoke original setter (eventually)
+        // do domething after setter
+        return result;
+    }
+    ```
+    Applied around a property setter.
+    
+    > ![info] Calling the joinpoint without arguments will by default pass the original arguments.
+    > You can replace arguments by passing an array to the joinpoint. 
+    
+- ##### `@AfterReturn`
     ```typescript
     @AfterReturn(on.property.setter./*... */)
-    advice(ctxt: AfterReturnContext, returnValue: any) {
+    advice(ctxt: AfterReturnContext, returnValue: any): any {
         return returnValue++; // return a new value 
     }
     ```
-  - after property setter did throw:
+    Called after a property has been set.
+    
+    > ![info] `context.value` and `returnValue` are the same.
+
+- ##### `@AfterThrow`
     ```typescript
-    @AfterThrow(on.property.setter./*...*/)
-    advice((ctxt: AfterThrowContext, error: Error) {
+    @AfterThrow(on.property./*...*/)
+    advice((ctxt: AfterThrowContext, error: Error): any {
         console.error(error.message); // handle the error
         // do not throw => swallows the error
     }
      ```             
-  - After property setter did returned or throw:
+    Called after class setter throws.
+    > ![info] `context.error` and `error` are the same.
+
+    > ![info] If an `@AfterThrow` advice do not throws itself, 
+    > it will swallow the original exception.
+
+- ##### `@After`
     ```typescript
     @After(on.property.setter./*... */)
-    advice((ctxt: AfterContext) { /* ... */ }
+    advice((ctxt: AfterContext): void { /* ... */ }
     ```
+    Called after property setter throws or returns normally.
+
 - **Method advices**
   - Before method gets called:
     ```typescript
@@ -323,29 +423,7 @@ Here is a list of all the pointcut you can configure;
     advice((ctxt: AfterContext) { /* ... */ }
     ```
 
-### Enable an aspect
-
-Aspects are not picked up automatically,
-meaning that you have the choice to enhance or not to enhance your classes with aspects.
-
-The magic happens when you configure a `Weaver` to load the aspect, as follows: 
-```js
-import { getWeaver } from '@aspectjs/core';
-
-getWeaver() // get the global weaver instance
-    .enable(new MyAspect());    // enable the aspect
-```
-
-It is important you do the weaver configuration before you apply any annotation aspect.
-Once configured, or once an annotation has been applied, the weaver configuration cannot be changed anymore. 
 
 
-
-[info]: docs/.README/info.png
-[warning]: docs/.README/warning.png
-[tip]: docs/.README/success.png
-[danger]: docs/.README/danger.png
-[error]: docs/.README/error.png
-[question]: docs/.README/question.png
-[troubleshoot]: docs/.README/error.png
-[commit]: docs/.README/commit.png
+[info]: ./docs/.README/info.png
+[danger]: ./docs/.README/danger.png
