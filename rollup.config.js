@@ -18,10 +18,6 @@ const baseConfig = {
             objectHashIgnoreUnknownHack: true,
             clean: true,
         }),
-        visualizer({
-            template: 'circlepacking', // 'sunburst', 'treemap', 'circlepacking', 'network'
-            filename: 'dist/stats.html',
-        }),
     ],
 };
 
@@ -32,6 +28,10 @@ export const esmConfig = {
         }),
         copy({
             targets: [{ src: 'package.json', dest: dist }],
+        }),
+        visualizer({
+            template: 'treemap', // 'treemap', 'sunburst', 'treemap', 'circlepacking', 'network'
+            filename: 'dist/stats.html',
         }),
     ],
     output: [

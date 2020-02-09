@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "main": "bundles/aspectjs-core.umd.js",
   "unpgk": "bundles/aspectjs-core.umd.min.js",
