@@ -17,6 +17,7 @@ import {
     LoadTimeWeaver,
     setWeaver,
     AnnotationFactory,
+} from '@aspectjs/core';
 
 export interface Labeled {
     labels?: string[];
