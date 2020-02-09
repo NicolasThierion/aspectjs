@@ -9,10 +9,6 @@ import { AfterThrow } from './after-throw/after-throw.decorator';
 import { Aspect } from './aspect';
 import { Compile } from './compile/compile.decorator';
 import { AnnotationType } from '../../annotation/annotation.types';
-import { AnnotationFactory } from '../../annotation/factory/factory';
-import { getWeaver, setWeaver } from '../../lib';
-import { LoadTimeWeaver } from '../load-time/load-time-weaver';
-import { JoinPoint } from '../types';
 
 describe('given several aspects', () => {
     let labels: string[];

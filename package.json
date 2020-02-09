@@ -2,11 +2,18 @@
   "name": "@aspectjs/core",
   "version": "1.0.0",
   "license": "MIT",
-  "main": "dist/bundles/aspectjs-core.umd.js",
-  "module": "dist/esm/aspectjs-core.mjs",
-  "unpgk": "dist/bundles/aspectjs-core.umd.min.js",
+  "main": "bundles/aspectjs-core.umd.js",
+  "unpgk": "bundles/aspectjs-core.umd.min.js",
+  "module": "esm/aspectjs-core.mjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
+  },
+  "sideEffects": false,
+  "typings": "./esm/index.d.ts",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
+    "test:angular": "cd tests/angular && npm install ../../dist && npm run test",
     "dev": "nodemon  --ignore dist --ext ts --exec 'npm run test && npm run size'",
     "build": "rollup --config rollup.config.js ",
     "size": "rollup --config rollup.config.js && size-limit",

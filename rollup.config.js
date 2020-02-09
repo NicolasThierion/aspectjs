@@ -1,5 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
+import { join } from 'path';
 import visualizer from 'rollup-plugin-visualizer';
 import cleaner from 'rollup-plugin-cleaner';
 import babel from 'rollup-plugin-babel';
@@ -8,6 +9,8 @@ import copy from 'rollup-plugin-copy';
 import { mergeWith, isArray } from 'lodash';
 
 const name = 'aspectjs-core';
+const dist = 'dist';
+
 const baseConfig = {
     input: 'index.ts',
     plugins: [
@@ -25,15 +28,15 @@ const baseConfig = {
 export const esmConfig = {
     plugins: [
         cleaner({
-            targets: ['dist'],
+            targets: [dist],
         }),
         copy({
-            targets: [{ src: 'package.json', dest: 'dist' }],
+            targets: [{ src: 'package.json', dest: dist }],
         }),
     ],
     output: [
         {
-            file: pkg.module,
+            file: join(dist, pkg.module),
             format: 'esm',
         },
     ],
@@ -47,13 +50,13 @@ export const umdConfig = {
     ],
     output: [
         {
-            file: pkg.main,
+            file: join(dist, pkg.main),
             name,
             format: 'umd',
             plugins: [],
         },
         {
-            file: pkg.unpgk,
+            file: join(dist, pkg.unpgk),
             name,
             format: 'umd',
             plugins: [terser()],
