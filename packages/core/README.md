@@ -1,6 +1,7 @@
 # @Aspectjs/core
 
 ![ci-status]
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 ## Installation
 
@@ -427,19 +428,5 @@ Here is a list of all the pointcut you can configure:
 
 
 
-<<<<<<< Updated upstream
 [info]: ./docs/.README/info.png
 [danger]: ./docs/.README/danger.png
-=======
-[info]: docs/.README/info.png
-[warning]: docs/.README/warning.png
-[tip]: docs/.README/success.png
-[danger]: docs/.README/danger.png
-[error]: docs/.README/error.png
-[question]: docs/.README/question.png
-[troubleshoot]: docs/.README/error.png
-[commit]: docs/.README/commit.png
-
-
-[ci-status]: https://gitlab.com/Pryum/aspect.js/badges/ci/pipeline.svg
->>>>>>> Stashed changes

@@ -1,12 +1,12 @@
 import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
-import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
 import { WeavingError } from '../../weaving-error';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 
 describe('@AfterReturn advice', () => {
     let afterReturn: Spy;

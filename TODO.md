@@ -35,3 +35,8 @@
 - add priority on advices
 - do not nest decorators when multiple annotations on the same symbol
 - test on.X.annotations(<empty>) returns all advices
+
+
+## Chore
+
+- test lerna publish & lerna version

@@ -1,0 +1,29 @@
+{
+  "name": "@aspectjs/core",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "bundles/core.umd.js",
+  "unpgk": "bundles/core.umd.min.js",
+  "module": "esm/core.mjs",
+  "sideEffects": false,
+  "typings": "./esm/index.d.ts",
+  "scripts": {
+    "build": "rollup --config ./rollup.config.js",
+    "test": "nyc jasmine-ts --config=jasmine.json",
+    "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",
+    "size": "rollup --config ./rollup.config.js && size-limit",
+    "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
+  },
+  "devDependencies": {
+    "@size-limit/preset-big-lib": "^4.0.1",
+    "reflect-metadata": "^0.1.13",
+    "size-limit": "^4.0.1"
+  },
+  "size-limit": [
+    {
+      "limit": "400 ms",
+      "path": "dist/esm/core.mjs"
+    }
+  ]
+}

@@ -42,7 +42,7 @@ integration-test:
   image: buildkite/puppeteer:v1.15.0
   stage: test
   script:
-    - npm run test:angular
+    - npm run test:integration
   dependencies:
     - bundle
 

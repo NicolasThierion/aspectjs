@@ -1,38 +1,43 @@
 {
-  "name": "@aspectjs/core",
-  "version": "1.0.0",
+  "name": "@aspectjs/parent",
+  "private": true,
+  "version": "0.0.1",
   "license": "MIT",
-  "main": "bundles/aspectjs-core.umd.js",
-  "unpgk": "bundles/aspectjs-core.umd.min.js",
-  "module": "esm/aspectjs-core.mjs",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NicolasThierion/aspectjs-core.git"
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
   },
   "sideEffects": false,
-  "typings": "./esm/index.d.ts",
   "scripts": {
-    "test": "nyc ts-node node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
-    "test:angular": "cd tests/angular && npm install && npm install ../../dist && npm run test",
-    "dev": "nodemon  --ignore dist --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
-    "build": "rollup --config ./rollup.config.js ",
-    "size": "rollup --config ./rollup.config.js && size-limit",
-    "lint:auto": "eslint -c ../.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
-    "lint": "eslint -c ../.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet",
-    "release": "standard-version"
+    "build": "lerna run build --since",
+    "test": "lerna run test --since",
+    "test:integration":  "lerna run test:integration --since",
+    "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
+    "size": "lerna run size --since",
+    "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet",
+    "release": "lerna version"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@babel/core": "^7.8.4",
     "@babel/preset-env": "^7.8.4",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "@size-limit/preset-big-lib": "^2.2.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@size-limit/preset-big-lib": "^4.0.1",
+    "@types/ansi-colors": "^3.2.2",
     "@types/jasmine": "^3.4.0",
     "@types/lodash": "^4.14.149",
     "@types/node": "^12.7.5",
+    "@types/npm-run": "^5.0.0",
     "@types/rollup": "^0.54.0",
     "@typescript-eslint/eslint-plugin": "^2.11.0",
     "@typescript-eslint/parser": "^2.11.0",
+    "ansi-colors": "^4.1.1",
+    "cz-conventional-changelog": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-prettier": "^3.1.1",
@@ -40,12 +45,13 @@
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
     "jasmine-ts": "^0.3.0",
+    "lerna": "^3.20.2",
     "lodash": "^4.17.15",
     "nodemon": "^2.0.2",
+    "npm-run": "^5.0.1",
     "nyc": "^15.0.0",
     "prettier": "^1.19.1",
     "puppeteer": "^2.1.1",
-    "reflect-metadata": "^0.1.13",
     "rollup": "^1.31.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-cleaner": "^1.0.0",
@@ -53,39 +59,22 @@
     "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "rollup-plugin-visualizer": "^3.3.1",
+    "size-limit": "^4.0.1",
     "source-map-support": "^0.5.16",
-    "standard-version": "^7.1.0",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.3.0",
     "tslib": "^1.10.0",
     "typescript": "^3.7.5"
   },
-  "dependencies": {},
-  "size-limit": [
-    {
-      "limit": "400 ms",
-      "path": "dist/esm/aspectjs-core.mjs"
-    }
-  ],
   "husky": {
     "hooks": {
+      "prepare-commit-msg": "commitlint -eq > /dev/null 2>&1 || exec < /dev/tty && git cz --hook || true",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
-  "nyc": {
-    "extension": [
-      ".ts"
-    ],
-    "include": [
-      "src/**"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "**/*.spec.ts"
-    ],
-    "reporter": [
-      "lcov", "text", "text-summary"
-    ],
-    "all": true
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
