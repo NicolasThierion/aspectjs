@@ -7,18 +7,18 @@
   "module": "esm/aspectjs-core.mjs",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
+    "url": "git+https://github.com/NicolasThierion/aspectjs-core.git"
   },
   "sideEffects": false,
   "typings": "./esm/index.d.ts",
   "scripts": {
-    "test": "nyc ts-node  node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
+    "test": "nyc ts-node node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
     "test:angular": "cd tests/angular && npm install && npm install ../../dist && npm run test",
     "dev": "nodemon  --ignore dist --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
-    "build": "rollup --config rollup.config.js ",
-    "size": "rollup --config rollup.config.js && size-limit",
-    "lint:auto": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
-    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet",
+    "build": "rollup --config ./rollup.config.js ",
+    "size": "rollup --config ./rollup.config.js && size-limit",
+    "lint:auto": "eslint -c ../.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint -c ../.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet",
     "release": "standard-version"
   },
   "devDependencies": {

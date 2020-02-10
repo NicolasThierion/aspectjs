@@ -1,5 +1,7 @@
 # @Aspectjs/core
 
+![ci-status]
+
 ## Installation
 
 ### **with npm**

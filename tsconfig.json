@@ -1,24 +1,5 @@
 {
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "downlevelIteration": true,
-    "importHelpers": true,
-    "module": "commonjs",
-//    "moduleResolution": "node",
-    "lib": [
-      "es2019.array"
-    ],
-    "types": ["reflect-metadata", "jasmine", "node"],
-    "target": "es6",
-    "declaration": true,
-    "declarationDir": "dist"
-  },
+  "extends": "../tsconfig.json",
   "exclude": [
     "dist",
     "build",
