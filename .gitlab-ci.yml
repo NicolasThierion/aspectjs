@@ -1,10 +1,10 @@
 image: node:13-alpine
 
-# workflow:
-#   rules:
-#     - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/ && $CI_COMMIT_BRANCH == "ci"'
-#       when: always
-#     - when: never
+workflow:
+  rules:
+   - if: '($CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/ && $CI_COMMIT_BRANCH == "master") || $CI_COMMIT_BRANCH == "ci"'
+     when: always
+   - when: never
 
 stages:
   - prepare
@@ -56,15 +56,18 @@ github:push:
   stage: publish
   image: alpine:3
   script:
-    - apk add git
+    - export
+    - apk add git openssh-client
     - mkdir ~/.ssh
-    - echo $ID_RSA | base64 -d > ~/.ssh/id_rsa_github
-    - echo -e 'host github.com
-      HostName github.com
-      IdentityFile ~/.ssh/id_rsa_github
-      User git' >> ~/.ssh/config
-    - git remote add github git@github.com:NicolasThierion/aspectjs.git
-    - git push --mirror github
+    - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - cat $GITHUB_ID_RSA > ~/.ssh/id_rsa_github
+    - chmod 600 ~/.ssh/id_rsa_github
+    - echo -e 'Host github.com
+      \n\tHostName github.com
+      \n\tIdentityFile ~/.ssh/id_rsa_github
+      \n\tUser git' >> ~/.ssh/config
+    - git remote add github git@github.com:NicolasThierion/aspectjs-core.git
+    - git push --tags github && git github master
 
 cache:
   paths:
