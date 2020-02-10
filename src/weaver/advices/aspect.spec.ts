@@ -1,7 +1,7 @@
 import { Before } from './before/before.decorator';
 import { on } from './pointcut';
 import { AfterContext, AfterReturnContext, AfterThrowContext, AroundContext, BeforeContext } from './advice-context';
-import { AClass, AProperty, Labeled, setupWeaver } from '../../tests/helpers';
+import { AClass, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Around } from './around/around.decorator';
 import { After } from './after/after.decorator';
 import { AfterReturn } from './after-return/after-return.decorator';

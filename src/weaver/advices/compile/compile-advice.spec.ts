@@ -1,7 +1,7 @@
 import { Compile } from './compile.decorator';
 import { AdviceContext, CompileContext } from '../advice-context';
 import { on } from '../pointcut';
-import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { WeavingError } from '../../weaving-error';
 import { Aspect } from '../aspect';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';

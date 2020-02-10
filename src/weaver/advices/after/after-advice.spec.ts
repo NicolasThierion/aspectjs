@@ -3,7 +3,7 @@ import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
 import { WeavingError } from '../../weaving-error';
 import Spy = jasmine.Spy;
-import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
 

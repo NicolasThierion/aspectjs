@@ -12,7 +12,7 @@
   "sideEffects": false,
   "typings": "./esm/index.d.ts",
   "scripts": {
-    "test": "ts-node node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
+    "test": "nyc ts-node  node_modules/jasmine/bin/jasmine JASMINE_CONFIG_PATH=jasmine.json",
     "test:angular": "cd tests/angular && npm install && npm install ../../dist && npm run test",
     "dev": "nodemon  --ignore dist --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "build": "rollup --config rollup.config.js ",
@@ -42,6 +42,7 @@
     "jasmine-ts": "^0.3.0",
     "lodash": "^4.17.15",
     "nodemon": "^2.0.2",
+    "nyc": "^15.0.0",
     "prettier": "^1.19.1",
     "puppeteer": "^2.1.1",
     "reflect-metadata": "^0.1.13",
@@ -52,6 +53,7 @@
     "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "rollup-plugin-visualizer": "^3.3.1",
+    "source-map-support": "^0.5.16",
     "standard-version": "^7.1.0",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.3.0",
@@ -69,5 +71,21 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "**/*.spec.ts"
+    ],
+    "reporter": [
+      "lcov", "text", "text-summary"
+    ],
+    "all": true
   }
 }

@@ -1,5 +1,5 @@
 import { Memo } from './default';
-import { setupWeaver } from '../../src/tests/helpers';
+import { setupWeaver } from '../../../tests/helpers';
 import { LocalStorageMemo } from './memo-localstorage';
 
 function _process(args: any[]) {

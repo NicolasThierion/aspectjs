@@ -1,6 +1,6 @@
-import { setWeaver } from '../lib';
-import { LoadTimeWeaver } from '../weaver/load-time/load-time-weaver';
-import { AnnotationFactory } from '../annotation/factory/factory';
+import { setWeaver } from '../src/lib';
+import { LoadTimeWeaver } from '../src/weaver/load-time/load-time-weaver';
+import { AnnotationFactory } from '../src/annotation/factory/factory';
 
 export interface Labeled {
     labels?: string[];
