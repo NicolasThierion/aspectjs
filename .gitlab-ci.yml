@@ -1,13 +1,5 @@
 image: node:13-alpine
 
-workflow:
-  rules:
-   - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/ && $CI_COMMIT_BRANCH == "master"'
-     when: always
-   - if: '$CI_COMMIT_BRANCH == "ci"'
-     when: always
-   - when: never
-
 stages:
   - prepare
   - build
@@ -38,7 +30,7 @@ test:
   script:
     - npm run test
 
-integration-test:
+test:integration:
   image: buildkite/puppeteer:v1.15.0
   stage: test
   script:
@@ -46,7 +38,7 @@ integration-test:
   dependencies:
     - bundle
 
-size-test:
+test:size:
   image: buildkite/puppeteer:v1.15.0
   stage: test
   script:
@@ -54,6 +46,14 @@ size-test:
   dependencies:
     - bundle
 
+publish:
+  rules:
+  - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/ && $CI_COMMIT_BRANCH == "master"'
+    when: manual
+  - when: never
+  script: "echo 'publishing to NPM comming soon :)'"
+
 cache:
   paths:
     - node_modules/
+
