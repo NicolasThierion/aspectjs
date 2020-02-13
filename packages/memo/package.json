@@ -1,20 +1,11 @@
 {
-  "name": "@aspectjs/core",
+  "name": "memo",
   "version": "1.0.0",
-  "description": "decorator-based AOP made simple for javascript & typescript",
-  "keywords": [
-    "decorator",
-    "annotation",
-    "typescript",
-    "aspect",
-    "AOP"
-  ],
-  "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
-  "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
+  "description": "Add memoize pattern with a simple annotation",
   "license": "MIT",
-  "main": "bundles/core.umd.js",
-  "unpgk": "bundles/core.umd.min.js",
-  "module": "esm/core.mjs",
+  "main": "bundles/memo.umd.js",
+  "unpgk": "bundles/memo.umd.min.js",
+  "module": "esm/memo.mjs",
   "sideEffects": false,
   "typings": "./esm/index.d.ts",
   "scripts": {
@@ -25,21 +16,11 @@
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
-
-  "directories": {
-    "lib": "src",
-    "test": "tests"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
-  },
-  "bugs": {
-    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  "dependencies": {
+    "@aspectjs/core": "1.0.0"
   },
   "devDependencies": {
     "@size-limit/preset-big-lib": "^4.0.1",
-    "reflect-metadata": "^0.1.13",
     "size-limit": "^4.0.1"
   },
   "size-limit": [
@@ -47,5 +28,28 @@
       "limit": "400 ms",
       "path": "dist/esm/core.mjs"
     }
-  ]
+  ],
+  "keywords": [
+    "memo",
+    "aspect",
+    "cache",
+    "localstorage",
+    "websql",
+    "AOP"
+  ],
+  "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
+  "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
+  "directories": {
+    "src": "src"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  }
 }
