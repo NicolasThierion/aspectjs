@@ -16,7 +16,9 @@ export class AdviceFactory {
         return function(aspect: any, propertyKey: string | symbol) {
             assert(isFunction(aspect[propertyKey]));
 
-            const advice = aspect[propertyKey] as Advice;
+            const advice = function(...args: any[]) {
+                return aspect[propertyKey].bind(this)(...args);
+            } as Advice;
             advice.pointcut = pointcut;
 
             Reflect.defineProperty(advice, Symbol.toPrimitive, {

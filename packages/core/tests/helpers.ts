@@ -25,6 +25,10 @@ export const AMethod = new AnnotationFactory('tests').create(function AMethod():
     return;
 });
 
+export const BMethod = new AnnotationFactory('tests').create(function BMethod(): MethodDecorator {
+    return;
+});
+
 export const AParameter = new AnnotationFactory('tests').create(function AParameter(
     ...args: any[]
 ): ParameterDecorator {

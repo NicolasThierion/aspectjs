@@ -53,9 +53,9 @@
     "prettier": "^1.19.1",
     "puppeteer": "^2.1.1",
     "rollup": "^1.31.0",
+    "reflect-metadata": "^0.1.13",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-cleaner": "^1.0.0",
-    "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "rollup-plugin-visualizer": "^3.3.1",
@@ -76,5 +76,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "yarn": "^1.22.0"
   }
 }

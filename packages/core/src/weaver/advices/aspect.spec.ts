@@ -1,7 +1,7 @@
 import { Before } from './before/before.decorator';
 import { on } from './pointcut';
 import { AfterContext, AfterReturnContext, AfterThrowContext, AroundContext, BeforeContext } from './advice-context';
-import { AClass, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, BMethod, Labeled, setupWeaver } from '../../../tests/helpers';
 import { Around } from './around/around.decorator';
 import { After } from './after/after.decorator';
 import { AfterReturn } from './after-return/after-return.decorator';
@@ -9,6 +9,57 @@ import { AfterThrow } from './after-throw/after-throw.decorator';
 import { Aspect } from './aspect';
 import { Compile } from './compile/compile.decorator';
 import { AnnotationType } from '../../annotation/annotation.types';
+import Spy = jasmine.Spy;
+import { JoinPoint } from '../types';
+
+describe('Aspect', () => {
+    describe('given an advice', () => {
+        describe('targeted with multiple pointcuts', () => {
+            let advice: Spy;
+            beforeEach(() => {
+                advice = jasmine.createSpy('advice');
+                @Aspect()
+                class LabelAspect {
+                    @Around(on.method.withAnnotations(AMethod))
+                    @Around(on.method.withAnnotations(BMethod))
+                    advice(ctxt: AroundContext<any, any>, jp: JoinPoint) {
+                        advice();
+                        jp();
+                    }
+                }
+
+                setupWeaver(new LabelAspect());
+            });
+
+            describe('when pointcuts match two times', () => {
+                it('should call the advice twice', () => {
+                    class SomeClass {
+                        @AMethod()
+                        @BMethod()
+                        someMethod() {}
+                    }
+
+                    new SomeClass().someMethod();
+                    expect(advice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalledTimes(2);
+                });
+            });
+
+            describe('when pointcuts match one time', () => {
+                it('should call the advice once', () => {
+                    class SomeClass {
+                        @BMethod()
+                        someMethod() {}
+                    }
+
+                    new SomeClass().someMethod();
+                    expect(advice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalledTimes(1);
+                });
+            });
+        });
+    });
+});
 
 describe('given several aspects', () => {
     let labels: string[];

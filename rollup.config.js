@@ -4,7 +4,6 @@ import visualizer from 'rollup-plugin-visualizer';
 import cleaner from 'rollup-plugin-cleaner';
 import babel from 'rollup-plugin-babel';
 import { terser } from 'rollup-plugin-terser';
-import copy from 'rollup-plugin-copy';
 import { mergeWith, isArray } from 'lodash';
 import babelrc from './.babelrc.json';
 
@@ -31,17 +30,14 @@ export function configFactory(pkg) {
             cleaner({
                 targets: [dist],
             }),
-            copy({
-                targets: [{ src: 'package.json', dest: dist }],
-            }),
             visualizer({
                 template: 'treemap', // 'treemap', 'sunburst', 'treemap', 'circlepacking', 'network'
-                filename: 'dist/stats.html',
+                filename: `${dist}/stats.html`,
             }),
         ],
         output: [
             {
-                file: join(dist, pkg.module),
+                file: pkg.module,
                 format: 'esm',
             },
         ],
@@ -56,13 +52,13 @@ export function configFactory(pkg) {
         ],
         output: [
             {
-                file: join(dist, pkg.main),
+                file: pkg.main,
                 name: pkg.name,
                 format: 'umd',
                 plugins: [],
             },
             {
-                file: join(dist, pkg.unpgk),
+                file: pkg.unpgk,
                 name: pkg.name,
                 format: 'umd',
                 plugins: [terser()],
