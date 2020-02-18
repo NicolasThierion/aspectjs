@@ -1,7 +1,14 @@
 import { Memo } from './memo';
-import { localStorageMemoProfile } from './memo-localstorage';
-import { getWeaver } from '@aspectjs/core';
+import { getWeaver, WeaverProfile } from '@aspectjs/core';
+import { LsMemoAspect } from './localstorage/memo-localstorage';
+import { LzCacheHandler } from './localstorage/lz-cache-handler';
 
-getWeaver().enable(localStorageMemoProfile);
+export const defaultLsMemoProfile = new WeaverProfile().enable(
+    new LsMemoAspect({
+        handler: new LzCacheHandler(),
+    }),
+);
+
+getWeaver().enable(defaultLsMemoProfile);
 
 export { Memo };

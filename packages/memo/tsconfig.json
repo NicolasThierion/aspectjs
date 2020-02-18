@@ -1,5 +1,11 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "es2019.array"
+    ]
+  },
   "include": [
     "src/**/*.ts",
     "node_modules/@types/node/globals.d.ts"

@@ -1,8 +1,7 @@
-import { AnnotationFactory, Aspect, Around, on, AroundContext } from '@aspectjs/core';
-import { Memo } from './memo';
-import * as LZString from 'lz-string';
+import { AnnotationFactory, Around, AroundContext, Aspect, on } from '@aspectjs/core';
+import { Memo } from '../memo';
 import * as hash from 'murmurhash';
-import { stringify, parse } from 'flatted';
+import { parse, stringify } from 'flatted';
 import { JoinPoint } from '@aspectjs/core/src/weaver/types';
 
 const af = new AnnotationFactory('aspectjs');
@@ -35,23 +34,21 @@ class LsWrapper<T> {
     }
 }
 
-export interface LocalStorageMemoOptions {
-    localStorageImplementation?: typeof localStorage;
+export interface LsMemoOptions {
+    localStorage?: typeof localStorage;
     handler?: CacheHandler;
     rootKey?: string;
     namespace?: string;
 }
 
-export const DEFAULTS: Required<LocalStorageMemoOptions> = {
-    localStorageImplementation: undefined,
+export const DEFAULTS: Required<LsMemoOptions> = {
+    localStorage: undefined,
     handler: {
         onRead(str: string): LsWrapper<any> {
-            const res = parse(LZString.decompressFromUTF16(str));
-            Reflect.setPrototypeOf(res, LsWrapper.prototype);
-            return res;
+            return parse(str);
         },
         onWrite(obj: LsWrapper<any>): string {
-            return LZString.compressToUTF16(stringify(obj));
+            return stringify(obj);
         },
     },
     rootKey: '@aspectjs/lsCache',
@@ -59,14 +56,14 @@ export const DEFAULTS: Required<LocalStorageMemoOptions> = {
 };
 
 @Aspect('Memo.Sync')
-export class LocalStorageMemo {
-    public readonly params: LocalStorageMemoOptions;
+export class LsMemoAspect {
+    public readonly params: LsMemoOptions;
     private readonly ls: typeof localStorage;
 
-    constructor(options: LocalStorageMemoOptions = DEFAULTS) {
+    constructor(options: LsMemoOptions = DEFAULTS) {
         this.params = { ...DEFAULTS, ...options };
 
-        this.ls = this.params.localStorageImplementation ?? localStorage;
+        this.ls = this.params.localStorage ?? localStorage;
         if (!this.ls) {
             throw new Error('localStorage not available on this platform, and no implementation was provided');
         }
@@ -75,6 +72,7 @@ export class LocalStorageMemo {
     @Around(on.method.withAnnotations(Memo))
     @Around(on.method.withAnnotations(LsMemo))
     applyMemo<T>(ctxt: AroundContext<any, any>, jp: JoinPoint): T {
+        // TODO handle async passthrough
         const key = _makeKey(this.params, ctxt);
         const cache = _getCache(this.params, key);
 
@@ -97,22 +95,25 @@ function _getValueType(value: any): ValueType {
     }
 }
 
-function _makeKey(params: LocalStorageMemoOptions, ctxt: AroundContext<any, any>) {
+function _makeKey(params: LsMemoOptions, ctxt: AroundContext<any, any>) {
     const args = stringify(ctxt.args);
     return `${params.rootKey}_${params.namespace}:${ctxt.target.ref}#${hash.v3(args)}`;
 }
 
-function _getCache(params: LocalStorageMemoOptions, key: string): LsWrapper<any> | undefined {
-    const stored = params.localStorageImplementation.getItem(key);
+function _getCache(params: LsMemoOptions, key: string): LsWrapper<any> | undefined {
+    const stored = params.localStorage.getItem(key);
 
     if (stored === undefined || stored === null) {
         return stored as undefined;
     }
 
-    return params.handler.onRead(stored);
+    const res = params.handler.onRead(stored);
+    Reflect.setPrototypeOf(res, LsWrapper.prototype);
+
+    return res;
 }
 
-function _setCache(params: LocalStorageMemoOptions, key: string, res: any) {
+function _setCache(params: LsMemoOptions, key: string, res: any) {
     const wrapper = new LsWrapper(res);
-    params.localStorageImplementation.setItem(key, params.handler.onWrite(wrapper));
+    params.localStorage.setItem(key, params.handler.onWrite(wrapper));
 }

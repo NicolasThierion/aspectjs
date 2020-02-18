@@ -1,7 +1,7 @@
-import { Memo } from './memo';
+import { Memo } from '../memo';
 import { createLocalStorage } from 'localstorage-ponyfill';
-import { LocalStorageMemo } from './memo-localstorage';
-import { setupWeaver } from '../../core/tests/angular/src/angular.spec';
+import { LsMemoAspect } from './memo-localstorage';
+import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
 
 interface Runner {
     process(...args: any[]): any;
@@ -16,10 +16,12 @@ describe('@Memo with LocalStorage aspect', () => {
     beforeEach(() => {
         const ls = createLocalStorage();
         ls.clear();
-        setupWeaver(
-            new LocalStorageMemo({
-                localStorageImplementation: ls,
-            }),
+        setWeaver(
+            new LoadTimeWeaver().enable(
+                new LsMemoAspect({
+                    localStorage: ls,
+                }),
+            ),
         );
 
         class RunnerImpl implements Runner {
