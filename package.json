@@ -10,7 +10,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "lerna run build --since --stream",
-    "test": "lerna run test --since --stream",
+    "test": "yarn build && lerna run test --since --stream",
     "test:integration": "lerna run test:integration --since",
     "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "size": "lerna run size --since",

@@ -57,5 +57,15 @@ describe('@Memo with LocalStorage aspect', () => {
                 expect(process).toHaveBeenCalledTimes(1);
             });
         });
+
+        describe('with different parameters', () => {
+            it('should invoke the method twice', () => {
+                let res = r.process('a', 'b');
+                expect(process).toHaveBeenCalled();
+                res = r.process(...defaultArgs);
+                expect(res).toEqual(defaultArgs.reverse());
+                expect(process).toHaveBeenCalledTimes(2);
+            });
+        });
     });
 });

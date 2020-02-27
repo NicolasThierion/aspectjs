@@ -10,7 +10,7 @@
   "typings": "dist/esm/index.d.ts",
   "scripts": {
     "build": "rollup --config ./rollup.config.js",
-    "test": "nyc jasmine-ts --config=jasmine.json",
+    "test": "lerna link && nyc jasmine-ts --config=jasmine.json",
     "dev": "nodemon  -w src --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",
     "size": "rollup --config ./rollup.config.js && size-limit",
