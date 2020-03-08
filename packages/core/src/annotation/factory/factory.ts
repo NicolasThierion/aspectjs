@@ -156,6 +156,10 @@ class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceCon
     clone(): this {
         return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as AdviceContext<any, AnnotationType>, this);
     }
+
+    toString(): string {
+        return `${this.annotation} ${this.target}`;
+    }
 }
 
 class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
