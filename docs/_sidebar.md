@@ -1,4 +1,0 @@
-- [Abstract](./README.md)
-- [Installation](./installation.md)
-- [Annotations](annotations.md)
-- [Aspects](aspects.md)

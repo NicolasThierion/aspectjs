@@ -1,0 +1,51 @@
+h1, h2, h3 {
+  color: #ba8434
+}
+
+body .github-corner > svg {
+  fill: $accentColor;
+  right: 0;
+  top: $navbarHeight;
+  position: fixed;
+}
+
+body pre.code-copy-added {
+  position: relative;
+  .code-copy {
+
+    position: absolute;
+    top: 1em;
+    right: 2em;
+
+    svg {
+      transition opacity ease 0.2s;
+      path:nth-of-type(2) {
+        fill: $accentColor;
+      }
+    }
+  }
+}
+
+.custom-block.info {
+  background-color: #e1edff;
+  border-color: #749fcc;
+  color: #4d0000;
+
+  padding: 0.1rem 1.5rem;
+  border-left-width: 0.5rem;
+  border-left-style: solid;
+  margin: 1rem 0;
+}
+
+.custom-block.info, .custom-block.tip, .custom-block.warning, .custom-block.danger, .custom-block.error, .custom-block.boom {
+  p {
+    position: relative;
+    padding-left: 42px;
+    img:first-of-type {
+      height: 42px;
+      top: calc(50% - 42px / 2);
+      left: calc(-1rem / 2);
+      position: absolute;
+    }
+  }
+}
