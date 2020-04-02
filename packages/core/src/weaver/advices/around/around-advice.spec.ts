@@ -644,144 +644,28 @@ describe('@Around advice', () => {
         });
     });
     xdescribe('applied on a method parameter', () => {
-        let a: Labeled;
-        beforeEach(() => {
-            @Aspect()
-            class AroundPropertyAspect {
-                @Around(on.method.withAnnotations(AMethod))
-                apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
-                    expect(this).toEqual(jasmine.any(AroundPropertyAspect));
-
-                    expect(jp).toEqual(ctxt.joinpoint);
-                    expect(jpArgs).toEqual(ctxt.args);
-
-                    return aroundAdvice(ctxt, jp, jpArgs);
-                }
-            }
-
-            setupWeaver(new AroundPropertyAspect());
-
-            class A implements Labeled {
-                public labels: string[] = [];
-
-                @AMethod()
-                addLabel(...labels: string[]) {
-                    return (this.labels = this.labels.concat(labels));
-                }
-            }
-
-            a = new A();
-        });
         describe('that leverage "around" advice', () => {
-            beforeEach(() => {
-                aroundAdvice = jasmine
-                    .createSpy('aroundAdvice', function(ctxt, jp) {
-                        return jp();
-                    })
-                    .and.callThrough();
-            });
-
             describe('calling the method', () => {
-                it('should call the aspect', () => {
-                    expect(aroundAdvice).not.toHaveBeenCalled();
-                    a.addLabel();
-                    expect(aroundAdvice).toHaveBeenCalled();
-                });
+                it('should call the aspect', () => {});
 
-                it('should return the value returned by the advice', () => {
-                    aroundAdvice = jasmine
-                        .createSpy('aroundAdvice', function(ctxt, jp) {
-                            return ['newValue'];
-                        })
-                        .and.callThrough();
-                    expect(a.addLabel()).toEqual(['newValue']);
-                });
+                it('should return the value returned by the advice', () => {});
             });
 
             describe('and do not invoke the joinpoint', () => {
-                beforeEach(() => {
-                    aroundAdvice = jasmine
-                        .createSpy(
-                            'aroundAdvice',
-                            (ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {},
-                        )
-                        .and.callThrough();
-                });
-
                 describe('calling the method', () => {
-                    it('should not call the original method', () => {
-                        expect(a.labels).toEqual([]);
-                        a.addLabel('notAdded');
-                        expect(a.labels).toEqual([]);
-                    });
+                    it('should not call the original method', () => {});
                 });
             });
 
             describe('and do invoke the joinpoint', () => {
-                beforeEach(() => {
-                    aroundAdvice = jasmine
-                        .createSpy(
-                            'aroundAdvice',
-                            (ctxt: AroundContext<Labeled, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
-                                expect(ctxt.instance).not.toBeNull();
-                                return jp(
-                                    []
-                                        .concat('beforeAround')
-                                        .concat(jpArgs[0])
-                                        .concat('overrideArgs')
-                                        .concat('afterAround'),
-                                );
-                            },
-                        )
-                        .and.callThrough();
-                });
-
                 describe('calling the method', () => {
-                    it('should call the original method', () => {
-                        const res = a.addLabel('newValue');
-                        expect(a.labels).toEqual(['beforeAround', 'newValue', 'overrideArgs', 'afterAround']);
-                        expect(res).toEqual(a.labels);
-                    });
+                    it('should call the original method', () => {});
                 });
             });
         });
         describe('when multiple "around" advices are configured', () => {
             describe('and joinpoint has been called', () => {
-                beforeEach(() => {
-                    @Aspect('aAspect')
-                    class AAspect {
-                        @Around(on.method.withAnnotations(AMethod))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
-                            jpArgs.push('aroundA');
-                            return jp(jpArgs);
-                        }
-                    }
-
-                    @Aspect('bAspect')
-                    class BAspect {
-                        @Around(on.method.withAnnotations(AMethod))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
-                            jpArgs.push('aroundB');
-                            return jp(jpArgs);
-                        }
-                    }
-                    setupWeaver(new AAspect(), new BAspect());
-
-                    class A implements Labeled {
-                        public labels: string[] = [];
-
-                        @AMethod()
-                        addLabel(...labels: string[]) {
-                            return (this.labels = this.labels.concat(labels));
-                        }
-                    }
-
-                    a = new A();
-                });
-                it('should call them nested, in declaration order', () => {
-                    a.addLabel('newValue');
-                    expect(a.labels).toEqual(['newValue', 'aroundB', 'aroundA']);
-                });
+                it('should call them nested, in declaration order', () => {});
             });
         });
     });

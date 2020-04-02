@@ -32,3 +32,12 @@ export interface Weaver extends WeaverProfile {
     reset(): this;
     isLoaded(): boolean;
 }
+
+let _weaver: Weaver;
+export function getWeaver(): Weaver {
+    return _weaver;
+}
+
+export function setWeaver(weaver: Weaver): void {
+    _weaver = weaver;
+}

@@ -8,11 +8,10 @@ import {
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
-import { PointcutsRunner } from '../../weaver/weaver';
+import { getWeaver, PointcutsRunner } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, getProto, isFunction } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { getWeaver } from '../../lib';
 import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
@@ -148,9 +147,11 @@ class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceCon
     public args?: any[];
     public joinpoint?: JoinPoint;
     public target: AnnotationTarget<T, A>;
+    public data: Record<string, any>;
 
     constructor(public annotation: AnnotationContext<T, A>) {
         this.target = annotation.target;
+        this.data = {};
     }
 
     clone(): this {
@@ -186,6 +187,13 @@ function _createClassDecoration<T>(
     ctxt: AdviceContextImpl<any, AnnotationType.CLASS>,
     runner: PointcutsRunner,
 ): Function {
+    const referenceCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.target.proto);
+    if (referenceCtor) {
+        // if another @Compile advice has been applied
+        // replace wrapped ctor by original ctor before it gets wrapped again
+        ctxt.target.proto.constructor = referenceCtor;
+    }
+
     runner.class[PointcutPhase.COMPILE](ctxt);
     const ctorName = ctxt.target.proto.constructor.name;
 

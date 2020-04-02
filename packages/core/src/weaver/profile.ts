@@ -1,5 +1,6 @@
 import { isString } from '../utils';
 import { WeavingError } from './weaving-error';
+import { ASPECT_OPTIONS_REFLECT_KEY } from './advices/aspect';
 
 let profileId = 0;
 
@@ -51,7 +52,7 @@ export class WeaverProfile {
 let _globalAspectId = 0;
 
 function _getAspectId(obj: object): string {
-    const options = Reflect.getOwnMetadata('aspectjs.aspect.options', obj.constructor);
+    const options = Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, obj.constructor);
     if (!options) {
         throw new TypeError(`${obj.constructor.name} is not an Aspect`);
     }

@@ -2,6 +2,12 @@ import { AnnotationContext } from '../../annotation/context/context';
 import { AnnotationTarget } from '../../annotation/target/annotation-target';
 import { AnnotationType } from '../../annotation/annotation.types';
 import { JoinPoint } from '../types';
+import { AfterContext } from './after/after-context';
+import { BeforeContext } from './before/before-context';
+import { AfterReturnContext } from './after-return/after-return-context';
+import { AfterThrowContext } from './after-throw/after-throw-context';
+import { AroundContext } from './around/around-context';
+import { CompileContext } from './compile/compile-context';
 
 export type AdviceContext<T, A extends AnnotationType> =
     | AfterContext<T, A>
@@ -11,51 +17,6 @@ export type AdviceContext<T, A extends AnnotationType> =
     | AroundContext<T, A>
     | CompileContext<T, A>;
 
-export interface AfterContext<T, A extends AnnotationType> {
-    readonly annotation: AnnotationContext<T, A>;
-    readonly instance: T;
-    readonly args: any[];
-    readonly target: AnnotationTarget<T, A>;
-}
-
-export interface BeforeContext<T, A extends AnnotationType> {
-    readonly annotation: AnnotationContext<T, A>;
-    readonly instance: A extends AnnotationType.CLASS ? never : T;
-    readonly args: any[];
-    readonly target: AnnotationTarget<T, A>;
-}
-
-export interface AfterReturnContext<T, A extends AnnotationType> {
-    readonly annotation: AnnotationContext<T, A>;
-    readonly instance: T;
-    readonly args: any[];
-    readonly value: any;
-    readonly target: AnnotationTarget<T, A>;
-}
-
-export interface AfterThrowContext<T, A extends AnnotationType> {
-    readonly annotation: AnnotationContext<T, A>;
-    readonly instance: T;
-    readonly args: any[];
-    readonly error: Error;
-    readonly value: any;
-    readonly target: AnnotationTarget<T, A>;
-}
-
-export interface AroundContext<T, A extends AnnotationType> {
-    readonly annotation: AnnotationContext<T, A>;
-    readonly instance: T;
-    readonly args: any[];
-    readonly error: Error;
-    readonly joinpoint: JoinPoint;
-    readonly target: AnnotationTarget<T, A>;
-}
-
-export interface CompileContext<T, A extends AnnotationType> {
-    readonly annotation: AnnotationContext<T, A>;
-    readonly target: AnnotationTarget<T, A>;
-}
-
 export type MutableAdviceContext<A extends AnnotationType> = {
     annotation?: AnnotationContext<unknown, A>;
     instance?: unknown;
@@ -64,6 +25,10 @@ export type MutableAdviceContext<A extends AnnotationType> = {
     error?: Error;
     joinpoint?: JoinPoint;
     target: AnnotationTarget<any, A>;
+    /** any data set by the advices, shared across all advice going through  this execution context **/
+    readonly data: Record<string, any>;
 
     clone(): AdviceContext<any, A>;
 };
+
+export { AfterContext, BeforeContext, AfterReturnContext, AfterThrowContext, AroundContext, CompileContext };

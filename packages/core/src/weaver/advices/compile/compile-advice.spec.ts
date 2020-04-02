@@ -1,46 +1,70 @@
 import { Compile } from './compile.decorator';
 import { AdviceContext, CompileContext } from '../advice-context';
 import { on } from '../pointcut';
-import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
+import {
+    AClass,
+    AMethod,
+    AParameter,
+    AProperty,
+    BClass,
+    BMethod,
+    BProperty,
+    Labeled,
+    setupWeaver,
+} from '../../../../tests/helpers';
 import { WeavingError } from '../../weaving-error';
 import { Aspect } from '../aspect';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';
 import { AnnotationContext } from '../../../annotation/context/context';
 import { AnnotationRef, AnnotationType } from '../../../annotation/annotation.types';
 
-let compileAdvice = jasmine.createSpy('compileAdvice');
+let compileAspectA = jasmine.createSpy('compileAspectA');
+let compileAspectB = jasmine.createSpy('compileAspectB');
 
 describe('@Compile advice', () => {
     let target: AnnotationTarget<any, AnnotationType>;
     let instance: any;
 
     describe('applied on a class', () => {
+        compileAspectA = jasmine.createSpy('compileAspectA');
+        compileAspectB = jasmine.createSpy('compileAspectB');
+
         beforeEach(() => {
             @Aspect('AClassLabel')
-            class CompileAspect {
+            class CompileAspectA {
                 @Compile(on.class.withAnnotations(AClass))
                 apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): any {
-                    expect(this).toEqual(jasmine.any(CompileAspect));
+                    expect(this).toEqual(jasmine.any(CompileAspectA));
 
-                    return compileAdvice(ctxt);
+                    return compileAspectA(ctxt);
                 }
             }
 
-            compileAdvice = jasmine
+            @Aspect('BClassLabel')
+            class CompileAspectB {
+                @Compile(on.class.withAnnotations(BClass))
+                apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): any {
+                    expect(this).toEqual(jasmine.any(CompileAspectB));
+
+                    return compileAspectB(ctxt);
+                }
+            }
+
+            compileAspectA = jasmine
                 .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
                 .and.callThrough();
 
-            setupWeaver(new CompileAspect());
+            setupWeaver(new CompileAspectA(), new CompileAspectB());
         });
 
         it('should call the aspect upon compilation of annotated class', () => {
             @AClass()
             class A {}
 
-            expect(compileAdvice).toHaveBeenCalled();
+            expect(compileAspectA).toHaveBeenCalled();
         });
 
         it('should pass annotation target', () => {
@@ -62,7 +86,7 @@ describe('@Compile advice', () => {
             let ctor: Function;
             beforeEach(() => {
                 ctor = jasmine.createSpy('ctor');
-                compileAdvice = jasmine
+                compileAspectA = jasmine
                     .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                         target = ctxt.target;
                         instance = (ctxt as any).instance;
@@ -88,7 +112,7 @@ describe('@Compile advice', () => {
 
         describe('when the advice does not return a new constructor', () => {
             beforeEach(() => {
-                compileAdvice = jasmine.createSpy('compileAdvice');
+                compileAspectA = jasmine.createSpy('compileAdvice');
             });
             it('should use the new constructor', () => {
                 @AClass()
@@ -100,28 +124,50 @@ describe('@Compile advice', () => {
                 expect(Reflect.getPrototypeOf(a).constructor).toEqual(A);
             });
         });
+
+        describe('when multiple @Compile are applied', () => {
+            it('should call the two advices', () => {
+                @BClass()
+                @AClass()
+                class AB {}
+
+                new AB();
+                expect(compileAspectA).toHaveBeenCalled();
+                expect(compileAspectB).toHaveBeenCalled();
+            });
+        });
     });
 
     describe('applied on a property', () => {
         beforeEach(() => {
             @Aspect('APropertyLabel')
-            class CompileAspect {
+            class CompileAspectA {
                 @Compile(on.property.withAnnotations(AProperty))
                 apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): any {
-                    expect(this).toEqual(jasmine.any(CompileAspect));
+                    expect(this).toEqual(jasmine.any(CompileAspectA));
 
-                    return compileAdvice(ctxt);
+                    return compileAspectA(ctxt);
                 }
             }
 
-            compileAdvice = jasmine
+            @Aspect('BPropertyLabel')
+            class CompileAspectB {
+                @Compile(on.property.withAnnotations(BProperty))
+                apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): any {
+                    expect(this).toEqual(jasmine.any(CompileAspectB));
+
+                    return compileAspectB(ctxt);
+                }
+            }
+
+            compileAspectA = jasmine
                 .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
                 .and.callThrough();
 
-            setupWeaver(new CompileAspect());
+            setupWeaver(new CompileAspectA(), new CompileAspectB());
         });
 
         it('should call the aspect upon compilation of annotated property', () => {
@@ -129,7 +175,7 @@ describe('@Compile advice', () => {
                 @AProperty()
                 labels: string[];
             }
-            expect(compileAdvice).toHaveBeenCalled();
+            expect(compileAspectA).toHaveBeenCalled();
         });
 
         it('should pass advice target', () => {
@@ -152,7 +198,7 @@ describe('@Compile advice', () => {
         describe('when the advice returns a new property descriptor', () => {
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return ({
                                 get: '',
@@ -174,7 +220,7 @@ describe('@Compile advice', () => {
             describe('that sets "value = any"', () => {
                 let a: Labeled;
                 beforeEach(() => {
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 value: ['propAspect'],
@@ -202,7 +248,7 @@ describe('@Compile advice', () => {
                 let a: Labeled;
 
                 beforeEach(() => {
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 get: () => ['propAspect'],
@@ -233,7 +279,7 @@ describe('@Compile advice', () => {
                 beforeEach(() => {
                     val = ['propAspect'];
 
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 get: () => val,
@@ -273,6 +319,20 @@ describe('@Compile advice', () => {
                 });
             });
         });
+
+        describe('when multiple @Compile are applied', () => {
+            it('should call the two advices', () => {
+                class AB {
+                    @BProperty()
+                    @AProperty()
+                    private prop: string;
+                }
+
+                new AB();
+                expect(compileAspectA).toHaveBeenCalled();
+                expect(compileAspectB).toHaveBeenCalled();
+            });
+        });
     });
 
     describe('applied on a property setter', () => {
@@ -297,14 +357,22 @@ describe('@Compile advice', () => {
 
         beforeEach(() => {
             @Aspect()
-            class CompileAspect {
+            class CompileAspectA {
                 @Compile(on.method.withAnnotations(AMethod))
-                compileMethod(ctxt: CompileContext<Labeled, AnnotationType.PROPERTY>) {
-                    return compileAdvice(ctxt);
+                compileMethod(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                    return compileAspectA(ctxt);
                 }
             }
 
-            compileAdvice = jasmine
+            @Aspect()
+            class CompileAspectB {
+                @Compile(on.method.withAnnotations(BMethod))
+                compileMethod(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                    return compileAspectB(ctxt);
+                }
+            }
+
+            compileAspectA = jasmine
                 .createSpy('compileAdvice', function(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
@@ -312,7 +380,7 @@ describe('@Compile advice', () => {
                 })
                 .and.callThrough();
 
-            setupWeaver(new CompileAspect());
+            setupWeaver(new CompileAspectA(), new CompileAspectB());
         });
 
         it('should call the aspect upon compilation of annotated method', () => {
@@ -321,7 +389,7 @@ describe('@Compile advice', () => {
                 addLabel(): void {}
             }
 
-            expect(compileAdvice).toHaveBeenCalled();
+            expect(compileAspectA).toHaveBeenCalled();
         });
 
         it('should pass annotation target', () => {
@@ -346,7 +414,7 @@ describe('@Compile advice', () => {
         describe('when the advice returns a new property descriptor', () => {
             describe('and the descriptor is valid', () => {
                 beforeEach(() => {
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                             const descriptor = {
                                 ...Reflect.getOwnPropertyDescriptor(ctxt.target.proto, ctxt.target.propertyKey),
@@ -375,7 +443,7 @@ describe('@Compile advice', () => {
 
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function() {
                             return {
                                 value: () => {},
@@ -401,7 +469,7 @@ describe('@Compile advice', () => {
 
             describe('and the descriptor is not a method descriptor', () => {
                 beforeEach(() => {
-                    compileAdvice = jasmine
+                    compileAspectA = jasmine
                         .createSpy('compileAdvice', function() {
                             return {};
                         })
@@ -416,10 +484,25 @@ describe('@Compile advice', () => {
                         }
                     }).toThrow(
                         new WeavingError(
-                            'Expected @Compile(@AMethod) CompileAspect.compileMethod() to return a method descriptor. Got: undefined',
+                            'Expected @Compile(@AMethod) CompileAspectA.compileMethod() to return a method descriptor. Got: undefined',
                         ),
                     );
                 });
+            });
+        });
+        describe('when multiple @Compile are applied', () => {
+            it('should call the two advices', () => {
+                class AB {
+                    @BMethod()
+                    @AMethod()
+                    private someMethod(ctxt: CompileContext<any, any>): any {
+                        return ctxt.target.descriptor;
+                    }
+                }
+
+                new AB();
+                expect(compileAspectA).toHaveBeenCalled();
+                expect(compileAspectB).toHaveBeenCalled();
             });
         });
     });
@@ -432,11 +515,11 @@ describe('@Compile advice', () => {
             class CompileAspect {
                 @Compile(on.parameter.withAnnotations(AParameter))
                 compileParameter(ctxt: CompileContext<Labeled, AnnotationType.PARAMETER>) {
-                    return compileAdvice(ctxt);
+                    return compileAspectA(ctxt);
                 }
             }
 
-            compileAdvice = jasmine
+            compileAspectA = jasmine
                 .createSpy('compileAdvice', function(ctxt: CompileContext<Labeled, AnnotationType.PARAMETER>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
@@ -452,7 +535,7 @@ describe('@Compile advice', () => {
                 addLabel(@AParameter() labels: string[]): void {}
             }
 
-            expect(compileAdvice).toHaveBeenCalled();
+            expect(compileAspectA).toHaveBeenCalled();
         });
 
         it('should pass annotation target', () => {
@@ -472,86 +555,6 @@ describe('@Compile advice', () => {
             }
             expect(target).toBeDefined();
             expect(instance).toBeUndefined();
-        });
-
-        xdescribe('when the advice returns a new property descriptor', () => {
-            xdescribe('and the descriptor is valid', () => {
-                beforeEach(() => {
-                    compileAdvice = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
-                            const descriptor = {
-                                ...Reflect.getOwnPropertyDescriptor(ctxt.target.proto, ctxt.target.propertyKey),
-                            };
-                            descriptor.value = function() {
-                                this.labels = ['methodAdvice'];
-                            };
-                            return descriptor;
-                        })
-                        .and.callThrough();
-                });
-                it('should use the new method descriptor', () => {
-                    class A implements Labeled {
-                        labels: string[] = [];
-
-                        @AMethod()
-                        addLabel() {}
-                    }
-
-                    const a = new A();
-                    expect(a.labels).toEqual([]);
-                    a.addLabel();
-                    expect(a.labels).toEqual(['methodAdvice']);
-                });
-            });
-
-            describe('and the descriptor is invalid', () => {
-                beforeEach(() => {
-                    compileAdvice = jasmine
-                        .createSpy('compileAdvice', function() {
-                            return {
-                                value: () => {},
-                                get: () => {},
-                            };
-                        })
-                        .and.callThrough();
-                });
-
-                it('should throw an error', () => {
-                    expect(() => {
-                        class A {
-                            @AMethod()
-                            addLabel() {}
-                        }
-                    }).toThrow(
-                        new TypeError(
-                            'Invalid property descriptor. Cannot both specify accessors and a value or writable attribute, #<Object>',
-                        ),
-                    );
-                });
-            });
-
-            describe('and the descriptor is not a method descriptor', () => {
-                beforeEach(() => {
-                    compileAdvice = jasmine
-                        .createSpy('compileAdvice', function() {
-                            return {};
-                        })
-                        .and.callThrough();
-                });
-
-                it('should throw an error', () => {
-                    expect(() => {
-                        class A {
-                            @AMethod()
-                            addLabel() {}
-                        }
-                    }).toThrow(
-                        new WeavingError(
-                            'Expected @Compile(@AMethod) CompileAspect.compileMethod() to return a method descriptor. Got: undefined',
-                        ),
-                    );
-                });
-            });
         });
     });
 });

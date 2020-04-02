@@ -1,6 +1,6 @@
-import { setWeaver } from '../src/lib';
 import { LoadTimeWeaver } from '../src/weaver/load-time/load-time-weaver';
 import { AnnotationFactory } from '../src/annotation/factory/factory';
+import { setWeaver } from '../src/weaver/weaver';
 
 export interface Labeled {
     labels?: string[];
@@ -17,7 +17,15 @@ export const AClass = new AnnotationFactory('tests').create(function AClass(): C
     return;
 });
 
+export const BClass = new AnnotationFactory('tests').create(function BClass(): ClassDecorator {
+    return;
+});
+
 export const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
+    return;
+});
+
+export const BProperty = new AnnotationFactory('tests').create(function BProperty(): PropertyDecorator {
     return;
 });
 

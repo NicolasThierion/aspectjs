@@ -1,7 +1,10 @@
 import { AnnotationFactory } from '../factory/factory';
 import { AnnotationLocationFactory } from './annotation-target.factory';
+import { setWeaver } from '../../weaver/weaver';
+import { LoadTimeWeaver } from '../../weaver/load-time/load-time-weaver';
 
 describe('AnnotationLocationFactory', () => {
+    beforeEach(() => setWeaver(new LoadTimeWeaver()));
     class Decorated {
         value: any;
 

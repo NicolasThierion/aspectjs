@@ -16,8 +16,9 @@ import { AdvicesRegistry } from '../advices/advice-registry';
 import { PointcutsRunner, Weaver } from '../weaver';
 import { PointcutPhase } from '../advices/pointcut';
 import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
-import { AspectOptions } from '../advices/aspect';
+import { ASPECT_OPTIONS_REFLECT_KEY, AspectOptions } from '../advices/aspect';
 import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
+import { AnnotationContext } from '../../annotation/context/context';
 
 type AdvicePipeline = {
     [target in AnnotationType]: {
@@ -63,15 +64,15 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
                 .sort((a1: any, a2: any) => {
                     // sort by aspect priority
                     const [o1, o2] = [
-                        Reflect.getOwnMetadata(`aspectjs.aspect.options`, a1.constructor),
-                        Reflect.getOwnMetadata(`aspectjs.aspect.options`, a2.constructor),
+                        Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, a1.constructor),
+                        Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, a2.constructor),
                     ] as AspectOptions[];
                     const [p1, p2] = [o1?.priority ?? 0, o2?.priority ?? 0];
 
                     return p2 - p1;
                 })
                 .reduce((pipeline: AdvicePipeline, aspect: object) => {
-                    const advices = AdvicesRegistry.getAdvices(aspect);
+                    const advices = AdvicesRegistry.getAdvicesForAspect(aspect);
 
                     advices
                         .map((advice: Advice) => {
@@ -132,10 +133,11 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         assert(!!this._advices);
 
         // get all advices that correspond to all the annotations of this context
-        return getMetaOrDefault(`aspectjs.aspects(${phase}, ${ctxt.target.ref})`, ctxt.target.proto, () => {
-            const bundle = AnnotationBundleRegistry.of(ctxt.target).at(ctxt.target.location);
-            const annotations = bundle.all();
+        const bundle = AnnotationBundleRegistry.of(ctxt.target).at(ctxt.target.location);
+        const annotations = bundle.all();
 
+        const annotationKey = annotations.map(a => a.toString()).join(',');
+        return getMetaOrDefault(`aspectjs.advicesForAnnotations(${phase},${annotationKey})`, ctxt.target.proto, () => {
             return annotations
                 .map(annotation => _getAdvicesArray(this._advices, ctxt.target.type, phase, annotation, false))
                 .flat()
@@ -152,6 +154,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         }
     }
 }
+
 function _getAdvicesArray(
     pipeline: AdvicePipeline,
     type: AnnotationType,
@@ -223,16 +226,12 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     constructor(private weaver: LoadTimeWeaver) {}
 
     private _compileClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
-        const newCtor = this.weaver
+        this.weaver
             .getAdvices(PointcutPhase.COMPILE, ctxt)
-            .map((advice: CompileAdvice<unknown, AnnotationType.CLASS>) => {
-                return (ctxt.target.proto.constructor = advice(ctxt.clone()) ?? ctxt.target.proto.constructor);
-            })
-            .slice(-1)[0];
-
-        if (newCtor) {
-            ctxt.target.proto.constructor = newCtor;
-        }
+            .forEach(
+                (advice: CompileAdvice<unknown, AnnotationType.CLASS>) =>
+                    (ctxt.target.proto.constructor = advice(ctxt.clone()) ?? ctxt.target.proto.constructor),
+            );
     }
 
     private _beforeClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
