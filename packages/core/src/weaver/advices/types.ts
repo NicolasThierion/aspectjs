@@ -11,25 +11,32 @@ import { AnnotationType } from '../../annotation/annotation.types';
 import { JoinPoint } from '../types';
 
 export type CompileAdvice<T, A extends AnnotationType> = {
+    aspect: object;
     pointcut?: CompilePointcut;
 } & ((ctxt: AdviceContext<T, A>) => void | Function | PropertyDescriptor);
 
 export type BeforeAdvice<T> = {
+    aspect: object;
     pointcut?: BeforePointcut;
 } & ((ctxt: AdviceContext<T, AnnotationType>) => void);
 export type BeforeClassAdvice<T> = {
+    aspect: object;
     pointcut?: BeforePointcut;
 } & ((ctxt: Omit<AdviceContext<T, AnnotationType>, 'instance'>) => void);
 export type AfterAdvice<T> = {
+    aspect: object;
     pointcut?: AfterPointcut;
 } & ((ctxt: AdviceContext<T, AnnotationType>) => void);
 export type AfterReturnAdvice<T> = {
+    aspect: object;
     pointcut?: AfterReturnPointcut;
 } & ((ctxt: AdviceContext<T, AnnotationType>, returnValue: any) => T | null | undefined);
 export type AfterThrowAdvice<T> = {
+    aspect: object;
     pointcut?: AfterThrowPointcut;
 } & ((ctxt: AdviceContext<T, AnnotationType>, thrownError: Error) => T | null | undefined);
 export type AroundAdvice<T> = {
+    aspect: object;
     pointcut?: AroundPointcut;
 } & ((ctxt: AdviceContext<T, AnnotationType>, joinPoint: JoinPoint, args: any[]) => any);
 

@@ -3,6 +3,7 @@ import { assert, getMetaOrDefault, getProto } from '../../utils';
 
 export class AdvicesRegistry {
     static create(aspect: object, advice: Advice) {
+        advice.aspect = aspect;
         getMetaOrDefault('aspectjs.registry.aspect.advices', getProto(aspect), () => []).push(advice);
     }
     static getAdvicesForAspect(aspect: object): Advice[] {

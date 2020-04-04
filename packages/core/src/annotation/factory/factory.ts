@@ -8,7 +8,7 @@ import {
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
-import { getWeaver, PointcutsRunner } from '../../weaver/weaver';
+import { getWeaver, AdviceRunners } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, getProto, isFunction } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
@@ -18,6 +18,7 @@ import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice
 import { PointcutPhase } from '../../weaver/advices/pointcut';
 import { AnnotationsBundle } from '../bundle/bundle';
 import { JoinPoint } from '../../weaver/types';
+import { Advice } from '../../weaver/advices/types';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -116,7 +117,7 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
 }
 
 function _createDecorator<A extends AnnotationType>(
-    runner: PointcutsRunner,
+    runner: AdviceRunners,
     annotation: Annotation<A>,
     annotationArgs: any[],
 ): Decorator {
@@ -148,6 +149,7 @@ class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceCon
     public joinpoint?: JoinPoint;
     public target: AnnotationTarget<T, A>;
     public data: Record<string, any>;
+    public advices: Advice[];
 
     constructor(public annotation: AnnotationContext<T, A>) {
         this.target = annotation.target;
@@ -155,7 +157,7 @@ class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceCon
     }
 
     clone(): this {
-        return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as AdviceContext<any, AnnotationType>, this);
+        return Object.assign(Object.create(Reflect.getPrototypeOf(this)) as MutableAdviceContext<A>, this);
     }
 
     toString(): string {
@@ -185,7 +187,7 @@ class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationCo
 
 function _createClassDecoration<T>(
     ctxt: AdviceContextImpl<any, AnnotationType.CLASS>,
-    runner: PointcutsRunner,
+    runner: AdviceRunners,
 ): Function {
     const referenceCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.target.proto);
     if (referenceCtor) {
@@ -235,7 +237,7 @@ function _createClassDecoration<T>(
 
 function _createPropertyDecoration(
     ctxt: AdviceContextImpl<any, AnnotationType.PROPERTY>,
-    runner: PointcutsRunner,
+    runner: AdviceRunners,
 ): PropertyDescriptor {
     const target = ctxt.target;
     const defaultDescriptor: PropertyDescriptor = {
@@ -328,7 +330,7 @@ function _createPropertyDecoration(
 
 function _createMethodDecoration(
     ctxt: AdviceContextImpl<any, AnnotationType.METHOD>,
-    runner: PointcutsRunner,
+    runner: AdviceRunners,
 ): PropertyDescriptor {
     const target = ctxt.target;
 
@@ -365,9 +367,6 @@ function _createMethodDecoration(
     return newDescriptor;
 }
 
-function _createParameterDecoration(
-    ctxt: AdviceContextImpl<any, AnnotationType.METHOD>,
-    runner: PointcutsRunner,
-): void {
+function _createParameterDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>, runner: AdviceRunners): void {
     _createMethodDecoration(ctxt as any, runner);
 }

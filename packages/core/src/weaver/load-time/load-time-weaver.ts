@@ -13,12 +13,11 @@ import {
     CompileAdvice,
 } from '../advices/types';
 import { AdvicesRegistry } from '../advices/advice-registry';
-import { PointcutsRunner, Weaver } from '../weaver';
+import { AdviceRunners, Weaver } from '../weaver';
 import { PointcutPhase } from '../advices/pointcut';
 import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
 import { ASPECT_OPTIONS_REFLECT_KEY, AspectOptions } from '../advices/aspect';
 import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
-import { AnnotationContext } from '../../annotation/context/context';
 
 type AdvicePipeline = {
     [target in AnnotationType]: {
@@ -32,7 +31,7 @@ type AdvicePipeline = {
 
 export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     private _advices: AdvicePipeline;
-    private _runner = new PointcutsRunnersImpl(this);
+    private _runner = new AdviceRunnersImpl(this);
 
     constructor(name?: string) {
         super(name);
@@ -58,7 +57,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         return super.reset().merge(profile);
     }
 
-    load(): PointcutsRunner {
+    load(): AdviceRunners {
         if (!this._advices) {
             this._advices = Object.values(this._aspectsRegistry)
                 .sort((a1: any, a2: any) => {
@@ -98,7 +97,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
 
     reset(): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot reset change its configuration anymore`);
-        this._runner = new PointcutsRunnersImpl(this);
+        this._runner = new AdviceRunnersImpl(this);
         this._advices = undefined;
         return super.reset();
     }
@@ -180,7 +179,7 @@ function _getAdvicesArray(
 function _annotationId(annotation: AnnotationRef): string {
     return `${annotation.groupId}:${annotation.name}`;
 }
-class PointcutsRunnersImpl implements PointcutsRunner {
+class AdviceRunnersImpl implements AdviceRunners {
     class = {
         [PointcutPhase.COMPILE]: this._compileClass.bind(this),
         [PointcutPhase.BEFORE]: this._beforeClass.bind(this),
@@ -226,12 +225,14 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     constructor(private weaver: LoadTimeWeaver) {}
 
     private _compileClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
-        this.weaver
-            .getAdvices(PointcutPhase.COMPILE, ctxt)
-            .forEach(
-                (advice: CompileAdvice<unknown, AnnotationType.CLASS>) =>
-                    (ctxt.target.proto.constructor = advice(ctxt.clone()) ?? ctxt.target.proto.constructor),
-            );
+        ctxt.advices = [...this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt)];
+        let advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.CLASS>;
+        while (advice) {
+            const ctxtCopy = ctxt.clone() as AdviceContext<any, any>;
+            ctxt.target.proto.constructor = advice(ctxtCopy) ?? ctxt.target.proto.constructor;
+            ctxt.advices = ctxtCopy.advices;
+            advice = ctxt.advices.pop() as CompileAdvice<any, AnnotationType.CLASS>;
+        }
     }
 
     private _beforeClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
@@ -281,7 +282,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
                     ctxt.joinpoint = previousJp;
                     ctxt.args = args;
-                    previousAroundAdvice(ctxt.clone(), previousJp, args);
+                    previousAroundAdvice(ctxt.clone() as AdviceContext<any, any>, previousJp, args);
                 });
             }
 
@@ -290,7 +291,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 ctxt.args = ctorArgs;
 
                 ctxt.instance = partialThis;
-                const frozenContext = ctxt.clone();
+                const frozenContext = ctxt.clone() as AdviceContext<any, any>;
                 delete (frozenContext as MutableAdviceContext<any>).instance;
                 Reflect.defineProperty(frozenContext, 'instance', {
                     get() {
@@ -324,7 +325,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         const advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
         advices.forEach(advice => {
             ctxt.value = ctxt.instance;
-            newInstance = advice(ctxt.clone(), ctxt.value);
+            newInstance = advice(ctxt.clone() as AdviceContext<any, any>, ctxt.value);
             if (!isUndefined(newInstance)) {
                 ctxt.instance = newInstance;
             }
@@ -341,7 +342,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         } else {
             let newInstance = ctxt.instance;
             afterThrowAdvices.forEach(advice => {
-                newInstance = advice(ctxt.clone(), ctxt.error);
+                newInstance = advice(ctxt.clone() as AdviceContext<any, any>, ctxt.error);
                 if (!isUndefined(newInstance)) {
                     ctxt.instance = newInstance;
                 }
@@ -360,7 +361,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         let newDescriptor: PropertyDescriptor = compileAdvices
             .map(advice => {
                 lastAdvice = advice;
-                return advice(ctxt.clone()) as PropertyDescriptor;
+                return advice(ctxt.clone() as AdviceContext<any, any>) as PropertyDescriptor;
             })
             .filter(c => !!c)
             .slice(-1)[0];
@@ -444,12 +445,12 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
                     ctxt.joinpoint = previousJp;
                     ctxt.args = args;
-                    return previousAroundAdvice(ctxt.clone(), previousJp, args);
+                    return previousAroundAdvice(ctxt.clone() as AdviceContext<any, any>, previousJp, args);
                 });
             }
 
             ctxt.joinpoint = jp;
-            return (ctxt.value = aroundAdvice(ctxt.clone(), jp, ctxt.args));
+            return (ctxt.value = aroundAdvice(ctxt.clone() as AdviceContext<any, any>, jp, ctxt.args));
         } else {
             return (ctxt.value = jp(ctxt.args));
         }
@@ -474,7 +475,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         let newDescriptor: PropertyDescriptor = compileAdvices
             .map(advice => {
                 lastAdvice = advice;
-                return advice(ctxt.clone()) as PropertyDescriptor;
+                return advice(ctxt.clone() as AdviceContext<any, any>) as PropertyDescriptor;
             })
             .filter(c => !isUndefined(c))
             .slice(-1)[0];
@@ -545,12 +546,12 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
                     ctxt.joinpoint = previousJp;
                     ctxt.args = args;
-                    return previousAroundAdvice(ctxt.clone(), previousJp, args);
+                    return previousAroundAdvice(ctxt.clone() as AdviceContext<any, any>, previousJp, args);
                 });
             }
 
             ctxt.joinpoint = jp;
-            return (ctxt.value = aroundAdvice(ctxt.clone(), jp, ctxt.args));
+            return (ctxt.value = aroundAdvice(ctxt.clone() as AdviceContext<any, any>, jp, ctxt.args));
         } else {
             return (ctxt.value = jp(ctxt.args));
         }
@@ -602,7 +603,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
             advices = advices.filter(filter);
         }
         if (advices.length) {
-            const frozenCtxt = ctxt.clone();
+            const frozenCtxt = ctxt.clone() as AdviceContext<any, any>;
             advices.forEach((advice: AfterAdvice<unknown>) => {
                 const retVal = advice(frozenCtxt) as any;
                 if (!isUndefined(retVal)) {

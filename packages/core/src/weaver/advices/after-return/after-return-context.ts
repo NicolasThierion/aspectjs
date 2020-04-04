@@ -1,6 +1,7 @@
 import { AnnotationType } from '../../../annotation/annotation.types';
 import { AnnotationContext } from '../../../annotation/context/context';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';
+import { AfterReturnAdvice } from '../types';
 
 export interface AfterReturnContext<T, A extends AnnotationType> {
     /** The annotation context **/
@@ -15,4 +16,6 @@ export interface AfterReturnContext<T, A extends AnnotationType> {
     readonly target: AnnotationTarget<T, A>;
     /** any data set by the advices, shared across all advice going through  this execution context **/
     readonly data: Record<string, any>;
+    /** The list of pending advices for the same phase. Change this list to change all the advices that are going to get applied after the currently applied advice **/
+    advices: AfterReturnAdvice<A>[];
 }

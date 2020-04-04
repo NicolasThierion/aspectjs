@@ -21,6 +21,10 @@ export const BClass = new AnnotationFactory('tests').create(function BClass(): C
     return;
 });
 
+export const CClass = new AnnotationFactory('tests').create(function CClass(): ClassDecorator {
+    return;
+});
+
 export const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
     return;
 });
