@@ -9,10 +9,10 @@ import {
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
 import { getWeaver, AdviceRunners } from '../../weaver/weaver';
-import { assert, getMetaOrDefault, getProto, isFunction } from '../../utils';
+import { assert, getMetaOrDefault, getProto, isFunction, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { AnnotationTarget } from '../target/annotation-target';
+import { AnnotationTarget, PropertyAdviceTarget } from '../target/annotation-target';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
 import { PointcutPhase } from '../../weaver/advices/pointcut';
@@ -189,12 +189,13 @@ function _createClassDecoration<T>(
     ctxt: AdviceContextImpl<any, AnnotationType.CLASS>,
     runner: AdviceRunners,
 ): Function {
-    const referenceCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.target.proto);
-    if (referenceCtor) {
-        // if another @Compile advice has been applied
-        // replace wrapped ctor by original ctor before it gets wrapped again
-        ctxt.target.proto.constructor = referenceCtor;
-    }
+    // if another @Compile advice has been applied
+    // replace wrapped ctor by original ctor before it gets wrapped again
+    ctxt.target.proto.constructor = getMetaOrDefault(
+        'aspectjs.originalCtor',
+        ctxt.target.proto,
+        () => ctxt.target.proto.constructor,
+    );
 
     runner.class[PointcutPhase.COMPILE](ctxt);
     const ctorName = ctxt.target.proto.constructor.name;
@@ -240,22 +241,30 @@ function _createPropertyDecoration(
     runner: AdviceRunners,
 ): PropertyDescriptor {
     const target = ctxt.target;
-    const defaultDescriptor: PropertyDescriptor = {
-        configurable: true,
-        enumerable: true,
-        get() {
-            return Reflect.getOwnMetadata(`aspectjs.propValue`, this, target.propertyKey);
-        },
-        set(value: any) {
-            Reflect.defineMetadata(`aspectjs.propValue`, value, this, target.propertyKey);
-        },
-    };
 
-    const refDescriptor = {
-        ...(runner.property[PointcutPhase.COMPILE](ctxt) ??
-            Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) ??
-            defaultDescriptor),
-    };
+    // if another @Compile advice has been applied
+    // replace wrapped descriptor by original descriptor before it gets wrapped again
+    (ctxt.target as Mutable<AnnotationTarget<any, any>>).descriptor = getMetaOrDefault(
+        'aspectjs.originalDescriptor',
+        ctxt.target.proto,
+        () => {
+            return (
+                Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) ?? {
+                    configurable: true,
+                    enumerable: true,
+                    get() {
+                        return Reflect.getOwnMetadata(`aspectjs.propValue`, this, target.propertyKey);
+                    },
+                    set(value: any) {
+                        Reflect.defineMetadata(`aspectjs.propValue`, value, this, target.propertyKey);
+                    },
+                }
+            );
+        },
+        true,
+        ctxt.target.propertyKey,
+    );
+    const refDescriptor = { ...(runner.property[PointcutPhase.COMPILE](ctxt) ?? ctxt.target.descriptor) };
 
     if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
         const propValue = refDescriptor.value;
@@ -263,12 +272,12 @@ function _createPropertyDecoration(
         delete refDescriptor.writable;
         delete refDescriptor.value;
     }
+    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto, ctxt.target.propertyKey);
 
-    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto);
-    let propDescriptor: PropertyDescriptor = {
+    let newDescriptor = {
         ...refDescriptor,
     };
-    propDescriptor.get = function() {
+    newDescriptor.get = function() {
         const _ctxt = ctxt.clone();
         _ctxt.args = [];
         const r = runner.property.getter;
@@ -287,8 +296,8 @@ function _createPropertyDecoration(
         }
     };
 
-    if (_isWritable(propDescriptor)) {
-        propDescriptor.set = function(...args: any[]) {
+    if (_isWritable(newDescriptor)) {
+        newDescriptor.set = function(...args: any[]) {
             const _ctxt = ctxt.clone();
 
             const r = runner.property.setter;
@@ -308,19 +317,16 @@ function _createPropertyDecoration(
             }
         };
 
-        delete propDescriptor.writable;
+        delete newDescriptor.writable;
     } else {
-        delete propDescriptor.set;
+        delete newDescriptor.set;
     }
     // test property validity
-    propDescriptor = Object.getOwnPropertyDescriptor(
-        Object.defineProperty({}, 'surrogate', propDescriptor),
-        'surrogate',
-    );
+    newDescriptor = Object.getOwnPropertyDescriptor(Object.defineProperty({}, 'surrogate', newDescriptor), 'surrogate');
 
-    Reflect.defineProperty(target.proto, target.propertyKey, propDescriptor);
+    Reflect.defineProperty(target.proto, target.propertyKey, newDescriptor);
 
-    return propDescriptor;
+    return newDescriptor;
 
     function _isWritable(propDescriptor: PropertyDescriptor) {
         const desc = propDescriptor as Record<string, any>;
@@ -333,6 +339,19 @@ function _createMethodDecoration(
     runner: AdviceRunners,
 ): PropertyDescriptor {
     const target = ctxt.target;
+    Reflect.defineProperty(
+        target.proto,
+        target.propertyKey,
+        getMetaOrDefault(
+            'aspectjs.originalDescriptor',
+            target.proto,
+            () => {
+                return { ...Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) };
+            },
+            true,
+            ctxt.target.propertyKey,
+        ),
+    );
 
     // invoke compile method or get default descriptor
     const refDescriptor =
@@ -341,7 +360,7 @@ function _createMethodDecoration(
 
     assert(!!refDescriptor);
 
-    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto);
+    Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto, ctxt.target.propertyKey);
 
     const newDescriptor = { ...refDescriptor };
     newDescriptor.value = function(...args: any[]) {
@@ -363,10 +382,33 @@ function _createMethodDecoration(
             r[PointcutPhase.AFTER](_ctxt);
         }
     };
+    Reflect.defineProperty(newDescriptor.value, 'name', {
+        value: ctxt.target.propertyKey,
+    });
+    newDescriptor.name = ctxt.target.propertyKey;
 
     return newDescriptor;
 }
 
+const _defineProperty = Object.defineProperty;
 function _createParameterDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>, runner: AdviceRunners): void {
-    _createMethodDecoration(ctxt as any, runner);
+    const newDescriptor = _createMethodDecoration(ctxt as any, runner);
+
+    Reflect.defineProperty(ctxt.target.proto, ctxt.target.propertyKey, newDescriptor);
+
+    // To override method descriptor from parameter decorator is not allowed..
+    // Return value of parameter decorators is ignored
+    // Moreover, Reflect.decorate will overwrite any changes made on proto[propertyKey]
+    // We monkey patch Object.defineProperty to prevent this;
+    Object.defineProperty = function(o: any, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>) {
+        if (o === ctxt.target.proto && p === ctxt.target.propertyKey) {
+            // prevent writing back old descriptor
+            Object.defineProperty = _defineProperty;
+            return newDescriptor;
+        }
+
+        return _defineProperty(o, p, attributes);
+    };
+
+    return newDescriptor as any;
 }

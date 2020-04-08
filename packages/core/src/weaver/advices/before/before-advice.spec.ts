@@ -1,7 +1,7 @@
 import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { on } from '../pointcut';
-import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
+import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
@@ -186,9 +186,51 @@ describe('@Before advice', () => {
         });
     });
 
-    xdescribe('applied on a method parameter', () => {
-        it('should call the aspect before the method is called', () => {});
+    describe('applied on a method parameter', () => {
+        let a: Labeled;
+        let methodSpy: jasmine.Spy;
+        beforeEach(() => {
+            @Aspect()
+            class AAspect {
+                @Before(on.parameter.withAnnotations(AParameter))
+                applyBefore(ctxt: AdviceContext<any, AnnotationType.PARAMETER>): void {
+                    expect(this).toEqual(jasmine.any(AAspect));
 
-        it('should have a non null context.instance', () => {});
+                    advice(ctxt);
+                }
+            }
+
+            methodSpy = jasmine.createSpy('methodSpy');
+            setupWeaver(new AAspect());
+
+            class A {
+                addLabel(@AParameter() param: any): any {
+                    methodSpy();
+                }
+            }
+
+            a = new A();
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, AnnotationType.METHOD>) => {})
+                .and.callThrough();
+        });
+
+        it('should call the aspect before the method is called', () => {
+            a.addLabel('a');
+            expect(methodSpy).toHaveBeenCalled();
+            expect(advice).toHaveBeenCalled();
+            expect(advice).toHaveBeenCalledBefore(methodSpy);
+        });
+
+        it('should have a non null context.instance', () => {
+            let thisInstance: any;
+            advice = jasmine
+                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
+                    thisInstance = ctxt.instance;
+                })
+                .and.callThrough();
+            a.addLabel();
+            expect(thisInstance).toEqual(a);
+        });
     });
 });

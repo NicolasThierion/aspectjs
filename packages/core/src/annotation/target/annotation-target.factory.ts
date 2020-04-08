@@ -91,8 +91,6 @@ export abstract class AnnotationTargetFactory {
             const target = (TARGET_GENERATORS[type] as any)(dtarget as any);
             Reflect.setPrototypeOf(target, AnnotationTargetImpl.prototype);
 
-            Object.seal(target);
-
             return target;
         }) as any;
     }

@@ -75,5 +75,5 @@ export type PropertyAnnotation = AnnotationStub<PropertyDecorator> & AnnotationR
 
 export type ClassAnnotationStub = AnnotationStub<ClassDecorator>;
 export type MethodAnnotationStub = AnnotationStub<MethodDecorator>;
-export type PropertyAnnotationStub = AnnotationStub<ParameterDecorator>;
-export type ParameterAnnotationStub = AnnotationStub<PropertyDecorator>;
+export type PropertyAnnotationStub = AnnotationStub<PropertyDecorator>;
+export type ParameterAnnotationStub = AnnotationStub<ParameterDecorator>;

@@ -46,3 +46,9 @@ export const AParameter = new AnnotationFactory('tests').create(function AParame
 ): ParameterDecorator {
     return;
 });
+
+export const BParameter = new AnnotationFactory('tests').create(function BParameter(
+    ...args: any[]
+): ParameterDecorator {
+    return;
+});

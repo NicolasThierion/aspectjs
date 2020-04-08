@@ -15,12 +15,18 @@ export function assert(condition: boolean, msg?: string | (() => Error)) {
     }
 }
 
-export function getMetaOrDefault<T>(key: string, target: any, valueGenerator: () => T, save = true): T {
-    let value = Reflect.getOwnMetadata(key, target);
+export function getMetaOrDefault<T>(
+    key: string,
+    target: any,
+    valueGenerator: () => T,
+    save = true,
+    propertyKey?: string,
+): T {
+    let value = Reflect.getOwnMetadata(key, target, propertyKey);
     if (isUndefined(value)) {
         value = valueGenerator();
         if (save) {
-            Reflect.defineMetadata(key, value, target);
+            Reflect.defineMetadata(key, value, target, propertyKey);
         }
     }
 

@@ -226,12 +226,12 @@ class AdviceRunnersImpl implements AdviceRunners {
 
     private _compileClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
         ctxt.advices = [...this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt)];
-        let advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.CLASS>;
-        while (advice) {
+        let advice: CompileAdvice<any, AnnotationType.CLASS>;
+        while (ctxt.advices.length) {
             const ctxtCopy = ctxt.clone() as AdviceContext<any, any>;
+            advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.CLASS>;
             ctxt.target.proto.constructor = advice(ctxtCopy) ?? ctxt.target.proto.constructor;
             ctxt.advices = ctxtCopy.advices;
-            advice = ctxt.advices.pop() as CompileAdvice<any, AnnotationType.CLASS>;
         }
     }
 
@@ -356,19 +356,20 @@ class AdviceRunnersImpl implements AdviceRunners {
 
     private _compileProperty(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): PropertyDescriptor {
         const target = ctxt.target;
-        const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
-        let lastAdvice: CompileAdvice<any, AnnotationType.PROPERTY>;
-        let newDescriptor: PropertyDescriptor = compileAdvices
-            .map(advice => {
-                lastAdvice = advice;
-                return advice(ctxt.clone() as AdviceContext<any, any>) as PropertyDescriptor;
-            })
-            .filter(c => !!c)
-            .slice(-1)[0];
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
+        let advice: CompileAdvice<any, AnnotationType.PROPERTY>;
+        let newDescriptor: PropertyDescriptor;
+
+        while (ctxt.advices.length) {
+            const ctxtClone = ctxt.clone() as AdviceContext<any, any>;
+            advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.PROPERTY>;
+            newDescriptor = (advice(ctxtClone) as PropertyDescriptor) ?? newDescriptor;
+            ctxt.advices = ctxtClone.advices;
+        }
 
         if (newDescriptor) {
             if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-                throw new WeavingError(`Cannot apply advice ${lastAdvice} : ${target.label} is not configurable`);
+                throw new WeavingError(`Cannot apply advice ${advice} : ${target.label} is not configurable`);
             }
 
             // test property validity
@@ -399,7 +400,11 @@ class AdviceRunnersImpl implements AdviceRunners {
     }
 
     private _aroundPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
         assert(isFunction(refDescriptor?.get));
         this._applyAroundMethod(ctxt, refDescriptor.get, _isPropertyGet);
     }
@@ -421,7 +426,11 @@ class AdviceRunnersImpl implements AdviceRunners {
     }
 
     private _aroundPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
         assert(!!refDescriptor);
 
         const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt).filter(_isPropertySet);
@@ -470,26 +479,25 @@ class AdviceRunnersImpl implements AdviceRunners {
 
     private _compileMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): PropertyDescriptor {
         const target = ctxt.target;
-        const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
-        let lastAdvice: CompileAdvice<any, AnnotationType.METHOD>;
-        let newDescriptor: PropertyDescriptor = compileAdvices
-            .map(advice => {
-                lastAdvice = advice;
-                return advice(ctxt.clone() as AdviceContext<any, any>) as PropertyDescriptor;
-            })
-            .filter(c => !isUndefined(c))
-            .slice(-1)[0];
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
+        let advice: CompileAdvice<any, AnnotationType.METHOD>;
+        let newDescriptor: PropertyDescriptor;
+
+        while (ctxt.advices.length) {
+            const ctxtClone = ctxt.clone() as AdviceContext<any, any>;
+            advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.METHOD>;
+            newDescriptor = (advice(ctxtClone) as PropertyDescriptor) ?? newDescriptor;
+            ctxt.advices = ctxtClone.advices;
+        }
 
         if (!isUndefined(newDescriptor)) {
             if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-                throw new WeavingError(`Cannot apply advice ${lastAdvice} : ${target.label} is not configurable`);
+                throw new WeavingError(`Cannot apply advice ${advice} : ${target.label} is not configurable`);
             }
 
             // ensure value is a function
             if (!isFunction(newDescriptor.value)) {
-                throw new WeavingError(
-                    `Expected ${lastAdvice} to return a method descriptor. Got: ${newDescriptor.value}`,
-                );
+                throw new WeavingError(`Expected ${advice} to return a method descriptor. Got: ${newDescriptor.value}`);
             }
 
             if (isUndefined(newDescriptor.enumerable)) {
@@ -515,7 +523,11 @@ class AdviceRunnersImpl implements AdviceRunners {
     }
 
     private _aroundMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): any {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
         assert(isFunction(refDescriptor?.value));
         return this._applyAroundMethod(ctxt, refDescriptor.value);
     }
