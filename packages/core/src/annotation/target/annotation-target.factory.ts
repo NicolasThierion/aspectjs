@@ -4,6 +4,7 @@ import {
     getMetaOrDefault,
     getOrDefault,
     getProto,
+    isFunction,
     isNumber,
     isObject,
     isUndefined,
@@ -72,8 +73,8 @@ export abstract class AnnotationTargetFactory {
         if (isUndefined(type) && isUndefined(dtarget.type)) {
             if (isNumber(((dtarget as any) as ParameterAdviceTarget<T>).parameterIndex)) {
                 type = AnnotationType.PARAMETER;
-            } else if (!isUndefined(((dtarget as any) as MethodAdviceTarget<T>).propertyKey)) {
-                if (isObject(((dtarget as any) as MethodAdviceTarget<T>).descriptor)) {
+            } else if (!isUndefined(dtarget.propertyKey)) {
+                if (isObject(dtarget.descriptor) && isFunction(dtarget.descriptor.value)) {
                     type = AnnotationType.METHOD;
                 } else {
                     type = AnnotationType.PROPERTY;

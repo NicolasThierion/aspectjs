@@ -8,13 +8,13 @@ import {
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/weaving-error';
-import { getWeaver, AdviceRunners } from '../../weaver/weaver';
+import { AdviceRunners, getWeaver } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, getProto, isFunction, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { AnnotationTarget, PropertyAdviceTarget } from '../target/annotation-target';
+import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
-import { AdviceContext, MutableAdviceContext } from '../../weaver/advices/advice-context';
+import { MutableAdviceContext } from '../../weaver/advices/advice-context';
 import { PointcutPhase } from '../../weaver/advices/pointcut';
 import { AnnotationsBundle } from '../bundle/bundle';
 import { JoinPoint } from '../../weaver/types';

@@ -330,31 +330,37 @@ class AdviceRunnersImpl implements AdviceRunners {
     private _afterReturnClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): any {
         let newInstance = ctxt.instance;
 
-        const advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
-        advices.forEach(advice => {
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
+        while (ctxt.advices.length) {
+            const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
             ctxt.value = ctxt.instance;
-            newInstance = advice(ctxt.clone() as AdviceContext<any, any>, ctxt.value);
+            const _ctxt = ctxt.clone() as AdviceContext<any, any>;
+            newInstance = advice(_ctxt, ctxt.value);
             if (!isUndefined(newInstance)) {
                 ctxt.instance = newInstance;
             }
-        });
+            ctxt.advices = _ctxt.advices;
+        }
 
         return ctxt.instance;
     }
 
     private _afterThrowClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
-        const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
-        if (!afterThrowAdvices.length) {
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
+        if (!ctxt.advices.length) {
             // pass-trough errors by default
             throw ctxt.error;
         } else {
             let newInstance = ctxt.instance;
-            afterThrowAdvices.forEach(advice => {
-                newInstance = advice(ctxt.clone() as AdviceContext<any, any>, ctxt.error);
+            while (ctxt.advices.length) {
+                const advice = ctxt.advices.shift() as AfterThrowAdvice<any>;
+                const _ctxt = ctxt.clone() as AdviceContext<any, any>;
+                newInstance = advice(_ctxt, ctxt.error);
+                ctxt.advices = _ctxt.advices;
                 if (!isUndefined(newInstance)) {
                     ctxt.instance = newInstance;
                 }
-            });
+            }
         }
     }
 
@@ -618,19 +624,21 @@ class AdviceRunnersImpl implements AdviceRunners {
     }
 
     private _applyAfterReturnAdvice(ctxt: MutableAdviceContext<AnnotationType>, filter?: (a: Advice) => boolean) {
-        let advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
 
         if (filter) {
-            advices = advices.filter(filter);
+            ctxt.advices = ctxt.advices.filter(filter);
         }
 
-        if (advices.length) {
+        if (ctxt.advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
             const frozenCtxt = ctxt.clone() as AfterReturnContext<any, AnnotationType>;
 
-            advices.forEach((advice: AfterReturnAdvice<unknown>) => {
+            while (ctxt.advices.length) {
+                const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
                 ctxt.value = advice(frozenCtxt, frozenCtxt.value);
-            });
+                ctxt.advices = frozenCtxt.advices;
+            }
         }
 
         return ctxt.value;
@@ -641,23 +649,25 @@ class AdviceRunnersImpl implements AdviceRunners {
         filter?: (a: Advice) => boolean,
         prohibitReturn = false,
     ) {
-        let advices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
 
         if (filter) {
-            advices = advices.filter(filter);
+            ctxt.advices = ctxt.advices.filter(filter);
         }
 
-        if (advices.length) {
+        if (ctxt.advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
             const frozenCtxt = ctxt.clone() as AfterThrowContext<any, AnnotationType>;
 
-            advices.forEach((advice: AfterThrowAdvice<unknown>) => {
+            while (ctxt.advices.length) {
+                const advice = ctxt.advices.shift() as AfterThrowAdvice<unknown>;
                 ctxt.value = advice(frozenCtxt, frozenCtxt.error);
+                ctxt.advices = frozenCtxt.advices;
 
                 if (prohibitReturn && !isUndefined(ctxt.value)) {
                     throw new WeavingError(`Returning from advice "${advice}" is not supported`);
                 }
-            });
+            }
 
             return ctxt.value;
         } else {
