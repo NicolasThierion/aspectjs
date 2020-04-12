@@ -426,7 +426,6 @@ describe('@Around advice', () => {
                             'aroundAdvice',
                             (ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                                 expect(ctxt.instance).not.toBeNull();
-                                return ['around'];
                             },
                         )
                         .and.callThrough();

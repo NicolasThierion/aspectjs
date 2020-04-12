@@ -86,7 +86,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA', 'beforeB']);
             });
 
-            it('should not shared across two @Compile advices on different classes', () => {
+            it('should not shared across two @Before advices on different classes', () => {
                 @AClass()
                 class Test1 {}
                 new Test1();
@@ -98,7 +98,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeB']);
             });
 
-            it('should be shared between a @Compile and a @Before advice on the same class', () => {
+            it('should be shared between a @Before and a @Around advice on the same class', () => {
                 aroundAAdvice.and.callFake((ctxt: AroundContext<any, any>) => {
                     pushData(ctxt, 'aroundA');
                     return ctxt.joinpoint();
@@ -226,7 +226,7 @@ describe('BeforeContext', () => {
                 beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
                 beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
             });
-            it('should be shared across two @Compile advices on the same property', () => {
+            it('should be shared across two @Before advices on the same property', () => {
                 class Test {
                     @AProperty()
                     @BProperty()
@@ -239,7 +239,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA', 'beforeB']);
             });
 
-            it('should not shared across two @Compile advices on different properties', () => {
+            it('should not shared across two @Before advices on different properties', () => {
                 @AClass()
                 class Test {
                     @AProperty()
@@ -401,7 +401,7 @@ describe('BeforeContext', () => {
                 beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
                 beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
             });
-            it('should be shared across two @Compile advices on the same property', () => {
+            it('should be shared across two @Before advices on the same property', () => {
                 class Test {
                     @AProperty()
                     @BProperty()
@@ -413,7 +413,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA', 'beforeB']);
             });
 
-            it('should not shared across two @Compile advices on different properties', () => {
+            it('should not shared across two @Before advices on different properties', () => {
                 @AClass()
                 class Test {
                     @AProperty()
@@ -432,7 +432,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeB']);
             });
 
-            it('should be shared between a @Compile and a @Before advice on the same property', () => {
+            it('should be shared between a @Before and a @Around advice on the same property', () => {
                 aroundAAdvice.and.callFake(ctxt => {
                     pushData(ctxt, 'aroundA');
                     return ctxt.joinpoint();
@@ -577,7 +577,7 @@ describe('BeforeContext', () => {
                 beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
             });
 
-            it('should be shared across two @Compile advices on the same method', () => {
+            it('should be shared across two @Before advices on the same method', () => {
                 class Test {
                     @AMethod()
                     @BMethod()
@@ -590,7 +590,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA', 'beforeB']);
             });
 
-            it('should not shared across two @Compile advices on different method', () => {
+            it('should not shared across two @Before advices on different method', () => {
                 @AClass()
                 class Test {
                     @AMethod()
@@ -609,7 +609,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeB']);
             });
 
-            it('should be shared between a @Compile and a @Before advice on the same method', () => {
+            it('should be shared between a @Before and a @Around advice on the same method', () => {
                 aroundAAdvice.and.callFake(ctxt => {
                     pushData(ctxt, 'aroundA');
                     return ctxt.joinpoint();
@@ -749,7 +749,7 @@ describe('BeforeContext', () => {
                 beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
                 beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
             });
-            it('should be shared across two @Compile advices on the same parameter', () => {
+            it('should be shared across two @Before advices on the same parameter', () => {
                 class Test {
                     someMethod(@AParameter() @BParameter() param: any): any {}
                 }
@@ -759,7 +759,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA', 'beforeB']);
             });
 
-            it('should not shared across two @Compile advices on different parameters', () => {
+            it('should not shared across two @Before advices on different parameters', () => {
                 class Test {
                     someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {}
                 }
@@ -768,7 +768,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA']);
             });
 
-            it('should be shared between a @Compile and a @Before advice on the same parameters', () => {
+            it('should be shared between a @Before and a @Around advice on the same parameters', () => {
                 aroundAAdvice.and.callFake(ctxt => {
                     pushData(ctxt, 'aroundA');
                     ctxt.joinpoint();

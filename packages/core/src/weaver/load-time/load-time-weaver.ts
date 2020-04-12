@@ -435,47 +435,14 @@ class AdviceRunnersImpl implements AdviceRunners {
     }
 
     private _aroundPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
-        try {
-            const refDescriptor = Reflect.getOwnMetadata(
-                'aspectjs.refDescriptor',
-                ctxt.target.proto,
-                ctxt.target.propertyKey,
-            );
-            assert(!!refDescriptor);
-
-            const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt).filter(_isPropertySet);
-
-            const refSetter = refDescriptor.set.bind(ctxt.instance);
-
-            // create getter joinpoint
-            let jp = JoinpointFactory.create(ctxt, refSetter);
-
-            if (aroundAdvices.length) {
-                let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
-
-                // nest all around advices into each others
-
-                for (let i = aroundAdvices.length - 2; i > -1; --i) {
-                    const previousAroundAdvice = aroundAdvice;
-                    aroundAdvice = aroundAdvices[i];
-                    const previousJp = jp;
-
-                    // replace args that may have been passed from calling advice's joinpoint
-                    jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
-                        ctxt.joinpoint = previousJp;
-                        ctxt.args = args;
-                        return previousAroundAdvice(ctxt.clone() as AdviceContext<any, any>, previousJp, args);
-                    });
-                }
-
-                ctxt.joinpoint = jp;
-                return (ctxt.value = aroundAdvice(ctxt.clone() as AdviceContext<any, any>, jp, ctxt.args));
-            } else {
-                return (ctxt.value = jp(ctxt.args));
-            }
-        } finally {
-            delete ctxt.joinpoint;
-        }
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
+        assert(isFunction(refDescriptor?.set));
+        this._applyAroundMethod(ctxt, refDescriptor.set, _isPropertySet, false);
+        delete ctxt.joinpoint;
     }
 
     private _afterReturnPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
@@ -549,7 +516,8 @@ class AdviceRunnersImpl implements AdviceRunners {
         ctxt: MutableAdviceContext<A>,
         refMethod: (...args: any[]) => any,
         filter?: (advice: Advice) => boolean,
-    ): void {
+        allowReturn = true,
+    ): any {
         // create method joinpoint
         const originalJp = JoinpointFactory.create(ctxt, refMethod);
 
@@ -563,8 +531,10 @@ class AdviceRunnersImpl implements AdviceRunners {
             const jp = createNextJoinpoint();
             ctxt.value = jp();
         } else {
-            return (ctxt.value = originalJp(ctxt.args));
+            ctxt.value = originalJp(ctxt.args);
         }
+
+        return ctxt.value;
 
         function createNextJoinpoint() {
             return JoinpointFactory.create(ctxt, (...args: any[]) => {
@@ -578,6 +548,10 @@ class AdviceRunnersImpl implements AdviceRunners {
 
                     ctxt.value = lastAdvice(_ctxt as any, nextJp, args);
                     ctxt.advices = _ctxt.advices;
+
+                    if (ctxt.value !== undefined && !allowReturn) {
+                        throw new Error(`Returning from ${lastAdvice} is not supported`);
+                    }
 
                     return ctxt.value;
                 } else {
