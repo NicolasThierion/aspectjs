@@ -20,6 +20,7 @@
   "scripts": {
     "build": "rollup --config ./rollup.config.js",
     "test": "nyc jasmine-ts --config=jasmine.json",
+    "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",
     "size": "rollup --config ./rollup.config.js && size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",

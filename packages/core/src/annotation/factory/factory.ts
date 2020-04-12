@@ -201,28 +201,29 @@ function _createClassDecoration<T>(
     const ctorName = ctxt.target.proto.constructor.name;
 
     const ctor = function(...ctorArgs: any[]): T {
-        ctxt.args = ctorArgs;
+        const _ctxt = ctxt.clone();
+        _ctxt.args = ctorArgs;
 
         try {
-            runner.class[PointcutPhase.BEFORE](ctxt);
-            ctxt.instance = this;
+            runner.class[PointcutPhase.BEFORE](_ctxt);
+            _ctxt.instance = this;
 
-            runner.class[PointcutPhase.AROUND](ctxt);
+            runner.class[PointcutPhase.AROUND](_ctxt);
 
-            runner.class[PointcutPhase.AFTERRETURN](ctxt);
+            runner.class[PointcutPhase.AFTERRETURN](_ctxt);
 
-            return ctxt.instance;
+            return _ctxt.instance;
         } catch (e) {
             // consider WeavingErrors as not recoverable by an aspect
             if (e instanceof WeavingError) {
                 throw e;
             }
 
-            ctxt.error = e;
-            runner.class[PointcutPhase.AFTERTHROW](ctxt);
-            return ctxt.instance;
+            _ctxt.error = e;
+            runner.class[PointcutPhase.AFTERTHROW](_ctxt);
+            return _ctxt.instance;
         } finally {
-            runner.class[PointcutPhase.AFTER](ctxt);
+            runner.class[PointcutPhase.AFTER](_ctxt);
         }
     };
 
@@ -286,6 +287,7 @@ function _createPropertyDecoration(
             r[PointcutPhase.BEFORE](_ctxt);
 
             r[PointcutPhase.AROUND](_ctxt);
+            assert(!_ctxt.joinpoint);
 
             return r[PointcutPhase.AFTERRETURN](_ctxt);
         } catch (e) {
@@ -373,6 +375,7 @@ function _createMethodDecoration(
             r[PointcutPhase.BEFORE](_ctxt);
 
             r[PointcutPhase.AROUND](_ctxt);
+            assert(!_ctxt.joinpoint);
 
             return r[PointcutPhase.AFTERRETURN](_ctxt);
         } catch (e) {
