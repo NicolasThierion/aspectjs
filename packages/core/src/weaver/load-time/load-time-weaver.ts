@@ -236,10 +236,8 @@ class AdviceRunnersImpl implements AdviceRunners {
         ctxt.advices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
         let advice: CompileAdvice<any, AnnotationType.CLASS>;
         while (ctxt.advices.length) {
-            const ctxtCopy = ctxt.clone() as AdviceContext<any, any>;
             advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.CLASS>;
-            ctxt.target.proto.constructor = advice(ctxtCopy) ?? ctxt.target.proto.constructor;
-            ctxt.advices = ctxtCopy.advices;
+            ctxt.target.proto.constructor = advice(ctxt as AdviceContext<any, any>) ?? ctxt.target.proto.constructor;
         }
     }
 
@@ -334,12 +332,10 @@ class AdviceRunnersImpl implements AdviceRunners {
         while (ctxt.advices.length) {
             const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
             ctxt.value = ctxt.instance;
-            const _ctxt = ctxt.clone() as AdviceContext<any, any>;
-            newInstance = advice(_ctxt, ctxt.value);
+            newInstance = advice(ctxt as AdviceContext<any, any>, ctxt.value);
             if (!isUndefined(newInstance)) {
                 ctxt.instance = newInstance;
             }
-            ctxt.advices = _ctxt.advices;
         }
 
         return ctxt.instance;
@@ -354,9 +350,7 @@ class AdviceRunnersImpl implements AdviceRunners {
             let newInstance = ctxt.instance;
             while (ctxt.advices.length) {
                 const advice = ctxt.advices.shift() as AfterThrowAdvice<any>;
-                const _ctxt = ctxt.clone() as AdviceContext<any, any>;
-                newInstance = advice(_ctxt, ctxt.error);
-                ctxt.advices = _ctxt.advices;
+                newInstance = advice(ctxt as AdviceContext<any, any>, ctxt.error);
                 if (!isUndefined(newInstance)) {
                     ctxt.instance = newInstance;
                 }
@@ -375,10 +369,8 @@ class AdviceRunnersImpl implements AdviceRunners {
         let newDescriptor: PropertyDescriptor;
 
         while (ctxt.advices.length) {
-            const ctxtClone = ctxt.clone() as AdviceContext<any, any>;
             advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.PROPERTY>;
-            newDescriptor = (advice(ctxtClone) as PropertyDescriptor) ?? newDescriptor;
-            ctxt.advices = ctxtClone.advices;
+            newDescriptor = (advice(ctxt as AdviceContext<any, any>) as PropertyDescriptor) ?? newDescriptor;
         }
 
         if (newDescriptor) {
@@ -470,10 +462,8 @@ class AdviceRunnersImpl implements AdviceRunners {
         let newDescriptor: PropertyDescriptor;
 
         while (ctxt.advices.length) {
-            const ctxtClone = ctxt.clone() as AdviceContext<any, any>;
             advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.METHOD>;
-            newDescriptor = (advice(ctxtClone) as PropertyDescriptor) ?? newDescriptor;
-            ctxt.advices = ctxtClone.advices;
+            newDescriptor = (advice(ctxt as AdviceContext<any, any>) as PropertyDescriptor) ?? newDescriptor;
         }
 
         if (!isUndefined(newDescriptor)) {
@@ -548,17 +538,16 @@ class AdviceRunnersImpl implements AdviceRunners {
                     lastAdvice = ctxt.advices.shift() as AroundAdvice<any>;
 
                     const nextJp = createNextJoinpoint() as any;
-                    const _ctxt = ctxt.clone();
-                    _ctxt.joinpoint = nextJp;
-                    _ctxt.args = args;
+                    ctxt.joinpoint = nextJp;
+                    ctxt.args = args;
 
-                    ctxt.value = lastAdvice(_ctxt as any, nextJp, args);
-                    ctxt.advices = _ctxt.advices;
+                    ctxt.value = lastAdvice(ctxt as AroundContext<any, any>, nextJp, args);
 
                     if (ctxt.value !== undefined && !allowReturn) {
                         throw new Error(`Returning from ${lastAdvice} is not supported`);
                     }
 
+                    delete ctxt.joinpoint;
                     return ctxt.value;
                 } else {
                     return originalJp(args);
@@ -614,9 +603,7 @@ class AdviceRunnersImpl implements AdviceRunners {
         }
         while (ctxt.advices.length) {
             const advice = ctxt.advices.shift() as AfterAdvice<unknown>;
-            const frozenCtxt = ctxt.clone() as AdviceContext<any, any>;
-            const retVal = advice(frozenCtxt) as any;
-            ctxt.advices = frozenCtxt.advices;
+            const retVal = advice(ctxt as AdviceContext<any, any>) as any;
             if (!isUndefined(retVal)) {
                 throw new WeavingError(`Returning from advice "${advice}" is not supported`);
             }
@@ -632,12 +619,10 @@ class AdviceRunnersImpl implements AdviceRunners {
 
         if (ctxt.advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-            const frozenCtxt = ctxt.clone() as AfterReturnContext<any, AnnotationType>;
 
             while (ctxt.advices.length) {
                 const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
-                ctxt.value = advice(frozenCtxt, frozenCtxt.value);
-                ctxt.advices = frozenCtxt.advices;
+                ctxt.value = advice(ctxt as AfterReturnContext<any, AnnotationType>, ctxt.value);
             }
         }
 
@@ -657,12 +642,10 @@ class AdviceRunnersImpl implements AdviceRunners {
 
         if (ctxt.advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-            const frozenCtxt = ctxt.clone() as AfterThrowContext<any, AnnotationType>;
 
             while (ctxt.advices.length) {
                 const advice = ctxt.advices.shift() as AfterThrowAdvice<unknown>;
-                ctxt.value = advice(frozenCtxt, frozenCtxt.error);
-                ctxt.advices = frozenCtxt.advices;
+                ctxt.value = advice(ctxt as AfterThrowContext<any, AnnotationType>, ctxt.error);
 
                 if (prohibitReturn && !isUndefined(ctxt.value)) {
                     throw new WeavingError(`Returning from advice "${advice}" is not supported`);

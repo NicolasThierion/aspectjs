@@ -201,29 +201,28 @@ function _createClassDecoration<T>(
     const ctorName = ctxt.target.proto.constructor.name;
 
     const ctor = function(...ctorArgs: any[]): T {
-        const _ctxt = ctxt.clone();
-        _ctxt.args = ctorArgs;
+        ctxt.args = ctorArgs;
 
         try {
-            runner.class[PointcutPhase.BEFORE](_ctxt);
-            _ctxt.instance = this;
+            runner.class[PointcutPhase.BEFORE](ctxt);
+            ctxt.instance = this;
 
-            runner.class[PointcutPhase.AROUND](_ctxt);
+            runner.class[PointcutPhase.AROUND](ctxt);
 
-            runner.class[PointcutPhase.AFTERRETURN](_ctxt);
+            runner.class[PointcutPhase.AFTERRETURN](ctxt);
 
-            return _ctxt.instance;
+            return ctxt.instance;
         } catch (e) {
             // consider WeavingErrors as not recoverable by an aspect
             if (e instanceof WeavingError) {
                 throw e;
             }
 
-            _ctxt.error = e;
-            runner.class[PointcutPhase.AFTERTHROW](_ctxt);
-            return _ctxt.instance;
+            ctxt.error = e;
+            runner.class[PointcutPhase.AFTERTHROW](ctxt);
+            return ctxt.instance;
         } finally {
-            runner.class[PointcutPhase.AFTER](_ctxt);
+            runner.class[PointcutPhase.AFTER](ctxt);
         }
     };
 
@@ -279,43 +278,40 @@ function _createPropertyDecoration(
         ...refDescriptor,
     };
     newDescriptor.get = function() {
-        const _ctxt = ctxt.clone();
-        _ctxt.args = [];
+        ctxt.args = [];
         const r = runner.property.getter;
         try {
-            _ctxt.instance = this;
-            r[PointcutPhase.BEFORE](_ctxt);
+            ctxt.instance = this;
+            r[PointcutPhase.BEFORE](ctxt);
 
-            r[PointcutPhase.AROUND](_ctxt);
-            assert(!_ctxt.joinpoint);
+            r[PointcutPhase.AROUND](ctxt);
+            assert(!ctxt.joinpoint);
 
-            return r[PointcutPhase.AFTERRETURN](_ctxt);
+            return r[PointcutPhase.AFTERRETURN](ctxt);
         } catch (e) {
-            _ctxt.error = e;
-            return r[PointcutPhase.AFTERTHROW](_ctxt);
+            ctxt.error = e;
+            return r[PointcutPhase.AFTERTHROW](ctxt);
         } finally {
-            r[PointcutPhase.AFTER](_ctxt);
+            r[PointcutPhase.AFTER](ctxt);
         }
     };
 
     if (_isWritable(newDescriptor)) {
         newDescriptor.set = function(...args: any[]) {
-            const _ctxt = ctxt.clone();
-
             const r = runner.property.setter;
             try {
-                _ctxt.args = args;
-                _ctxt.instance = this;
-                r[PointcutPhase.BEFORE](_ctxt);
+                ctxt.args = args;
+                ctxt.instance = this;
+                r[PointcutPhase.BEFORE](ctxt);
 
-                r[PointcutPhase.AROUND](_ctxt);
+                r[PointcutPhase.AROUND](ctxt);
 
-                return r[PointcutPhase.AFTERRETURN](_ctxt);
+                return r[PointcutPhase.AFTERRETURN](ctxt);
             } catch (e) {
-                _ctxt.error = e;
-                return r[PointcutPhase.AFTERTHROW](_ctxt);
+                ctxt.error = e;
+                return r[PointcutPhase.AFTERTHROW](ctxt);
             } finally {
-                r[PointcutPhase.AFTER](_ctxt);
+                r[PointcutPhase.AFTER](ctxt);
             }
         };
 
@@ -366,23 +362,21 @@ function _createMethodDecoration(
 
     const newDescriptor = { ...refDescriptor };
     newDescriptor.value = function(...args: any[]) {
-        const _ctxt = ctxt.clone();
-
         const r = runner.method;
         try {
-            _ctxt.args = args;
-            _ctxt.instance = this;
-            r[PointcutPhase.BEFORE](_ctxt);
+            ctxt.args = args;
+            ctxt.instance = this;
+            r[PointcutPhase.BEFORE](ctxt);
 
-            r[PointcutPhase.AROUND](_ctxt);
-            assert(!_ctxt.joinpoint);
+            r[PointcutPhase.AROUND](ctxt);
+            assert(!ctxt.joinpoint);
 
-            return r[PointcutPhase.AFTERRETURN](_ctxt);
+            return r[PointcutPhase.AFTERRETURN](ctxt);
         } catch (e) {
-            _ctxt.error = e;
-            return r[PointcutPhase.AFTERTHROW](_ctxt);
+            ctxt.error = e;
+            return r[PointcutPhase.AFTERTHROW](ctxt);
         } finally {
-            r[PointcutPhase.AFTER](_ctxt);
+            r[PointcutPhase.AFTER](ctxt);
         }
     };
     Reflect.defineProperty(newDescriptor.value, 'name', {
