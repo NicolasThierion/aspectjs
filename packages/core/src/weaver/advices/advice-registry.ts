@@ -2,9 +2,11 @@ import { Advice } from './types';
 import { assert, getMetaOrDefault, getProto } from '../../utils';
 
 export class AdvicesRegistry {
-    static create(aspect: object, advice: Advice) {
-        advice.aspect = aspect;
-        getMetaOrDefault('aspectjs.registry.aspect.advices', getProto(aspect), () => []).push(advice);
+    static create(aspect: object, ...advices: Advice[]) {
+        advices.forEach(advice => (advice.aspect = aspect));
+        getMetaOrDefault('aspectjs.registry.aspect.advices', getProto(aspect), () => {
+            return _recursiveGetAdvicesForAspect(aspect);
+        }).push(...advices);
     }
     static getAdvicesForAspect(aspect: object): Advice[] {
         const advices = getMetaOrDefault('aspectjs.registry.aspect.advices', getProto(aspect), () => [] as Advice[]);
@@ -12,4 +14,12 @@ export class AdvicesRegistry {
 
         return advices;
     }
+}
+
+function _recursiveGetAdvicesForAspect(aspect: object): Advice[] {
+    return getMetaOrDefault('aspectjs.registry.aspect.advices', getProto(aspect), () => {
+        const parentProto = Reflect.getPrototypeOf(getProto(aspect));
+
+        return parentProto === Object.prototype ? [] : _recursiveGetAdvicesForAspect(parentProto);
+    });
 }

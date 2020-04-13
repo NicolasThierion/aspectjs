@@ -161,36 +161,42 @@ describe('@AfterThrow advice', () => {
     });
 
     describe('applied on a property', () => {
-        @Aspect('PropertyThrow')
-        class PropertyThrowAspect {
-            @Compile(on.property.withAnnotations(AProperty))
-            compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
-                return {
-                    get() {
-                        throw new Error('expected');
-                    },
-                    set(val) {
-                        Reflect.defineMetadata(ctxt.target.propertyKey, val, this);
-                    },
-                };
+        let _PropertyThrowAspect: any;
+        let _AfterThrowAspect: any;
+        beforeEach(() => {
+            @Aspect('PropertyThrow')
+            class PropertyThrowAspect {
+                @Compile(on.property.withAnnotations(AProperty))
+                compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
+                    return {
+                        get() {
+                            throw new Error('expected');
+                        },
+                        set(val) {
+                            Reflect.defineMetadata(ctxt.target.propertyKey, val, this);
+                        },
+                    };
+                }
             }
-        }
 
-        @Aspect('APropertyLabel')
-        class AfterThrowAspect {
-            @AfterThrow(on.property.withAnnotations(AProperty))
-            afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
-                afterThrowAdvice(ctxt, error);
-                return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
+            @Aspect('APropertyLabel')
+            class AfterThrowAspect {
+                @AfterThrow(on.property.withAnnotations(AProperty))
+                afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
+                    afterThrowAdvice(ctxt, error);
+                    return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
+                }
             }
-        }
 
+            _PropertyThrowAspect = PropertyThrowAspect;
+            _AfterThrowAspect = AfterThrowAspect;
+        });
         let a: Labeled;
 
         describe('getting this property', () => {
             describe('with a descriptor that do not throws', () => {
                 beforeEach(() => {
-                    setupWeaver(new AfterThrowAspect());
+                    setupWeaver(new _AfterThrowAspect());
 
                     class A implements Labeled {
                         @AProperty()
@@ -212,7 +218,7 @@ describe('@AfterThrow advice', () => {
 
             describe('with a descriptor that throws', () => {
                 beforeEach(() => {
-                    setupWeaver(new AfterThrowAspect(), new PropertyThrowAspect());
+                    setupWeaver(new _AfterThrowAspect(), new _PropertyThrowAspect());
 
                     class A implements Labeled {
                         @AProperty()
@@ -253,7 +259,7 @@ describe('@AfterThrow advice', () => {
                         }
                     }
 
-                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+                    setupWeaver(new _PropertyThrowAspect(), new ReturnNewValueAspect());
 
                     class A implements Labeled {
                         @AProperty()
@@ -268,37 +274,44 @@ describe('@AfterThrow advice', () => {
     });
 
     describe('applied on a property setter', () => {
-        @Aspect('PropertyThrow')
-        class PropertyThrowAspect {
-            @Compile(on.property.withAnnotations(AProperty))
-            compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
-                return {
-                    get() {
-                        return this._val;
-                    },
-                    set(val) {
-                        this._val = val;
-                        throw thrownError;
-                    },
-                };
+        let _PropertyThrowAspect: any;
+        let _AfterThrowAspect: any;
+        beforeEach(() => {
+            @Aspect('PropertyThrow')
+            class PropertyThrowAspect {
+                @Compile(on.property.withAnnotations(AProperty))
+                compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
+                    return {
+                        get() {
+                            return this._val;
+                        },
+                        set(val) {
+                            this._val = val;
+                            throw thrownError;
+                        },
+                    };
+                }
             }
-        }
 
-        @Aspect('APropertyLabel')
-        class AfterThrowAspect {
-            @AfterThrow(on.property.setter.withAnnotations(AProperty))
-            afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
-                afterThrowAdvice(ctxt, error);
-                return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
+            @Aspect('APropertyLabel')
+            class AfterThrowAspect {
+                @AfterThrow(on.property.setter.withAnnotations(AProperty))
+                afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
+                    afterThrowAdvice(ctxt, error);
+                    return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
+                }
             }
-        }
+
+            _PropertyThrowAspect = PropertyThrowAspect;
+            _AfterThrowAspect = AfterThrowAspect;
+        });
 
         let a: Labeled;
 
         describe('setting this property', () => {
             describe('with a descriptor that do not throws', () => {
                 beforeEach(() => {
-                    setupWeaver(new AfterThrowAspect());
+                    setupWeaver(new _AfterThrowAspect());
 
                     class A implements Labeled {
                         @AProperty()
@@ -321,7 +334,7 @@ describe('@AfterThrow advice', () => {
 
             describe('with a descriptor that throws', () => {
                 beforeEach(() => {
-                    setupWeaver(new AfterThrowAspect(), new PropertyThrowAspect());
+                    setupWeaver(new _AfterThrowAspect(), new _PropertyThrowAspect());
 
                     class A implements Labeled {
                         @AProperty()
@@ -373,7 +386,7 @@ describe('@AfterThrow advice', () => {
                         }
                     }
 
-                    setupWeaver(new PropertyThrowAspect(), new ReturnNewValueAspect());
+                    setupWeaver(new _PropertyThrowAspect(), new ReturnNewValueAspect());
 
                     class A implements Labeled {
                         @AProperty()
@@ -394,16 +407,16 @@ describe('@AfterThrow advice', () => {
     });
 
     describe('applied on a method', () => {
-        @Aspect('AfterThrowAspect')
-        class AfterThrowAspect {
-            @AfterThrow(on.method.withAnnotations(AMethod))
-            afterThrow(ctxt: AfterThrowContext<any, AnnotationType.METHOD>, error: Error): void {
-                return afterThrowAdvice(ctxt, error);
-            }
-        }
-
         let a: Labeled;
         beforeEach(() => {
+            @Aspect('AfterThrowAspect')
+            class AfterThrowAspect {
+                @AfterThrow(on.method.withAnnotations(AMethod))
+                afterThrow(ctxt: AfterThrowContext<any, AnnotationType.METHOD>, error: Error): void {
+                    return afterThrowAdvice(ctxt, error);
+                }
+            }
+
             setupWeaver(new AfterThrowAspect());
 
             afterThrowAdvice = jasmine

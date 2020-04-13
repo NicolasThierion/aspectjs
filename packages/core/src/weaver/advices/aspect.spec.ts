@@ -12,8 +12,8 @@ import { AnnotationType } from '../../annotation/annotation.types';
 import Spy = jasmine.Spy;
 import { JoinPoint } from '../types';
 
-describe('Aspect', () => {
-    describe('given an advice', () => {
+describe('@Aspect', () => {
+    describe('with an advice', () => {
         describe('targeted with multiple pointcuts', () => {
             let advice: Spy;
             beforeEach(() => {
@@ -59,9 +59,48 @@ describe('Aspect', () => {
             });
         });
     });
+
+    describe('that inherits from other class that define advices', () => {
+        let parentMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+        let childMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+
+        beforeEach(() => {
+            parentMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+            childMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+
+            class ParentClass {
+                @Before(on.class.withAnnotations(AClass))
+                parentMethod() {
+                    parentMethodAdvice();
+                }
+            }
+
+            @Aspect()
+            class ChildClass extends ParentClass {
+                @After(on.class.withAnnotations(AClass))
+                parentMethod() {
+                    childMethodAdvice();
+                }
+            }
+
+            setupWeaver(new ChildClass());
+        });
+
+        fit('should invoke advices of parent class', () => {
+            expect(parentMethodAdvice).not.toHaveBeenCalled();
+            expect(childMethodAdvice).not.toHaveBeenCalled();
+
+            @AClass()
+            class C {}
+
+            new C();
+            expect(parentMethodAdvice).toHaveBeenCalled();
+            expect(childMethodAdvice).toHaveBeenCalled();
+        });
+    });
 });
 
-describe('given several aspects', () => {
+describe('given several @Aspects', () => {
     let labels: string[];
 
     beforeEach(() => {
@@ -70,116 +109,117 @@ describe('given several aspects', () => {
 
     describe('that do not specify a priority', () => {
         beforeEach(() => {
+            @Aspect()
+            class LabelAspect {
+                constructor(public id: string) {}
+
+                @Compile(on.class.withAnnotations(AClass))
+                compileClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
+                    const id = this.id;
+                    return function() {
+                        labels.push(`${id}_compileClass`);
+                    };
+                }
+
+                @Before(on.class.withAnnotations(AClass))
+                beforeClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
+                    labels.push(`${this.id}_beforeClass`);
+                }
+
+                @Around(on.class.withAnnotations(AClass))
+                aroundClass(ctxt: AroundContext<Labeled, AnnotationType.CLASS>) {
+                    labels.push(`${this.id}_AroundClass`);
+                    return ctxt.joinpoint();
+                }
+
+                @After(on.class.withAnnotations(AClass))
+                afterClass(ctxt: AfterContext<Labeled, AnnotationType.CLASS>) {
+                    labels.push(`${this.id}_AfterClass`);
+                }
+
+                @AfterReturn(on.class.withAnnotations(AClass))
+                afterReturnClass(ctxt: AfterReturnContext<Labeled, AnnotationType.CLASS>) {
+                    labels.push(`${this.id}_AfterReturnClass`);
+                    return ctxt.value;
+                }
+
+                @AfterThrow(on.class.withAnnotations(AClass))
+                afterThrowClass(ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) {
+                    labels.push(`${this.id}_AfterThrowClass`);
+                    throw ctxt.error;
+                }
+
+                @Compile(on.property.withAnnotations(AProperty))
+                compileProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
+                    const id = this.id;
+
+                    return {
+                        get() {
+                            labels.push(`${id}_compilePropertyGet`);
+                        },
+                        set() {
+                            labels.push(`${id}_compilePropertySet`);
+                        },
+                    };
+                }
+                @Before(on.property.withAnnotations(AProperty))
+                beforeProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_beforePropertyGet`);
+                }
+
+                @Around(on.property.withAnnotations(AProperty))
+                aroundProperty(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AroundPropertyGet`);
+                    return ctxt.joinpoint();
+                }
+
+                @After(on.property.withAnnotations(AProperty))
+                afterProperty(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AfterPropertyGet`);
+                }
+
+                @AfterReturn(on.property.withAnnotations(AProperty))
+                afterReturnProperty(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AfterReturnPropertyGet`);
+                    return ctxt.value;
+                }
+
+                @AfterThrow(on.property.withAnnotations(AProperty))
+                afterThrowProperty(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AfterThrowPropertyGet`);
+                    throw ctxt.error;
+                }
+
+                @Before(on.property.setter.withAnnotations(AProperty))
+                beforePropertySet(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_beforePropertySet`);
+                }
+
+                @Around(on.property.setter.withAnnotations(AProperty))
+                aroundPropertySet(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AroundPropertySet`);
+                    return ctxt.joinpoint();
+                }
+
+                @After(on.property.setter.withAnnotations(AProperty))
+                afterPropertySet(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AfterPropertySet`);
+                }
+
+                @AfterReturn(on.property.setter.withAnnotations(AProperty))
+                afterReturnPropertySet(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AfterReturnPropertySet`);
+                }
+
+                @AfterThrow(on.property.setter.withAnnotations(AProperty))
+                afterThrowPropertySet(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
+                    labels.push(`${this.id}_AfterThrowPropertySet`);
+                    throw ctxt.error;
+                }
+            }
+
             setupWeaver(new LabelAspect('A'), new LabelAspect('B'));
         });
-        @Aspect()
-        class LabelAspect {
-            constructor(public id: string) {}
-
-            @Compile(on.class.withAnnotations(AClass))
-            compileClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
-                const id = this.id;
-                return function() {
-                    labels.push(`${id}_compileClass`);
-                };
-            }
-
-            @Before(on.class.withAnnotations(AClass))
-            beforeClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
-                labels.push(`${this.id}_beforeClass`);
-            }
-
-            @Around(on.class.withAnnotations(AClass))
-            aroundClass(ctxt: AroundContext<Labeled, AnnotationType.CLASS>) {
-                labels.push(`${this.id}_AroundClass`);
-                return ctxt.joinpoint();
-            }
-
-            @After(on.class.withAnnotations(AClass))
-            afterClass(ctxt: AfterContext<Labeled, AnnotationType.CLASS>) {
-                labels.push(`${this.id}_AfterClass`);
-            }
-
-            @AfterReturn(on.class.withAnnotations(AClass))
-            afterReturnClass(ctxt: AfterReturnContext<Labeled, AnnotationType.CLASS>) {
-                labels.push(`${this.id}_AfterReturnClass`);
-                return ctxt.value;
-            }
-
-            @AfterThrow(on.class.withAnnotations(AClass))
-            afterThrowClass(ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) {
-                labels.push(`${this.id}_AfterThrowClass`);
-                throw ctxt.error;
-            }
-
-            @Compile(on.property.withAnnotations(AProperty))
-            compileProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
-                const id = this.id;
-
-                return {
-                    get() {
-                        labels.push(`${id}_compilePropertyGet`);
-                    },
-                    set() {
-                        labels.push(`${id}_compilePropertySet`);
-                    },
-                };
-            }
-            @Before(on.property.withAnnotations(AProperty))
-            beforeProperty(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_beforePropertyGet`);
-            }
-
-            @Around(on.property.withAnnotations(AProperty))
-            aroundProperty(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AroundPropertyGet`);
-                return ctxt.joinpoint();
-            }
-
-            @After(on.property.withAnnotations(AProperty))
-            afterProperty(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AfterPropertyGet`);
-            }
-
-            @AfterReturn(on.property.withAnnotations(AProperty))
-            afterReturnProperty(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AfterReturnPropertyGet`);
-                return ctxt.value;
-            }
-
-            @AfterThrow(on.property.withAnnotations(AProperty))
-            afterThrowProperty(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AfterThrowPropertyGet`);
-                throw ctxt.error;
-            }
-
-            @Before(on.property.setter.withAnnotations(AProperty))
-            beforePropertySet(ctxt: BeforeContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_beforePropertySet`);
-            }
-
-            @Around(on.property.setter.withAnnotations(AProperty))
-            aroundPropertySet(ctxt: AroundContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AroundPropertySet`);
-                return ctxt.joinpoint();
-            }
-
-            @After(on.property.setter.withAnnotations(AProperty))
-            afterPropertySet(ctxt: AfterContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AfterPropertySet`);
-            }
-
-            @AfterReturn(on.property.setter.withAnnotations(AProperty))
-            afterReturnPropertySet(ctxt: AfterReturnContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AfterReturnPropertySet`);
-            }
-
-            @AfterThrow(on.property.setter.withAnnotations(AProperty))
-            afterThrowPropertySet(ctxt: AfterThrowContext<Labeled, AnnotationType.PROPERTY>) {
-                labels.push(`${this.id}_AfterThrowPropertySet`);
-                throw ctxt.error;
-            }
-        }
 
         describe('constructing a class instance', () => {
             let A: any;

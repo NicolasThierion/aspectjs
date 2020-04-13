@@ -590,7 +590,7 @@ describe('AfterThrowContext', () => {
         });
     });
 
-    xdescribe('on a method', () => {
+    describe('on a method', () => {
         let methodAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -632,21 +632,17 @@ describe('AfterThrowContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterThrowAAdvice.and.callFake(ctxt => {
-                    pushData(ctxt, 'afterThrowA');
-                    return ctxt.joinpoint();
-                });
-                afterThrowBAdvice.and.callFake(ctxt => {
-                    pushData(ctxt, 'afterThrowB');
-                    return ctxt.joinpoint();
-                });
+                afterThrowAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowA'));
+                afterThrowBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowB'));
             });
 
             it('should be shared across two @AfterThrow advices on the same method', () => {
                 class Test {
                     @AMethod()
                     @BMethod()
-                    someMethod(): any {}
+                    someMethod(): any {
+                        throw new Error();
+                    }
                 }
                 [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
                 new Test().someMethod();
@@ -659,10 +655,14 @@ describe('AfterThrowContext', () => {
                 @AClass()
                 class Test {
                     @AMethod()
-                    method1(): any {}
+                    method1(): any {
+                        throw new Error();
+                    }
 
                     @BMethod()
-                    method2(): any {}
+                    method2(): any {
+                        throw new Error();
+                    }
                 }
 
                 [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
@@ -681,7 +681,9 @@ describe('AfterThrowContext', () => {
                 class Test {
                     @AMethod()
                     @BMethod()
-                    method(): any {}
+                    method(): any {
+                        throw new Error();
+                    }
                 }
 
                 new Test().method();
@@ -697,7 +699,9 @@ describe('AfterThrowContext', () => {
 
                 class Test {
                     @AMethod()
-                    method(): any {}
+                    method(): any {
+                        throw new Error();
+                    }
                 }
 
                 expect(afterThrowAAdvice).not.toHaveBeenCalled();
@@ -713,7 +717,9 @@ describe('AfterThrowContext', () => {
 
                     class Test {
                         @AMethod()
-                        method(): any {}
+                        method(): any {
+                            throw new Error();
+                        }
                     }
                     expect(afterThrowAAdvice).not.toHaveBeenCalled();
                     new Test().method();
@@ -735,7 +741,9 @@ describe('AfterThrowContext', () => {
                     class Test {
                         @AMethod()
                         @BMethod()
-                        method(): any {}
+                        method(): any {
+                            throw new Error();
+                        }
                     }
 
                     [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
@@ -753,7 +761,9 @@ describe('AfterThrowContext', () => {
                     class Test {
                         @BMethod()
                         @AMethod()
-                        method(): any {}
+                        method(): any {
+                            throw new Error();
+                        }
                     }
 
                     new Test().method();
@@ -764,7 +774,7 @@ describe('AfterThrowContext', () => {
         });
     });
 
-    xdescribe('on a parameter', () => {
+    describe('on a parameter', () => {
         let parameterAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -806,18 +816,14 @@ describe('AfterThrowContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterThrowAAdvice.and.callFake(ctxt => {
-                    pushData(ctxt, 'afterThrowA');
-                    return ctxt.joinpoint();
-                });
-                afterThrowBAdvice.and.callFake(ctxt => {
-                    pushData(ctxt, 'afterThrowB');
-                    return ctxt.joinpoint();
-                });
+                afterThrowAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowA'));
+                afterThrowBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowB'));
             });
             it('should be shared across two @AfterThrow advices on the same parameter', () => {
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@AParameter() @BParameter() param: any): any {
+                        throw new Error();
+                    }
                 }
 
                 new Test().someMethod('');
@@ -827,7 +833,9 @@ describe('AfterThrowContext', () => {
 
             it('should not shared across two @AfterThrow advices on different parameters', () => {
                 class Test {
-                    someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {}
+                    someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {
+                        throw new Error();
+                    }
                 }
                 new Test().someMethod('', '');
 
@@ -839,7 +847,9 @@ describe('AfterThrowContext', () => {
                 afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@AParameter() @BParameter() param: any): any {
+                        throw new Error();
+                    }
                 }
 
                 new Test().someMethod('');
@@ -854,7 +864,9 @@ describe('AfterThrowContext', () => {
                 });
 
                 class Test {
-                    someMethod(@AParameter() param: any): any {}
+                    someMethod(@AParameter() param: any): any {
+                        throw new Error();
+                    }
                 }
 
                 expect(afterThrowAAdvice).not.toHaveBeenCalled();
@@ -868,7 +880,9 @@ describe('AfterThrowContext', () => {
                         expect(ctxt.advices).toEqual([]);
                     });
                     class Test {
-                        someMethod(@AParameter() param: any): any {}
+                        someMethod(@AParameter() param: any): any {
+                            throw new Error();
+                        }
                     }
 
                     expect(afterThrowAAdvice).not.toHaveBeenCalled();
@@ -889,7 +903,9 @@ describe('AfterThrowContext', () => {
                     });
 
                     class Test {
-                        someMethod(@AParameter() @BParameter() param: any): any {}
+                        someMethod(@AParameter() @BParameter() param: any): any {
+                            throw new Error();
+                        }
                     }
 
                     [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
@@ -904,7 +920,9 @@ describe('AfterThrowContext', () => {
                         ctxt.advices = [];
                     });
                     class Test {
-                        someMethod(@BParameter() @AParameter() param: any): any {}
+                        someMethod(@BParameter() @AParameter() param: any): any {
+                            throw new Error();
+                        }
                     }
                     expect(afterThrowAAdvice).not.toHaveBeenCalled();
                     new Test().someMethod('');

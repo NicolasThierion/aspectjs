@@ -704,7 +704,7 @@ describe('BeforeContext', () => {
             });
         });
     });
-    xdescribe('on a parameter', () => {
+    describe('on a parameter', () => {
         let parameterAspectB: any;
         beforeEach(() => {
             @Aspect()
