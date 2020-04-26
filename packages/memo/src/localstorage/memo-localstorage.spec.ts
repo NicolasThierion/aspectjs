@@ -4,7 +4,7 @@ import { LsMemo, LsMemoAspect } from './memo-localstorage';
 import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
 import moment from 'moment';
 import { DefaultCacheableAspect } from '../cacheable-aspect';
-import { Cacheable } from '../cacheable';
+import { Cacheable } from '../cacheable.annotation';
 import { LzMemoHandler } from './lz-memo-handler';
 
 interface Runner {
@@ -452,6 +452,57 @@ describe('@Memo with LocalStorage aspect', () => {
                     expect(r.process().date).toEqual(jasmine.any(Date));
                 });
             });
+
+            describe('that specifies a version', () => {
+                let CachedClass: any;
+                let version: () => string;
+                beforeEach(() => {
+                    @Cacheable({
+                        version: () => version(),
+                    })
+                    // eslint-disable-next-line @typescript-eslint/class-name-casing
+                    class _CachedClass {}
+                    CachedClass = _CachedClass;
+                });
+                beforeEach(() => {
+                    process = jasmine.createSpy('process', () => new CachedClass()).and.callThrough();
+                });
+                describe('that differs from the cached one', () => {
+                    beforeEach(() => {
+                        version = jasmine.createSpy('version', () => `${Math.random()}`).and.callThrough();
+                    });
+                    it('should invalidate cache', () => {
+                        expect(r.process()).toEqual(r.process());
+                        expect(process).toHaveBeenCalledTimes(2);
+                    });
+                });
+
+                describe('with semver format', () => {
+                    describe('and the version satisfies the previous one', () => {
+                        it('should not invalidate the cache', () => {
+                            version = jasmine.createSpy('version', () => '1.2.3').and.callThrough();
+                            const res1 = r.process();
+                            version = jasmine.createSpy('version', () => '1.5.0').and.callThrough();
+                            const res2 = r.process();
+
+                            expect(res1).toEqual(res2);
+                            expect(process).toHaveBeenCalledTimes(1);
+                        });
+                    });
+
+                    describe('and the version does not satisfy the previous one', () => {
+                        it('should invalidate the cache', () => {
+                            version = jasmine.createSpy('version', () => '1.2.3').and.callThrough();
+                            const res1 = r.process();
+                            version = jasmine.createSpy('version', () => '2.0.0').and.callThrough();
+                            const res2 = r.process();
+
+                            expect(res1).toEqual(res2);
+                            expect(process).toHaveBeenCalledTimes(2);
+                        });
+                    });
+                });
+            });
         });
 
         describe('not annotated with @Cacheable', () => {
@@ -472,6 +523,38 @@ describe('@Memo with LocalStorage aspect', () => {
         });
     });
 
+    describe('when memoized method returns null', () => {
+        beforeEach(() => {
+            process = jasmine.createSpy('process', () => null).and.callThrough();
+        });
+        it('should return null', () => {
+            expect(r.process()).toEqual(r.process());
+            expect(process).toHaveBeenCalledTimes(1);
+            expect(r.process()).toEqual(null);
+        });
+    });
+
+    describe('when memoized method returns a boolean', () => {
+        beforeEach(() => {
+            process = jasmine.createSpy('process', () => false).and.callThrough();
+        });
+        it('should return the boolean,', () => {
+            expect(r.process()).toEqual(r.process());
+            expect(process).toHaveBeenCalledTimes(1);
+            expect(r.process()).toEqual(false);
+        });
+    });
+
+    describe('when memoized method returns a number', () => {
+        beforeEach(() => {
+            process = jasmine.createSpy('process', () => 0).and.callThrough();
+        });
+        it('should return the number,', () => {
+            expect(r.process()).toEqual(r.process());
+            expect(process).toHaveBeenCalledTimes(1);
+            expect(r.process()).toEqual(0);
+        });
+    });
     describe('when memoized method returns an array', () => {
         describe('of objects', () => {
             beforeEach(() => {

@@ -1,25 +1,25 @@
 import { Memo, MemoOptions, MemoValueWrapper, WrappedMemoValue } from './memo.annotation';
 import {
-    on,
-    BeforeContext,
-    JoinPoint,
-    Before,
     Around,
     AroundContext,
     ASPECT_OPTIONS_REFLECT_KEY,
+    Before,
+    BeforeContext,
+    getWeaver,
+    JoinPoint,
+    on,
 } from '@aspectjs/core';
 import { stringify } from 'flatted';
-import { assert, isString, isUndefined, getMetaOrDefault, provider } from './utils';
+import { assert, getMetaOrDefault, isString, isUndefined, provider } from './utils';
 import hash from '@emotion/hash';
-import { getWeaver } from '@aspectjs/core';
 import { CacheableAspect } from './cacheable-aspect';
+import { VersionConflictError } from './errors';
 
 const SALT = '@aspectjs:Memo';
-const MEMO_FLAG_REFLECT_KEY = '@aspectjs:memo/isMemoized';
 const MEMO_ID_REFLECT_KEY = '@aspectjs:memo/id';
 let internalId = 0;
 
-export const DEFAULTS: Required<MemoOptions> = {
+export const DEFAULT_MEMO_OPTIONS: Required<MemoOptions> = {
     id: (ctxt: BeforeContext<any, any>) => {
         const { id, _id, hashcode, _hashcode } = ctxt.instance;
         const result = id ?? _id ?? hashcode ?? _hashcode;
@@ -40,7 +40,7 @@ export abstract class MemoAspect {
     abstract doWrite(key: string, res: any): void;
     abstract doRemove(key: string): void;
 
-    constructor(protected _params: MemoOptions = DEFAULTS) {
+    constructor(protected _params: MemoOptions = DEFAULT_MEMO_OPTIONS) {
         this._aspectId = Reflect.getOwnMetadata(
             ASPECT_OPTIONS_REFLECT_KEY,
             Reflect.getPrototypeOf(this).constructor,
@@ -74,19 +74,28 @@ export abstract class MemoAspect {
         const options = ctxt.annotation.args[0] as MemoOptions;
         const exp = this.getExpiry(ctxt, options);
         const cachedValue = this.get(key);
-        Reflect.defineMetadata(MEMO_FLAG_REFLECT_KEY, true, MemoAspect, key);
 
         if (cachedValue) {
             if (cachedValue.date < new Date()) {
+                // remove data if expired
                 this.remove(key);
             } else {
-                return memoWrapper.unwrap(cachedValue);
+                try {
+                    return memoWrapper.unwrap(cachedValue);
+                } catch (e) {
+                    if (e instanceof VersionConflictError) {
+                        // version changed. Just silently remove old version
+                        this.remove(key);
+                    } else {
+                        throw e;
+                    }
+                }
             }
-        } else {
-            const res = jp();
-            this.set(key, memoWrapper.wrap(res), exp);
-            return res;
         }
+
+        const res = jp();
+        this.set(key, memoWrapper.wrap(res), exp);
+        return res;
     }
 
     private _scheduleGc() {
@@ -155,7 +164,6 @@ export abstract class MemoAspect {
     }
 
     remove(key: string): void {
-        Reflect.deleteMetadata(MEMO_FLAG_REFLECT_KEY, MemoAspect, key);
         this.doRemove(_dataKey(key));
         this.doRemove(_expirationKey(key));
     }
@@ -175,6 +183,7 @@ export abstract class MemoAspect {
                         ' Did you forgot to call getWeaver().enable(new DefaultCacheableAspect()) ?',
                 );
             }
+
             return new MemoValueWrapper(cacheableAspect.cacheTypeStore);
         });
     }

@@ -1,5 +1,5 @@
 import { AnnotationType, Aspect, Compile, CompileContext, on } from '@aspectjs/core';
-import { Cacheable, CacheableOptions } from './cacheable';
+import { Cacheable, CacheableOptions } from './cacheable.annotation';
 import { assert, getMetaOrDefault, isObject } from './utils';
 
 type Prototype = {
@@ -12,9 +12,10 @@ export interface CacheableAspect {
 
 export interface CacheTypeStore {
     getPrototype(key: string): Prototype;
+    getVersion(key: string): any;
     getTypeKey<T extends Prototype>(proto: T): string;
 
-    addPrototype<T extends Prototype>(proto: T, key: string): void;
+    addPrototype<T extends Prototype>(proto: T, key: string, version?: any): void;
 }
 
 @Aspect('@aspectjs/cacheable')
@@ -29,16 +30,18 @@ export class DefaultCacheableAspect implements CacheableAspect {
             };
         }
         const typeId = options.typeId ?? _generateTypeId(ctxt.target.proto);
-        this.cacheTypeStore.addPrototype(ctxt.target.proto, typeId);
+
+        this.cacheTypeStore.addPrototype(ctxt.target.proto, typeId, options.version);
     }
 }
 
 export class CacheTypeStoreImpl implements CacheTypeStore {
-    private readonly _cacheStore: Record<string, Prototype> = {};
+    private readonly _prototypes: Record<string, Prototype> = {};
+    private readonly _versions: Record<string, string> = {};
 
     getPrototype(key: string): Prototype {
         assert(!!key, 'key must be defined');
-        const proto = this._cacheStore[key];
+        const proto = this._prototypes[key];
         if (!proto) {
             throw new Error(`no prototype found for key ${key}`);
         }
@@ -47,7 +50,7 @@ export class CacheTypeStoreImpl implements CacheTypeStore {
 
     getTypeKey<T extends Prototype>(prototype: T): string {
         const key = _generateTypeId(prototype);
-        if (!this._cacheStore[key]) {
+        if (!this._prototypes[key]) {
             throw new TypeError(
                 `Cannot find cache key for object ${prototype.constructor.name}. Are you sure you are caching a class annotated with "@Cacheable()"?`,
             );
@@ -55,14 +58,19 @@ export class CacheTypeStoreImpl implements CacheTypeStore {
         return key;
     }
 
-    addPrototype<T extends Prototype>(proto: Prototype, key: string): void {
-        if (this._cacheStore[key] && this._cacheStore[key] !== proto) {
+    addPrototype<T extends Prototype>(proto: Prototype, key: string, version?: string): void {
+        if (this._prototypes[key] && this._prototypes[key] !== proto) {
             throw new Error(
-                `Cannot add key for ${proto?.constructor?.name}: key already exists for ${this._cacheStore[key]?.constructor?.name}`,
+                `Cannot add key for ${proto?.constructor?.name}: key already exists for ${this._prototypes[key]?.constructor?.name}`,
             );
         }
 
-        this._cacheStore[key] = proto;
+        this._versions[key] = version;
+        this._prototypes[key] = proto;
+    }
+
+    getVersion<T extends Prototype>(key: string): string {
+        return this._versions[key];
     }
 }
 

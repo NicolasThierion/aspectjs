@@ -1,7 +1,7 @@
 import { AnnotationFactory, Around, AroundContext, Aspect, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
 import { MemoOptions, WrappedMemoValue } from '../memo.annotation';
 import { parse, stringify } from 'flatted';
-import { DEFAULTS as DEFAULTS_MEMO, MemoAspect } from '../memo.aspect';
+import { DEFAULT_MEMO_OPTIONS, MemoAspect } from '../memo.aspect';
 
 const af = new AnnotationFactory('aspectjs');
 export const LsMemo = af.create(function LsMemo(options: MemoOptions): MethodDecorator {
@@ -12,9 +12,9 @@ export interface LsMemoOptions extends MemoOptions {
     localStorage?: typeof localStorage;
 }
 
-export const DEFAULTS: Required<LsMemoOptions> = {
+export const DEFAULT_LS_MEMO_OPTIONS: Required<LsMemoOptions> = {
     localStorage: undefined,
-    ...DEFAULTS_MEMO,
+    ...DEFAULT_MEMO_OPTIONS,
     handler: {
         onRead(str: string): WrappedMemoValue<any> {
             if (str === null || str === undefined) {
@@ -32,8 +32,8 @@ export const DEFAULTS: Required<LsMemoOptions> = {
 export class LsMemoAspect extends MemoAspect {
     protected readonly _params: LsMemoOptions;
 
-    constructor(options: LsMemoOptions = DEFAULTS) {
-        super({ ...DEFAULTS, ...options });
+    constructor(options: LsMemoOptions = DEFAULT_LS_MEMO_OPTIONS) {
+        super({ ...DEFAULT_LS_MEMO_OPTIONS, ...options });
 
         if (!this._ls) {
             throw new Error('localStorage not available on this platform, and no implementation was provided');

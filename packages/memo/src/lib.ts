@@ -1,4 +1,4 @@
-import { Memo } from './memo.annotation';
-import { LsMemo } from './localstorage/memo-localstorage';
-
-export { Memo, LsMemo };
+export * from './memo.annotation';
+export * from './localstorage/memo-localstorage';
+export * from './localstorage/lz-memo-handler';
+export * from './indexed-db/memo-indexed-db';
