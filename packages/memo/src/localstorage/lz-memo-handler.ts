@@ -1,8 +1,8 @@
-import { CacheHandler } from './memo-localstorage';
 import { parse, stringify } from 'flatted';
 import * as LZString from 'lz-string';
+import { MemoHandler } from '../memo.annotation';
 
-export class LzCacheHandler implements CacheHandler {
+export class LzMemoHandler implements MemoHandler {
     onRead(str: string): any {
         return parse(LZString.decompressFromUTF16(str));
     }

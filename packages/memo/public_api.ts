@@ -1,2 +1,2 @@
-export * from './src/memo';
+export * from './src/memo.annotation';
 export * from './src/localstorage/memo-localstorage';

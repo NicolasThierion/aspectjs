@@ -1,5 +1,5 @@
 {
-  "name": "memo",
+  "name": "@aspectjs/memo",
   "version": "1.0.0",
   "description": "Add memoize pattern with a simple annotation",
   "license": "MIT",
@@ -61,6 +61,7 @@
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
   "dependencies": {
+    "@aspectjs/core": "^1.0.0",
     "@emotion/hash": "^0.8.0",
     "flatted": "^2.0.1",
     "lz-string": "^1.4.4"
