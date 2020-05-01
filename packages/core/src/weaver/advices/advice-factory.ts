@@ -26,6 +26,10 @@ export class AdviceFactory {
                     `@${pointcut.phase}(${pointcut.annotation}) ${aspect.constructor.name}.${String(propertyKey)}()`,
             });
 
+            Reflect.defineProperty(advice, 'name', {
+                value: propertyKey,
+            });
+
             if (pointcut.ref.startsWith('property#set') && pointcut.phase === PointcutPhase.COMPILE) {
                 throw new WeavingError(`Advice "${advice}" cannot be applied on property setter`);
             }

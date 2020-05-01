@@ -61,41 +61,66 @@ describe('@Aspect', () => {
     });
 
     describe('that inherits from other class that define advices', () => {
-        let parentMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+        let parentMethodAdvice1 = jasmine.createSpy('parentMethodAdvice1');
+        let parentMethodAdvice2 = jasmine.createSpy('parentMethodAdvice2');
         let childMethodAdvice = jasmine.createSpy('parentMethodAdvice');
 
         beforeEach(() => {
-            parentMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+            parentMethodAdvice1 = jasmine.createSpy('parentMethodAdvice1');
+            parentMethodAdvice2 = jasmine.createSpy('parentMethodAdvice2');
             childMethodAdvice = jasmine.createSpy('parentMethodAdvice');
 
             class ParentClass {
                 @Before(on.class.withAnnotations(AClass))
-                parentMethod() {
-                    parentMethodAdvice();
+                parentMethod1() {
+                    parentMethodAdvice1('parent');
+                }
+
+                @Before(on.class.withAnnotations(AClass))
+                parentMethod2() {
+                    parentMethodAdvice2('parent');
                 }
             }
 
             @Aspect()
             class ChildClass extends ParentClass {
+                @Before(on.class.withAnnotations(AClass))
+                parentMethod2() {
+                    parentMethodAdvice2('child');
+                }
+
                 @After(on.class.withAnnotations(AClass))
-                parentMethod() {
-                    childMethodAdvice();
+                childMethod() {
+                    childMethodAdvice('child');
                 }
             }
 
             setupWeaver(new ChildClass());
         });
 
-        fit('should invoke advices of parent class', () => {
-            expect(parentMethodAdvice).not.toHaveBeenCalled();
+        it('should invoke advices of parent class', () => {
+            expect(parentMethodAdvice1).not.toHaveBeenCalled();
             expect(childMethodAdvice).not.toHaveBeenCalled();
 
             @AClass()
             class C {}
 
             new C();
-            expect(parentMethodAdvice).toHaveBeenCalled();
-            expect(childMethodAdvice).toHaveBeenCalled();
+            expect(parentMethodAdvice1).toHaveBeenCalledTimes(1);
+            expect(childMethodAdvice).toHaveBeenCalledTimes(1);
+        });
+
+        describe('when child chall override advice of parent class', function() {
+            it('should not invoke parent advice', () => {
+                expect(parentMethodAdvice2).not.toHaveBeenCalled();
+
+                @AClass()
+                class C {}
+
+                new C();
+                expect(parentMethodAdvice2).toHaveBeenCalledTimes(1);
+                expect(parentMethodAdvice2).toHaveBeenCalledWith('child');
+            });
         });
     });
 });

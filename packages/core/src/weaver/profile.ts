@@ -47,6 +47,9 @@ export class WeaverProfile {
 
         return this;
     }
+    getAspect(aspectId: string) {
+        return this._aspectsRegistry[aspectId];
+    }
 }
 
 let _globalAspectId = 0;

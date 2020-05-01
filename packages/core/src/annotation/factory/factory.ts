@@ -46,10 +46,7 @@ export class AnnotationFactory {
 
         // create the annotation (ie: decorator provider)
         const annotation = function(...annotationArgs: any[]): Decorator {
-            // assert the weaver is loaded before invoking the underlying decorator
-            const weaver = getWeaver();
-
-            const decorator = _createDecorator(weaver.load(), annotation as any, annotationArgs);
+            const decorator = _createDecorator(annotation as any, annotationArgs);
             _createAnnotationRef(decorator, annotationStub, groupId);
 
             return decorator;
@@ -116,11 +113,7 @@ function _setFunctionName(fn: Function, name: string, tag?: string): void {
     });
 }
 
-function _createDecorator<A extends AnnotationType>(
-    runner: AdviceRunners,
-    annotation: Annotation<A>,
-    annotationArgs: any[],
-): Decorator {
+function _createDecorator<A extends AnnotationType>(annotation: Annotation<A>, annotationArgs: any[]): Decorator {
     const GENERATORS = {
         [AnnotationType.CLASS]: _createClassDecoration,
         [AnnotationType.PROPERTY]: _createPropertyDecoration,
@@ -129,6 +122,13 @@ function _createDecorator<A extends AnnotationType>(
     };
 
     return function(...targetArgs: any[]): Function | PropertyDescriptor | void {
+        // assert the weaver is loaded before invoking the underlying decorator
+        const weaver = getWeaver();
+
+        if (!weaver) {
+            throw new Error(`Cannot invoke annotation ${annotation.name ?? ''} before "setWeaver()" has been called`);
+        }
+
         const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
@@ -137,7 +137,7 @@ function _createDecorator<A extends AnnotationType>(
         const ctxt = new AdviceContextImpl(annotationContext);
 
         const generator = GENERATORS[ctxt.target.type];
-        return generator(ctxt as AdviceContextImpl<any, any>, runner);
+        return generator(ctxt as AdviceContextImpl<any, any>, weaver.load());
     };
 }
 
