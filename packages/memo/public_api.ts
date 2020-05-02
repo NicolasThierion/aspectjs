@@ -1,2 +1,2 @@
 export * from './src/memo.annotation';
-export * from './src/localstorage/memo-localstorage';
+export * from './src/drivers/localstorage/localstorage.driver';

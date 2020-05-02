@@ -1,4 +1,4 @@
 export * from './memo.annotation';
-export * from './localstorage/memo-localstorage';
-export * from './localstorage/lz-memo-handler';
-export * from './indexed-db/memo-indexed-db';
+export * from './drivers/localstorage/localstorage.driver';
+export * from './drivers/localstorage/lz-memo.serializer';
+export * from './drivers/indexed-db/indexed-db.driver';

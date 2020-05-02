@@ -1,6 +1,6 @@
 import { AnnotationType, Aspect, Compile, CompileContext, on } from '@aspectjs/core';
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
-import { assert, getMetaOrDefault, isObject } from './utils';
+import { assert, getMetaOrDefault, isObject } from '../utils';
 
 type Prototype = {
     constructor: Function;

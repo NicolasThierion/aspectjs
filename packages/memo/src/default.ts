@@ -1,9 +1,9 @@
 import { Memo } from './memo.annotation';
 import { getWeaver, WeaverProfile } from '@aspectjs/core';
-import { LsMemo, LsMemoAspect } from './localstorage/memo-localstorage';
-import { LzMemoHandler } from './localstorage/lz-memo-handler';
-import { IndexedDbMemoAspect } from './indexed-db/memo-indexed-db';
-import { DefaultCacheableAspect } from './cacheable-aspect';
+import { LsMemoDriver } from './drivers/localstorage/localstorage.driver';
+import { LzMemoSerializer } from './drivers/localstorage/lz-memo.serializer';
+import { IndexedDbDriver } from './drivers/indexed-db/indexed-db.driver';
+import { DefaultCacheableAspect } from './cacheable/cacheable.aspect';
 
 /**
  * Weaver profile configured with
@@ -12,15 +12,15 @@ import { DefaultCacheableAspect } from './cacheable-aspect';
  * - IndexedDbMemoAspect (for asynchronous @Memo methods)
  */
 export const defaultLsMemoProfile = new WeaverProfile().enable(
-    new LsMemoAspect({
-        handler: new LzMemoHandler(),
+    new LsMemoDriver({
+        serializer: new LzMemoSerializer(),
     }),
     new DefaultCacheableAspect(),
-    new IndexedDbMemoAspect(),
+    new IndexedDbDriver(),
 );
 
 export const defaultMemoProfile = defaultLsMemoProfile;
 
 getWeaver().enable(defaultMemoProfile);
 
-export { Memo, LsMemo };
+export { Memo };

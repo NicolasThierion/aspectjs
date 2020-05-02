@@ -55,3 +55,7 @@ export function getMetaOrDefault<T>(key: string, target: any, valueGenerator: ()
 
     return value;
 }
+
+function isPromise(obj: any): obj is Promise<any> {
+    return isFunction(obj.then);
+}
