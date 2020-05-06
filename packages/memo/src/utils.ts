@@ -20,7 +20,7 @@ export function assert(condition: boolean, msg?: string | (() => Error)) {
     }
 }
 
-export function isObject(value: any): value is object {
+export function isObject(value: any): value is object | null {
     return typeof value === 'object' && !isArray(value);
 }
 

@@ -1,4 +1,4 @@
-import { assert, isArray, isNumber, isObject, isString, provider } from '../utils';
+import { assert, isArray, isObject, provider } from '../utils';
 import { CacheableAspect, CacheTypeStore } from '../cacheable/cacheable.aspect';
 import { getWeaver } from '@aspectjs/core';
 import { parse, stringify } from 'flatted';
@@ -8,15 +8,6 @@ import SemVer from 'semver/classes/semver';
 import { DeserializationContext, MemoKey, MemoSerializer, MemoValue, SerializationContext } from '../memo.types';
 import { MemoWrap, MemoWrapField, MemoWrapper } from './memo-wrap';
 
-enum ValueType {
-    CACHEABLE_INSTANCE = 'CACHEABLE_INSTANCE',
-    DATE = 'DATE',
-    OBJECT = 'OBJECT',
-    PRIMITIVE = 'PRIMITIVE',
-    ARRAY = 'ARRAY',
-    PROMISE = 'PROMISE',
-}
-
 export interface MemoDriverOptions {
     serializer?: MemoSerializer;
     typeWrappers?: {
@@ -25,7 +16,141 @@ export interface MemoDriverOptions {
     };
 }
 
-export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {};
+export const NOOP_WRAPPER: MemoWrapper = {
+    unwrap<T>(wrap: MemoWrap<T>): T {
+        return wrap[MemoWrapField.VALUE];
+    },
+    wrap<T>(wrap: MemoWrap<T>): MemoWrap<T> {
+        return wrap;
+    },
+};
+
+export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
+    Object: {
+        unwrap(wrap: MemoWrap<object>, context: DeserializationContext): object {
+            if (wrap[MemoWrapField.VALUE] === null) {
+                return null;
+            }
+            let value = {};
+            context.blacklist.set(wrap, value);
+
+            const F = MemoWrapField;
+
+            value = ([] as (string | symbol)[])
+                .concat(Object.getOwnPropertyNames(wrap[F.VALUE]))
+                .concat(Object.getOwnPropertySymbols(wrap[F.VALUE]))
+                .reduce((v, k) => {
+                    const w = (wrap[F.VALUE] as any)[k];
+                    v[k] = context.blacklist.has(w) ? context.blacklist.get(w) : context.defaultUnwrap(w, context);
+                    return v;
+                }, value as any);
+
+            return value;
+        },
+
+        wrap(wrap: MemoWrap<object>, value: object, context: SerializationContext): MemoWrap<object> {
+            if (value === null) {
+                return wrap;
+            }
+            const F = MemoWrapField;
+            context.blacklist.set(value, wrap);
+
+            wrap[F.VALUE] = ([] as (string | symbol)[])
+                .concat(Object.getOwnPropertyNames(value))
+                .concat(Object.getOwnPropertySymbols(value))
+                .reduce((w, k) => {
+                    const v = (value as any)[k];
+                    w[k] = context.blacklist.has(v) ? context.blacklist.get(v) : context.defaultWrap(v, context);
+                    return w;
+                }, wrap[F.VALUE] as any);
+
+            return wrap;
+        },
+    },
+    Array: {
+        unwrap(wrap: MemoWrap<unknown[]>, context: DeserializationContext): unknown[] {
+            // assert(wrapped[F.TYPE] === ValueType.ARRAY);
+            const value = [] as any[];
+
+            context.blacklist.set(wrap, value);
+            value.push(
+                ...((wrap[MemoWrapField.VALUE] as any) as any[]).map(w => {
+                    if (context.blacklist.has(w)) {
+                        return context.blacklist.get(w);
+                    }
+                    return context.defaultUnwrap(w, context);
+                }),
+            );
+            return value;
+        },
+        wrap(wrap: MemoWrap<unknown[]>, value: unknown[], context: SerializationContext): MemoWrap<any[]> {
+            // assert(type === ValueType.ARRAY);
+            wrap[MemoWrapField.VALUE] = [];
+            context.blacklist.set(value, wrap);
+            (wrap[MemoWrapField.VALUE] as any[]).push(
+                ...(value as any[]).map(v => {
+                    if (context.blacklist.has(v)) {
+                        return context.blacklist.get(v);
+                    }
+                    return context.defaultWrap(v, context);
+                }),
+            );
+
+            return wrap;
+        },
+    },
+    Date: {
+        wrap(wrap: MemoWrap<Date>, value: Date): MemoWrap<Date> {
+            wrap[MemoWrapField.VALUE] = stringify(value) as any;
+            return wrap;
+        },
+        unwrap(wrap: MemoWrap<Date>): Date {
+            return new Date(parse(wrap[MemoWrapField.VALUE] as any));
+        },
+    },
+    '*': {
+        wrap(wrap: MemoWrap<object>, value: any, context: SerializationContext): MemoWrap<any> {
+            // delete wrap[MemoWrapField.TYPE]; // Do not store useless type, as INSTANCE_TYPE is used for objects of non-built-in types.
+            const proto = Reflect.getPrototypeOf(value);
+            wrap = DEFAULT_TYPE_HANDLERS.Object.wrap(wrap, value, context);
+            const type = context.typeStore.getTypeKey(proto);
+            wrap[MemoWrapField.INSTANCE_TYPE] = type;
+            wrap[MemoWrapField.VERSION] = provider(context.typeStore.getVersion(type))();
+            // Reflect.setPrototypeOf(wrap[F.VALUE], proto);
+            return wrap;
+        },
+        unwrap(wrap: MemoWrap<any>, context: DeserializationContext): any {
+            const F = MemoWrapField;
+            const value = DEFAULT_TYPE_HANDLERS.Object.unwrap(wrap, context);
+
+            assert(!!wrap[F.INSTANCE_TYPE]);
+            const proto = context.typeStore.getPrototype(wrap[F.INSTANCE_TYPE]);
+            const version = provider(context.typeStore.getVersion(wrap[F.INSTANCE_TYPE]))();
+            if (version !== wrap[F.VERSION]) {
+                if (!(valid(version) && valid(wrap[F.VERSION]) && satisfies(version, wrap[F.VERSION]))) {
+                    throw new VersionConflictError(
+                        `Object for key ${wrap[F.INSTANCE_TYPE]} is of version ${version}, but incompatible version ${
+                            wrap[F.VERSION]
+                        } was already cached`,
+                        context,
+                    );
+                }
+            }
+
+            Reflect.setPrototypeOf(value, proto);
+
+            return value;
+        },
+    },
+};
+DEFAULT_TYPE_HANDLERS['object'] = DEFAULT_TYPE_HANDLERS['Object'];
+const BASIC_TYPES = ['Number', 'String', 'Boolean', 'Symbol'];
+BASIC_TYPES.push(...BASIC_TYPES.map(t => t.toLowerCase()));
+BASIC_TYPES.push('undefined');
+
+BASIC_TYPES.forEach(t => (DEFAULT_TYPE_HANDLERS[t] = NOOP_WRAPPER));
+BASIC_TYPES.map(t => t.toLocaleLowerCase()).forEach(t => (DEFAULT_TYPE_HANDLERS[t] = NOOP_WRAPPER));
+Object.freeze(DEFAULT_TYPE_HANDLERS);
 
 export abstract class MemoDriver {
     private _typeStore: CacheTypeStore;
@@ -67,127 +192,50 @@ export abstract class MemoDriver {
         } as MemoValue;
 
         Object.defineProperty(value, 'value', {
-            get: () => this._deserialize(deserialized, context),
+            get: () => this.unwrap(deserialized, context),
         });
         return value;
     }
     serialize(obj: MemoValue, context: SerializationContext): any {
-        const serialized = this._serialize(obj.value, context);
-        serialized[MemoWrapField.EXPIRY] = obj.expiry;
-        return this._params?.serializer?.serialize(serialized, context) ?? serialized;
+        const wrapped = this.wrap(obj.value, context);
+        wrapped[MemoWrapField.EXPIRY] = obj.expiry;
+        return this._params?.serializer?.serialize(wrapped, context) ?? wrapped;
     }
 
-    private _serialize<T>(value: T, context: SerializationContext): MemoWrap<T> {
+    protected wrap<T>(value: T, context: SerializationContext): MemoWrap<T> {
         context.blacklist = context.blacklist ?? new Map<any, MemoWrap>();
-        const blacklist = context.blacklist;
-        const type = _getValueType(value);
-        const wrap = {} as MemoWrap;
-        const F = MemoWrapField;
-        wrap[F.TYPE] = type;
 
-        if (type === ValueType.PRIMITIVE) {
-            // nothing to do so far;
-            wrap[F.VALUE] = value;
-        } else if (type === ValueType.DATE) {
-            wrap[F.VALUE] = stringify(value) as any;
-        } else if (isObject(value)) {
-            wrap[F.VALUE] = {};
-            blacklist.set(value, wrap);
+        const typeName = value?.constructor.name ?? typeof value;
+        const wrapper =
+            this._params.typeWrappers[typeName] ?? this._params.typeWrappers['*'] ?? DEFAULT_TYPE_HANDLERS['*'];
 
-            if (type === ValueType.CACHEABLE_INSTANCE) {
-                const proto = Reflect.getPrototypeOf(value);
-                wrap[F.INSTANCE_TYPE] = this.typeStore.getTypeKey(proto);
-                wrap[F.VERSION] = provider(this.typeStore.getVersion(wrap[F.INSTANCE_TYPE]))();
-                Reflect.setPrototypeOf(wrap[F.VALUE], proto);
+        const wrap = {
+            [MemoWrapField.TYPE]: typeName, // TODO remove
+            [MemoWrapField.DATE]: new Date(),
+            [MemoWrapField.VALUE]: value,
+        } as MemoWrap<T>;
+
+        if (isObject(value) || isArray(value)) {
+            if ((value as any) === null) {
+                wrap[MemoWrapField.TYPE] = 'Object';
+            } else if (isObject(value)) {
+                wrap[MemoWrapField.VALUE] = { ...value };
+                Reflect.setPrototypeOf([MemoWrapField.VALUE], Reflect.getPrototypeOf(value));
+            } else if (isArray(value)) {
+                wrap[MemoWrapField.VALUE] = [...(value as any[])] as any;
             }
-            wrap[F.VALUE] = ([] as (string | symbol)[])
-                .concat(Object.getOwnPropertyNames(value))
-                .concat(Object.getOwnPropertySymbols(value))
-                .reduce((w, k) => {
-                    const v = (value as any)[k];
-                    w[k] = blacklist.has(v) ? blacklist.get(v) : this._serialize(v, context);
-                    return w;
-                }, wrap[F.VALUE]);
-        } else if (isArray(value)) {
-            assert(type === ValueType.ARRAY);
-            wrap[F.VALUE] = [];
-            blacklist.set(value, wrap);
-            (wrap[F.VALUE] as any[]).push(
-                ...(value as any[]).map(v => {
-                    if (blacklist.has(v)) {
-                        return blacklist.get(v);
-                    }
-                    return this._serialize(v, context);
-                }),
-            );
-        } else {
-            assert(false, `unrecognized type: ${wrap[F.TYPE]}`);
         }
-
-        return wrap;
+        return wrapper.wrap(wrap, value, context);
     }
 
-    private _deserialize<T>(wrapped: MemoWrap<T>, context: DeserializationContext): T {
-        const F = MemoWrapField;
-        let value: any = wrapped[F.VALUE];
-
+    protected unwrap<T>(wrapped: MemoWrap<T>, context: DeserializationContext): T {
         context.blacklist = context.blacklist ?? new Map<MemoWrap<any>, any>();
-        const blacklist = context.blacklist;
-        if (wrapped[F.TYPE] === ValueType.PRIMITIVE) {
-            // nothing to do so far
-            value = wrapped[F.VALUE];
-        } else if (isObject(wrapped[F.VALUE])) {
-            value = {};
-            blacklist.set(wrapped, value);
 
-            value = ([] as (string | symbol)[])
-                .concat(Object.getOwnPropertyNames(wrapped[F.VALUE]))
-                .concat(Object.getOwnPropertySymbols(wrapped[F.VALUE]))
-                .reduce((v, k) => {
-                    const w = (wrapped[F.VALUE] as any)[k];
-                    v[k] = blacklist.has(w) ? blacklist.get(w) : this._deserialize(w, context);
-                    return v;
-                }, value);
-            if (wrapped[F.TYPE] === ValueType.CACHEABLE_INSTANCE) {
-                assert(!!wrapped[F.INSTANCE_TYPE]);
-                const proto = this.typeStore.getPrototype(wrapped[F.INSTANCE_TYPE]);
-                const version = provider(this.typeStore.getVersion(wrapped[F.INSTANCE_TYPE]))();
-                if (version !== wrapped[F.VERSION]) {
-                    if (!(valid(version) && valid(wrapped[F.VERSION]) && satisfies(version, wrapped[F.VERSION]))) {
-                        throw new VersionConflictError(
-                            `Object for key ${
-                                wrapped[F.INSTANCE_TYPE]
-                            } is of version ${version}, but incompatible version ${
-                                wrapped[F.VERSION]
-                            } was already cached`,
-                            context,
-                        );
-                    }
-                }
+        const typeName = wrapped[MemoWrapField.TYPE] ?? '*';
+        const wrapper =
+            this._params.typeWrappers[typeName] ?? this._params.typeWrappers['*'] ?? DEFAULT_TYPE_HANDLERS['*'];
 
-                Reflect.setPrototypeOf(value, proto);
-            }
-        } else if (isArray(wrapped[F.VALUE])) {
-            assert(wrapped[F.TYPE] === ValueType.ARRAY);
-            value = [];
-
-            blacklist.set(wrapped, value);
-            value.push(
-                ...(wrapped[F.VALUE] as any[]).map(w => {
-                    if (blacklist.has(w)) {
-                        return blacklist.get(w);
-                    }
-                    return this._deserialize(w, context);
-                }),
-            );
-        } else if (wrapped[F.TYPE] === ValueType.DATE) {
-            assert(isString(wrapped[F.VALUE]));
-            value = new Date(parse(wrapped[F.VALUE] as any));
-        } else {
-            assert(false, `unrecognized type: ${wrapped[F.TYPE]}`);
-        }
-
-        return value;
+        return wrapper.unwrap(wrapped, context);
     }
 
     protected get typeStore(): CacheTypeStore {
@@ -211,19 +259,21 @@ export abstract class MemoDriver {
 
         return (this._typeStore = cacheableAspect.cacheTypeStore);
     }
-}
 
-function _getValueType(value: any): ValueType {
-    if (value === undefined || value === null || isString(value) || isNumber(value) || typeof value === 'boolean') {
-        return ValueType.PRIMITIVE;
-    } else if (isArray(value)) {
-        return ValueType.ARRAY;
-    } else if (value instanceof Date) {
-        return ValueType.DATE;
-    } else if (isObject(value)) {
-        return value.constructor === Object.prototype.constructor ? ValueType.OBJECT : ValueType.CACHEABLE_INSTANCE;
-    } else {
-        throw new TypeError(`unsupported value type: ${value?.prototype?.constructor ?? typeof value}`);
+    protected createDeserializationContext(key: MemoKey): DeserializationContext {
+        return {
+            key,
+            defaultUnwrap: this.unwrap.bind(this),
+            typeStore: this.typeStore,
+        };
+    }
+
+    protected createSerializationContext(key: MemoKey): SerializationContext {
+        return {
+            key,
+            defaultWrap: this.wrap.bind(this),
+            typeStore: this.typeStore,
+        };
     }
 }
 

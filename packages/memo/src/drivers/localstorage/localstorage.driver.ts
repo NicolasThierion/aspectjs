@@ -62,11 +62,11 @@ export class LsMemoDriver extends MemoDriver {
         if (raw === null) {
             return null;
         }
-        return this.deserialize(raw, { key });
+        return this.deserialize(raw, this.createDeserializationContext(key));
     }
 
     doSetValue(key: MemoKey, memo: MemoValue): void {
-        this._ls.setItem(key.toString(), this.serialize(memo, { key }));
+        this._ls.setItem(key.toString(), this.serialize(memo, this.createSerializationContext(key)));
     }
 
     doRemove(key: MemoKey): void {

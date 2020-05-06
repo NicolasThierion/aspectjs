@@ -1,6 +1,8 @@
+import { DeserializationContext, SerializationContext } from '../memo.types';
+
 export interface MemoWrapper<T = any> {
-    wrap(): any;
-    unwrap(): any;
+    wrap(wrap: MemoWrap<T>, value: T, context: SerializationContext): MemoWrap<T>;
+    unwrap(wrap: MemoWrap<T>, context: DeserializationContext): T;
 }
 
 export enum MemoWrapField {
@@ -16,7 +18,7 @@ export enum MemoWrapField {
  * The serialized representation of a MemoValue
  */
 export interface MemoWrap<T = any> {
-    [MemoWrapField.VALUE]: T | [];
+    [MemoWrapField.VALUE]: T;
     [MemoWrapField.TYPE]: string;
     [MemoWrapField.INSTANCE_TYPE]?: string;
     [MemoWrapField.EXPIRY]?: Date;

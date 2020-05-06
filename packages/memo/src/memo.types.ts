@@ -1,4 +1,5 @@
-import { MemoWrap } from './drivers/memo-wrap';
+import { MemoWrap, MemoWrapper } from './drivers/memo-wrap';
+import { CacheTypeStore } from './cacheable/cacheable.aspect';
 
 const KEY_IDENTIFIER = '@aspectjs:Memo';
 
@@ -36,17 +37,21 @@ export interface MemoValue<T = any> {
     readonly expiry?: Date;
 }
 
-export interface MemoSerializer {
-    deserialize(obj: any, context: DeserializationContext): MemoWrap;
-    serialize(obj: MemoWrap, context: SerializationContext): any;
+export interface MemoSerializer<T = any, U = any> {
+    deserialize(obj: U, context: DeserializationContext): MemoWrap<T>;
+    serialize(obj: MemoWrap<T>, context: SerializationContext): U;
 }
 
 export interface SerializationContext {
     key: MemoKey;
+    defaultWrap<T>(value: T, context: SerializationContext): MemoWrap<T>;
     blacklist?: Map<any, MemoWrap>;
+    typeStore: CacheTypeStore;
 }
 
 export interface DeserializationContext {
     key: MemoKey;
     blacklist?: Map<MemoWrap, any>;
+    typeStore: CacheTypeStore;
+    defaultUnwrap<T>(wrap: MemoWrap<T>, context: DeserializationContext): T;
 }
