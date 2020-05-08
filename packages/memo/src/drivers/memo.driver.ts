@@ -1,4 +1,4 @@
-import { assert, isArray, isObject, provider } from '../utils';
+import { assert, isArray, isObject, isPromise, provider } from '../utils';
 import { CacheableAspect, CacheTypeStore } from '../cacheable/cacheable.aspect';
 import { getWeaver } from '@aspectjs/core';
 import { parse, stringify } from 'flatted';
@@ -6,7 +6,7 @@ import { diff, valid } from 'semver';
 import { VersionConflictError } from '../errors';
 import SemVer from 'semver/classes/semver';
 import { DeserializationContext, MemoKey, MemoSerializer, MemoValue, SerializationContext } from '../memo.types';
-import { MemoWrap, MemoWrapField, MemoWrapper } from './memo-wrap';
+import { MemoWrap, MemoWrapper } from './memo-wrap';
 
 export interface MemoDriverOptions {
     serializer?: MemoSerializer;
@@ -18,7 +18,7 @@ export interface MemoDriverOptions {
 
 export const NOOP_WRAPPER: MemoWrapper = {
     unwrap<T>(wrap: MemoWrap<T>): T {
-        return wrap[MemoWrapField.VALUE];
+        return wrap.value;
     },
     wrap<T>(wrap: MemoWrap<T>): MemoWrap<T> {
         return wrap;
@@ -28,19 +28,17 @@ export const NOOP_WRAPPER: MemoWrapper = {
 export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
     Object: {
         unwrap(wrap: MemoWrap<object>, context: DeserializationContext): object {
-            if (wrap[MemoWrapField.VALUE] === null) {
+            if (wrap.value === null) {
                 return null;
             }
             let value = {};
             context.blacklist.set(wrap, value);
 
-            const F = MemoWrapField;
-
             value = ([] as (string | symbol)[])
-                .concat(Object.getOwnPropertyNames(wrap[F.VALUE]))
-                .concat(Object.getOwnPropertySymbols(wrap[F.VALUE]))
+                .concat(Object.getOwnPropertyNames(wrap.value))
+                .concat(Object.getOwnPropertySymbols(wrap.value))
                 .reduce((v, k) => {
-                    const w = (wrap[F.VALUE] as any)[k];
+                    const w = (wrap.value as any)[k];
                     v[k] = context.blacklist.has(w) ? context.blacklist.get(w) : context.defaultUnwrap(w, context);
                     return v;
                 }, value as any);
@@ -52,17 +50,16 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
             if (value === null) {
                 return wrap;
             }
-            const F = MemoWrapField;
             context.blacklist.set(value, wrap);
 
-            wrap[F.VALUE] = ([] as (string | symbol)[])
+            wrap.value = ([] as (string | symbol)[])
                 .concat(Object.getOwnPropertyNames(value))
                 .concat(Object.getOwnPropertySymbols(value))
                 .reduce((w, k) => {
                     const v = (value as any)[k];
                     w[k] = context.blacklist.has(v) ? context.blacklist.get(v) : context.defaultWrap(v, context);
                     return w;
-                }, wrap[F.VALUE] as any);
+                }, wrap.value as any);
 
             return wrap;
         },
@@ -74,7 +71,7 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
 
             context.blacklist.set(wrap, value);
             value.push(
-                ...((wrap[MemoWrapField.VALUE] as any) as any[]).map(w => {
+                ...((wrap.value as any) as any[]).map(w => {
                     if (context.blacklist.has(w)) {
                         return context.blacklist.get(w);
                     }
@@ -85,9 +82,9 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
         },
         wrap(wrap: MemoWrap<unknown[]>, value: unknown[], context: SerializationContext): MemoWrap<any[]> {
             // assert(type === ValueType.ARRAY);
-            wrap[MemoWrapField.VALUE] = [];
+            wrap.value = [];
             context.blacklist.set(value, wrap);
-            (wrap[MemoWrapField.VALUE] as any[]).push(
+            (wrap.value as any[]).push(
                 ...(value as any[]).map(v => {
                     if (context.blacklist.has(v)) {
                         return context.blacklist.get(v);
@@ -101,37 +98,34 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
     },
     Date: {
         wrap(wrap: MemoWrap<Date>, value: Date): MemoWrap<Date> {
-            wrap[MemoWrapField.VALUE] = stringify(value) as any;
+            wrap.value = stringify(value) as any;
             return wrap;
         },
         unwrap(wrap: MemoWrap<Date>): Date {
-            return new Date(parse(wrap[MemoWrapField.VALUE] as any));
+            return new Date(parse(wrap.value as any));
         },
     },
     '*': {
         wrap(wrap: MemoWrap<object>, value: any, context: SerializationContext): MemoWrap<any> {
-            // delete wrap[MemoWrapField.TYPE]; // Do not store useless type, as INSTANCE_TYPE is used for objects of non-built-in types.
+            // delete wrap.type; // Do not store useless type, as INSTANCE_TYPE is used for objects of non-built-in types.
             const proto = Reflect.getPrototypeOf(value);
             wrap = DEFAULT_TYPE_HANDLERS.Object.wrap(wrap, value, context);
             const type = context.typeStore.getTypeKey(proto);
-            wrap[MemoWrapField.INSTANCE_TYPE] = type;
-            wrap[MemoWrapField.VERSION] = provider(context.typeStore.getVersion(type))();
-            // Reflect.setPrototypeOf(wrap[F.VALUE], proto);
+            wrap.instanceType = type;
+            wrap.version = provider(context.typeStore.getVersion(type))();
+            // Reflect.setPrototypeOf(wrap.value, proto);
             return wrap;
         },
         unwrap(wrap: MemoWrap<any>, context: DeserializationContext): any {
-            const F = MemoWrapField;
             const value = DEFAULT_TYPE_HANDLERS.Object.unwrap(wrap, context);
 
-            assert(!!wrap[F.INSTANCE_TYPE]);
-            const proto = context.typeStore.getPrototype(wrap[F.INSTANCE_TYPE]);
-            const version = provider(context.typeStore.getVersion(wrap[F.INSTANCE_TYPE]))();
-            if (version !== wrap[F.VERSION]) {
-                if (!(valid(version) && valid(wrap[F.VERSION]) && satisfies(version, wrap[F.VERSION]))) {
+            assert(!!wrap.instanceType);
+            const proto = context.typeStore.getPrototype(wrap.instanceType);
+            const version = provider(context.typeStore.getVersion(wrap.instanceType))();
+            if (version !== wrap.version) {
+                if (!(valid(version) && valid(wrap.version) && satisfies(version, wrap.version))) {
                     throw new VersionConflictError(
-                        `Object for key ${wrap[F.INSTANCE_TYPE]} is of version ${version}, but incompatible version ${
-                            wrap[F.VERSION]
-                        } was already cached`,
+                        `Object for key ${wrap.instanceType} is of version ${version}, but incompatible version ${wrap.version} was already cached`,
                         context,
                     );
                 }
@@ -144,7 +138,7 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
     },
 };
 DEFAULT_TYPE_HANDLERS['object'] = DEFAULT_TYPE_HANDLERS['Object'];
-const BASIC_TYPES = ['Number', 'String', 'Boolean', 'Symbol'];
+const BASIC_TYPES = ['Number', 'String', 'Boolean', 'Symbol', 'Promise'];
 BASIC_TYPES.push(...BASIC_TYPES.map(t => t.toLowerCase()));
 BASIC_TYPES.push('undefined');
 
@@ -165,41 +159,60 @@ export abstract class MemoDriver {
      */
     abstract get NAME(): string;
 
-    abstract accept(type: any): boolean;
+    /** Get the priority this driver should be picked up to handle the given type.
+     *  Priority < 1 means this driver do nit supports the given type.
+     */
+    abstract getPriority(type: any): number;
 
-    protected abstract doGetValue(key: MemoKey): MemoValue;
+    protected abstract doGetValue(key: MemoKey): any;
 
-    protected abstract doSetValue(key: MemoKey, memo: MemoValue): void;
+    protected abstract doSetValue(key: MemoKey, value: any): void;
 
     protected abstract doRemove(key: MemoKey): void;
 
     getValue(key: MemoKey): MemoValue {
-        return this.doGetValue(key);
+        const raw = this.doGetValue(key);
+        if (raw === null) {
+            return null;
+        }
+
+        const context = this.createDeserializationContext(key);
+        const deserialized = (this._params?.serializer?.deserialize(raw, context) ?? raw) as MemoWrap;
+        const value = {
+            expiry: deserialized.expiry,
+        } as MemoValue;
+
+        if (deserialized.type === 'Promise') {
+            Object.defineProperty(value, 'value', {
+                get: () => Promise.resolve(this.unwrap(deserialized, context)),
+            });
+        } else {
+            Object.defineProperty(value, 'value', {
+                get: () => this.unwrap(deserialized, context),
+            });
+        }
+
+        return value;
     }
 
     setValue(key: MemoKey, memo: MemoValue): void {
-        this.doSetValue(key, memo);
+        const context = this.createSerializationContext(key);
+        const wrapped = this.wrap(memo.value, context);
+        wrapped.expiry = memo.expiry;
+        const serialize = this._params?.serializer?.serialize ?? (x => x);
+
+        if (isPromise(wrapped.value)) {
+            wrapped.value.then(v => {
+                wrapped.value = v;
+                this.doSetValue(key, serialize(wrapped, context));
+            });
+        } else {
+            this.doSetValue(key, serialize(wrapped, context));
+        }
     }
 
     remove(key: MemoKey): void {
         this.doRemove(key);
-    }
-
-    deserialize(rawValue: any, context: DeserializationContext): MemoValue {
-        const deserialized = (this._params?.serializer?.deserialize(rawValue, context) ?? rawValue) as MemoWrap;
-        const value = {
-            expiry: deserialized[MemoWrapField.EXPIRY],
-        } as MemoValue;
-
-        Object.defineProperty(value, 'value', {
-            get: () => this.unwrap(deserialized, context),
-        });
-        return value;
-    }
-    serialize(obj: MemoValue, context: SerializationContext): any {
-        const wrapped = this.wrap(obj.value, context);
-        wrapped[MemoWrapField.EXPIRY] = obj.expiry;
-        return this._params?.serializer?.serialize(wrapped, context) ?? wrapped;
     }
 
     protected wrap<T>(value: T, context: SerializationContext): MemoWrap<T> {
@@ -210,19 +223,26 @@ export abstract class MemoDriver {
             this._params.typeWrappers[typeName] ?? this._params.typeWrappers['*'] ?? DEFAULT_TYPE_HANDLERS['*'];
 
         const wrap = {
-            [MemoWrapField.TYPE]: typeName, // TODO remove
-            [MemoWrapField.DATE]: new Date(),
-            [MemoWrapField.VALUE]: value,
+            type: typeName, // TODO remove
+            date: new Date(),
+            value,
         } as MemoWrap<T>;
+        Reflect.setPrototypeOf(wrap, MemoWrap);
 
         if (isObject(value) || isArray(value)) {
             if ((value as any) === null) {
-                wrap[MemoWrapField.TYPE] = 'Object';
+                wrap.type = 'Object';
             } else if (isObject(value)) {
-                wrap[MemoWrapField.VALUE] = { ...value };
-                Reflect.setPrototypeOf([MemoWrapField.VALUE], Reflect.getPrototypeOf(value));
+                if (isPromise(value)) {
+                    // consider the object as a Promise;
+                    wrap.type = 'Promise';
+                } else {
+                    wrap.value = { ...value };
+                    Reflect.setPrototypeOf(wrap.value as any, Reflect.getPrototypeOf(value));
+                }
+                Reflect.setPrototypeOf(wrap.value as any, Reflect.getPrototypeOf(value));
             } else if (isArray(value)) {
-                wrap[MemoWrapField.VALUE] = [...(value as any[])] as any;
+                wrap.value = [...(value as any[])] as any;
             }
         }
         return wrapper.wrap(wrap, value, context);
@@ -230,8 +250,8 @@ export abstract class MemoDriver {
 
     protected unwrap<T>(wrapped: MemoWrap<T>, context: DeserializationContext): T {
         context.blacklist = context.blacklist ?? new Map<MemoWrap<any>, any>();
-
-        const typeName = wrapped[MemoWrapField.TYPE] ?? '*';
+        Reflect.setPrototypeOf(wrapped, MemoWrap);
+        const typeName = wrapped.type ?? '*';
         const wrapper =
             this._params.typeWrappers[typeName] ?? this._params.typeWrappers['*'] ?? DEFAULT_TYPE_HANDLERS['*'];
 

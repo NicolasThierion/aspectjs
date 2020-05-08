@@ -643,23 +643,27 @@ describe(`LocalStorageMemoDriver`, () => {
             xdescribe('of promises', () => {});
         });
 
-        xdescribe('that returns a promise', () => {
+        describe('that returns a promise', () => {
             beforeEach(() => {
                 process = jasmine.createSpy('methodSpy', (...args: any[]) => new Promise(() => {})).and.callThrough();
             });
 
             it('should return a promise', () => {
-                expect(r.process()).toEqual(r.process());
+                expect(r.process()).toEqual(jasmine.any(Promise));
                 expect(r.process()).toEqual(jasmine.any(Promise));
             });
 
-            xdescribe('when the promise is resolved', () => {
+            describe('when the promise is resolved', () => {
                 beforeEach(() => {
-                    process = jasmine.createSpy('methodSpy', (...args: any[]) => Promise.resolve()).and.callThrough();
+                    process = jasmine
+                        .createSpy('methodSpy', (...args: any[]) => Promise.resolve('value'))
+                        .and.callThrough();
                 });
 
-                it('should resolve to the cached value', () => {
-                    expect(r.process()).toEqual(null);
+                it('should resolve to the cached value', async () => {
+                    const value1 = await r.process();
+                    const value2 = await r.process();
+                    expect(value1).toEqual(value2);
                 });
             });
         });

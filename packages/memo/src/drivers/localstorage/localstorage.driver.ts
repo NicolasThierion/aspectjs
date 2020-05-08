@@ -53,20 +53,16 @@ export class LsMemoDriver extends MemoDriver {
      * Accepts all kind of results
      * @param type
      */
-    accept(type: any): true {
-        return true;
+    getPriority(type: any): number {
+        return 10;
     }
 
-    doGetValue(key: MemoKey): MemoValue | undefined {
-        const raw = this._ls.getItem(key.toString());
-        if (raw === null) {
-            return null;
-        }
-        return this.deserialize(raw, this.createDeserializationContext(key));
+    doGetValue(key: MemoKey): any | undefined {
+        return this._ls.getItem(key.toString());
     }
 
-    doSetValue(key: MemoKey, memo: MemoValue): void {
-        this._ls.setItem(key.toString(), this.serialize(memo, this.createSerializationContext(key)));
+    doSetValue(key: MemoKey, value: any): void {
+        this._ls.setItem(key.toString(), value);
     }
 
     doRemove(key: MemoKey): void {

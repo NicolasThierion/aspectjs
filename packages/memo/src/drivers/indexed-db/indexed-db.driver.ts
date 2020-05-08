@@ -2,6 +2,7 @@ import { MemoDriver, MemoDriverOptions } from '../memo.driver';
 import { parse, stringify } from 'flatted';
 import { Mutable } from '@aspectjs/core/src/utils';
 import { MemoKey, MemoValue } from '../../memo.types';
+import { isPromise } from '../../utils';
 
 export interface IndexedDbDriverOptions extends MemoDriverOptions {
     indexedDB?: typeof indexedDB;
@@ -67,8 +68,8 @@ export class IndexedDbDriver extends MemoDriver {
         });
     }
 
-    accept(type: any): boolean {
-        return type instanceof Promise;
+    getPriority(type: any): number {
+        return isPromise(type) ? 100 : 0;
     }
 
     doGetValue(key: MemoKey): MemoValue | undefined {
