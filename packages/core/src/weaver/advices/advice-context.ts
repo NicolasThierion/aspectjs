@@ -10,7 +10,7 @@ import { AroundContext } from './around/around-context';
 import { CompileContext } from './compile/compile-context';
 import { Advice } from './types';
 
-export type AdviceContext<T, A extends AnnotationType> =
+export type AdviceContext<T = any, A extends AnnotationType = any> =
     | AfterContext<T, A>
     | BeforeContext<T, A>
     | AfterReturnContext<T, A>

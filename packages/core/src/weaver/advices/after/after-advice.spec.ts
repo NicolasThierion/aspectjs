@@ -1,7 +1,7 @@
 import { After } from './after.decorator';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
-import { WeavingError } from '../../weaving-error';
+import { WeavingError } from '../../errors/weaving-error';
 import Spy = jasmine.Spy;
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Aspect } from '../aspect';
@@ -48,9 +48,7 @@ describe('@After advice', () => {
                     class X {}
 
                     new X();
-                }).toThrow(
-                    new WeavingError('Returning from advice "@After(@AClass) BadAfterAspect.apply()" is not supported'),
-                );
+                }).toThrow(new Error('@After(@AClass) BadAfterAspect.apply(): Returning from advice is not supported'));
             });
         });
 
@@ -183,9 +181,7 @@ describe('@After advice', () => {
 
                     new X().someProp = '';
                 }).toThrow(
-                    new WeavingError(
-                        'Returning from advice "@After(@AProperty) BadAfterAspect.apply()" is not supported',
-                    ),
+                    new Error('@After(@AProperty) BadAfterAspect.apply(): Returning from advice is not supported'),
                 );
             });
         });
@@ -251,9 +247,7 @@ describe('@After advice', () => {
 
                     const prop = new X().addLabel();
                 }).toThrow(
-                    new WeavingError(
-                        'Returning from advice "@After(@AMethod) BadAfterAspect.apply()" is not supported',
-                    ),
+                    new Error('@After(@AMethod) BadAfterAspect.apply(): Returning from advice is not supported'),
                 );
             });
         });

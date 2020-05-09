@@ -1,7 +1,7 @@
 import { WeaverProfile } from '../profile';
 import { assert, getMetaOrDefault, getOrDefault, isArray, isFunction, isUndefined } from '../../utils';
 import { JoinPoint } from '../types';
-import { WeavingError } from '../weaving-error';
+import { WeavingError } from '../errors/weaving-error';
 import {
     AdviceContext,
     AfterReturnContext,
@@ -24,6 +24,8 @@ import { PointcutPhase } from '../advices/pointcut';
 import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
 import { ASPECT_OPTIONS_REFLECT_KEY, AspectOptions } from '../advices/aspect';
 import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
+import { AdviceError } from '../errors/advice-error';
+import { AspectError } from '../errors/aspect-error';
 
 type AdvicePipeline = {
     [target in AnnotationType]: {
@@ -289,8 +291,9 @@ class AdviceRunnersImpl implements AdviceRunners {
                     } else {
                         if (thisAccess) {
                             // ensure 'this' instance has not been read before joinpoint gets called.
-                            throw new Error(
-                                `In advice "${thisAccess}": Cannot get "this" instance of constructor before calling constructor joinpoint`,
+                            throw new AdviceError(
+                                thisAccess,
+                                `Cannot get "this" instance of constructor before calling constructor joinpoint`,
                             );
                         }
                         return (ctxt.instance = originalJp(args) ?? ctxt.instance);
@@ -375,7 +378,7 @@ class AdviceRunnersImpl implements AdviceRunners {
 
         if (newDescriptor) {
             if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-                throw new WeavingError(`Cannot apply advice ${advice} : ${target.label} is not configurable`);
+                throw new AdviceError(advice, `${target.label} is not configurable`);
             }
 
             // test property validity
@@ -468,12 +471,15 @@ class AdviceRunnersImpl implements AdviceRunners {
 
         if (!isUndefined(newDescriptor)) {
             if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-                throw new WeavingError(`Cannot apply advice ${advice} : ${target.label} is not configurable`);
+                throw new AdviceError(advice, `${target.label} is not configurable`);
             }
 
             // ensure value is a function
             if (!isFunction(newDescriptor.value)) {
-                throw new WeavingError(`Expected ${advice} to return a method descriptor. Got: ${newDescriptor.value}`);
+                throw new AdviceError(
+                    advice,
+                    `Expected advice to return a method descriptor. Got: ${newDescriptor.value}`,
+                );
             }
 
             if (isUndefined(newDescriptor.enumerable)) {
@@ -544,7 +550,7 @@ class AdviceRunnersImpl implements AdviceRunners {
                     ctxt.value = lastAdvice(ctxt as AroundContext<any, any>, nextJp, args);
 
                     if (ctxt.value !== undefined && !allowReturn) {
-                        throw new Error(`Returning from ${lastAdvice} is not supported`);
+                        throw new AdviceError(lastAdvice, `Returning from advice is not supported`);
                     }
 
                     delete ctxt.joinpoint;
@@ -603,9 +609,9 @@ class AdviceRunnersImpl implements AdviceRunners {
         }
         while (ctxt.advices.length) {
             const advice = ctxt.advices.shift() as AfterAdvice<unknown>;
-            const retVal = advice(ctxt as AdviceContext<any, any>) as any;
+            const retVal = advice(ctxt as AdviceContext) as any;
             if (!isUndefined(retVal)) {
-                throw new WeavingError(`Returning from advice "${advice}" is not supported`);
+                throw new AdviceError(advice, `Returning from advice is not supported`);
             }
         }
     }
@@ -648,7 +654,7 @@ class AdviceRunnersImpl implements AdviceRunners {
                 ctxt.value = advice(ctxt as AfterThrowContext<any, AnnotationType>, ctxt.error);
 
                 if (prohibitReturn && !isUndefined(ctxt.value)) {
-                    throw new WeavingError(`Returning from advice "${advice}" is not supported`);
+                    throw new AdviceError(advice, `Returning from advice is not supported`);
                 }
             }
 
@@ -661,7 +667,7 @@ class AdviceRunnersImpl implements AdviceRunners {
     }
 
     private _applyOnce(fn: Function, phase: PointcutPhase) {
-        return (ctxt: AdviceContext<any, any>, ...args: any[]) => {
+        return (ctxt: AdviceContext, ...args: any[]) => {
             const key = `aspectjs.isAdviced(${phase})`;
             const applied = Reflect.getOwnMetadata(key, ctxt.target.proto, ctxt.target.propertyKey);
             if (!applied) {
@@ -679,13 +685,13 @@ class JoinpointFactory<T> {
         defaultArgsProvider = () => ctxt.args,
     ): JoinPoint {
         const alreadyCalledFn = (): void => {
-            throw new WeavingError(`joinPoint already proceeded`);
+            throw new AspectError(ctxt as AdviceContext, `joinPoint already proceeded`);
         };
 
         const jp = function(args?: any[]) {
             args = args ?? defaultArgsProvider();
             if (!isArray(args)) {
-                throw new TypeError(`Joinpoint arguments expected to be array. Got: ${args}`);
+                throw new AspectError(ctxt as AdviceContext, `Joinpoint arguments expected to be array. Got: ${args}`);
             }
             const jp = fn;
             fn = alreadyCalledFn as any;

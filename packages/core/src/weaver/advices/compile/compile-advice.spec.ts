@@ -12,7 +12,7 @@ import {
     Labeled,
     setupWeaver,
 } from '../../../../tests/helpers';
-import { WeavingError } from '../../weaving-error';
+import { WeavingError } from '../../errors/weaving-error';
 import { Aspect } from '../aspect';
 import { AnnotationTarget } from '../../../annotation/target/annotation-target';
 import { AnnotationContext } from '../../../annotation/context/context';
@@ -344,9 +344,7 @@ describe('@Compile advice', () => {
                     apply() {}
                 }
             }).toThrow(
-                new WeavingError(
-                    'Advice "@Compile(@AProperty) BadAspect.apply()" cannot be applied on property setter',
-                ),
+                new WeavingError('@Compile(@AProperty) BadAspect.apply(): Advice cannot be applied on property setter'),
             );
         });
     });
@@ -484,7 +482,7 @@ describe('@Compile advice', () => {
                         }
                     }).toThrow(
                         new WeavingError(
-                            'Expected @Compile(@AMethod) CompileAspectA.compileMethod() to return a method descriptor. Got: undefined',
+                            '@Compile(@AMethod) CompileAspectA.compileMethod(): Expected advice to return a method descriptor. Got: undefined',
                         ),
                     );
                 });

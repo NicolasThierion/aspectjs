@@ -2,7 +2,7 @@ import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
 import { Compile } from '../compile/compile.decorator';
-import { WeavingError } from '../../weaving-error';
+import { WeavingError } from '../../errors/weaving-error';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
@@ -297,8 +297,8 @@ describe('@AfterReturn advice', () => {
 
                 it('should throw an error', () => {
                     expect(() => (a.labels = ['newValue'])).toThrow(
-                        new WeavingError(
-                            'Returning from advice "@AfterReturn(@AProperty) PropAspect.after()" is not supported',
+                        new Error(
+                            '@AfterReturn(@AProperty) PropAspect.after(): Returning from advice is not supported',
                         ),
                     );
                 });

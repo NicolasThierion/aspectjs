@@ -1,5 +1,5 @@
 import { assert } from '../../utils';
-import { WeavingError } from '../weaving-error';
+import { WeavingError } from '../errors/weaving-error';
 import {
     Annotation,
     AnnotationRef,

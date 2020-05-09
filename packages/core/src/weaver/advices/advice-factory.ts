@@ -2,8 +2,9 @@ import { Advice } from './types';
 import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
 import { Pointcut, PointcutPhase } from './pointcut';
-import { WeavingError } from '../weaving-error';
+import { WeavingError } from '../errors/weaving-error';
 import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceError } from '../errors/advice-error';
 
 export class AdviceFactory {
     static create(pointcut: Pointcut): MethodDecorator {
@@ -31,7 +32,7 @@ export class AdviceFactory {
             });
 
             if (pointcut.ref.startsWith('property#set') && pointcut.phase === PointcutPhase.COMPILE) {
-                throw new WeavingError(`Advice "${advice}" cannot be applied on property setter`);
+                throw new AdviceError(advice, `Advice cannot be applied on property setter`);
             }
 
             AdvicesRegistry.create(aspect, advice);

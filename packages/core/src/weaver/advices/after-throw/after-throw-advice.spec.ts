@@ -3,10 +3,11 @@ import { AfterThrow } from './after-throw.decorator';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
-import { WeavingError } from '../../weaving-error';
+import { WeavingError } from '../../errors/weaving-error';
 import { Aspect } from '../aspect';
 import Spy = jasmine.Spy;
 import { AnnotationType } from '../../../annotation/annotation.types';
+import { AdviceError } from '../../errors/advice-error';
 
 const thrownError = new Error('expected');
 
@@ -397,8 +398,8 @@ describe('@AfterThrow advice', () => {
                     expect(() => {
                         a.labels = [];
                     }).toThrow(
-                        new WeavingError(
-                            'Returning from advice "@AfterThrow(@AProperty) ReturnNewValueAspect.afterThrow()" is not supported',
+                        new Error(
+                            '@AfterThrow(@AProperty) ReturnNewValueAspect.afterThrow(): Returning from advice is not supported',
                         ),
                     );
                 });

@@ -1,5 +1,5 @@
 import { isString } from '../utils';
-import { WeavingError } from './weaving-error';
+import { WeavingError } from './errors/weaving-error';
 import { ASPECT_OPTIONS_REFLECT_KEY } from './advices/aspect';
 
 let profileId = 0;
@@ -63,7 +63,7 @@ function _getAspectId(obj: object): string {
         return `AnonymousAspect#${_globalAspectId++}`;
     } else {
         if (!isString(options.id)) {
-            throw new WeavingError(`Aspect ${obj.constructor.name} should have a string id. Got: ${options.id}`);
+            throw new TypeError(`Aspect ${obj.constructor.name} should have a string id. Got: ${options.id}`);
         }
     }
     return options.id;

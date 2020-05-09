@@ -7,7 +7,7 @@ import {
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { WeavingError } from '../../weaver/weaving-error';
+import { WeavingError } from '../../weaver/errors/weaving-error';
 import { AdviceRunners, getWeaver } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, getProto, isFunction, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';

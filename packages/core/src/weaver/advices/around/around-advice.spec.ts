@@ -1,6 +1,6 @@
 import { JoinPoint } from '../../types';
 import { AroundContext } from '../advice-context';
-import { WeavingError } from '../../weaving-error';
+import { WeavingError } from '../../errors/weaving-error';
 import { Around } from './around.decorator';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
@@ -87,7 +87,7 @@ describe('@Around advice', () => {
                     new A();
                 }).toThrow(
                     new WeavingError(
-                        'In advice "@Around(@AClass) AroundClassAspect.apply()": Cannot get "this" instance of constructor before calling constructor joinpoint',
+                        '@Around(@AClass) AroundClassAspect.apply(): Cannot get "this" instance of constructor before calling constructor joinpoint',
                     ),
                 );
             });
