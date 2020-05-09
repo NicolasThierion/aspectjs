@@ -8,7 +8,7 @@ import {
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { WeavingError } from '../../weaver/errors/weaving-error';
-import { AdviceRunners, getWeaver } from '../../weaver/weaver';
+import { getWeaver } from '../../weaver/weaver';
 import { assert, getMetaOrDefault, getProto, isFunction, Mutable } from '../../utils';
 import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
@@ -137,7 +137,7 @@ function _createDecorator<A extends AnnotationType>(annotation: Annotation<A>, a
         const ctxt = new AdviceContextImpl(annotationContext);
 
         const generator = GENERATORS[ctxt.target.type];
-        return generator(ctxt as AdviceContextImpl<any, any>, weaver.load());
+        return generator(ctxt as AdviceContextImpl<any, any>);
     };
 }
 
@@ -185,10 +185,7 @@ class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationCo
     }
 }
 
-function _createClassDecoration<T>(
-    ctxt: AdviceContextImpl<any, AnnotationType.CLASS>,
-    runner: AdviceRunners,
-): Function {
+function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, AnnotationType.CLASS>): Function {
     // if another @Compile advice has been applied
     // replace wrapped ctor by original ctor before it gets wrapped again
     ctxt.target.proto.constructor = getMetaOrDefault(
@@ -197,10 +194,14 @@ function _createClassDecoration<T>(
         () => ctxt.target.proto.constructor,
     );
 
-    runner.class[PointcutPhase.COMPILE](ctxt);
+    getWeaver()
+        .load()
+        .class[PointcutPhase.COMPILE](ctxt);
     const ctorName = ctxt.target.proto.constructor.name;
 
     const ctor = function(...ctorArgs: any[]): T {
+        const runner = getWeaver().load();
+
         ctxt.args = ctorArgs;
 
         try {
@@ -236,10 +237,7 @@ function _createClassDecoration<T>(
     return ctor;
 }
 
-function _createPropertyDecoration(
-    ctxt: AdviceContextImpl<any, AnnotationType.PROPERTY>,
-    runner: AdviceRunners,
-): PropertyDescriptor {
+function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AnnotationType.PROPERTY>): PropertyDescriptor {
     const target = ctxt.target;
 
     // if another @Compile advice has been applied
@@ -264,7 +262,11 @@ function _createPropertyDecoration(
         true,
         ctxt.target.propertyKey,
     );
-    const refDescriptor = { ...(runner.property[PointcutPhase.COMPILE](ctxt) ?? ctxt.target.descriptor) };
+    const refDescriptor = {
+        ...(getWeaver()
+            .load()
+            .property[PointcutPhase.COMPILE](ctxt) ?? ctxt.target.descriptor),
+    };
 
     if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
         const propValue = refDescriptor.value;
@@ -278,6 +280,7 @@ function _createPropertyDecoration(
         ...refDescriptor,
     };
     newDescriptor.get = function() {
+        const runner = getWeaver().load();
         ctxt.args = [];
         const r = runner.property.getter;
         try {
@@ -298,7 +301,7 @@ function _createPropertyDecoration(
 
     if (_isWritable(newDescriptor)) {
         newDescriptor.set = function(...args: any[]) {
-            const r = runner.property.setter;
+            const r = getWeaver().load().property.setter;
             try {
                 ctxt.args = args;
                 ctxt.instance = this;
@@ -332,10 +335,7 @@ function _createPropertyDecoration(
     }
 }
 
-function _createMethodDecoration(
-    ctxt: AdviceContextImpl<any, AnnotationType.METHOD>,
-    runner: AdviceRunners,
-): PropertyDescriptor {
+function _createMethodDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>): PropertyDescriptor {
     const target = ctxt.target;
     Reflect.defineProperty(
         target.proto,
@@ -353,8 +353,9 @@ function _createMethodDecoration(
 
     // invoke compile method or get default descriptor
     const refDescriptor =
-        runner.method[PointcutPhase.COMPILE](ctxt) ??
-        Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey);
+        getWeaver()
+            .load()
+            .method[PointcutPhase.COMPILE](ctxt) ?? Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey);
 
     assert(!!refDescriptor);
 
@@ -362,7 +363,7 @@ function _createMethodDecoration(
 
     const newDescriptor = { ...refDescriptor };
     newDescriptor.value = function(...args: any[]) {
-        const r = runner.method;
+        const r = getWeaver().load().method;
         try {
             ctxt.args = args;
             ctxt.instance = this;
@@ -388,8 +389,8 @@ function _createMethodDecoration(
 }
 
 const _defineProperty = Object.defineProperty;
-function _createParameterDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>, runner: AdviceRunners): void {
-    const newDescriptor = _createMethodDecoration(ctxt as any, runner);
+function _createParameterDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>): void {
+    const newDescriptor = _createMethodDecoration(ctxt as any);
 
     Reflect.defineProperty(ctxt.target.proto, ctxt.target.propertyKey, newDescriptor);
 
