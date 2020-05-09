@@ -1,8 +1,8 @@
 import { DeserializationContext, SerializationContext } from '../memo.types';
 
 export interface MemoWrapper<T = any> {
-    wrap(wrap: MemoWrap<T>, value: T, context: SerializationContext): MemoWrap<T>;
-    unwrap(wrap: MemoWrap<T>, context: DeserializationContext): T;
+    wrap(wrap: MemoWrap<T>, value: T, context: SerializationContext): MemoWrap<T> | Promise<MemoWrap<T>>;
+    unwrap(wrap: MemoWrap<T>, context: DeserializationContext): T | Promise<T>;
 }
 
 enum MemoWrapField {

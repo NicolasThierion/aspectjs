@@ -97,13 +97,13 @@ export class MemoAspect {
 
         const proceedJoinpoint = () => {
             // value not cached. Call the original method
-            const value = jp();
+            let value = jp();
             const driver = Object.values(this._drivers)
                 .map(d => [d, d.getPriority(value)])
                 .filter(dp => dp[1] >= 0)
                 .sort((dp1: any, dp2: any) => dp2[1] - dp1[1])[0][0] as MemoDriver;
 
-            driver.setValue(key, {
+            value = driver.setValue(key, {
                 expiry,
                 value,
             });

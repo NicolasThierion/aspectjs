@@ -367,6 +367,10 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
             });
 
+            describe('with Promise attributes', () => {
+                xit('should return an object with promise attributes of correct values', () => {});
+            });
+
             describe('with cyclic references', () => {
                 beforeEach(() => {
                     process = jasmine
@@ -640,7 +644,71 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
             });
 
-            xdescribe('of promises', () => {});
+            describe('of promises', () => {
+                beforeEach(() => {
+                    process = jasmine
+                        .createSpy('methodSpy', (...args: any[]) => [Promise.resolve('a'), Promise.resolve('b')])
+                        .and.callThrough();
+                });
+
+                describe('when all the promises are resolved', () => {
+                    it('should return an array of promise with correct resolved value', async () => {
+                        const res1 = r.process();
+                        expect(res1).toEqual(jasmine.any(Array));
+                        expect(res1[0]).toEqual(jasmine.any(Promise));
+                        expect([await res1[0], await res1[1]]).toEqual(['a', 'b']);
+
+                        const res2 = r.process();
+
+                        expect(res2).toEqual(jasmine.any(Array));
+                        expect(res2[0]).toEqual(jasmine.any(Promise));
+                    });
+
+                    it('should use cached data and call the real method once', async () => {
+                        const res1 = r.process();
+                        expect(res1).toEqual(jasmine.any(Array));
+                        expect(res1[0]).toEqual(jasmine.any(Promise));
+                        await Promise.all(res1);
+
+                        const res2 = r.process();
+                        expect(process).toHaveBeenCalledTimes(1);
+                        expect([await res2[0], await res2[1]]).toEqual(['a', 'b']);
+
+                        return new Promise<any>(resolve => {
+                            setTimeout(async () => {
+                                const res2 = r.process();
+                                expect(process).toHaveBeenCalledTimes(1);
+                                expect([await res2[0], await res2[1]]).toEqual(['a', 'b']);
+
+                                resolve();
+                            });
+                        });
+                    });
+                });
+
+                describe('when not all the promises are resolved', () => {
+                    it('should return an array of promise', async () => {
+                        const res1 = r.process();
+                        expect(res1).toEqual(jasmine.any(Array));
+                        expect(res1[0]).toEqual(jasmine.any(Promise));
+                        await res1[0];
+
+                        const res2 = r.process();
+                        expect(res2).toEqual(jasmine.any(Array));
+                        expect([await res1[0], await res1[1]]).toEqual([await res2[0], await res2[1]]);
+                    });
+
+                    it('should call real method once', async () => {
+                        const res1 = r.process();
+                        expect(res1).toEqual(jasmine.any(Array));
+                        expect(res1[0]).toEqual(jasmine.any(Promise));
+                        await res1[0];
+                        r.process();
+
+                        expect(process).toHaveBeenCalledTimes(1);
+                    });
+                });
+            });
         });
 
         describe('that returns a promise', () => {
@@ -648,9 +716,20 @@ describe(`LocalStorageMemoDriver`, () => {
                 process = jasmine.createSpy('methodSpy', (...args: any[]) => new Promise(() => {})).and.callThrough();
             });
 
-            it('should return a promise', () => {
-                expect(r.process()).toEqual(jasmine.any(Promise));
-                expect(r.process()).toEqual(jasmine.any(Promise));
+            describe('when the promise is not resolved', () => {
+                describe('calling the method twice', () => {
+                    it('should return a promise', () => {
+                        expect(r.process()).toEqual(jasmine.any(Promise));
+                        expect(r.process()).toEqual(jasmine.any(Promise));
+                    });
+
+                    it('should call the real method twice', () => {
+                        r.process();
+                        r.process();
+
+                        expect(process).toHaveBeenCalledTimes(2);
+                    });
+                });
             });
 
             describe('when the promise is resolved', () => {

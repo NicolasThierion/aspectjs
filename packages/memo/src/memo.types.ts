@@ -44,14 +44,15 @@ export interface MemoSerializer<T = any, U = any> {
 
 export interface SerializationContext {
     key: MemoKey;
-    defaultWrap<T>(value: T, context: SerializationContext): MemoWrap<T>;
+    defaultWrap<T>(value: T): MemoWrap<T> | Promise<MemoWrap<T>>;
     blacklist?: Map<any, MemoWrap>;
     typeStore: CacheTypeStore;
+    readonly async: Promise<any>[]; // serialization will wait until this promise is resolved
 }
 
 export interface DeserializationContext {
     key: MemoKey;
     blacklist?: Map<MemoWrap, any>;
     typeStore: CacheTypeStore;
-    defaultUnwrap<T>(wrap: MemoWrap<T>, context: DeserializationContext): T;
+    defaultUnwrap<T>(wrap: MemoWrap<T>): T;
 }
