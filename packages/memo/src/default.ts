@@ -2,7 +2,7 @@ import { Memo } from './memo.annotation';
 import { getWeaver, WeaverProfile } from '@aspectjs/core';
 import { LsMemoDriver } from './drivers/localstorage/localstorage.driver';
 import { LzMemoSerializer } from './drivers/localstorage/lz-memo.serializer';
-import { IndexedDbDriver } from './drivers/indexed-db/indexed-db.driver';
+import { IdbMemoDriver } from './drivers/indexed-db/idb-memo.driver';
 import { DefaultCacheableAspect } from './cacheable/cacheable.aspect';
 
 /**
@@ -16,7 +16,7 @@ export const defaultLsMemoProfile = new WeaverProfile().enable(
         serializer: new LzMemoSerializer(),
     }),
     new DefaultCacheableAspect(),
-    new IndexedDbDriver(),
+    new IdbMemoDriver(),
 );
 
 export const defaultMemoProfile = defaultLsMemoProfile;

@@ -1,5 +1,5 @@
 import { MemoDriver, MemoDriverOptions } from '../memo.driver';
-import { MemoKey, MemoValue } from '../../memo.types';
+import { MemoKey } from '../../memo.types';
 import { parse, stringify } from 'flatted';
 import { MemoWrap } from '../memo-wrap';
 

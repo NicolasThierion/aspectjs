@@ -9,7 +9,7 @@ export interface IndexedDbDriverOptions extends MemoDriverOptions {
     localStorage?: typeof localStorage;
 }
 
-export class IndexedDbDriver extends MemoDriver {
+export class IdbMemoDriver extends MemoDriver {
     static readonly DATABASE_NAME = 'IndexedDbMemoAspect_db';
     static readonly STORE_NAME = 'results';
     static readonly DATABASE_VERSION = 1; // change this value whenever a backward-incompatible change is made to the store
@@ -36,8 +36,8 @@ export class IndexedDbDriver extends MemoDriver {
             database =>
                 new Promise<MemoKey[]>((resolve, reject) => {
                     const tx = database
-                        .transaction(IndexedDbDriver.STORE_NAME)
-                        .objectStore(IndexedDbDriver.STORE_NAME)
+                        .transaction(IdbMemoDriver.STORE_NAME)
+                        .objectStore(IdbMemoDriver.STORE_NAME)
                         .getAllKeys();
                     tx.addEventListener('success', () =>
                         resolve(
@@ -54,10 +54,10 @@ export class IndexedDbDriver extends MemoDriver {
 
     private _openDb() {
         return new Promise<IDBDatabase>((resolve, reject) => {
-            const dbRequest = this._idb.open(IndexedDbDriver.DATABASE_NAME, IndexedDbDriver.DATABASE_VERSION);
+            const dbRequest = this._idb.open(IdbMemoDriver.DATABASE_NAME, IdbMemoDriver.DATABASE_VERSION);
             dbRequest.addEventListener('upgradeneeded', () => {
                 const db = dbRequest.result;
-                const store = db.createObjectStore(IndexedDbDriver.STORE_NAME, {
+                const store = db.createObjectStore(IdbMemoDriver.STORE_NAME, {
                     keyPath: 'ref',
                     autoIncrement: false,
                 });

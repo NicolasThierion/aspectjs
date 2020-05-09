@@ -1,13 +1,13 @@
-import { Aspect } from '@aspectjs/core/src/weaver/advices/aspect';
 import { MemoDriver } from './drivers/memo.driver';
 import { MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
-import { Around, AroundContext, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
-import { getMetaOrDefault, isFunction, isUndefined, provider } from './utils';
+import { Aspect, Around, AroundContext, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
+import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
 import { x86 } from 'murmurhash3js';
 import Timeout = NodeJS.Timeout;
+import { AspectError } from '@aspectjs/core/src/weaver/errors/aspect-error';
 
 const MEMO_ID_REFLECT_KEY = '@aspectjs:memo/id';
 let internalId = 0;
@@ -95,14 +95,21 @@ export class MemoAspect {
         const options = ctxt.annotation.args[0] as MemoOptions;
         const expiry = this.getExpiry(ctxt, options);
 
-        const proceedJoinpoint = () => {
+        const proceedJoinpoint = (drivers: MemoDriver[]) => {
             // value not cached. Call the original method
             let value = jp();
-            const driver = Object.values(this._drivers)
+            const driver = drivers
                 .map(d => [d, d.getPriority(value)])
-                .filter(dp => dp[1] >= 0)
-                .sort((dp1: any, dp2: any) => dp2[1] - dp1[1])[0][0] as MemoDriver;
+                .filter(dp => dp[1] > 0)
+                .sort((dp1: any, dp2: any) => dp2[1] - dp1[1])
+                .map(dp => dp[0])[0] as MemoDriver;
 
+            if (!driver) {
+                throw new AspectError(
+                    ctxt,
+                    `Driver ${drivers[0].NAME} does not accept value ${value} returned by memoized method`,
+                );
+            }
             value = driver.setValue(key, {
                 expiry,
                 value,
@@ -117,12 +124,15 @@ export class MemoAspect {
             // mute errors in ase of version mismatch, & just remove old version
             if (e instanceof VersionConflictError) {
                 this._removeValue(d, e.context.key);
-                return proceedJoinpoint();
+                return proceedJoinpoint(drivers);
             } else {
                 throw e;
             }
         };
-        for (const d of Object.values(this._drivers)) {
+
+        const drivers = _selectCandidateDrivers(this._drivers, ctxt);
+
+        for (const d of drivers) {
             const memo = d.getValue(key);
 
             if (memo) {
@@ -148,7 +158,7 @@ export class MemoAspect {
             }
         }
 
-        return proceedJoinpoint();
+        return proceedJoinpoint(drivers);
     }
 
     private _removeValue(driver: MemoDriver, key: MemoKey): void {
@@ -193,7 +203,41 @@ export class MemoAspect {
                 return;
             }
 
-            throw new TypeError(`${ctxt.target}: expiration should be either a Date or a positive number. Got: ${exp}`);
+            throw new AspectError(ctxt, `expiration should be either a Date or a positive number. Got: ${exp}`);
+        }
+    }
+}
+
+function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: AroundContext<any, any>): MemoDriver[] {
+    const annotationOptions = (ctxt.annotation.args[0] ?? {}) as MemoOptions;
+    if (!annotationOptions.driver) {
+        // return all drivers
+        return Object.values(drivers);
+    } else {
+        if (isString(annotationOptions.driver)) {
+            const candidates = Object.values(drivers).filter(d => d.NAME === annotationOptions.driver);
+            if (!candidates.length) {
+                throw new AspectError(
+                    ctxt,
+                    `No candidate driver available for driver name "${annotationOptions.driver}"`,
+                );
+            }
+
+            return candidates;
+        } else if (isFunction(annotationOptions.driver)) {
+            const candidates = Object.values(drivers).filter(d => d.constructor === annotationOptions.driver);
+            if (!candidates.length) {
+                throw new AspectError(
+                    ctxt,
+                    `No candidate driver available for driver "${annotationOptions.driver?.name}"`,
+                );
+            }
+            return candidates;
+        } else {
+            throw new AspectError(
+                ctxt,
+                `driver option should be a string or a Driver constructor. Got: ${annotationOptions.driver}`,
+            );
         }
     }
 }

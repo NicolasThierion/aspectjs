@@ -7,6 +7,7 @@ import { VersionConflictError } from '../errors';
 import SemVer from 'semver/classes/semver';
 import { DeserializationContext, MemoKey, MemoSerializer, MemoValue, SerializationContext } from '../memo.types';
 import { MemoWrap, MemoWrapper } from './memo-wrap';
+import { WeavingError } from '@aspectjs/core/src/weaver/errors/weaving-error';
 
 export interface MemoDriverOptions {
     serializer?: MemoSerializer;
@@ -49,13 +50,25 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
             if (value !== null) {
                 context.blacklist.set(value, wrap);
 
+                // entries may contain promises
+                const promises: Promise<any>[] = [];
+
                 wrap.value = ([] as (string | symbol)[])
                     .concat(Object.getOwnPropertyNames(value))
                     .concat(Object.getOwnPropertySymbols(value))
                     .reduce((w, k) => {
-                        w[k] = context.defaultWrap((value as any)[k]);
+                        const v = (value as any)[k];
+
+                        if (isPromise(v)) {
+                            promises.push(v.then(r => (w[k] = context.defaultWrap(r))));
+                        } else {
+                            w[k] = context.defaultWrap(v);
+                        }
+
                         return w;
                     }, wrap.value as any);
+
+                context.async.push(...promises);
             }
 
             return wrap;
@@ -75,13 +88,12 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
             value: unknown[],
             context: SerializationContext,
         ): MemoWrap<any[]> | Promise<MemoWrap<any[]>> {
-            // assert(type === ValueType.ARRAY);
             wrap.value = [];
             context.blacklist.set(value, wrap);
 
             const array = value as any[];
-            // array may contain promises
 
+            // array may contain promises
             const promises: Promise<any>[] = [];
             array.forEach((v, i) => {
                 if (isPromise(v)) {
@@ -91,14 +103,9 @@ export const DEFAULT_TYPE_HANDLERS: MemoDriverOptions['typeWrappers'] = {
                 }
             });
 
-            // if (promises.length) {
             context.async.push(...promises);
 
             return wrap;
-            // }
-            //
-            // array.push(...(value as any[]).map(v => context.defaultWrap(v)));
-            // return wrap;
         },
     },
     Date: {
@@ -288,13 +295,13 @@ export abstract class MemoDriver {
 
         const weaver = getWeaver();
         if (!weaver) {
-            throw new Error('no weaver configured. Please call setWeaver()');
+            throw new WeavingError('no weaver configured. Please call setWeaver()');
         }
 
         const cacheableAspect = weaver.getAspect('@aspectjs/cacheable') as CacheableAspect;
 
         if (!cacheableAspect) {
-            throw new Error(
+            throw new WeavingError(
                 'MemoAspect requires an aspect to be registered for id "@aspectjs/cacheable".' +
                     ' Did you forgot to call getWeaver().enable(new DefaultCacheableAspect()) ?',
             );

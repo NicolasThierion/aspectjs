@@ -368,7 +368,30 @@ describe(`LocalStorageMemoDriver`, () => {
             });
 
             describe('with Promise attributes', () => {
-                xit('should return an object with promise attributes of correct values', () => {});
+                beforeEach(() => {
+                    process = jasmine
+                        .createSpy('process', () => ({
+                            promiseA: Promise.resolve('a'),
+                            promiseB: Promise.resolve('b'),
+                        }))
+                        .and.callThrough();
+                });
+
+                it('should return an object with promise attributes of correct values', async () => {
+                    const res1 = r.process();
+                    expect([await res1.promiseA, await res1.promiseB]).toEqual(['a', 'b']);
+
+                    const res2 = r.process();
+                    expect([await res2.promiseA, await res2.promiseB]).toEqual(['a', 'b']);
+                });
+
+                it('should use cached values and call the real method once', async () => {
+                    const res1 = r.process();
+                    const res2 = r.process();
+                    expect([await res1.promiseA, await res1.promiseB]).toEqual(['a', 'b']);
+                    expect([await res2.promiseA, await res2.promiseB]).toEqual(['a', 'b']);
+                    expect(process).toHaveBeenCalledTimes(1);
+                });
             });
 
             describe('with cyclic references', () => {
