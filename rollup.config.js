@@ -1,11 +1,12 @@
 import typescript from 'rollup-plugin-typescript2';
-import { join } from 'path';
+
 import visualizer from 'rollup-plugin-visualizer';
 import cleaner from 'rollup-plugin-cleaner';
 import babel from 'rollup-plugin-babel';
 import { terser } from 'rollup-plugin-terser';
-import { mergeWith, isArray } from 'lodash';
+import { isArray, mergeWith } from 'lodash';
 import babelrc from './.babelrc.json';
+import sourcemaps from 'rollup-plugin-sourcemaps';
 
 const dist = 'dist';
 
@@ -13,12 +14,15 @@ export function configFactory(pkg) {
     const baseConfig = {
         input: 'public_api.ts',
         plugins: [
+            sourcemaps(),
             typescript({
                 objectHashIgnoreUnknownHack: true,
                 clean: true,
                 tsconfigOverride: {
                     compilerOptions: {
                         module: 'esnext',
+                        sourceMap: true,
+                        inlineSourceMap: false,
                     },
                 },
             }),
@@ -37,6 +41,7 @@ export function configFactory(pkg) {
         ],
         output: [
             {
+                sourcemap: true,
                 file: pkg.module,
                 format: 'esm',
             },
@@ -56,12 +61,29 @@ export function configFactory(pkg) {
                 name: pkg.name,
                 format: 'umd',
                 plugins: [],
+                sourcemap: true,
             },
             {
                 file: pkg.unpgk,
                 name: pkg.name,
                 format: 'umd',
-                plugins: [terser()],
+                plugins: [
+                    terser({
+                        compress: true,
+                        ecma: 5,
+                        ie8: false,
+                        keep_classnames: false,
+                        keep_fnames: false,
+                        mangle: {
+                            eval: true,
+                            keep_classnames: false,
+                            keep_fnames: false,
+                            properties: true,
+                        },
+                        module: false,
+                    }),
+                ],
+                sourcemap: true,
             },
         ],
     };
@@ -73,5 +95,4 @@ function customizer(a, b) {
     if (isArray(a) && isArray(b)) {
         return a.concat(b);
     }
-    return undefined;
 }
