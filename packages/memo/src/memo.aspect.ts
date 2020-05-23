@@ -1,13 +1,13 @@
 import { MemoDriver } from './drivers/memo.driver';
 import { MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
-import { Aspect, Around, AroundContext, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
-import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils';
+import { Around, AroundContext, Aspect, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
+import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils/utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
 import { x86 } from 'murmurhash3js';
-import Timeout = NodeJS.Timeout;
 import { AspectError } from '@aspectjs/core/src/weaver/errors/aspect-error';
+import Timeout = NodeJS.Timeout;
 
 const MEMO_ID_REFLECT_KEY = '@aspectjs:memo/id';
 let internalId = 0;
@@ -49,6 +49,10 @@ export class MemoAspect {
 
     constructor(params?: MemoAspectOptions) {
         this._params = { ...params, ...DEFAULT_MEMO_ASPECT_OPTIONS };
+    }
+
+    getDrivers() {
+        return this._drivers;
     }
 
     public drivers(...drivers: MemoDriver[]): this {
@@ -94,10 +98,11 @@ export class MemoAspect {
 
         const options = ctxt.annotation.args[0] as MemoOptions;
         const expiry = this.getExpiry(ctxt, options);
+        const drivers = _selectCandidateDrivers(this._drivers, ctxt);
 
-        const proceedJoinpoint = (drivers: MemoDriver[]) => {
+        const proceedJoinpoint = () => {
             // value not cached. Call the original method
-            let value = jp();
+            const value = jp();
             const driver = drivers
                 .map(d => [d, d.getPriority(value)])
                 .filter(dp => dp[1] > 0)
@@ -110,7 +115,8 @@ export class MemoAspect {
                     `Driver ${drivers[0].NAME} does not accept value ${value} returned by memoized method`,
                 );
             }
-            value = driver.setValue(key, {
+            /*value =  */ driver.setValue({
+                key,
                 expiry,
                 value,
             });
@@ -120,45 +126,29 @@ export class MemoAspect {
             return value;
         };
 
-        const handleErrors = (d: MemoDriver, e: Error) => {
-            // mute errors in ase of version mismatch, & just remove old version
-            if (e instanceof VersionConflictError) {
-                this._removeValue(d, e.context.key);
-                return proceedJoinpoint(drivers);
-            } else {
-                throw e;
-            }
-        };
-
-        const drivers = _selectCandidateDrivers(this._drivers, ctxt);
-
         for (const d of drivers) {
-            const memo = d.getValue(key);
-
-            if (memo) {
-                if (memo.expiry && memo.expiry < new Date()) {
-                    // remove data if expired
-                    this._removeValue(d, key);
-                } else {
-                    try {
+            try {
+                const memo = d.getValue(key);
+                if (memo) {
+                    if (memo.expiry && memo.expiry < new Date()) {
+                        // remove data if expired
+                        this._removeValue(d, key);
+                    } else {
                         // getting value may trigger lazy deserialize that may produce errors.
-                        const res = memo.value;
-                        if (isFunction(res?.then)) {
-                            return res.then(
-                                (x: any) => x, // pass through
-                                (e: Error) => handleErrors(d, e),
-                            );
-                        } else {
-                            return res;
-                        }
-                    } catch (e) {
-                        return handleErrors(d, e);
+                        return memo.value;
                     }
+                }
+            } catch (e) {
+                // mute errors in ase of version mismatch, & just remove old version
+                if (e instanceof VersionConflictError) {
+                    this._removeValue(d, e.context.key);
+                } else {
+                    throw e;
                 }
             }
         }
-
-        return proceedJoinpoint(drivers);
+        // found no driver for this value. Call the real method
+        return proceedJoinpoint();
     }
 
     private _removeValue(driver: MemoDriver, key: MemoKey): void {
@@ -187,7 +177,9 @@ export class MemoAspect {
     private _initGc(driver: MemoDriver): void {
         driver.getKeys().then(keys => {
             keys.forEach(k => {
-                this._scheduleCleaner(driver, k, driver.getValue(k).expiry);
+                Promise.resolve(driver.getValue(k)).then(memo => {
+                    this._scheduleCleaner(driver, k, memo.expiry);
+                });
             });
         });
     }

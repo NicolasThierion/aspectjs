@@ -74,7 +74,7 @@ describe(`LocalStorageMemoDriver`, () => {
             it('should call the method once', () => {
                 const res = r.process(...defaultArgs);
                 expect(process).toHaveBeenCalled();
-                expect(res).toEqual(defaultArgs.reverse());
+                expect(res).toEqual([...defaultArgs].reverse());
                 expect(process).toHaveBeenCalledTimes(1);
             });
         });
@@ -85,7 +85,7 @@ describe(`LocalStorageMemoDriver`, () => {
                     let res = r.process(...defaultArgs);
                     expect(process).toHaveBeenCalled();
                     res = r.process(...defaultArgs);
-                    expect(res).toEqual(defaultArgs.reverse());
+                    expect(res).toEqual([...defaultArgs].reverse());
                     expect(process).toHaveBeenCalledTimes(1);
                 });
             });
@@ -95,7 +95,7 @@ describe(`LocalStorageMemoDriver`, () => {
                     let res = r.process('a', 'b');
                     expect(process).toHaveBeenCalled();
                     res = r.process(...defaultArgs);
-                    expect(res).toEqual(defaultArgs.reverse());
+                    expect(res).toEqual([...defaultArgs].reverse());
                     expect(process).toHaveBeenCalledTimes(2);
                 });
             });
@@ -110,7 +110,7 @@ describe(`LocalStorageMemoDriver`, () => {
 
             it('should use data cached from previous context', () => {
                 const res = r.process(...defaultArgs);
-                expect(res).toEqual(defaultArgs.reverse());
+                expect(res).toEqual([...defaultArgs].reverse());
                 expect(process).toHaveBeenCalledTimes(1);
             });
         });
@@ -122,7 +122,7 @@ describe(`LocalStorageMemoDriver`, () => {
                 expect(process).toHaveBeenCalled();
                 ns = 'ns2';
                 res = r.process(...defaultArgs);
-                expect(res).toEqual(defaultArgs.reverse());
+                expect(res).toEqual([...defaultArgs].reverse());
                 expect(process).toHaveBeenCalledTimes(2);
             });
         });
@@ -138,11 +138,10 @@ describe(`LocalStorageMemoDriver`, () => {
             });
 
             function testShouldRemoveData(cb: Function): void {
-                let res = r.process(...defaultArgs);
                 expect(process).toHaveBeenCalled();
                 setTimeout(() => {
-                    res = r.process(...defaultArgs);
-                    expect(res).toEqual(defaultArgs.reverse());
+                    const res = r.process(...defaultArgs);
+                    expect(res).toEqual([...defaultArgs].reverse());
                     expect(process).toHaveBeenCalledTimes(2);
                     cb();
                 }, 1000 * 60 * 3);
@@ -154,7 +153,7 @@ describe(`LocalStorageMemoDriver`, () => {
                 expect(process).toHaveBeenCalled();
                 setTimeout(() => {
                     res = r.process(...defaultArgs);
-                    expect(res).toEqual(defaultArgs.reverse());
+                    expect(res).toEqual([...defaultArgs].reverse());
                     expect(process).toHaveBeenCalledTimes(1);
                     cb();
                 }, 1000 * 60);
@@ -173,7 +172,10 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
 
                 describe('when data did expire', () => {
-                    it('should remove cached data', testShouldRemoveData);
+                    it('should remove cached data', cb => {
+                        r.process(...defaultArgs);
+                        testShouldRemoveData(cb);
+                    });
 
                     describe('after the context has been reloaded', () => {
                         beforeEach(() => {
@@ -196,7 +198,10 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
 
                 describe('when data did expire', () => {
-                    it('should remove cached data', testShouldRemoveData);
+                    it('should remove cached data', cb => {
+                        r.process(...defaultArgs);
+                        testShouldRemoveData(cb);
+                    });
 
                     describe('after the context has been reloaded', () => {
                         beforeEach(() => {
@@ -395,6 +400,7 @@ describe(`LocalStorageMemoDriver`, () => {
             });
 
             describe('with cyclic references', () => {
+                let result: any;
                 beforeEach(() => {
                     process = jasmine
                         .createSpy('process', () => {
@@ -404,13 +410,14 @@ describe(`LocalStorageMemoDriver`, () => {
                             a.b = b;
                             b.a = a;
                             b.b = b;
-                            return a;
+                            return (result = a);
                         })
                         .and.callThrough();
                 });
 
                 it('should return an object with attributes of correct type', () => {
-                    expect(r.process()).toEqual(r.process());
+                    expect(r.process()).toEqual(result);
+                    expect(r.process()).toEqual(result);
                     expect(process).toHaveBeenCalledTimes(1);
                 });
             });
@@ -552,7 +559,6 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
             });
         });
-
         describe('that returns null', () => {
             beforeEach(() => {
                 process = jasmine.createSpy('process', () => null).and.callThrough();
@@ -648,6 +654,7 @@ describe(`LocalStorageMemoDriver`, () => {
             });
 
             describe('with cyclic elements', () => {
+                let result: any;
                 beforeEach(() => {
                     process = jasmine
                         .createSpy('process', () => {
@@ -656,13 +663,14 @@ describe(`LocalStorageMemoDriver`, () => {
                             arr1.push('1', arr1, arr2);
                             arr2.push('2', arr1);
 
-                            return arr1;
+                            return (result = arr1);
                         })
                         .and.callThrough();
                 });
 
                 it('should return an array of correct type', () => {
-                    expect(r.process()).toEqual(r.process());
+                    expect(r.process()).toEqual(result);
+                    expect(r.process()).toEqual(result);
                     expect(process).toHaveBeenCalledTimes(1);
                 });
             });
@@ -718,7 +726,8 @@ describe(`LocalStorageMemoDriver`, () => {
 
                         const res2 = r.process();
                         expect(res2).toEqual(jasmine.any(Array));
-                        expect([await res1[0], await res1[1]]).toEqual([await res2[0], await res2[1]]);
+                        expect([await res1[0], await res1[1]]).toEqual(['a', 'b']);
+                        expect([await res2[0], await res2[1]]).toEqual(['a', 'b']);
                     });
 
                     it('should call real method once', async () => {
@@ -746,11 +755,11 @@ describe(`LocalStorageMemoDriver`, () => {
                         expect(r.process()).toEqual(jasmine.any(Promise));
                     });
 
-                    it('should call the real method twice', () => {
+                    it('should call the real method once', () => {
                         r.process();
                         r.process();
 
-                        expect(process).toHaveBeenCalledTimes(2);
+                        expect(process).toHaveBeenCalledTimes(1);
                     });
                 });
             });
@@ -765,7 +774,8 @@ describe(`LocalStorageMemoDriver`, () => {
                 it('should resolve to the cached value', async () => {
                     const value1 = await r.process();
                     const value2 = await r.process();
-                    expect(value1).toEqual(value2);
+                    expect(value1).toEqual('value');
+                    expect(value2).toEqual('value');
                 });
             });
         });

@@ -4,13 +4,12 @@ import { DefaultCacheableAspect } from './cacheable/cacheable.aspect';
 import { MemoDriver } from './drivers/memo.driver';
 import { MemoKey } from './memo.types';
 import { Memo } from './memo.annotation';
+import { InstantPromise } from './utils/instant-promise';
 
 interface Runner {
     process(...args: any[]): any;
 }
 
-let CacheableA: any;
-let CacheableB: any;
 let process: (...args: any[]) => any;
 function _setupMemoAspect(...drivers: MemoDriver[]): void {
     drivers.forEach(d => {
@@ -42,11 +41,15 @@ class DummyDriver extends MemoDriver {
         return this.name;
     }
 
-    protected doGetValue(key: MemoKey): any {}
+    protected read(key: MemoKey): any {}
 
-    protected doRemove(key: MemoKey): void {}
+    protected doRemove(key: MemoKey): PromiseLike<void> {
+        return InstantPromise.resolve();
+    }
 
-    protected doSetValue(key: MemoKey, value: any): void {}
+    protected write(key: MemoKey, value: any): PromiseLike<void> {
+        return InstantPromise.resolve();
+    }
 
     getKeys(namespace?: string): Promise<MemoKey[]> {
         return Promise.resolve([]);

@@ -1,26 +1,25 @@
-import { LsMemoDriver } from './localstorage.driver';
+import { LsMemoDriver, LsMemoSerializer } from './localstorage.driver';
 import { LzMemoSerializer } from './lz-memo.serializer';
 import { Memo } from '../../memo.annotation';
 import { createLocalStorage } from 'localstorage-ponyfill';
 import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { MemoAspect } from '../../memo.aspect';
-import { MemoSerializer } from '../../memo.types';
 
 const DEFAULT_ARGS = ['a', 'b', 'c', 'd'];
 
 describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
     describe(`when calling a method annotated with @Memo({type = 'localstorage'})`, () => {
-        let serializer: MemoSerializer;
+        let serializer: LsMemoSerializer;
 
         interface Cached {
             method(...args: any[]): any;
         }
 
         let cached: Cached;
-        let methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => args.reverse());
+        let methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => args.reverse()).and.callThrough();
         beforeEach(() => {
-            methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => args.reverse());
+            methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => args.reverse()).and.callThrough();
             serializer = new LzMemoSerializer();
             spyOn(serializer, 'deserialize').and.callThrough();
             spyOn(serializer, 'serialize').and.callThrough();
@@ -50,7 +49,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
         });
 
         describe('once', () => {
-            it('should call handler.onWrite once', () => {
+            it('should call serializer.serialize once', () => {
                 expect(serializer.serialize).not.toHaveBeenCalled();
                 cached.method(...DEFAULT_ARGS);
                 expect(serializer.serialize).toHaveBeenCalled();
@@ -59,14 +58,14 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
         });
 
         describe('calling a cache-enabled method twice', () => {
-            it('should call serializer.deserialize once', () => {
+            it('should call serializer.deserialize twice', () => {
                 expect(serializer.deserialize).not.toHaveBeenCalled();
 
                 cached.method(...DEFAULT_ARGS);
                 cached.method(...DEFAULT_ARGS);
 
                 expect(serializer.deserialize).toHaveBeenCalled();
-                expect(serializer.deserialize).toHaveBeenCalledTimes(1);
+                expect(serializer.deserialize).toHaveBeenCalledTimes(2);
             });
 
             it('should return the same result', () => {

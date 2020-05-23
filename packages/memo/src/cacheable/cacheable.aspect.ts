@@ -1,6 +1,6 @@
 import { AnnotationType, Aspect, Compile, CompileContext, on } from '@aspectjs/core';
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
-import { assert, getMetaOrDefault, isObject } from '../utils';
+import { assert, getMetaOrDefault, isObject } from '../utils/utils';
 
 type Prototype = {
     constructor: Function;
@@ -18,6 +18,10 @@ export interface CacheTypeStore {
     addPrototype<T extends Prototype>(proto: T, key: string, version?: any): void;
 }
 
+/**
+ * Assign a key to the prototype of a class into a CacheTypeStore,
+ * so that Memo drivers can inflate memoized objects with proper types.
+ */
 @Aspect('@aspectjs/cacheable')
 export class DefaultCacheableAspect implements CacheableAspect {
     constructor(public readonly cacheTypeStore: CacheTypeStore = new CacheTypeStoreImpl()) {}
@@ -35,6 +39,9 @@ export class DefaultCacheableAspect implements CacheableAspect {
     }
 }
 
+/**
+ * Store class prototypes along with a defined key.
+ */
 export class CacheTypeStoreImpl implements CacheTypeStore {
     private readonly _prototypes: Record<string, Prototype> = {};
     private readonly _versions: Record<string, string> = {};

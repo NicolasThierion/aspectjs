@@ -1,4 +1,4 @@
-import { MemoWrap, MemoWrapper } from './drivers/memo-wrap';
+import { MemoFrame } from './drivers/memo-frame';
 import { CacheTypeStore } from './cacheable/cacheable.aspect';
 
 const KEY_IDENTIFIER = '@aspectjs:Memo';
@@ -32,27 +32,22 @@ export class MemoKey {
     }
 }
 
-export interface MemoValue<T = any> {
+export interface MemoEntry<T = any> {
+    readonly key: MemoKey;
     readonly value: T;
     readonly expiry?: Date;
 }
 
-export interface MemoSerializer<T = any, U = any> {
-    deserialize(obj: U, context: DeserializationContext): MemoWrap<T>;
-    serialize(obj: MemoWrap<T>, context: SerializationContext): U;
+export interface MarshallingContext<T = unknown> {
+    key: MemoKey;
+    blacklist?: Map<any, MemoFrame<T>>;
+    defaultMarshal(value: T): MemoFrame<T>;
+    readonly async: Promise<any>[]; // marshalling will wait until these promises are resolved
 }
 
-export interface SerializationContext {
+export interface UnmarshallingContext {
     key: MemoKey;
-    defaultWrap<T>(value: T): MemoWrap<T> | Promise<MemoWrap<T>>;
-    blacklist?: Map<any, MemoWrap>;
-    typeStore: CacheTypeStore;
-    readonly async: Promise<any>[]; // serialization will wait until this promise is resolved
-}
-
-export interface DeserializationContext {
-    key: MemoKey;
-    blacklist?: Map<MemoWrap, any>;
-    typeStore: CacheTypeStore;
-    defaultUnwrap<T>(wrap: MemoWrap<T>): T;
+    blacklist?: Map<MemoFrame, any>;
+    defaultUnmarshal<T>(frame: MemoFrame<T>): T;
+    readonly async: Promise<any>[]; // unmarshalling will wait until these promises are resolved
 }
