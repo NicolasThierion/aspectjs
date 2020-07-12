@@ -55,16 +55,6 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         return super.disable(...aspects);
     }
 
-    merge(...profiles: WeaverProfile[]): this {
-        this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot change profile`);
-        return super.merge(...profiles);
-    }
-
-    setProfile(profile: WeaverProfile): this {
-        this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot change profile`);
-        return super.reset().merge(profile);
-    }
-
     load(): AdviceRunners {
         if (!this._advices) {
             this._advices = Object.values(this._aspectsRegistry)

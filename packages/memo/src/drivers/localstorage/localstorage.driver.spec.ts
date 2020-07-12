@@ -44,11 +44,9 @@ describe(`LocalStorageMemoDriver`, () => {
             _setupLsMemoAspect(ls);
 
             @Cacheable()
-            // eslint-disable-next-line @typescript-eslint/class-name-casing
             class _CacheableA {}
             CacheableA = _CacheableA;
             @Cacheable()
-            // eslint-disable-next-line @typescript-eslint/class-name-casing
             class _CacheableB {}
             CacheableB = _CacheableB;
 
@@ -137,7 +135,7 @@ describe(`LocalStorageMemoDriver`, () => {
                 jasmine.clock().uninstall();
             });
 
-            function testShouldRemoveData(cb: Function): void {
+            function testShouldRemoveData(cb: () => void): void {
                 expect(process).toHaveBeenCalled();
                 setTimeout(() => {
                     const res = r.process(...defaultArgs);
@@ -148,7 +146,7 @@ describe(`LocalStorageMemoDriver`, () => {
                 jasmine.clock().tick(1000 * 60 * 3 + 1);
             }
 
-            function testShouldUseCachedData(cb: Function): void {
+            function testShouldUseCachedData(cb: () => void): void {
                 let res = r.process(...defaultArgs);
                 expect(process).toHaveBeenCalled();
                 setTimeout(() => {
@@ -162,9 +160,7 @@ describe(`LocalStorageMemoDriver`, () => {
 
             describe('as a date', () => {
                 beforeEach(() => {
-                    expiration = moment(initDate)
-                        .add(2, 'm')
-                        .toDate();
+                    expiration = moment(initDate).add(2, 'm').toDate();
                 });
 
                 describe('when data did not expire', () => {
@@ -172,7 +168,7 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
 
                 describe('when data did expire', () => {
-                    it('should remove cached data', cb => {
+                    it('should remove cached data', (cb) => {
                         r.process(...defaultArgs);
                         testShouldRemoveData(cb);
                     });
@@ -198,7 +194,7 @@ describe(`LocalStorageMemoDriver`, () => {
                 });
 
                 describe('when data did expire', () => {
-                    it('should remove cached data', cb => {
+                    it('should remove cached data', (cb) => {
                         r.process(...defaultArgs);
                         testShouldRemoveData(cb);
                     });
@@ -295,7 +291,7 @@ describe(`LocalStorageMemoDriver`, () => {
                     beforeEach(() => {
                         class RunnerImpl implements Runner {
                             @Memo({
-                                id: ctxt => ctxt.instance._ref,
+                                id: (ctxt) => ctxt.instance._ref,
                             })
                             process(...args: any[]): any {
                                 return process(...args);
@@ -497,7 +493,6 @@ describe(`LocalStorageMemoDriver`, () => {
                         @Cacheable({
                             version: () => version(),
                         })
-                        // eslint-disable-next-line @typescript-eslint/class-name-casing
                         class _CachedClass {}
                         CachedClass = _CachedClass;
                     });
@@ -705,7 +700,7 @@ describe(`LocalStorageMemoDriver`, () => {
                         expect(process).toHaveBeenCalledTimes(1);
                         expect([await res2[0], await res2[1]]).toEqual(['a', 'b']);
 
-                        return new Promise<any>(resolve => {
+                        return new Promise<any>((resolve) => {
                             setTimeout(async () => {
                                 const res2 = r.process();
                                 expect(process).toHaveBeenCalledTimes(1);

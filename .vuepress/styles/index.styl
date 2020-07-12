@@ -1,5 +1,6 @@
+@import "./spoiler.styl"
 h1, h2, h3 {
-  color: #ba8434
+  color: darken($accentColor, 0.2)
 }
 
 body .github-corner > svg {
@@ -8,6 +9,15 @@ body .github-corner > svg {
   top: $navbarHeight;
   position: fixed;
 }
+
+.el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active {
+  color: $accentColor !important;
+}
+
+.el-tabs--border-card > .el-tabs__header .el-tabs__item:not(.is-disabled):hover {
+  color: saturate(lightness($accentColor, 70%), 80%) !important;
+}
+
 
 body pre.code-copy-added {
   position: relative;
@@ -48,4 +58,10 @@ body pre.code-copy-added {
       position: absolute;
     }
   }
+}
+
+.custom-block.details figure:last-child, .custom-block.details p:last-child {
+  padding: 0.1rem 1.5rem;
+  margin: 1rem 0;
+  padding-left: 42px;
 }

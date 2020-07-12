@@ -41,7 +41,7 @@ export abstract class MemoDriver {
     }
 
     addMarshaller(...marshallers: MemoMarshaller[]): void {
-        marshallers.forEach(marshaller => {
+        marshallers.forEach((marshaller) => {
             [marshaller.modes].flat().forEach((mode: MemoMarshallerMode) => {
                 [marshaller.types].flat().forEach((type: string) => {
                     this._marshallers[type] = this._marshallers[type] ?? {};

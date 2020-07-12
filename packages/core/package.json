@@ -26,7 +26,6 @@
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
-
   "directories": {
     "lib": "src",
     "test": "tests"
@@ -39,8 +38,8 @@
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
   "devDependencies": {
-    "@size-limit/preset-big-lib": "^4.0.1",
-    "size-limit": "^4.0.1"
+    "@size-limit/preset-big-lib": "^4.5.4",
+    "size-limit": "^4.5.4"
   },
   "size-limit": [
     {

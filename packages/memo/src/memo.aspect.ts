@@ -16,7 +16,7 @@ export interface MemoAspectOptions {
     namespace?: string | (() => string);
     expiration?: Date | number | (() => Date | number);
     id?: string | number | ((ctxt: BeforeContext<any, any>) => string | number);
-    contextKey?: (ctxt: BeforeContext<any, any>) => MemoKey;
+    contextKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
 }
 
 export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
@@ -56,7 +56,7 @@ export class MemoAspect {
     }
 
     public drivers(...drivers: MemoDriver[]): this {
-        drivers.forEach(d => {
+        drivers.forEach((d) => {
             if (this._drivers[d.NAME] === d) {
                 return;
             }
@@ -104,10 +104,10 @@ export class MemoAspect {
             // value not cached. Call the original method
             const value = jp();
             const driver = drivers
-                .map(d => [d, d.getPriority(value)])
-                .filter(dp => dp[1] > 0)
+                .map((d) => [d, d.getPriority(value)])
+                .filter((dp) => dp[1] > 0)
                 .sort((dp1: any, dp2: any) => dp2[1] - dp1[1])
-                .map(dp => dp[0])[0] as MemoDriver;
+                .map((dp) => dp[0])[0] as MemoDriver;
 
             if (!driver) {
                 throw new AspectError(
@@ -175,9 +175,9 @@ export class MemoAspect {
     }
 
     private _initGc(driver: MemoDriver): void {
-        driver.getKeys().then(keys => {
-            keys.forEach(k => {
-                Promise.resolve(driver.getValue(k)).then(memo => {
+        driver.getKeys().then((keys) => {
+            keys.forEach((k) => {
+                Promise.resolve(driver.getValue(k)).then((memo) => {
                     this._scheduleCleaner(driver, k, memo.expiry);
                 });
             });
@@ -207,7 +207,7 @@ function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: Arou
         return Object.values(drivers);
     } else {
         if (isString(annotationOptions.driver)) {
-            const candidates = Object.values(drivers).filter(d => d.NAME === annotationOptions.driver);
+            const candidates = Object.values(drivers).filter((d) => d.NAME === annotationOptions.driver);
             if (!candidates.length) {
                 throw new AspectError(
                     ctxt,
@@ -217,7 +217,7 @@ function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: Arou
 
             return candidates;
         } else if (isFunction(annotationOptions.driver)) {
-            const candidates = Object.values(drivers).filter(d => d.constructor === annotationOptions.driver);
+            const candidates = Object.values(drivers).filter((d) => d.constructor === annotationOptions.driver);
             if (!candidates.length) {
                 throw new AspectError(
                     ctxt,

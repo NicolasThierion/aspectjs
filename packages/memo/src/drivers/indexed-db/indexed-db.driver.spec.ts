@@ -50,12 +50,12 @@ describe(`IdbMemoDriver`, () => {
             _setupIdbMemoAspect(ls, idb);
 
             @Cacheable()
-            // eslint-disable-next-line @typescript-eslint/class-name-casing
             class _CacheableA {}
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             CacheableA = _CacheableA;
             @Cacheable()
-            // eslint-disable-next-line @typescript-eslint/class-name-casing
             class _CacheableB {}
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             CacheableB = _CacheableB;
 
             class RunnerImpl implements Runner {
@@ -126,7 +126,7 @@ describe(`IdbMemoDriver`, () => {
 
             it('should use data cached from previous context', async () => {
                 let res: any;
-                await new Promise(resolve => {
+                await new Promise((resolve) => {
                     setTimeout(async () => {
                         res = await r.process(...defaultArgs);
                         resolve();
@@ -163,7 +163,7 @@ describe(`IdbMemoDriver`, () => {
             function testShouldRemoveData(): Promise<void> {
                 expect(process).toHaveBeenCalled();
 
-                const p = new Promise(resolve => {
+                const p = new Promise((resolve) => {
                     setTimeout(resolve, 1000 * 60 * 3);
                 }).then(async () => {
                     const res = await r.process(...defaultArgs);
@@ -181,7 +181,7 @@ describe(`IdbMemoDriver`, () => {
                 let res = await r.process(...defaultArgs);
                 expect(process).toHaveBeenCalled();
 
-                const p = new Promise(resolve => {
+                const p = new Promise((resolve) => {
                     setTimeout(resolve, 1000 * 60);
                 }).then(async () => {
                     res = await r.process(...defaultArgs);
@@ -198,9 +198,7 @@ describe(`IdbMemoDriver`, () => {
 
             describe('as a date', () => {
                 beforeEach(() => {
-                    expiration = moment(initDate)
-                        .add(2, 'm')
-                        .toDate();
+                    expiration = moment(initDate).add(2, 'm').toDate();
                 });
 
                 describe('when data did not expire', () => {
@@ -315,7 +313,7 @@ describe(`IdbMemoDriver`, () => {
                             r1.process(...defaultArgs);
                             r2.process(...defaultArgs);
                             init();
-                            return new Promise<any>(r => {
+                            return new Promise<any>((r) => {
                                 setTimeout(r); // let some time to write onto IDB before reload
                             });
                         });
@@ -335,7 +333,7 @@ describe(`IdbMemoDriver`, () => {
                     beforeEach(() => {
                         class RunnerImpl implements Runner {
                             @Memo({
-                                id: ctxt => ctxt.instance._ref,
+                                id: (ctxt) => ctxt.instance._ref,
                             })
                             process(...args: any[]): any {
                                 return process(...args);

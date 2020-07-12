@@ -1,5 +1,4 @@
 import { isString } from '../utils';
-import { WeavingError } from './errors/weaving-error';
 import { ASPECT_OPTIONS_REFLECT_KEY } from './advices/aspect';
 
 let profileId = 0;
@@ -14,15 +13,28 @@ export class WeaverProfile {
         this.name = name ?? `default#${profileId++}`;
     }
     enable(...aspects: object[]): this {
-        aspects.forEach(p => this.setEnabled(p, true));
+        aspects.forEach(p => {
+            // avoid enabling an aspect twice
+            if (!Reflect.getOwnMetadata('@aspectjs/aspect:enabled', p)) {
+                if (p instanceof WeaverProfile) {
+                    Object.values(p._aspectsRegistry).forEach(p => this.enable(p));
+                } else {
+                    this.setEnabled(p, true);
+                }
+                Reflect.defineMetadata('@aspectjs/aspect:enabled', true, p);
+            }
+        });
         return this;
     }
     disable(...aspects: object[]): this {
-        aspects.forEach(p => this.setEnabled(p, false));
-        return this;
-    }
-    merge(...profiles: WeaverProfile[]): this {
-        profiles.forEach(p => Object.values(p._aspectsRegistry).forEach(p => this.enable(p)));
+        aspects.forEach(p => {
+            if (p instanceof WeaverProfile) {
+                Object.values(p._aspectsRegistry).forEach(p => this.disable(p));
+            } else {
+                this.setEnabled(p, false);
+            }
+            Reflect.defineMetadata('@aspectjs/aspect:enabled', false, p);
+        });
         return this;
     }
     reset(): this {

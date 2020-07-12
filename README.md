@@ -3,7 +3,7 @@ home: true
 heroText: '@AspectJS'
 tagline: The AOP framework for javascript
 actionText: Get Started →
-actionLink: 01.guide/
+actionLink: docs/01.guide/
 features:
 - title: Modern
   details: Leverages <a href="https://github.com/tc39/proposal-decorators"><b>ES8 decorators stage 1</b></a> to bring aspect-oriented programming to your Javascript and Typescript code.
@@ -14,6 +14,7 @@ features:
 footer: MIT Licensed
 ---
 
+ 
 ![ci-status]
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
@@ -43,9 +44,11 @@ import {
     Aspect 
 } from '@aspectjs/core';
 
+// Define the annotation
 const Monitored = new AnnotationFactory('myNamespace')
     .create(function Monitored(maxTime) { });
 
+// Define the aspect to trigger with this annotation
 @Aspect()
 class MonitoredAspect {
     @Around(on.method.withAnnotations(Monitored))
@@ -64,8 +67,10 @@ class MonitoredAspect {
     }
 }
 
+// Enable the @Monitored aspect
 getWeaver().enable(new MonitoredAspect());
 
+// Use the aspect
 class Processor {
     @Monitored(10)
     process() {
@@ -87,11 +92,11 @@ import {
     Aspect 
 } from '@aspectjs/core';
 
+// Define the annotation
 const Monitored = new AnnotationFactory('test')
-    .create(function Monitored(maxTime: number): MethodDecorator { 
-        return;
-    });
+    .create(function Monitored(maxTime: number): MethodDecorator { return; });
 
+// Define the aspect to trigger with this annotation
 @Aspect()
 class MonitoredAspect {
     @Around(on.method.withAnnotations(Monitored))
@@ -112,8 +117,10 @@ class MonitoredAspect {
     }
 }
 
+// Enable the @Monitored aspect
 getWeaver().enable(new MonitoredAspect());
 
+// Use the aspect
 class Processor {
     @Monitored(10)
     process() {

@@ -45,10 +45,10 @@ export class IdbMemoDriver extends MemoDriver {
     }
 
     getKeys(namespace: string): Promise<MemoKey[]> {
-        return this._runTransactional(store => store.getAllKeys(), TransactionMode.READONLY).then(result => {
+        return this._runTransactional((store) => store.getAllKeys(), TransactionMode.READONLY).then((result) => {
             return result
-                .map(id => id.toString())
-                .filter(id => id.startsWith(namespace))
+                .map((id) => id.toString())
+                .filter((id) => id.startsWith(namespace))
                 .map(MemoKey.parse);
         });
     }
@@ -65,7 +65,7 @@ export class IdbMemoDriver extends MemoDriver {
                 store.createIndex('by_key', 'key', { unique: true });
             });
             dbRequest.addEventListener('success', () => resolve(dbRequest.result));
-            dbRequest.addEventListener('error', err => reject(err));
+            dbRequest.addEventListener('error', (err) => reject(err));
         });
     }
 
@@ -84,7 +84,7 @@ export class IdbMemoDriver extends MemoDriver {
         const frame = new MemoFrame<T>({
             ...meta,
             ...meta.value,
-        }).setAsyncValue(this._runTransactional(tx => tx.get(key.toString())).then(frame => frame.value));
+        }).setAsyncValue(this._runTransactional((tx) => tx.get(key.toString())).then((frame) => frame.value));
 
         this._scheduler.add(meta.key.toString(), () => frame.async);
 
@@ -115,11 +115,11 @@ export class IdbMemoDriver extends MemoDriver {
         this._ls.setValue(metaEntry);
 
         const valueFrame = { ref: key.toString(), value };
-        return this._runTransactional(s => s.put(valueFrame));
+        return this._runTransactional((s) => s.put(valueFrame));
     }
 
     private _deleteIdbEntry(key: MemoKey) {
-        return this._runTransactional(s => s.delete(key.toString()));
+        return this._runTransactional((s) => s.delete(key.toString()));
     }
 
     private _deleteLsEntry(key: MemoKey) {
@@ -131,7 +131,7 @@ export class IdbMemoDriver extends MemoDriver {
         mode: TransactionMode = TransactionMode.READ_WRITE,
     ): Promise<R> {
         return this._init$.then(
-            database =>
+            (database) =>
                 new Promise<R>((resolve, reject) => {
                     const store = database
                         .transaction(IdbMemoDriver.STORE_NAME, mode)
@@ -140,7 +140,7 @@ export class IdbMemoDriver extends MemoDriver {
                     const request = transactionFn(store);
 
                     request.addEventListener('success', () => resolve(request.result));
-                    request.addEventListener('error', r => {
+                    request.addEventListener('error', (r) => {
                         const error = (r.target as any)?.error ?? r;
                         console.error(error);
                         return reject(error);
@@ -161,7 +161,7 @@ export class IdbMemoDriver extends MemoDriver {
         const drivers = (getWeaver().getAspect('@aspectjs/memo') as MemoAspect).getDrivers();
         if (!drivers['localStorage']) {
             throw new MemoAspectError(
-                `${IdbMemoDriver.prototype.constructor.name} requires an "localStorage", but option "localStorageDriver" is not set and no driver could be found with name "localStorage"`,
+                `${IdbMemoDriver.prototype.constructor.name} requires a "localStorage" driver, but option "localStorageDriver" is not set and no driver could be found with name "localStorage"`,
             );
         }
         return drivers['localStorage'];

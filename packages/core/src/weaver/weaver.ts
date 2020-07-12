@@ -23,8 +23,6 @@ export type AdviceRunners = {
 export interface Weaver extends WeaverProfile {
     enable(...aspects: any[]): this;
     disable(...aspects: any[]): this;
-    merge(...profiles: WeaverProfile[]): this;
-    setProfile(profile: WeaverProfile): this;
     load(): AdviceRunners;
     reset(): this;
     isLoaded(): boolean;
