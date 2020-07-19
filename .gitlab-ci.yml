@@ -15,7 +15,7 @@ install:
 bundle:
   stage: build
   script:
-    - yarn build
+    - apk add git && yarn build
   artifacts:
     paths:
       - dist/

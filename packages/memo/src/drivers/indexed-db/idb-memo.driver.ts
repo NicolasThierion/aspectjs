@@ -1,10 +1,9 @@
+import { getWeaver } from '@aspectjs/core';
 import { MemoDriver, MemoDriverOptions } from '../memo.driver';
 import { MemoEntry, MemoKey } from '../../memo.types';
 import { assert, isPromise } from '../../utils/utils';
 import { MemoFrame, MemoMetaFrame } from '../memo-frame';
 import { LsMemoDriver } from '../localstorage/localstorage.driver';
-import { Partial } from 'rollup-plugin-typescript2/dist/partial';
-import { getWeaver } from '@aspectjs/core';
 import { MemoAspect } from '../../memo.aspect';
 import { MemoAspectError } from '../../errors';
 import { Scheduler } from '../scheduler';
