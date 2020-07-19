@@ -30,12 +30,12 @@ test:
   script:
     - yarn test
 
-test:integration:
-  stage: test
-  script:
-    - yarn test:integration
-  dependencies:
-    - bundle
+#test:integration: ## will take up too much space when run over and over again.
+#  stage: test
+#  script:
+#    - yarn test:integration
+#  dependencies:
+#    - bundle
 
 test:size:
   stage: test
