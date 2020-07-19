@@ -3,10 +3,10 @@ import { AnnotationsBundle } from './bundle';
 import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
 import { AnnotationLocationFactory } from '../target/annotation-target.factory';
 import { setWeaver } from '../../weaver/weaver';
-import { LoadTimeWeaver } from '../../weaver/load-time/load-time-weaver';
+import { JitWeaver } from '../../weaver/jit/jit-weaver';
 
 describe('given a class', () => {
-    beforeEach(() => setWeaver(new LoadTimeWeaver()));
+    beforeEach(() => setWeaver(new JitWeaver()));
     class X {
         someProp: any;
 

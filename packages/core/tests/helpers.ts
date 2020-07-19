@@ -1,4 +1,4 @@
-import { LoadTimeWeaver } from '../src/weaver/load-time/load-time-weaver';
+import { JitWeaver } from '../src/weaver/jit/jit-weaver';
 import { AnnotationFactory } from '../src/annotation/factory/factory';
 import { setWeaver } from '../src/weaver/weaver';
 import { AspectType } from '../src/weaver/types';
@@ -8,7 +8,7 @@ export interface Labeled {
     addLabel?: (...args: any[]) => any;
 }
 export function setupWeaver(...aspects: AspectType[]): void {
-    const weaver = new LoadTimeWeaver().enable(...aspects);
+    const weaver = new JitWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }

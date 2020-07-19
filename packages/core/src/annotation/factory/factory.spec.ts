@@ -1,5 +1,5 @@
 import { AnnotationFactory } from './factory';
-import { LoadTimeWeaver } from '../../weaver/load-time/load-time-weaver';
+import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { setWeaver } from '../../weaver/weaver';
 
 let factory: AnnotationFactory;
@@ -21,7 +21,7 @@ describe('Annotation Factory', () => {
 
     beforeEach(() => {
         factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
-        setWeaver(new LoadTimeWeaver(WEAVER_TEST_NAME));
+        setWeaver(new JitWeaver(WEAVER_TEST_NAME));
     });
 
     describe('method "create"', () => {

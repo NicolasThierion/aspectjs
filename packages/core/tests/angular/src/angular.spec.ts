@@ -14,7 +14,7 @@ import {
     BeforeContext,
     Compile,
     getWeaver,
-    LoadTimeWeaver,
+    JitWeaver,
     on,
     setWeaver,
     AspectType,
@@ -26,7 +26,7 @@ export interface Labeled {
 }
 
 export function setupWeaver(...aspects: AspectType[]): void {
-    const weaver = new LoadTimeWeaver().enable(...aspects);
+    const weaver = new JitWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
 }

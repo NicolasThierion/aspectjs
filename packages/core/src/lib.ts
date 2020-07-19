@@ -1,4 +1,4 @@
 import { setWeaver } from './weaver/weaver';
-import { LoadTimeWeaver } from './weaver/load-time/load-time-weaver';
+import { JitWeaver } from './weaver/jit/jit-weaver';
 
-setWeaver(new LoadTimeWeaver());
+setWeaver(new JitWeaver());

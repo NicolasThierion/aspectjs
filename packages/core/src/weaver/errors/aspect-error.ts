@@ -1,4 +1,4 @@
-import { AdviceContext } from '../advices/advice-context';
+import { AdviceContext } from '../../advice/advice-context';
 
 export class AspectError extends Error {
     constructor(ctxt: AdviceContext, message: string) {

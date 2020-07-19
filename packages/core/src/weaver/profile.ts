@@ -1,5 +1,5 @@
 import { isString } from '../utils';
-import { ASPECT_OPTIONS_REFLECT_KEY } from './advices/aspect';
+import { ASPECT_OPTIONS_REFLECT_KEY } from '../advice/aspect';
 
 let profileId = 0;
 

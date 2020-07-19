@@ -2,7 +2,7 @@ import { LsMemoDriver, LsMemoSerializer } from './localstorage.driver';
 import { LzMemoSerializer } from './lz-memo.serializer';
 import { Memo } from '../../memo.annotation';
 import { createLocalStorage } from 'localstorage-ponyfill';
-import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
+import { JitWeaver, setWeaver } from '@aspectjs/core';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { MemoAspect } from '../../memo.aspect';
 
@@ -26,7 +26,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
             const localStorage = createLocalStorage();
             localStorage.clear();
             setWeaver(
-                new LoadTimeWeaver()
+                new JitWeaver()
                     .enable(
                         new MemoAspect().drivers(
                             new LsMemoDriver({

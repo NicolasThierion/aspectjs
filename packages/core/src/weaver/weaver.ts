@@ -1,6 +1,6 @@
 import { WeaverProfile } from './profile';
-import { MutableAdviceContext } from './advices/advice-context';
-import { PointcutPhase } from './advices/pointcut';
+import { MutableAdviceContext } from '../advice/advice-context';
+import { PointcutPhase } from '../advice/pointcut';
 
 export type AdviceRunners = {
     [type in 'class' | 'method' | 'parameter']: {

@@ -1,7 +1,7 @@
 import { Memo } from '../../memo.annotation';
 import { createLocalStorage } from 'localstorage-ponyfill';
 import { LsMemoDriver } from './localstorage.driver';
-import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
+import { JitWeaver, setWeaver } from '@aspectjs/core';
 import moment from 'moment';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { Cacheable } from '../../cacheable/cacheable.annotation';
@@ -15,7 +15,7 @@ let CacheableA: any;
 let CacheableB: any;
 function _setupLsMemoAspect(ls: Storage): void {
     setWeaver(
-        new LoadTimeWeaver().enable(
+        new JitWeaver().enable(
             new MemoAspect().drivers(
                 new LsMemoDriver({
                     localStorage: ls,

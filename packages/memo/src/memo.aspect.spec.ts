@@ -1,4 +1,4 @@
-import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
+import { JitWeaver, setWeaver } from '@aspectjs/core';
 import { MemoAspect } from './memo.aspect';
 import { DefaultCacheableAspect } from './cacheable/cacheable.aspect';
 import { MemoDriver } from './drivers/memo.driver';
@@ -16,7 +16,7 @@ function _setupMemoAspect(...drivers: MemoDriver[]): void {
         spyOn(d, 'getValue');
         spyOn(d, 'setValue');
     });
-    setWeaver(new LoadTimeWeaver().enable(new MemoAspect().drivers(...drivers), new DefaultCacheableAspect()));
+    setWeaver(new JitWeaver().enable(new MemoAspect().drivers(...drivers), new DefaultCacheableAspect()));
 }
 
 function _createRunner(driver?: typeof MemoDriver | string) {

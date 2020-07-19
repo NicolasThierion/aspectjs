@@ -14,11 +14,11 @@ import { AnnotationContext } from '../context/context';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
-import { MutableAdviceContext } from '../../weaver/advices/advice-context';
-import { PointcutPhase } from '../../weaver/advices/pointcut';
+import { MutableAdviceContext } from '../../advice/advice-context';
+import { PointcutPhase } from '../../advice/pointcut';
 import { AnnotationsBundle } from '../bundle/bundle';
 import { JoinPoint } from '../../weaver/types';
-import { Advice } from '../../weaver/advices/types';
+import { Advice } from '../../advice/types';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 

@@ -1,6 +1,6 @@
 import { Memo } from '../../memo.annotation';
 import { createLocalStorage } from 'localstorage-ponyfill';
-import { LoadTimeWeaver, setWeaver } from '@aspectjs/core';
+import { JitWeaver, setWeaver } from '@aspectjs/core';
 import moment from 'moment';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { Cacheable } from '../../cacheable/cacheable.annotation';
@@ -19,7 +19,7 @@ let CacheableA: any;
 let CacheableB: any;
 function _setupIdbMemoAspect(ls: typeof localStorage, idb: IDBFactory): void {
     setWeaver(
-        new LoadTimeWeaver().enable(
+        new JitWeaver().enable(
             new MemoAspect().drivers(
                 new IdbMemoDriver({
                     indexedDB: idb,
