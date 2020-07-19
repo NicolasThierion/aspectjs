@@ -10,9 +10,9 @@
   "sideEffects": false,
   "scripts": {
     "build": "lerna run build --since --stream",
-    "test": "yarn build && lerna run test --since --stream",
+    "test": "lerna run test --since --stream",
     "test:integration": "lerna run test:integration --since",
-    "dev": "yarn docs:dev && nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
+    "dev": "yarn docs:dev && nodemon  --ignore **/dist/  **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "size": "lerna run size --since",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet",
@@ -29,6 +29,8 @@
     "@commitlint/cli": "^9.0.1",
     "@commitlint/config-conventional": "^9.0.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "@size-limit/preset-big-lib": "^4.5.4",
     "@types/jasmine": "^3.4.0",
     "@types/lodash": "^4.14.149",
@@ -45,10 +47,10 @@
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-prettier": "^3.1.1",
     "estimo": "^2.0.4",
+    "globby": "^11.0.1",
     "husky": "^4.2.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
-    "jasmine-ts": "^0.3.0",
     "jsdom": "^16.3.0",
     "lerna": "^3.20.2",
     "lodash": "^4.17.19",
@@ -63,6 +65,7 @@
     "rollup": "^2.21.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-cleaner": "^1.0.0",
+    "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-sourcemaps": "^0.6.2",
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-typescript2": "^0.27.1",
@@ -72,7 +75,7 @@
     "ts-loader": "^8.0.0",
     "ts-node": "^8.3.0",
     "tslib": "^2.0.0",
-    "typescript": "^3.7.5",
+    "typescript": "^4.0.2",
     "vuepress": "^1.5.2",
     "vuepress-bar": "^0.3.1",
     "vuepress-plugin-code-copy": "^1.0.6",
@@ -89,8 +92,5 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
-  "dependencies": {
-    "yarn": "^1.22.0"
   }
 }

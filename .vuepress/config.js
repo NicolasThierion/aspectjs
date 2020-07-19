@@ -13,7 +13,7 @@ function prependPath(o) {
         return o;
     }
 }
-sidebar.forEach((s) => {
+sidebar.forEach(s => {
     s.children = s.children.map(prependPath);
     return s;
 });
@@ -39,4 +39,5 @@ module.exports = {
     markdown: {
         extendMarkdown,
     },
+    patterns: ['docs/**/*.md', '*.md', '!node_modules/**'],
 };

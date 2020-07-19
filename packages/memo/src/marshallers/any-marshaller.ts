@@ -1,12 +1,9 @@
-import { getWeaver } from '@aspectjs/core';
+import { getWeaver, WeavingError } from '@aspectjs/core';
 import { MemoFrame } from '../drivers/memo-frame';
-import { UnmarshallingContext, MarshallingContext } from '../memo.types';
+import { MarshallingContext, UnmarshallingContext } from '../memo.types';
 import { assert, provider } from '../utils/utils';
-import { diff, valid } from 'semver';
 import { VersionConflictError } from '../errors';
-import SemVer from 'semver/classes/semver';
 import { CacheableAspect, CacheTypeStore } from '../cacheable/cacheable.aspect';
-import { WeavingError } from '@aspectjs/core/src/weaver/errors/weaving-error';
 import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
 import { ObjectMarshaller } from './object-marshaller';
 
@@ -38,7 +35,7 @@ export class AnyMarshaller extends MemoMarshaller {
         const proto = ts.getPrototype(frame.instanceType);
         const version = provider(ts.getVersion(frame.instanceType))();
         if (version !== frame.version) {
-            if (!(valid(version) && valid(frame.version) && satisfies(version, frame.version))) {
+            if (version !== frame.version) {
                 throw new VersionConflictError(
                     `Object for key ${frame.instanceType} is of version ${version}, but incompatible version ${frame.version} was already cached`,
                     context,
@@ -50,10 +47,6 @@ export class AnyMarshaller extends MemoMarshaller {
 
         return frame.value;
     }
-}
-
-function satisfies(v1: SemVer | string, v2: SemVer | string) {
-    return diff(v1, v2) !== 'major';
 }
 
 function typeStore(): CacheTypeStore {

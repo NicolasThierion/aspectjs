@@ -14,14 +14,10 @@ export class WeaverProfile {
     }
     enable(...aspects: object[]): this {
         aspects.forEach((p) => {
-            // avoid enabling an aspect twice
-            if (!Reflect.getOwnMetadata('@aspectjs/aspect:enabled', p)) {
-                if (p instanceof WeaverProfile) {
-                    Object.values(p._aspectsRegistry).forEach((p) => this.enable(p));
-                } else {
-                    this.setEnabled(p, true);
-                }
-                Reflect.defineMetadata('@aspectjs/aspect:enabled', true, p);
+            if (p instanceof WeaverProfile) {
+                Object.values(p._aspectsRegistry).forEach((p) => this.enable(p));
+            } else {
+                this.setEnabled(p, true);
             }
         });
         return this;
@@ -44,16 +40,20 @@ export class WeaverProfile {
     setEnabled(aspect: object, enabled: boolean): this {
         const id = _getAspectId(aspect);
         if (enabled) {
-            const oldAspect = this._aspectsRegistry[id];
-            if (oldAspect) {
-                console.warn(
-                    `Aspect ${aspect.constructor.name} overrides aspect "${
-                        oldAspect?.constructor.name ?? 'unknown'
-                    }" already registered for name ${id}`,
-                );
-            }
+            // avoid enabling an aspect twice
+            if (!Reflect.getOwnMetadata('@aspectjs/aspect:enabled', aspect)) {
+                const oldAspect = this._aspectsRegistry[id];
+                if (oldAspect) {
+                    console.warn(
+                        `Aspect ${aspect.constructor.name} overrides aspect "${
+                            oldAspect?.constructor.name ?? 'unknown'
+                        }" already registered for name ${id}`,
+                    );
+                }
+                Reflect.defineMetadata('@aspectjs/aspect:enabled', false, aspect);
 
-            this._aspectsRegistry[id] = aspect;
+                this._aspectsRegistry[id] = aspect;
+            }
         } else {
             delete this._aspectsRegistry[id];
         }

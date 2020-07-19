@@ -1,7 +1,12 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true
+  },
   "include": [
     "src/**/*.ts",
+    "public_api.ts",
+    "core.ts",
     "node_modules/@types/node/globals.d.ts"
   ]
 }

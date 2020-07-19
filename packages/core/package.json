@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "decorator-based AOP made simple for javascript & typescript",
   "keywords": [
     "decorator",
@@ -12,23 +12,30 @@
   "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "license": "MIT",
-  "main": "dist/bundles/core.umd.js",
-  "unpgk": "dist/bundles/core.umd.min.js",
-  "module": "dist/esm/core.mjs",
+  "main": "dist/umd/core.umd.js",
+  "unpkg": "dist/umd/core.umd.min.js",
+  "module": "dist/fesm2015/core.js",
+  "fesm2015": "dist/fesm2015/core.js",
+  "esm2015": "dist/esm2015/core.js",
   "sideEffects": false,
-  "typings": "dist/esm/public_api.d.ts",
+  "typings": "dist/core.d.ts",
   "scripts": {
-    "build": "rollup --config ./rollup.config.js",
-    "test": "nyc jasmine-ts --config=jasmine.json",
+    "build": "rm -rf dist && rollup --config ./rollup.config.js && yarn typings",
+    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist",
+    "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "test:integration": "yarn build && cd tests/angular && yarn install && yarn add ../../ && yarn test",
     "size": "rollup --config ./rollup.config.js && size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
+  "files": [
+    "dist/*"
+  ],
   "directories": {
     "lib": "src",
-    "test": "tests"
+    "test": "tests",
+    "dist": "dist"
   },
   "repository": {
     "type": "git",

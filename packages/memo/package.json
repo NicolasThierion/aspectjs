@@ -1,33 +1,36 @@
 {
   "name": "@aspectjs/memo",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Add memoize pattern with a simple annotation",
   "license": "MIT",
-  "main": "dist/bundles/memo.umd.js",
-  "unpgk": "dist/bundles/memo.umd.min.js",
-  "module": "dist/esm/memo.mjs",
+  "main": "dist/umd/memo.umd.js",
+  "unpkg": "dist/umd/memo.umd.min.js",
+  "module": "dist/fesm2015/memo.js",
+  "esm2015": "dist/esm2015/memo.js",
+  "fesm2015": "dist/fesm2015/memo.js",
   "sideEffects": false,
-  "typings": "dist/esm/index.d.ts",
+  "typings": "dist/memo.d.ts",
   "scripts": {
-    "build": "rollup --config ./rollup.config.js",
-    "test": "lerna link && nyc jasmine-ts --config=jasmine.json",
+    "build": "rm -rf dist && rollup --config rollup.config.js && yarn typings",
+    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist",
+    "test": "lerna link && nyc jasmine --config=jasmine.json",
     "dev": "nodemon  -w src --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",
-    "size": "rollup --config ./rollup.config.js && size-limit",
+    "size": "rollup --config rollup.config.js && size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
   "peerDependencies": {
-    "@aspectjs/core": "1.0.0",
+    "@aspectjs/core": "1.1.0",
     "rxjs": "^6.5.5"
   },
   "devDependencies": {
+    "@aspectjs/core": "1.1.0",
     "@emotion/hash": "^0.8.0",
     "@size-limit/preset-big-lib": "^4.5.4",
     "@types/lz-string": "^1.3.33",
     "@types/moment": "^2.13.0",
     "@types/murmurhash3js": "^3.0.2",
-    "@types/semver": "^7.1.0",
     "fake-indexeddb": "^3.0.0",
     "localstorage-ponyfill": "^1.0.2",
     "moment": "^2.24.0",
@@ -49,12 +52,15 @@
   ],
   "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
-  "directories": {
-    "src": "src"
-  },
   "files": [
-    "src"
+    "dist/*",
+    "register"
   ],
+  "directories": {
+    "lib": "src",
+    "test": "tests",
+    "dist": "dist"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git"
@@ -63,11 +69,9 @@
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
   "dependencies": {
-    "@aspectjs/core": "^1.0.0",
     "@emotion/hash": "^0.8.0",
     "flatted": "^3.0.4",
     "lz-string": "^1.4.4",
-    "murmurhash3js": "^3.0.1",
-    "semver": "7.3.2"
+    "murmurhash3js": "^3.0.1"
   }
 }

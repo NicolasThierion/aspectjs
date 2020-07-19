@@ -1,4 +1,5 @@
 require('reflect-metadata');
+require('ts-node/register');
 
 // configure reporters
 // eslint-disable-next-line @typescript-eslint/no-var-requires

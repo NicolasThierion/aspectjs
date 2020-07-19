@@ -1,27 +1,12 @@
 import { MarshallingContext, MemoEntry, MemoKey, UnmarshallingContext } from '../memo.types';
 import { MemoFrame } from './memo-frame';
-import { DateMarshaller } from '../marshallers/date-marshaller';
 import { InstantPromise } from '../utils/instant-promise';
 import { MemoMarshaller, MemoMarshallerMode } from '../marshallers/marshaller';
-import { ObjectMarshaller } from '../marshallers/object-marshaller';
-import { ArrayMarshaller } from '../marshallers/array-marshaller';
-import { PromiseMarshaller } from '../marshallers/promise-marshaller';
-import { AnyMarshaller } from '../marshallers/any-marshaller';
-import { BasicMarshaller } from '../marshallers/basic-marshaller';
 import { assert, isArray, isObject, isPromise } from '../utils/utils';
 
 export interface MemoDriverOptions {
     marshallers?: MemoMarshaller[];
 }
-
-export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
-    new ObjectMarshaller(),
-    new ArrayMarshaller(),
-    new DateMarshaller(),
-    new PromiseMarshaller(),
-    new AnyMarshaller(),
-    new BasicMarshaller(),
-];
 
 type MarshallersRegistry = Record<
     string,
@@ -37,7 +22,7 @@ export abstract class MemoDriver {
 
     constructor(protected _options: MemoDriverOptions = {}) {
         this._marshallers = {};
-        this.addMarshaller(...DEFAULT_MARSHALLERS, ...(_options.marshallers ?? []));
+        this.addMarshaller(...(_options.marshallers ?? []));
     }
 
     addMarshaller(...marshallers: MemoMarshaller[]): void {

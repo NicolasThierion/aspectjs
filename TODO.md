@@ -1,3 +1,5 @@
+remove rollup-copy-plugin & rollup-plugin-cleaner
+
 ## Ideas
 - use webworkers & cache
 - prohibits body in annotationStub 

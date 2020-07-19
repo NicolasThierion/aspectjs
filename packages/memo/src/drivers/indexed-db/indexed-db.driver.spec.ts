@@ -1,5 +1,4 @@
 import { Memo } from '../../memo.annotation';
-import { createLocalStorage } from 'localstorage-ponyfill';
 import { JitWeaver, setWeaver } from '@aspectjs/core';
 import moment from 'moment';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
@@ -7,9 +6,9 @@ import { Cacheable } from '../../cacheable/cacheable.annotation';
 import { MemoAspect } from '../../memo.aspect';
 import { IdbMemoDriver } from './idb-memo.driver';
 import { LsMemoDriver } from '../localstorage/localstorage.driver';
+import { DEFAULT_MARSHALLERS } from '../../profiles/default.profile';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const idb = require('fake-indexeddb') as typeof indexedDB;
 
 interface Runner {
     process(...args: any[]): any;
@@ -17,15 +16,15 @@ interface Runner {
 
 let CacheableA: any;
 let CacheableB: any;
-function _setupIdbMemoAspect(ls: typeof localStorage, idb: IDBFactory): void {
+function _setupIdbMemoAspect(): void {
     setWeaver(
         new JitWeaver().enable(
             new MemoAspect().drivers(
                 new IdbMemoDriver({
-                    indexedDB: idb,
+                    marshallers: DEFAULT_MARSHALLERS,
                 }),
                 new LsMemoDriver({
-                    localStorage: ls,
+                    marshallers: DEFAULT_MARSHALLERS,
                 }),
             ),
             new DefaultCacheableAspect(),
@@ -38,17 +37,16 @@ describe(`IdbMemoDriver`, () => {
         let r: Runner;
         let process: Runner['process'];
         let ns: string;
-        let ls: typeof localStorage;
+        const ls = localStorage;
         let expiration: Date | number;
 
         const defaultArgs = ['a', 'b', 'c', 'd'];
 
         beforeEach(() => {
             ns = undefined;
-            ls = createLocalStorage();
             ls.clear();
 
-            _setupIdbMemoAspect(ls, idb);
+            _setupIdbMemoAspect();
 
             @Cacheable()
             class _CacheableA {}
@@ -122,7 +120,7 @@ describe(`IdbMemoDriver`, () => {
             beforeEach(async () => {
                 await r.process(...defaultArgs);
 
-                _setupIdbMemoAspect(ls, idb);
+                _setupIdbMemoAspect();
             });
 
             it('should use data cached from previous context', async () => {
@@ -216,7 +214,7 @@ describe(`IdbMemoDriver`, () => {
                         beforeEach(() => {
                             r.process(...defaultArgs);
 
-                            _setupIdbMemoAspect(ls, idb);
+                            _setupIdbMemoAspect();
                         });
 
                         it('should remove cached data', testShouldRemoveData);
@@ -243,7 +241,7 @@ describe(`IdbMemoDriver`, () => {
                         beforeEach(() => {
                             r.process(...defaultArgs);
 
-                            _setupIdbMemoAspect(ls, idb);
+                            _setupIdbMemoAspect();
                         });
 
                         it('should remove cached data', testShouldRemoveData);
@@ -257,7 +255,7 @@ describe(`IdbMemoDriver`, () => {
             let r2: Runner;
 
             describe('and @Memo does not specify id', () => {
-                describe('and object has no id or id attribute', () => {
+                describe('and object has no id or _id attribute', () => {
                     beforeEach(() => {
                         class RunnerImpl implements Runner {
                             @Memo({})
@@ -290,9 +288,9 @@ describe(`IdbMemoDriver`, () => {
                     expect(process).toHaveBeenCalledTimes(2);
                 }
 
-                describe('and object has id or id attribute', () => {
+                describe('and object has id or _id attribute', () => {
                     function init(): void {
-                        _setupIdbMemoAspect(ls, idb);
+                        _setupIdbMemoAspect();
 
                         class RunnerImpl implements Runner {
                             constructor(private id: string) {}

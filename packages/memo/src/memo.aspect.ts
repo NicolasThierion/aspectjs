@@ -1,13 +1,11 @@
 import { MemoDriver } from './drivers/memo.driver';
 import { MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
-import { Around, AroundContext, Aspect, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
+import { Around, AroundContext, Aspect, Before, BeforeContext, JoinPoint, on, AspectError } from '@aspectjs/core';
 import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils/utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
 import { x86 } from 'murmurhash3js';
-import { AspectError } from '@aspectjs/core/src/weaver/errors/aspect-error';
-import Timeout = NodeJS.Timeout;
 
 const MEMO_ID_REFLECT_KEY = '@aspectjs:memo/id';
 let internalId = 0;
@@ -45,7 +43,7 @@ export class MemoAspect {
     protected _params: MemoAspectOptions;
     private readonly _drivers: Record<string, MemoDriver> = {};
     /** maps memo keys with its unregister function for garbage collector timeouts */
-    private readonly _entriesGc: Record<string, number | Timeout> = {};
+    private readonly _entriesGc: Record<string, number> = {};
 
     constructor(params?: MemoAspectOptions) {
         this._params = { ...params, ...DEFAULT_MEMO_ASPECT_OPTIONS };

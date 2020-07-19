@@ -1,4 +1,2 @@
-import { configFactory } from '../../rollup.config';
-import pkg from './package.json';
-
-export default configFactory(pkg);
+require('../../rollup.config');
+module.exports = require('./rollup.config.ts');

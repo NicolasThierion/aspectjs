@@ -90,7 +90,7 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
     private _getContextHolders<A extends AnnotationType>(
         target: AnnotationTarget<T, A>,
         save: boolean,
-    ): AnnotationContextsHolder<T, A>[] {
+    ): AnnotationContextsHolder<T, AnnotationType>[] {
         if (!target) {
             return [];
         }

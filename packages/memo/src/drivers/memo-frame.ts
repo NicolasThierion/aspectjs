@@ -1,5 +1,3 @@
-import { Partial } from 'rollup-plugin-typescript2/dist/partial';
-
 export interface MemoMetaFrame {
     type?: string;
     instanceType?: string;

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
+    "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
@@ -10,19 +11,19 @@
     "downlevelIteration": true,
     "importHelpers": true,
     "module": "commonjs",
-//    "moduleResolution": "node",
+    "resolveJsonModule": true,
+        "moduleResolution": "node",
     "lib": [
       "es2019.array"
     ],
     "types": ["reflect-metadata", "jasmine", "node"],
-    "target": "es6",
-    "declaration": true,
-    "declarationDir": "dist"
+    "target": "es6"
   },
   "exclude": [
     "dist",
     "build",
-    "node_modules"
+    "node_modules",
+    "**/*.spec.ts"
   ],
   "include": [
     "packages/**/*.ts",

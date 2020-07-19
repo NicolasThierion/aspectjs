@@ -1,6 +1,7 @@
 import { WeaverProfile } from './profile';
 import { MutableAdviceContext } from '../advice/advice-context';
 import { PointcutPhase } from '../advice/pointcut';
+import { JitWeaver } from './jit/jit-weaver';
 
 export type AdviceRunners = {
     [type in 'class' | 'method' | 'parameter']: {

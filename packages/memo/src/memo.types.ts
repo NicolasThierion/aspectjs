@@ -1,5 +1,4 @@
 import { MemoFrame } from './drivers/memo-frame';
-import { CacheTypeStore } from './cacheable/cacheable.aspect';
 
 const KEY_IDENTIFIER = '@aspectjs:Memo';
 

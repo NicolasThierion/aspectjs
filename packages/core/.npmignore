@@ -2,4 +2,4 @@ coverage
 node_modules
 tests
 .nycrc.json
-rollup.config.js
+rollup.utils.js

@@ -10,7 +10,7 @@ interface Runner {
     process(...args: any[]): any;
 }
 
-let process: (...args: any[]) => any;
+let processFn: (...args: any[]) => any;
 function _setupMemoAspect(...drivers: MemoDriver[]): void {
     drivers.forEach((d) => {
         spyOn(d, 'getValue');
@@ -20,13 +20,13 @@ function _setupMemoAspect(...drivers: MemoDriver[]): void {
 }
 
 function _createRunner(driver?: typeof MemoDriver | string) {
-    process = process ?? jasmine.createSpy('process');
+    processFn = processFn ?? jasmine.createSpy('process');
     class RunnerImpl implements Runner {
         @Memo({
             driver,
         })
         process(...args: any[]): any {
-            return process(...args);
+            return processFn(...args);
         }
     }
 
@@ -66,7 +66,7 @@ describe('MemoAspect', () => {
     let r: Runner;
 
     beforeEach(() => {
-        process = jasmine.createSpy('process');
+        processFn = jasmine.createSpy('process');
         driver1 = new (class extends DummyDriver {})('driver1', 1);
         driver2 = new (class extends DummyDriver {})('driver2', 2);
         _setupMemoAspect(driver1, driver2);
@@ -108,7 +108,7 @@ describe('MemoAspect', () => {
                 describe('but the specified driver do not accept the return value', () => {
                     beforeEach(() => {
                         r = _createRunner(driver1.NAME);
-                        process = jasmine
+                        processFn = jasmine
                             .createSpy('process', () => {
                                 return 'UnsupportedValue';
                             })
@@ -151,7 +151,7 @@ describe('MemoAspect', () => {
                 describe('but the specified driver do not accept the return value', () => {
                     beforeEach(() => {
                         r = _createRunner(Reflect.getPrototypeOf(driver1).constructor as any);
-                        process = jasmine
+                        processFn = jasmine
                             .createSpy('process', () => {
                                 return 'UnsupportedValue';
                             })

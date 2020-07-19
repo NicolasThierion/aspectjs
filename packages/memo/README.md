@@ -27,13 +27,17 @@ yarn add @aspectjs/memo
 ## Simple usage
 
 You must enable the `MemoAspect` in order for `@Memo` to work. 
-The simplest way to do is to `import {Memo} from @aspectjs/memo/register`.
+The simplest way to do is to register the default Memo profile: 
+```typescript
+import "packages/memo/register/register";
+```
+
 This imports the `@Memo` annotation, and enables the default `WeaverProfile` for this annotation as well.
 
 :::: tabs
 ::: tab ES6+
 ```js
-import { Memo } from '@aspectjs/memo/register';
+import { Memo } from 'packages/memo/register/register';
 
 class MyMemoizedClass {
     @Memo()
@@ -49,7 +53,7 @@ c.heavyCompute("hello", "world");   // returns cached 'HELLO, WORLD'
 :::
 ::: tab Typescript
 ```typescript
-import { Memo } from '@aspectjs/memo/register';
+import { Memo } from 'packages/memo/register/register';
 
 class MyMemoizedClass {
     @Memo()
