@@ -1,7 +1,7 @@
 import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { on } from '../pointcut';
-import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
+import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
@@ -186,25 +186,27 @@ describe('@Before advice', () => {
         });
     });
 
-    xdescribe('applied on a method parameter', () => {
-        let a: any;
-
+    describe('applied on a method parameter', () => {
+        let a: Labeled;
+        let methodSpy: jasmine.Spy;
         beforeEach(() => {
-            @Aspect('AClassLabel')
+            @Aspect()
             class AAspect {
-                @Before(on.method.withAnnotations(AMethod))
-                applyBefore(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
+                @Before(on.parameter.withAnnotations(AParameter))
+                applyBefore(ctxt: AdviceContext<any, AnnotationType.PARAMETER>): void {
                     expect(this).toEqual(jasmine.any(AAspect));
 
                     advice(ctxt);
                 }
             }
 
+            methodSpy = jasmine.createSpy('methodSpy');
             setupWeaver(new AAspect());
 
             class A {
-                @AMethod()
-                addLabel(): any {}
+                addLabel(@AParameter() param: any): any {
+                    methodSpy();
+                }
             }
 
             a = new A();
@@ -214,9 +216,10 @@ describe('@Before advice', () => {
         });
 
         it('should call the aspect before the method is called', () => {
-            expect(advice).not.toHaveBeenCalled();
-            a.addLabel();
+            a.addLabel('a');
+            expect(methodSpy).toHaveBeenCalled();
             expect(advice).toHaveBeenCalled();
+            expect(advice).toHaveBeenCalledBefore(methodSpy);
         });
 
         it('should have a non null context.instance', () => {

@@ -1,8 +1,14 @@
 import { WeaverProfile } from '../profile';
 import { assert, getMetaOrDefault, getOrDefault, isArray, isFunction, isUndefined } from '../../utils';
 import { JoinPoint } from '../types';
-import { WeavingError } from '../weaving-error';
-import { AdviceContext, AfterReturnContext, AfterThrowContext, MutableAdviceContext } from '../advices/advice-context';
+import { WeavingError } from '../errors/weaving-error';
+import {
+    AdviceContext,
+    AfterReturnContext,
+    AfterThrowContext,
+    AroundContext,
+    MutableAdviceContext,
+} from '../advices/advice-context';
 import {
     Advice,
     AfterAdvice,
@@ -13,11 +19,13 @@ import {
     CompileAdvice,
 } from '../advices/types';
 import { AdvicesRegistry } from '../advices/advice-registry';
-import { PointcutsRunner, Weaver } from '../weaver';
+import { AdviceRunners, Weaver } from '../weaver';
 import { PointcutPhase } from '../advices/pointcut';
 import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
-import { AspectOptions } from '../advices/aspect';
+import { ASPECT_OPTIONS_REFLECT_KEY, AspectOptions } from '../advices/aspect';
 import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
+import { AdviceError } from '../errors/advice-error';
+import { AspectError } from '../errors/aspect-error';
 
 type AdvicePipeline = {
     [target in AnnotationType]: {
@@ -31,7 +39,7 @@ type AdvicePipeline = {
 
 export class LoadTimeWeaver extends WeaverProfile implements Weaver {
     private _advices: AdvicePipeline;
-    private _runner = new PointcutsRunnersImpl(this);
+    private _runner = new AdviceRunnersImpl(this);
 
     constructor(name?: string) {
         super(name);
@@ -47,31 +55,21 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         return super.disable(...aspects);
     }
 
-    merge(...profiles: WeaverProfile[]): this {
-        this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot change profile`);
-        return super.merge(...profiles);
-    }
-
-    setProfile(profile: WeaverProfile): this {
-        this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot change profile`);
-        return super.reset().merge(profile);
-    }
-
-    load(): PointcutsRunner {
+    load(): AdviceRunners {
         if (!this._advices) {
             this._advices = Object.values(this._aspectsRegistry)
                 .sort((a1: any, a2: any) => {
                     // sort by aspect priority
                     const [o1, o2] = [
-                        Reflect.getOwnMetadata(`aspectjs.aspect.options`, a1.constructor),
-                        Reflect.getOwnMetadata(`aspectjs.aspect.options`, a2.constructor),
+                        Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, a1.constructor),
+                        Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, a2.constructor),
                     ] as AspectOptions[];
                     const [p1, p2] = [o1?.priority ?? 0, o2?.priority ?? 0];
 
                     return p2 - p1;
                 })
                 .reduce((pipeline: AdvicePipeline, aspect: object) => {
-                    const advices = AdvicesRegistry.getAdvices(aspect);
+                    const advices = AdvicesRegistry.getAdvicesForAspect(aspect);
 
                     advices
                         .map((advice: Advice) => {
@@ -79,7 +77,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
                             Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
                             return bound as Advice;
                         })
-                        .forEach(advice => {
+                        .forEach((advice) => {
                             _getAdvicesArray(
                                 pipeline,
                                 advice.pointcut.type,
@@ -97,7 +95,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
 
     reset(): this {
         this._assertNotLoaded(`Weaver "${this.name}" already loaded: Cannot reset change its configuration anymore`);
-        this._runner = new PointcutsRunnersImpl(this);
+        this._runner = new AdviceRunnersImpl(this);
         this._advices = undefined;
         return super.reset();
     }
@@ -132,18 +130,21 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         assert(!!this._advices);
 
         // get all advices that correspond to all the annotations of this context
-        return getMetaOrDefault(`aspectjs.aspects(${phase}, ${ctxt.target.ref})`, ctxt.target.proto, () => {
-            const bundle = AnnotationBundleRegistry.of(ctxt.target).at(ctxt.target.location);
-            const annotations = bundle.all();
+        const bundle = AnnotationBundleRegistry.of(ctxt.target).at(ctxt.target.location);
+        const annotations = bundle.all();
 
-            return annotations
-                .map(annotation => _getAdvicesArray(this._advices, ctxt.target.type, phase, annotation, false))
-                .flat()
-                .sort((a1: Advice, a2: Advice) => {
-                    const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
-                    return !p2 && !p2 ? 0 : p2 - p1;
-                });
-        });
+        const annotationKey = annotations.map((a) => a.toString()).join(',');
+        return [
+            ...getMetaOrDefault(`aspectjs.advicesForAnnotations(${phase},${annotationKey})`, ctxt.target.proto, () => {
+                return annotations
+                    .map((annotation) => _getAdvicesArray(this._advices, ctxt.target.type, phase, annotation, false))
+                    .flat()
+                    .sort((a1: Advice, a2: Advice) => {
+                        const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
+                        return !p2 && !p2 ? 0 : p2 - p1;
+                    });
+            }),
+        ];
     }
 
     private _assertNotLoaded(msg: string): void {
@@ -152,6 +153,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         }
     }
 }
+
 function _getAdvicesArray(
     pipeline: AdvicePipeline,
     type: AnnotationType,
@@ -177,7 +179,7 @@ function _getAdvicesArray(
 function _annotationId(annotation: AnnotationRef): string {
     return `${annotation.groupId}:${annotation.name}`;
 }
-class PointcutsRunnersImpl implements PointcutsRunner {
+class AdviceRunnersImpl implements AdviceRunners {
     class = {
         [PointcutPhase.COMPILE]: this._compileClass.bind(this),
         [PointcutPhase.BEFORE]: this._beforeClass.bind(this),
@@ -223,15 +225,11 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     constructor(private weaver: LoadTimeWeaver) {}
 
     private _compileClass<T>(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
-        const newCtor = this.weaver
-            .getAdvices(PointcutPhase.COMPILE, ctxt)
-            .map((advice: CompileAdvice<unknown, AnnotationType.CLASS>) => {
-                return (ctxt.target.proto.constructor = advice(ctxt.clone()) ?? ctxt.target.proto.constructor);
-            })
-            .slice(-1)[0];
-
-        if (newCtor) {
-            ctxt.target.proto.constructor = newCtor;
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
+        let advice: CompileAdvice<any, AnnotationType.CLASS>;
+        while (ctxt.advices.length) {
+            advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.CLASS>;
+            ctxt.target.proto.constructor = advice(ctxt as AdviceContext<any, any>) ?? ctxt.target.proto.constructor;
         }
     }
 
@@ -245,62 +243,61 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         // this partial instance will take place until ctor is called
         const partialThis = Object.create(proto);
 
-        const ctorArgs = ctxt.args;
-
         const refCtor = Reflect.getOwnMetadata('aspectjs.referenceCtor', ctxt.target.proto);
         assert(!!refCtor);
 
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
+
         // create ctor joinpoint
-        let jp = JoinpointFactory.create(ctxt, (...args: any[]) => new refCtor(...args));
-
-        const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
+        const originalJp = JoinpointFactory.create(
+            ctxt,
+            (...args: any[]) => new refCtor(...args),
+            () => ctxtCopy.args,
+        );
         const originalThis = ctxt.instance;
+        let thisAccess: AroundAdvice<any>;
+        let lastAdvice: AroundAdvice<any>;
+        // safe ctxt copy with protected this access
+        const ctxtCopy: MutableAdviceContext<any> = ctxt.clone();
+        delete ctxtCopy.instance;
+        Reflect.defineProperty(ctxtCopy, 'instance', {
+            get() {
+                thisAccess = lastAdvice;
+                return ctxt.instance;
+            },
+        });
+        function createNextJoinpoint() {
+            return JoinpointFactory.create(
+                ctxt,
+                (...args: any[]) => {
+                    if (ctxtCopy.advices.length) {
+                        lastAdvice = ctxtCopy.advices.shift() as AroundAdvice<any>;
 
-        if (aroundAdvices.length) {
-            const oldJp = jp;
-            let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
+                        const nextJp = createNextJoinpoint() as any;
+                        ctxtCopy.joinpoint = nextJp;
+                        ctxtCopy.args = args;
 
-            let wasRead = false;
-            // ensure 'this' instance has not been read before joinpoint gets called.
-            jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
-                if (wasRead) {
-                    throw new Error(
-                        `In advice "${aroundAdvice}": Cannot get "this" instance of constructor before calling constructor joinpoint`,
-                    );
-                }
+                        return (ctxt.instance = lastAdvice(ctxtCopy as any, nextJp, args) ?? ctxtCopy.instance);
+                    } else {
+                        if (thisAccess) {
+                            // ensure 'this' instance has not been read before joinpoint gets called.
+                            throw new AdviceError(
+                                thisAccess,
+                                `Cannot get "this" instance of constructor before calling constructor joinpoint`,
+                            );
+                        }
+                        return (ctxt.instance = originalJp(args) ?? ctxt.instance);
+                    }
+                },
+                () => ctxtCopy.args,
+            );
+        }
 
-                ctxt.instance = oldJp(args);
-            });
-
-            // nest all around advices into each others
-            for (let i = aroundAdvices.length - 2; i > -1; --i) {
-                const previousAroundAdvice = aroundAdvice;
-                aroundAdvice = aroundAdvices[i];
-                const previousJp = jp;
-
-                // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
-                    ctxt.joinpoint = previousJp;
-                    ctxt.args = args;
-                    previousAroundAdvice(ctxt.clone(), previousJp, args);
-                });
-            }
-
+        if (ctxtCopy.advices.length) {
+            ctxt.instance = partialThis;
+            const jp = createNextJoinpoint();
             try {
-                ctxt.joinpoint = jp;
-                ctxt.args = ctorArgs;
-
-                ctxt.instance = partialThis;
-                const frozenContext = ctxt.clone();
-                delete (frozenContext as MutableAdviceContext<any>).instance;
-                Reflect.defineProperty(frozenContext, 'instance', {
-                    get() {
-                        wasRead = true;
-                        return ctxt.instance;
-                    },
-                });
-                wasRead = false;
-                aroundAdvice(frozenContext, jp, ctorArgs);
+                ctxt.instance = jp();
             } catch (e) {
                 // as of ES6 classes, 'this' is no more available after ctor thrown.
                 // replace 'this' with partial this
@@ -310,43 +307,47 @@ class PointcutsRunnersImpl implements PointcutsRunner {
                 throw e;
             }
         } else {
-            ctxt.instance = jp(ctorArgs);
+            ctxt.instance = originalJp(ctxt.args);
         }
 
         // assign 'this' to the object created by the original ctor at joinpoint;
         Object.assign(originalThis, ctxt.instance);
         ctxt.instance = originalThis;
+
+        delete ctxt.joinpoint;
         // TODO what in case advice returns brand new 'this'?
     }
 
     private _afterReturnClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): any {
         let newInstance = ctxt.instance;
 
-        const advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
-        advices.forEach(advice => {
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
+        while (ctxt.advices.length) {
+            const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
             ctxt.value = ctxt.instance;
-            newInstance = advice(ctxt.clone(), ctxt.value);
+            newInstance = advice(ctxt as AdviceContext<any, any>, ctxt.value);
             if (!isUndefined(newInstance)) {
                 ctxt.instance = newInstance;
             }
-        });
+        }
 
         return ctxt.instance;
     }
 
     private _afterThrowClass(ctxt: MutableAdviceContext<AnnotationType.CLASS>): void {
-        const afterThrowAdvices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
-        if (!afterThrowAdvices.length) {
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
+        if (!ctxt.advices.length) {
             // pass-trough errors by default
             throw ctxt.error;
         } else {
             let newInstance = ctxt.instance;
-            afterThrowAdvices.forEach(advice => {
-                newInstance = advice(ctxt.clone(), ctxt.error);
+            while (ctxt.advices.length) {
+                const advice = ctxt.advices.shift() as AfterThrowAdvice<any>;
+                newInstance = advice(ctxt as AdviceContext<any, any>, ctxt.error);
                 if (!isUndefined(newInstance)) {
                     ctxt.instance = newInstance;
                 }
-            });
+            }
         }
     }
 
@@ -356,19 +357,18 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     private _compileProperty(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): PropertyDescriptor {
         const target = ctxt.target;
-        const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
-        let lastAdvice: CompileAdvice<any, AnnotationType.PROPERTY>;
-        let newDescriptor: PropertyDescriptor = compileAdvices
-            .map(advice => {
-                lastAdvice = advice;
-                return advice(ctxt.clone()) as PropertyDescriptor;
-            })
-            .filter(c => !!c)
-            .slice(-1)[0];
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
+        let advice: CompileAdvice<any, AnnotationType.PROPERTY>;
+        let newDescriptor: PropertyDescriptor;
+
+        while (ctxt.advices.length) {
+            advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.PROPERTY>;
+            newDescriptor = (advice(ctxt as AdviceContext<any, any>) as PropertyDescriptor) ?? newDescriptor;
+        }
 
         if (newDescriptor) {
             if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-                throw new WeavingError(`Cannot apply advice ${lastAdvice} : ${target.label} is not configurable`);
+                throw new AdviceError(advice, `${target.label} is not configurable`);
             }
 
             // test property validity
@@ -399,9 +399,14 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _aroundPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
         assert(isFunction(refDescriptor?.get));
         this._applyAroundMethod(ctxt, refDescriptor.get, _isPropertyGet);
+        delete ctxt.joinpoint;
     }
 
     private _afterReturnPropertyGet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
@@ -421,39 +426,14 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _aroundPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): void {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
-        assert(!!refDescriptor);
-
-        const aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt).filter(_isPropertySet);
-
-        const refSetter = refDescriptor.set.bind(ctxt.instance);
-
-        // create getter joinpoint
-        let jp = JoinpointFactory.create(ctxt, refSetter);
-
-        if (aroundAdvices.length) {
-            let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
-
-            // nest all around advices into each others
-
-            for (let i = aroundAdvices.length - 2; i > -1; --i) {
-                const previousAroundAdvice = aroundAdvice;
-                aroundAdvice = aroundAdvices[i];
-                const previousJp = jp;
-
-                // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
-                    ctxt.joinpoint = previousJp;
-                    ctxt.args = args;
-                    return previousAroundAdvice(ctxt.clone(), previousJp, args);
-                });
-            }
-
-            ctxt.joinpoint = jp;
-            return (ctxt.value = aroundAdvice(ctxt.clone(), jp, ctxt.args));
-        } else {
-            return (ctxt.value = jp(ctxt.args));
-        }
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
+        assert(isFunction(refDescriptor?.set));
+        this._applyAroundMethod(ctxt, refDescriptor.set, _isPropertySet, false);
+        delete ctxt.joinpoint;
     }
 
     private _afterReturnPropertySet(ctxt: MutableAdviceContext<AnnotationType.PROPERTY>): any {
@@ -470,25 +450,25 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 
     private _compileMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): PropertyDescriptor {
         const target = ctxt.target;
-        const compileAdvices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
-        let lastAdvice: CompileAdvice<any, AnnotationType.METHOD>;
-        let newDescriptor: PropertyDescriptor = compileAdvices
-            .map(advice => {
-                lastAdvice = advice;
-                return advice(ctxt.clone()) as PropertyDescriptor;
-            })
-            .filter(c => !isUndefined(c))
-            .slice(-1)[0];
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.COMPILE, ctxt);
+        let advice: CompileAdvice<any, AnnotationType.METHOD>;
+        let newDescriptor: PropertyDescriptor;
+
+        while (ctxt.advices.length) {
+            advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.METHOD>;
+            newDescriptor = (advice(ctxt as AdviceContext<any, any>) as PropertyDescriptor) ?? newDescriptor;
+        }
 
         if (!isUndefined(newDescriptor)) {
             if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-                throw new WeavingError(`Cannot apply advice ${lastAdvice} : ${target.label} is not configurable`);
+                throw new AdviceError(advice, `${target.label} is not configurable`);
             }
 
             // ensure value is a function
             if (!isFunction(newDescriptor.value)) {
-                throw new WeavingError(
-                    `Expected ${lastAdvice} to return a method descriptor. Got: ${newDescriptor.value}`,
+                throw new AdviceError(
+                    advice,
+                    `Expected advice to return a method descriptor. Got: ${newDescriptor.value}`,
                 );
             }
 
@@ -515,7 +495,11 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _aroundMethod(ctxt: MutableAdviceContext<AnnotationType.METHOD>): any {
-        const refDescriptor = Reflect.getOwnMetadata('aspectjs.refDescriptor', ctxt.target.proto);
+        const refDescriptor = Reflect.getOwnMetadata(
+            'aspectjs.refDescriptor',
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+        );
         assert(isFunction(refDescriptor?.value));
         return this._applyAroundMethod(ctxt, refDescriptor.value);
     }
@@ -524,36 +508,47 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         ctxt: MutableAdviceContext<A>,
         refMethod: (...args: any[]) => any,
         filter?: (advice: Advice) => boolean,
-    ): void {
+        allowReturn = true,
+    ): any {
         // create method joinpoint
-        let jp = JoinpointFactory.create(ctxt, refMethod);
+        const originalJp = JoinpointFactory.create(ctxt, refMethod);
 
-        let aroundAdvices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AROUND, ctxt);
         if (filter) {
-            aroundAdvices = aroundAdvices.filter(filter);
+            ctxt.advices = ctxt.advices.filter(filter);
         }
 
-        if (aroundAdvices.length) {
-            let aroundAdvice = aroundAdvices[aroundAdvices.length - 1];
-
-            // nest all around advices into each others
-            for (let i = aroundAdvices.length - 2; i > -1; --i) {
-                const previousAroundAdvice = aroundAdvice;
-                aroundAdvice = aroundAdvices[i];
-                const previousJp = jp;
-
-                // replace args that may have been passed from calling advice's joinpoint
-                jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
-                    ctxt.joinpoint = previousJp;
-                    ctxt.args = args;
-                    return previousAroundAdvice(ctxt.clone(), previousJp, args);
-                });
-            }
-
-            ctxt.joinpoint = jp;
-            return (ctxt.value = aroundAdvice(ctxt.clone(), jp, ctxt.args));
+        let lastAdvice: AroundAdvice<any>;
+        if (ctxt.advices.length) {
+            const jp = createNextJoinpoint();
+            ctxt.value = jp();
         } else {
-            return (ctxt.value = jp(ctxt.args));
+            ctxt.value = originalJp(ctxt.args);
+        }
+
+        return ctxt.value;
+
+        function createNextJoinpoint() {
+            return JoinpointFactory.create(ctxt, (...args: any[]) => {
+                if (ctxt.advices.length) {
+                    lastAdvice = ctxt.advices.shift() as AroundAdvice<any>;
+
+                    const nextJp = createNextJoinpoint() as any;
+                    ctxt.joinpoint = nextJp;
+                    ctxt.args = args;
+
+                    ctxt.value = lastAdvice(ctxt as AroundContext<any, any>, nextJp, args);
+
+                    if (ctxt.value !== undefined && !allowReturn) {
+                        throw new AdviceError(lastAdvice, `Returning from advice is not supported`);
+                    }
+
+                    delete ctxt.joinpoint;
+                    return ctxt.value;
+                } else {
+                    return originalJp(args);
+                }
+            });
         }
     }
 
@@ -598,35 +593,33 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         phase: PointcutPhase,
         filter?: (advice: Advice) => boolean,
     ) {
-        let advices = this.weaver.getAdvices(phase, ctxt);
+        ctxt.advices = this.weaver.getAdvices(phase, ctxt);
         if (filter) {
-            advices = advices.filter(filter);
+            ctxt.advices = ctxt.advices.filter(filter);
         }
-        if (advices.length) {
-            const frozenCtxt = ctxt.clone();
-            advices.forEach((advice: AfterAdvice<unknown>) => {
-                const retVal = advice(frozenCtxt) as any;
-                if (!isUndefined(retVal)) {
-                    throw new WeavingError(`Returning from advice "${advice}" is not supported`);
-                }
-            });
+        while (ctxt.advices.length) {
+            const advice = ctxt.advices.shift() as AfterAdvice<unknown>;
+            const retVal = advice(ctxt as AdviceContext) as any;
+            if (!isUndefined(retVal)) {
+                throw new AdviceError(advice, `Returning from advice is not supported`);
+            }
         }
     }
 
     private _applyAfterReturnAdvice(ctxt: MutableAdviceContext<AnnotationType>, filter?: (a: Advice) => boolean) {
-        let advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERRETURN, ctxt);
 
         if (filter) {
-            advices = advices.filter(filter);
+            ctxt.advices = ctxt.advices.filter(filter);
         }
 
-        if (advices.length) {
+        if (ctxt.advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-            const frozenCtxt = ctxt.clone() as AfterReturnContext<any, AnnotationType>;
 
-            advices.forEach((advice: AfterReturnAdvice<unknown>) => {
-                ctxt.value = advice(frozenCtxt, frozenCtxt.value);
-            });
+            while (ctxt.advices.length) {
+                const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
+                ctxt.value = advice(ctxt as AfterReturnContext<any, AnnotationType>, ctxt.value);
+            }
         }
 
         return ctxt.value;
@@ -637,23 +630,23 @@ class PointcutsRunnersImpl implements PointcutsRunner {
         filter?: (a: Advice) => boolean,
         prohibitReturn = false,
     ) {
-        let advices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
+        ctxt.advices = this.weaver.getAdvices(PointcutPhase.AFTERTHROW, ctxt);
 
         if (filter) {
-            advices = advices.filter(filter);
+            ctxt.advices = ctxt.advices.filter(filter);
         }
 
-        if (advices.length) {
+        if (ctxt.advices.length) {
             ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
-            const frozenCtxt = ctxt.clone() as AfterThrowContext<any, AnnotationType>;
 
-            advices.forEach((advice: AfterThrowAdvice<unknown>) => {
-                ctxt.value = advice(frozenCtxt, frozenCtxt.error);
+            while (ctxt.advices.length) {
+                const advice = ctxt.advices.shift() as AfterThrowAdvice<unknown>;
+                ctxt.value = advice(ctxt as AfterThrowContext<any, AnnotationType>, ctxt.error);
 
                 if (prohibitReturn && !isUndefined(ctxt.value)) {
-                    throw new WeavingError(`Returning from advice "${advice}" is not supported`);
+                    throw new AdviceError(advice, `Returning from advice is not supported`);
                 }
-            });
+            }
 
             return ctxt.value;
         } else {
@@ -664,7 +657,7 @@ class PointcutsRunnersImpl implements PointcutsRunner {
     }
 
     private _applyOnce(fn: Function, phase: PointcutPhase) {
-        return (ctxt: AdviceContext<any, any>, ...args: any[]) => {
+        return (ctxt: AdviceContext, ...args: any[]) => {
             const key = `aspectjs.isAdviced(${phase})`;
             const applied = Reflect.getOwnMetadata(key, ctxt.target.proto, ctxt.target.propertyKey);
             if (!applied) {
@@ -676,15 +669,19 @@ class PointcutsRunnersImpl implements PointcutsRunner {
 }
 
 class JoinpointFactory<T> {
-    static create(ctxt: MutableAdviceContext<any>, fn: (...args: any[]) => any): JoinPoint {
+    static create(
+        ctxt: MutableAdviceContext<any>,
+        fn: (...args: any[]) => any,
+        defaultArgsProvider = () => ctxt.args,
+    ): JoinPoint {
         const alreadyCalledFn = (): void => {
-            throw new WeavingError(`joinPoint already proceeded`);
+            throw new AspectError(ctxt as AdviceContext, `joinPoint already proceeded`);
         };
 
-        const jp = function(args?: any[]) {
-            args = args ?? ctxt.args;
+        const jp = function (args?: any[]) {
+            args = args ?? defaultArgsProvider();
             if (!isArray(args)) {
-                throw new TypeError(`Joinpoint arguments expected to be array. Got: ${args}`);
+                throw new AspectError(ctxt as AdviceContext, `Joinpoint arguments expected to be array. Got: ${args}`);
             }
             const jp = fn;
             fn = alreadyCalledFn as any;

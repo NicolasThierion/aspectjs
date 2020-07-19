@@ -2,8 +2,8 @@ import { Advice } from './types';
 import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
 import { Pointcut, PointcutPhase } from './pointcut';
-import { WeavingError } from '../weaving-error';
 import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceError } from '../errors/advice-error';
 
 export class AdviceFactory {
     static create(pointcut: Pointcut): MethodDecorator {
@@ -13,10 +13,12 @@ export class AdviceFactory {
                 pointcut.ref.startsWith('property#set'),
         );
 
-        return function(aspect: any, propertyKey: string | symbol) {
+        return function (aspect: any, propertyKey: string | symbol) {
             assert(isFunction(aspect[propertyKey]));
 
-            const advice = aspect[propertyKey] as Advice;
+            const advice = function (...args: any[]) {
+                return aspect[propertyKey].bind(this)(...args);
+            } as Advice;
             advice.pointcut = pointcut;
 
             Reflect.defineProperty(advice, Symbol.toPrimitive, {
@@ -24,8 +26,12 @@ export class AdviceFactory {
                     `@${pointcut.phase}(${pointcut.annotation}) ${aspect.constructor.name}.${String(propertyKey)}()`,
             });
 
+            Reflect.defineProperty(advice, 'name', {
+                value: propertyKey,
+            });
+
             if (pointcut.ref.startsWith('property#set') && pointcut.phase === PointcutPhase.COMPILE) {
-                throw new WeavingError(`Advice "${advice}" cannot be applied on property setter`);
+                throw new AdviceError(advice, `Advice cannot be applied on property setter`);
             }
 
             AdvicesRegistry.create(aspect, advice);

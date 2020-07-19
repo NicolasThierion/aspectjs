@@ -12,20 +12,20 @@
   "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "license": "MIT",
-  "main": "bundles/core.umd.js",
-  "unpgk": "bundles/core.umd.min.js",
-  "module": "esm/core.mjs",
+  "main": "dist/bundles/core.umd.js",
+  "unpgk": "dist/bundles/core.umd.min.js",
+  "module": "dist/esm/core.mjs",
   "sideEffects": false,
-  "typings": "./esm/index.d.ts",
+  "typings": "dist/esm/public_api.d.ts",
   "scripts": {
     "build": "rollup --config ./rollup.config.js",
     "test": "nyc jasmine-ts --config=jasmine.json",
-    "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",
+    "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
+    "test:integration": "yarn build && cd tests/angular && yarn install && yarn add ../../ && yarn test",
     "size": "rollup --config ./rollup.config.js && size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
-
   "directories": {
     "lib": "src",
     "test": "tests"
@@ -38,9 +38,8 @@
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
   "devDependencies": {
-    "@size-limit/preset-big-lib": "^4.0.1",
-    "reflect-metadata": "^0.1.13",
-    "size-limit": "^4.0.1"
+    "@size-limit/preset-big-lib": "^4.5.4",
+    "size-limit": "^4.5.4"
   },
   "size-limit": [
     {

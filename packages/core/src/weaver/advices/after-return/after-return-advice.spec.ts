@@ -2,7 +2,7 @@ import { AfterReturn } from './after-return.decorator';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
 import { Compile } from '../compile/compile.decorator';
-import { WeavingError } from '../../weaving-error';
+import { WeavingError } from '../../errors/weaving-error';
 import Spy = jasmine.Spy;
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
@@ -11,7 +11,7 @@ import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../te
 describe('@AfterReturn advice', () => {
     let afterReturn: Spy;
     beforeEach(() => {
-        afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {}).and.callThrough();
+        afterReturn = jasmine.createSpy('afterReturnAdvice', function (ctxt) {}).and.callThrough();
     });
     describe('applied on some class', () => {
         beforeEach(() => {
@@ -26,7 +26,7 @@ describe('@AfterReturn advice', () => {
             }
 
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     ctxt.instance.labels = ctxt.instance.labels ?? [];
                     ctxt.instance.labels.push('AClass');
                 })
@@ -97,7 +97,7 @@ describe('@AfterReturn advice', () => {
     describe('applied on a property', () => {
         beforeEach(() => {
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
@@ -201,7 +201,7 @@ describe('@AfterReturn advice', () => {
     describe('applied on a property setter', () => {
         beforeEach(() => {
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
@@ -263,7 +263,7 @@ describe('@AfterReturn advice', () => {
                 }
                 a = new A();
 
-                afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {});
+                afterReturn = jasmine.createSpy('afterReturnAdvice', function (ctxt) {});
             });
 
             it('should call the aspect', () => {
@@ -297,8 +297,8 @@ describe('@AfterReturn advice', () => {
 
                 it('should throw an error', () => {
                     expect(() => (a.labels = ['newValue'])).toThrow(
-                        new WeavingError(
-                            'Returning from advice "@AfterReturn(@AProperty) PropAspect.after()" is not supported',
+                        new Error(
+                            '@AfterReturn(@AProperty) PropAspect.after(): Returning from advice is not supported',
                         ),
                     );
                 });
@@ -309,7 +309,7 @@ describe('@AfterReturn advice', () => {
     describe('applied on a method', () => {
         beforeEach(() => {
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
@@ -359,7 +359,7 @@ describe('@AfterReturn advice', () => {
                 a = new A();
 
                 afterReturn = jasmine
-                    .createSpy('afterReturnAdvice', function(ctxt, _returnValue) {
+                    .createSpy('afterReturnAdvice', function (ctxt, _returnValue) {
                         returnValue = _returnValue;
                         return ctxt.value.concat('afterReturn');
                     })
@@ -385,81 +385,16 @@ describe('@AfterReturn advice', () => {
         });
     });
     xdescribe('applied on a method parameter', () => {
-        beforeEach(() => {
-            afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
-                    return ctxt.value;
-                })
-                .and.callThrough();
-
-            @Aspect('MethodAspect')
-            class MethodAspect {
-                @AfterReturn(on.method.withAnnotations(AMethod))
-                after(ctxt: AfterReturnContext<any, any>, returnValue: any) {
-                    return afterReturn(ctxt, returnValue);
-                }
-            }
-            setupWeaver(new MethodAspect());
-        });
-
-        let a: Labeled;
-
         describe('that throws', () => {
-            beforeEach(() => {
-                class A implements Labeled {
-                    @AMethod()
-                    addLabel() {
-                        throw new Error('expected');
-                    }
-                }
-                a = new A();
-            });
-
-            it('should not call the aspect', () => {
-                expect(() => {
-                    a.addLabel();
-                }).toThrow();
-                expect(afterReturn).not.toHaveBeenCalled();
-            });
+            it('should not call the aspect', () => {});
         });
 
         describe('that do not throws', () => {
-            let returnValue: any;
-            beforeEach(() => {
-                returnValue = undefined;
-                class A implements Labeled {
-                    labels: string[] = [];
-                    @AMethod()
-                    addLabel(...args: string[]) {
-                        return (this.labels = this.labels.concat(args));
-                    }
-                }
-                a = new A();
+            it('should call the aspect', () => {});
 
-                afterReturn = jasmine
-                    .createSpy('afterReturnAdvice', function(ctxt, _returnValue) {
-                        returnValue = _returnValue;
-                        return ctxt.value.concat('afterReturn');
-                    })
-                    .and.callThrough();
-            });
+            it('should return the new value', () => {});
 
-            it('should call the aspect', () => {
-                expect(afterReturn).not.toHaveBeenCalled();
-                a.addLabel('newValue');
-                expect(afterReturn).toHaveBeenCalled();
-            });
-
-            it('should return the new value', () => {
-                expect(a.labels).toEqual([]);
-                expect(a.addLabel('newValue')).toEqual(['newValue', 'afterReturn']);
-            });
-
-            it('should pass to advice the original returned value as 2nd parameter', () => {
-                expect(returnValue).toEqual(undefined);
-                a.addLabel('newValue');
-                expect(returnValue).toEqual(['newValue']);
-            });
+            it('should pass to advice the original returned value as 2nd parameter', () => {});
         });
     });
 });

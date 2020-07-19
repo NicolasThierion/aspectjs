@@ -2,8 +2,11 @@ import { AnnotationFactory } from '../factory/factory';
 import { AnnotationsBundle } from './bundle';
 import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
 import { AnnotationLocationFactory } from '../target/annotation-target.factory';
+import { setWeaver } from '../../weaver/weaver';
+import { LoadTimeWeaver } from '../../weaver/load-time/load-time-weaver';
 
 describe('given a class', () => {
+    beforeEach(() => setWeaver(new LoadTimeWeaver()));
     class X {
         someProp: any;
 
@@ -96,10 +99,10 @@ describe('given a class', () => {
             it('should return all annotations', () => {
                 const annotations = AnnotationFactory.getBundle(A).all();
                 expect(annotations.length).toEqual(4);
-                expect(annotations.map(c => c.name)).toContain(AClassDecorator.name);
-                expect(annotations.map(c => c.name)).toContain(AMethodDecorator.name);
-                expect(annotations.map(c => c.name)).toContain(AParameterDecorator.name);
-                expect(annotations.map(c => c.name)).toContain(APropertyDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(AClassDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(AMethodDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(AParameterDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(APropertyDecorator.name);
             });
         });
         describe('method "bundle.all(annotationName)"', () => {
@@ -145,11 +148,7 @@ describe('given a class', () => {
         describe('method bundle.at()', () => {
             describe('given no argument', () => {
                 it('should return an empty array', () => {
-                    expect(
-                        AnnotationFactory.getBundle(A)
-                            .at(undefined)
-                            .all(),
-                    ).toEqual([]);
+                    expect(AnnotationFactory.getBundle(A).at(undefined).all()).toEqual([]);
                 });
             });
         });

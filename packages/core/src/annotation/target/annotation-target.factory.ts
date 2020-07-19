@@ -4,6 +4,7 @@ import {
     getMetaOrDefault,
     getOrDefault,
     getProto,
+    isFunction,
     isNumber,
     isObject,
     isUndefined,
@@ -45,11 +46,12 @@ export abstract class AnnotationTargetFactory {
         // MethodAnnotation = <A>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<A>) => TypedPropertyDescriptor<A> | void;
         // ParameterAnnotation = (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
 
+        // eslint-disable-next-line @typescript-eslint/ban-types
         const target: Function | object = args[0];
         const propertyKey: string | undefined = isUndefined(args[1]) ? undefined : String(args[1]);
         const parameterIndex: number | undefined = isNumber(args[2]) ? args[2] : undefined;
         const proto = getProto(target);
-        const descriptor: object | undefined = isObject(args[2]) ? args[2] : undefined;
+        const descriptor: PropertyDescriptor | undefined = isObject(args[2]) ? args[2] : undefined;
         const atarget: MutableAnnotationTarget<any, AnnotationType> = {
             proto,
             propertyKey,
@@ -72,8 +74,8 @@ export abstract class AnnotationTargetFactory {
         if (isUndefined(type) && isUndefined(dtarget.type)) {
             if (isNumber(((dtarget as any) as ParameterAdviceTarget<T>).parameterIndex)) {
                 type = AnnotationType.PARAMETER;
-            } else if (!isUndefined(((dtarget as any) as MethodAdviceTarget<T>).propertyKey)) {
-                if (isObject(((dtarget as any) as MethodAdviceTarget<T>).descriptor)) {
+            } else if (!isUndefined(dtarget.propertyKey)) {
+                if (isObject(dtarget.descriptor) && isFunction(dtarget.descriptor.value)) {
                     type = AnnotationType.METHOD;
                 } else {
                     type = AnnotationType.PROPERTY;
@@ -90,8 +92,6 @@ export abstract class AnnotationTargetFactory {
         return getMetaOrDefault(_metaKey(ref), dtarget.proto, () => {
             const target = (TARGET_GENERATORS[type] as any)(dtarget as any);
             Reflect.setPrototypeOf(target, AnnotationTargetImpl.prototype);
-
-            Object.seal(target);
 
             return target;
         }) as any;
@@ -201,14 +201,14 @@ function _createAnnotationTarget<T, D extends AnnotationType>(
     type: AnnotationType,
     requiredProperties: (keyof AnnotationTarget<T, D>)[],
 ): AnnotationTargetLike<T, D> {
-    requiredProperties.forEach(n => assert(!isUndefined(d[n]), `target.${n} is undefined`));
+    requiredProperties.forEach((n) => assert(!isUndefined(d[n]), `target.${n} is undefined`));
 
     d = clone(d);
     const uselessProperties = Object.keys(d).filter(
-        p => requiredProperties.indexOf(p as any) < 0,
+        (p) => requiredProperties.indexOf(p as any) < 0,
     ) as (keyof AnnotationTarget<any, any>)[];
 
-    uselessProperties.forEach(n => delete d[n]);
+    uselessProperties.forEach((n) => delete d[n]);
 
     d.type = type as any;
     d.ref = d.ref ?? REF_GENERATORS[d.type](d as any);

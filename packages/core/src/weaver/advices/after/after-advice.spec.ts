@@ -1,11 +1,10 @@
 import { After } from './after.decorator';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
-import { WeavingError } from '../../weaving-error';
-import Spy = jasmine.Spy;
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
+import Spy = jasmine.Spy;
 
 let afterAdvice: Spy;
 
@@ -22,7 +21,7 @@ describe('@After advice', () => {
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt) {
+                .createSpy('afterAdvice', function (ctxt) {
                     ctxt.instance.labels = ctxt.instance.labels ?? [];
                     ctxt.instance.labels.push('AClass');
                 })
@@ -37,7 +36,7 @@ describe('@After advice', () => {
                 class BadAfterAspect {
                     @After(on.class.withAnnotations(AClass))
                     apply(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
-                        return function() {};
+                        return function () {};
                     }
                 }
 
@@ -48,9 +47,7 @@ describe('@After advice', () => {
                     class X {}
 
                     new X();
-                }).toThrow(
-                    new WeavingError('Returning from advice "@After(@AClass) BadAfterAspect.apply()" is not supported'),
-                );
+                }).toThrow(new Error('@After(@AClass) BadAfterAspect.apply(): Returning from advice is not supported'));
             });
         });
 
@@ -132,7 +129,7 @@ describe('@After advice', () => {
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
+                .createSpy('afterAdvice', function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
                 .and.callThrough();
 
             setupWeaver(new AfterAspect());
@@ -183,9 +180,7 @@ describe('@After advice', () => {
 
                     new X().someProp = '';
                 }).toThrow(
-                    new WeavingError(
-                        'Returning from advice "@After(@AProperty) BadAfterAspect.apply()" is not supported',
-                    ),
+                    new Error('@After(@AProperty) BadAfterAspect.apply(): Returning from advice is not supported'),
                 );
             });
         });
@@ -205,7 +200,7 @@ describe('@After advice', () => {
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
+                .createSpy('afterAdvice', function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
                 .and.callThrough();
 
             setupWeaver(new AfterAspect());
@@ -251,79 +246,21 @@ describe('@After advice', () => {
 
                     const prop = new X().addLabel();
                 }).toThrow(
-                    new WeavingError(
-                        'Returning from advice "@After(@AMethod) BadAfterAspect.apply()" is not supported',
-                    ),
+                    new Error('@After(@AMethod) BadAfterAspect.apply(): Returning from advice is not supported'),
                 );
             });
         });
     });
 
     xdescribe('applied on a method parameter', () => {
-        let a: Labeled;
-        beforeEach(() => {
-            @Aspect('AMethod')
-            class AfterAspect {
-                @After(on.method.withAnnotations(AMethod))
-                apply(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
-                    expect(this).toEqual(jasmine.any(AfterAspect));
-
-                    afterAdvice(ctxt);
-                }
-            }
-
-            afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
-                .and.callThrough();
-
-            setupWeaver(new AfterAspect());
-
-            class A implements Labeled {
-                @AMethod()
-                addLabel() {
-                    return ['value'];
-                }
-            }
-
-            a = new A() as Labeled;
-        });
-
         describe('calling the method', () => {
-            it('should invoke the aspect', () => {
-                expect(afterAdvice).not.toHaveBeenCalled();
-                a.addLabel();
-                expect(afterAdvice).toHaveBeenCalled();
-            });
+            it('should invoke the aspect', () => {});
 
-            it("should return the original property's value", () => {
-                expect(a.addLabel()).toEqual(['value']);
-            });
+            it("should return the original property's value", () => {});
         });
 
         describe('when the advice returns a value', () => {
-            it('should throw an error', () => {
-                @Aspect('AMethod')
-                class BadAfterAspect {
-                    @After(on.method.withAnnotations(AMethod))
-                    apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
-                        return Object.getOwnPropertyDescriptor({ test: 'test' }, 'test');
-                    }
-                }
-
-                setupWeaver(new BadAfterAspect());
-                expect(() => {
-                    class X implements Labeled {
-                        @AMethod()
-                        addLabel() {}
-                    }
-
-                    const prop = new X().addLabel();
-                }).toThrow(
-                    new WeavingError(
-                        'Returning from advice "@After(@AMethod) BadAfterAspect.apply()" is not supported',
-                    ),
-                );
-            });
+            it('should throw an error', () => {});
         });
     });
 });

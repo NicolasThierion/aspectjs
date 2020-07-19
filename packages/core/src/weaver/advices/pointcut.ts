@@ -1,5 +1,5 @@
 import { assert } from '../../utils';
-import { WeavingError } from '../weaving-error';
+import { WeavingError } from '../errors/weaving-error';
 import {
     Annotation,
     AnnotationRef,
@@ -40,9 +40,9 @@ export class ClassPointcutExpression extends PointcutExpression {
 
     toString(): string {
         return _trimSpaces(
-            `class ${this._annotations.map(a => a.toString()).join(',')}${this._selector ? ` ${this._selector}` : ''} ${
-                this._name
-            }`,
+            `class ${this._annotations.map((a) => a.toString()).join(',')}${
+                this._selector ? ` ${this._selector}` : ''
+            } ${this._name}`,
         );
     }
 
@@ -55,7 +55,7 @@ export class PropertyPointcutExpression extends PointcutExpression {
     public readonly setter = new PropertySetterPointcutExpression();
 
     toString(): string {
-        return _trimSpaces(`property#get ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
+        return _trimSpaces(`property#get ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
     }
 
     withAnnotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
@@ -66,7 +66,7 @@ export class PropertyPointcutExpression extends PointcutExpression {
 
 export class PropertySetterPointcutExpression extends PointcutExpression {
     toString(): string {
-        return _trimSpaces(`property#set ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
+        return _trimSpaces(`property#set ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
     }
 
     withAnnotations(...annotation: PropertyAnnotation[]): PropertySetterPointcutExpression {
@@ -76,7 +76,7 @@ export class PropertySetterPointcutExpression extends PointcutExpression {
 
 export class MethodPointcutExpression extends PointcutExpression {
     toString(): string {
-        return _trimSpaces(`method ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
+        return _trimSpaces(`method ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
     }
 
     withAnnotations(...annotation: MethodAnnotation[]): MethodPointcutExpression {
@@ -86,7 +86,7 @@ export class MethodPointcutExpression extends PointcutExpression {
 
 export class ParameterPointcutExpression extends PointcutExpression {
     toString(): string {
-        return _trimSpaces(`parameter ${this._annotations.map(a => a.toString()).join(',')} ${this._name}`);
+        return _trimSpaces(`parameter ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
     }
 
     withAnnotations(...annotation: ParameterAnnotation[]): ParameterPointcutExpression {

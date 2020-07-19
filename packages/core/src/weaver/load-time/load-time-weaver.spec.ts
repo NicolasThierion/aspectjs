@@ -1,8 +1,8 @@
 import { AnnotationFactory } from '../../annotation/factory/factory';
-import { setWeaver } from '../../lib';
-import { WeavingError } from '../weaving-error';
+import { WeavingError } from '../errors/weaving-error';
 import { LoadTimeWeaver } from './load-time-weaver';
 import { Aspect } from '../advices/aspect';
+import { setWeaver } from '../weaver';
 
 let weaver: LoadTimeWeaver;
 

@@ -1,0 +1,13 @@
+import { UnmarshallingContext, MarshallingContext } from './memo.types';
+
+export class MemoAspectError extends Error {
+    constructor(public readonly message: string) {
+        super(message);
+    }
+}
+
+export class VersionConflictError extends MemoAspectError {
+    constructor(public readonly message: string, public readonly context: UnmarshallingContext | MarshallingContext) {
+        super(message);
+    }
+}

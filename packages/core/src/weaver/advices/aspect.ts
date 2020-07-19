@@ -8,10 +8,12 @@ export interface AspectOptions {
     priority?: number;
 }
 
+export const ASPECT_OPTIONS_REFLECT_KEY = 'aspectjs.aspect.options';
+
 export function Aspect(id: string | AspectOptions = {}): ClassDecorator {
-    return function(target: Function) {
+    return function (target: Function) {
         const options = isString(id) ? { id: id } : (id as AspectOptions) ?? {};
-        Reflect.defineMetadata(`aspectjs.aspect.options`, options, target);
+        Reflect.defineMetadata(ASPECT_OPTIONS_REFLECT_KEY, options, target);
     };
 }
 
