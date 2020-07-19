@@ -13,11 +13,11 @@ export class WeaverProfile {
         this.name = name ?? `default#${profileId++}`;
     }
     enable(...aspects: object[]): this {
-        aspects.forEach(p => {
+        aspects.forEach((p) => {
             // avoid enabling an aspect twice
             if (!Reflect.getOwnMetadata('@aspectjs/aspect:enabled', p)) {
                 if (p instanceof WeaverProfile) {
-                    Object.values(p._aspectsRegistry).forEach(p => this.enable(p));
+                    Object.values(p._aspectsRegistry).forEach((p) => this.enable(p));
                 } else {
                     this.setEnabled(p, true);
                 }
@@ -27,9 +27,9 @@ export class WeaverProfile {
         return this;
     }
     disable(...aspects: object[]): this {
-        aspects.forEach(p => {
+        aspects.forEach((p) => {
             if (p instanceof WeaverProfile) {
-                Object.values(p._aspectsRegistry).forEach(p => this.disable(p));
+                Object.values(p._aspectsRegistry).forEach((p) => this.disable(p));
             } else {
                 this.setEnabled(p, false);
             }
@@ -47,8 +47,9 @@ export class WeaverProfile {
             const oldAspect = this._aspectsRegistry[id];
             if (oldAspect) {
                 console.warn(
-                    `Aspect ${aspect.constructor.name} overrides aspect "${oldAspect?.constructor.name ??
-                        'unknown'}" already registered for name ${id}`,
+                    `Aspect ${aspect.constructor.name} overrides aspect "${
+                        oldAspect?.constructor.name ?? 'unknown'
+                    }" already registered for name ${id}`,
                 );
             }
 

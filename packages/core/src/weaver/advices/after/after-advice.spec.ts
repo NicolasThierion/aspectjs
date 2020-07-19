@@ -1,11 +1,10 @@
 import { After } from './after.decorator';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
-import { WeavingError } from '../../errors/weaving-error';
-import Spy = jasmine.Spy;
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../../annotation/annotation.types';
+import Spy = jasmine.Spy;
 
 let afterAdvice: Spy;
 
@@ -22,7 +21,7 @@ describe('@After advice', () => {
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt) {
+                .createSpy('afterAdvice', function (ctxt) {
                     ctxt.instance.labels = ctxt.instance.labels ?? [];
                     ctxt.instance.labels.push('AClass');
                 })
@@ -37,7 +36,7 @@ describe('@After advice', () => {
                 class BadAfterAspect {
                     @After(on.class.withAnnotations(AClass))
                     apply(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
-                        return function() {};
+                        return function () {};
                     }
                 }
 
@@ -130,7 +129,7 @@ describe('@After advice', () => {
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
+                .createSpy('afterAdvice', function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
                 .and.callThrough();
 
             setupWeaver(new AfterAspect());
@@ -201,7 +200,7 @@ describe('@After advice', () => {
             }
 
             afterAdvice = jasmine
-                .createSpy('afterAdvice', function(ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
+                .createSpy('afterAdvice', function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
                 .and.callThrough();
 
             setupWeaver(new AfterAspect());

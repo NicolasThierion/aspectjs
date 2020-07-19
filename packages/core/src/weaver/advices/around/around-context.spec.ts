@@ -74,11 +74,11 @@ describe('AroundContext', () => {
             beforeEach(() => {
                 data = null;
 
-                aroundAAdvice.and.callFake(ctxt => {
+                aroundAAdvice.and.callFake((ctxt) => {
                     pushData(ctxt, 'aroundA');
                     return ctxt.joinpoint();
                 });
-                aroundBAdvice.and.callFake(ctxt => {
+                aroundBAdvice.and.callFake((ctxt) => {
                     pushData(ctxt, 'aroundB');
                     return ctxt.joinpoint();
                 });
@@ -161,9 +161,9 @@ describe('AroundContext', () => {
                     @AClass()
                     @BClass()
                     class Test {}
-                    [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                     new Test();
-                    [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
                 });
             });
 
@@ -176,7 +176,7 @@ describe('AroundContext', () => {
                     @BClass()
                     @AClass()
                     class Test {}
-                    [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                     new Test();
                     expect(aroundAAdvice).toHaveBeenCalled();
                 });
@@ -242,9 +242,9 @@ describe('AroundContext', () => {
                     prop: any;
                 }
 
-                [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                 new Test().prop;
-                [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
                 expect(data.advices).toEqual(['aroundA', 'aroundB']);
             });
 
@@ -259,17 +259,17 @@ describe('AroundContext', () => {
                 }
                 const t = new Test();
 
-                [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                 t.prop1;
                 t.prop2;
-                [aroundAAdvice, aroundBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['aroundB']);
             });
 
             it('should be shared between a @Around and a @AfterReturn advice on the same property', () => {
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
 
                 class Test {
                     @AProperty()
@@ -277,11 +277,11 @@ describe('AroundContext', () => {
                     prop: any;
                 }
 
-                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach(f =>
+                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach((f) =>
                     expect(f).not.toHaveBeenCalled(),
                 );
                 new Test().prop;
-                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach(f =>
+                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach((f) =>
                     expect(f).toHaveBeenCalled(),
                 );
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
@@ -339,9 +339,9 @@ describe('AroundContext', () => {
                         @BProperty()
                         prop: any;
                     }
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().prop;
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 
@@ -356,9 +356,9 @@ describe('AroundContext', () => {
                         @AProperty()
                         prop: any;
                     }
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().prop;
-                    [aroundAAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [aroundAAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
         });
@@ -421,9 +421,9 @@ describe('AroundContext', () => {
                     @BProperty()
                     prop: any;
                 }
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 new Test().prop = 'toto';
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 expect(data.advices).toEqual(['aroundA', 'aroundB']);
             });
 
@@ -437,29 +437,29 @@ describe('AroundContext', () => {
                     prop2: any;
                 }
 
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 const t = new Test();
                 t.prop1 = 'toto';
                 t.prop2 = 'toto';
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['aroundB']);
             });
 
             it('should be shared between a @Around and a @AfterReturn advice on the same property', () => {
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
 
                 class Test {
                     @AProperty()
                     @BProperty()
                     prop: any;
                 }
-                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach(fn =>
+                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach((fn) =>
                     expect(fn).not.toHaveBeenCalled(),
                 );
                 new Test().prop = '';
-                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach(fn =>
+                [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach((fn) =>
                     expect(fn).toHaveBeenCalled(),
                 );
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
@@ -584,11 +584,11 @@ describe('AroundContext', () => {
             beforeEach(() => {
                 data = null;
 
-                aroundAAdvice.and.callFake(ctxt => {
+                aroundAAdvice.and.callFake((ctxt) => {
                     pushData(ctxt, 'aroundA');
                     return ctxt.joinpoint();
                 });
-                aroundBAdvice.and.callFake(ctxt => {
+                aroundBAdvice.and.callFake((ctxt) => {
                     pushData(ctxt, 'aroundB');
                     return ctxt.joinpoint();
                 });
@@ -600,9 +600,9 @@ describe('AroundContext', () => {
                     @BMethod()
                     someMethod(): any {}
                 }
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 new Test().someMethod();
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['aroundA', 'aroundB']);
             });
@@ -617,18 +617,18 @@ describe('AroundContext', () => {
                     method2(): any {}
                 }
 
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 const t = new Test();
                 t.method1();
                 t.method2();
-                [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['aroundB']);
             });
 
             it('should be shared between a @Around and a @AfterReturn advice on the same method', () => {
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
 
                 class Test {
                     @AMethod()
@@ -692,9 +692,9 @@ describe('AroundContext', () => {
                         method(): any {}
                     }
 
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().method();
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 
@@ -759,11 +759,11 @@ describe('AroundContext', () => {
             beforeEach(() => {
                 data = null;
 
-                aroundAAdvice.and.callFake(ctxt => {
+                aroundAAdvice.and.callFake((ctxt) => {
                     pushData(ctxt, 'aroundA');
                     return ctxt.joinpoint();
                 });
-                aroundBAdvice.and.callFake(ctxt => {
+                aroundBAdvice.and.callFake((ctxt) => {
                     pushData(ctxt, 'aroundB');
                     return ctxt.joinpoint();
                 });
@@ -788,8 +788,8 @@ describe('AroundContext', () => {
             });
 
             it('should be shared between a @Around and a @AfterReturn advice on the same parameters', () => {
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
 
                 class Test {
                     someMethod(@AParameter() @BParameter() param: any): any {}
@@ -848,9 +848,9 @@ describe('AroundContext', () => {
                         someMethod(@AParameter() @BParameter() param: any): any {}
                     }
 
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().someMethod('');
-                    [aroundAAdvice, aroundBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [aroundAAdvice, aroundBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 

@@ -74,8 +74,8 @@ describe('AfterThrowContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterThrowAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowA'));
-                afterThrowBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowB'));
+                afterThrowAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowA'));
+                afterThrowBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowB'));
             });
             it('should be shared across two @AfterThrow advices on the same class', () => {
                 @AClass()
@@ -182,9 +182,9 @@ describe('AfterThrowContext', () => {
                             throw new Error();
                         }
                     }
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                     new Test();
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
                 });
             });
 
@@ -201,7 +201,7 @@ describe('AfterThrowContext', () => {
                             throw new Error();
                         }
                     }
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                     new Test();
                     expect(afterThrowAAdvice).toHaveBeenCalled();
                 });
@@ -267,9 +267,9 @@ describe('AfterThrowContext', () => {
                     }
                 }
 
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                 new Test().prop;
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB']);
             });
 
@@ -287,17 +287,17 @@ describe('AfterThrowContext', () => {
                 }
                 const t = new Test();
 
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                 t.prop1;
                 t.prop2;
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterThrowB']);
             });
 
             it('should be shared between a @AfterThrow and a @After advice on the same property', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     @AProperty()
@@ -307,11 +307,11 @@ describe('AfterThrowContext', () => {
                     }
                 }
 
-                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach(f =>
+                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach((f) =>
                     expect(f).not.toHaveBeenCalled(),
                 );
                 new Test().prop;
-                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach(f =>
+                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach((f) =>
                     expect(f).toHaveBeenCalled(),
                 );
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
@@ -373,9 +373,9 @@ describe('AfterThrowContext', () => {
                             throw new Error();
                         }
                     }
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().prop;
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 
@@ -392,9 +392,9 @@ describe('AfterThrowContext', () => {
                             throw new Error();
                         }
                     }
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().prop;
-                    [afterThrowAAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterThrowAAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
         });
@@ -457,9 +457,9 @@ describe('AfterThrowContext', () => {
                         throw new Error();
                     }
                 }
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 new Test().prop = 'toto';
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB']);
             });
 
@@ -477,18 +477,18 @@ describe('AfterThrowContext', () => {
                     }
                 }
 
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 const t = new Test();
                 t.prop1 = 'toto';
                 t.prop2 = 'toto';
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterThrowB']);
             });
 
             it('should be shared between a @AfterThrow and a @After advice on the same property', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     @AProperty()
@@ -497,11 +497,11 @@ describe('AfterThrowContext', () => {
                         throw new Error();
                     }
                 }
-                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach(fn =>
+                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach((fn) =>
                     expect(fn).not.toHaveBeenCalled(),
                 );
                 new Test().prop = '';
-                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach(fn =>
+                [afterThrowAAdvice, afterThrowBAdvice, afterAAdvice, afterBAdvice].forEach((fn) =>
                     expect(fn).toHaveBeenCalled(),
                 );
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
@@ -632,8 +632,8 @@ describe('AfterThrowContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterThrowAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowA'));
-                afterThrowBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowB'));
+                afterThrowAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowA'));
+                afterThrowBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowB'));
             });
 
             it('should be shared across two @AfterThrow advices on the same method', () => {
@@ -644,9 +644,9 @@ describe('AfterThrowContext', () => {
                         throw new Error();
                     }
                 }
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 new Test().someMethod();
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB']);
             });
@@ -665,18 +665,18 @@ describe('AfterThrowContext', () => {
                     }
                 }
 
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 const t = new Test();
                 t.method1();
                 t.method2();
-                [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterThrowB']);
             });
 
             it('should be shared between a @AfterThrow and a @After advice on the same method', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     @AMethod()
@@ -746,9 +746,9 @@ describe('AfterThrowContext', () => {
                         }
                     }
 
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().method();
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 
@@ -816,8 +816,8 @@ describe('AfterThrowContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterThrowAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowA'));
-                afterThrowBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterThrowB'));
+                afterThrowAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowA'));
+                afterThrowBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowB'));
             });
             it('should be shared across two @AfterThrow advices on the same parameter', () => {
                 class Test {
@@ -843,8 +843,8 @@ describe('AfterThrowContext', () => {
             });
 
             it('should be shared between a @AfterThrow and a @After advice on the same parameters', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     someMethod(@AParameter() @BParameter() param: any): any {
@@ -908,9 +908,9 @@ describe('AfterThrowContext', () => {
                         }
                     }
 
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().someMethod('');
-                    [afterThrowAAdvice, afterThrowBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterThrowAAdvice, afterThrowBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 

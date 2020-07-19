@@ -16,7 +16,6 @@ export function configFactory(pkg) {
         plugins: [
             sourcemaps(),
             typescript({
-                objectHashIgnoreUnknownHack: true,
                 clean: true,
                 tsconfigOverride: {
                     compilerOptions: {

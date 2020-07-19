@@ -18,7 +18,7 @@ export class Scheduler {
 
             this._pendingOps[k] = this._pendingOps[k]
                 .then(() => op())
-                .then(r => {
+                .then((r) => {
                     if (this._lastOperationId[k] === opId) {
                         delete this._pendingOps[k];
                         delete this._lastOperationId[k];

@@ -8,7 +8,7 @@ export class ArrayMarshaller extends MemoMarshaller {
 
     marshal(frame: MemoFrame<unknown[]>, context: MarshallingContext): MemoFrame<any[]> {
         // array may contain promises
-        frame.value = frame.value.map(i => context.defaultMarshal(i));
+        frame.value = frame.value.map((i) => context.defaultMarshal(i));
 
         return frame;
     }
@@ -17,7 +17,7 @@ export class ArrayMarshaller extends MemoMarshaller {
         const value = [] as any[];
 
         context.blacklist.set(frame, value);
-        value.push(...((frame.value as any) as any[]).map(w => context.defaultUnmarshal(w)));
+        value.push(...((frame.value as any) as any[]).map((w) => context.defaultUnmarshal(w)));
         return value;
     }
 }

@@ -7,13 +7,13 @@ export class PromiseMarshaller extends MemoMarshaller<Promise<any>, any> {
     readonly types = 'Promise';
 
     marshal(frame: MemoFrame<Promise<unknown>>, context: MarshallingContext): MemoFrame<Promise<any>> {
-        context.async.push(frame.value.then(v => frame.setValue(context.defaultMarshal(v))));
+        context.async.push(frame.value.then((v) => frame.setValue(context.defaultMarshal(v))));
         return frame;
     }
 
     unmarshal(frame: MemoFrame<MemoFrame<any>>, context: UnmarshallingContext): Promise<any> {
         if (context.async.length) {
-            return Promise.all(context.async).then(results => {
+            return Promise.all(context.async).then((results) => {
                 return context.defaultUnmarshal(results[0]);
             });
         } else {

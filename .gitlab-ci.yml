@@ -10,12 +10,12 @@ install:
   stage: prepare
   script:
     - yarn install
-    - yarn add -D puppeteer --only=dev
+    - yarn add -DW puppeteer --only=dev
 
 bundle:
   stage: build
   script:
-    - apk add git && yarn build
+    - yarn build
   artifacts:
     paths:
       - dist/
@@ -28,21 +28,19 @@ lint:
 test:
   stage: test
   script:
-    - apk add git && yarn test
+    - yarn test
 
 test:integration:
-  image: buildkite/puppeteer:v1.15.0
   stage: test
   script:
-    - apk add git && yarn test:integration
+    - yarn test:integration
   dependencies:
     - bundle
 
 test:size:
-  image: buildkite/puppeteer:v1.15.0
   stage: test
   script:
-    - apk add git && npm i size-limit && yarn size
+    - yarn size
   dependencies:
     - bundle
 

@@ -46,11 +46,12 @@ export abstract class AnnotationTargetFactory {
         // MethodAnnotation = <A>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<A>) => TypedPropertyDescriptor<A> | void;
         // ParameterAnnotation = (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
 
+        // eslint-disable-next-line @typescript-eslint/ban-types
         const target: Function | object = args[0];
         const propertyKey: string | undefined = isUndefined(args[1]) ? undefined : String(args[1]);
         const parameterIndex: number | undefined = isNumber(args[2]) ? args[2] : undefined;
         const proto = getProto(target);
-        const descriptor: object | undefined = isObject(args[2]) ? args[2] : undefined;
+        const descriptor: PropertyDescriptor | undefined = isObject(args[2]) ? args[2] : undefined;
         const atarget: MutableAnnotationTarget<any, AnnotationType> = {
             proto,
             propertyKey,
@@ -200,14 +201,14 @@ function _createAnnotationTarget<T, D extends AnnotationType>(
     type: AnnotationType,
     requiredProperties: (keyof AnnotationTarget<T, D>)[],
 ): AnnotationTargetLike<T, D> {
-    requiredProperties.forEach(n => assert(!isUndefined(d[n]), `target.${n} is undefined`));
+    requiredProperties.forEach((n) => assert(!isUndefined(d[n]), `target.${n} is undefined`));
 
     d = clone(d);
     const uselessProperties = Object.keys(d).filter(
-        p => requiredProperties.indexOf(p as any) < 0,
+        (p) => requiredProperties.indexOf(p as any) < 0,
     ) as (keyof AnnotationTarget<any, any>)[];
 
-    uselessProperties.forEach(n => delete d[n]);
+    uselessProperties.forEach((n) => delete d[n]);
 
     d.type = type as any;
     d.ref = d.ref ?? REF_GENERATORS[d.type](d as any);

@@ -12,7 +12,7 @@ interface Runner {
 
 let process: (...args: any[]) => any;
 function _setupMemoAspect(...drivers: MemoDriver[]): void {
-    drivers.forEach(d => {
+    drivers.forEach((d) => {
         spyOn(d, 'getValue');
         spyOn(d, 'setValue');
     });

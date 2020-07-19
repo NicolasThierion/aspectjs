@@ -25,7 +25,7 @@ export class InstantPromise<T> implements PromiseLike<T> {
 
         let promise: PromiseLike<any[]> = new InstantPromise(results);
         promises.forEach((p, i) => {
-            promise = promise.then(() => p).then(v => (results[i] = v));
+            promise = promise.then(() => p).then((v) => (results[i] = v));
         });
 
         return promise;

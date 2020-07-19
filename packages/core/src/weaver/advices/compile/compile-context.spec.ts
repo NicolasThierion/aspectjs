@@ -76,11 +76,11 @@ describe('CompileContext', () => {
             beforeEach(() => {
                 data = null;
 
-                compileAAdvice.and.callFake(ctxt => pushData(ctxt, 'compileA'));
-                compileBAdvice.and.callFake(ctxt => pushData(ctxt, 'compileB'));
+                compileAAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileA'));
+                compileBAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileB'));
 
-                beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
-                beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
+                beforeAAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeA'));
+                beforeBAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeB'));
             });
             it('should be shared across two @Compile advices on the same class', () => {
                 @AClass()
@@ -216,11 +216,11 @@ describe('CompileContext', () => {
             beforeEach(() => {
                 data = null;
 
-                compileAAdvice.and.callFake(ctxt => pushData(ctxt, 'compileA'));
-                compileBAdvice.and.callFake(ctxt => pushData(ctxt, 'compileB'));
+                compileAAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileA'));
+                compileBAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileB'));
 
-                beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
-                beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
+                beforeAAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeA'));
+                beforeBAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeB'));
             });
             it('should be shared across two @Compile advices on the same property', () => {
                 class Test {
@@ -369,11 +369,11 @@ describe('CompileContext', () => {
             beforeEach(() => {
                 data = null;
 
-                compileAAdvice.and.callFake(ctxt => pushData(ctxt, 'compileA'));
-                compileBAdvice.and.callFake(ctxt => pushData(ctxt, 'compileB'));
+                compileAAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileA'));
+                compileBAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileB'));
 
-                beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
-                beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
+                beforeAAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeA'));
+                beforeBAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeB'));
             });
             it('should be shared across two @Compile advices on the same method', () => {
                 class Test {
@@ -520,11 +520,11 @@ describe('CompileContext', () => {
             beforeEach(() => {
                 data = null;
 
-                compileAAdvice.and.callFake(ctxt => pushData(ctxt, 'compileA'));
-                compileBAdvice.and.callFake(ctxt => pushData(ctxt, 'compileB'));
+                compileAAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileA'));
+                compileBAdvice.and.callFake((ctxt) => pushData(ctxt, 'compileB'));
 
-                beforeAAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeA'));
-                beforeBAdvice.and.callFake(ctxt => pushData(ctxt, 'beforeB'));
+                beforeAAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeA'));
+                beforeBAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeB'));
             });
             it('should be shared across two @Compile advices on the same parameter', () => {
                 class Test {

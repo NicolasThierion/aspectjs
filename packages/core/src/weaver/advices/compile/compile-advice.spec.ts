@@ -51,7 +51,7 @@ describe('@Compile advice', () => {
             }
 
             compileAspectA = jasmine
-                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
@@ -87,11 +87,11 @@ describe('@Compile advice', () => {
             beforeEach(() => {
                 ctor = jasmine.createSpy('ctor');
                 compileAspectA = jasmine
-                    .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                    .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                         target = ctxt.target;
                         instance = (ctxt as any).instance;
 
-                        return function() {
+                        return function () {
                             ctor();
                             this.labels = ['replacedCtor'];
                         };
@@ -161,7 +161,7 @@ describe('@Compile advice', () => {
             }
 
             compileAspectA = jasmine
-                .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 })
@@ -199,7 +199,7 @@ describe('@Compile advice', () => {
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return ({
                                 get: '',
                             } as any) as PropertyDescriptor;
@@ -221,7 +221,7 @@ describe('@Compile advice', () => {
                 let a: Labeled;
                 beforeEach(() => {
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 value: ['propAspect'],
                             };
@@ -249,7 +249,7 @@ describe('@Compile advice', () => {
 
                 beforeEach(() => {
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 get: () => ['propAspect'],
                             };
@@ -280,7 +280,7 @@ describe('@Compile advice', () => {
                     val = ['propAspect'];
 
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
                             return {
                                 get: () => val,
                                 set: (_val: any) => (val = _val),
@@ -371,7 +371,7 @@ describe('@Compile advice', () => {
             }
 
             compileAspectA = jasmine
-                .createSpy('compileAdvice', function(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                .createSpy('compileAdvice', function (ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                     annotation = ctxt.annotation;
@@ -413,11 +413,11 @@ describe('@Compile advice', () => {
             describe('and the descriptor is valid', () => {
                 beforeEach(() => {
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                        .createSpy('compileAdvice', function (ctxt: AdviceContext<any, AnnotationType.CLASS>) {
                             const descriptor = {
                                 ...Reflect.getOwnPropertyDescriptor(ctxt.target.proto, ctxt.target.propertyKey),
                             };
-                            descriptor.value = function() {
+                            descriptor.value = function () {
                                 this.labels = ['methodAdvice'];
                             };
                             return descriptor;
@@ -442,7 +442,7 @@ describe('@Compile advice', () => {
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function() {
+                        .createSpy('compileAdvice', function () {
                             return {
                                 value: () => {},
                                 get: () => {},
@@ -468,7 +468,7 @@ describe('@Compile advice', () => {
             describe('and the descriptor is not a method descriptor', () => {
                 beforeEach(() => {
                     compileAspectA = jasmine
-                        .createSpy('compileAdvice', function() {
+                        .createSpy('compileAdvice', function () {
                             return {};
                         })
                         .and.callThrough();
@@ -518,7 +518,7 @@ describe('@Compile advice', () => {
             }
 
             compileAspectA = jasmine
-                .createSpy('compileAdvice', function(ctxt: CompileContext<Labeled, AnnotationType.PARAMETER>) {
+                .createSpy('compileAdvice', function (ctxt: CompileContext<Labeled, AnnotationType.PARAMETER>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                     annotation = ctxt.annotation;

@@ -6,3 +6,6 @@
  * - Call this method with an empty array to call the original function with the given parameters.
  * **/
 export type JoinPoint = (args?: any[]) => any;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type AspectType = object;

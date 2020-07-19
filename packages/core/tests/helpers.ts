@@ -1,13 +1,13 @@
 import { LoadTimeWeaver } from '../src/weaver/load-time/load-time-weaver';
 import { AnnotationFactory } from '../src/annotation/factory/factory';
 import { setWeaver } from '../src/weaver/weaver';
+import { AspectType } from '../src/weaver/types';
 
 export interface Labeled {
     labels?: string[];
     addLabel?: (...args: any[]) => any;
 }
-
-export function setupWeaver(...aspects: object[]): void {
+export function setupWeaver(...aspects: AspectType[]): void {
     const weaver = new LoadTimeWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();

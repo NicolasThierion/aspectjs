@@ -110,7 +110,7 @@ describe('@Aspect', () => {
             expect(childMethodAdvice).toHaveBeenCalledTimes(1);
         });
 
-        describe('when child chall override advice of parent class', function() {
+        describe('when child chall override advice of parent class', function () {
             it('should not invoke parent advice', () => {
                 expect(parentMethodAdvice2).not.toHaveBeenCalled();
 
@@ -141,7 +141,7 @@ describe('given several @Aspects', () => {
                 @Compile(on.class.withAnnotations(AClass))
                 compileClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
                     const id = this.id;
-                    return function() {
+                    return function () {
                         labels.push(`${id}_compileClass`);
                     };
                 }
@@ -251,7 +251,6 @@ describe('given several @Aspects', () => {
 
             beforeEach(() => {
                 @AClass()
-                // eslint-disable-next-line @typescript-eslint/class-name-casing
                 class A_ {
                     @AProperty()
                     labels: string[];

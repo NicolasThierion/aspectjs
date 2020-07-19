@@ -27,14 +27,14 @@ export namespace AnnotationRef {
 
         Reflect.defineProperty(annotation, 'toString', {
             enumerable: false,
-            value: function() {
+            value: function () {
                 return `@${annotation.groupId}:${annotation.name}`;
             },
         });
 
         Reflect.defineProperty(annotation, Symbol.toPrimitive, {
             enumerable: false,
-            value: function() {
+            value: function () {
                 return `@${annotation.name}`;
             },
         });
@@ -63,7 +63,7 @@ export type Annotation<T extends AnnotationType> = (T extends AnnotationType.CLA
     ? ParameterAnnotation
     : T extends AnnotationType.PROPERTY
     ? PropertyAnnotation
-    : never) &
+    : never) & // eslint-disable-next-line @typescript-eslint/ban-types
     Function;
 
 type DecoratorType = ClassDecorator | MethodDecorator | ParameterDecorator | PropertyDecorator;

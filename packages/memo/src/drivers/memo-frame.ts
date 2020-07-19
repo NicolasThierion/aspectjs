@@ -35,7 +35,7 @@ export class MemoFrame<T = unknown> implements MemoMetaFrame {
     setAsyncValue<X>(value: Promise<X>): MemoFrame<X> {
         const frame = (this as any) as MemoFrame<X>;
         this._resolved = false;
-        this.async = value.then(v => {
+        this.async = value.then((v) => {
             frame.value = v;
             this._resolved = true;
             return (frame.value as any) as T;

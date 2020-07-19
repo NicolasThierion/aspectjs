@@ -77,7 +77,7 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
                             Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
                             return bound as Advice;
                         })
-                        .forEach(advice => {
+                        .forEach((advice) => {
                             _getAdvicesArray(
                                 pipeline,
                                 advice.pointcut.type,
@@ -133,11 +133,11 @@ export class LoadTimeWeaver extends WeaverProfile implements Weaver {
         const bundle = AnnotationBundleRegistry.of(ctxt.target).at(ctxt.target.location);
         const annotations = bundle.all();
 
-        const annotationKey = annotations.map(a => a.toString()).join(',');
+        const annotationKey = annotations.map((a) => a.toString()).join(',');
         return [
             ...getMetaOrDefault(`aspectjs.advicesForAnnotations(${phase},${annotationKey})`, ctxt.target.proto, () => {
                 return annotations
-                    .map(annotation => _getAdvicesArray(this._advices, ctxt.target.type, phase, annotation, false))
+                    .map((annotation) => _getAdvicesArray(this._advices, ctxt.target.type, phase, annotation, false))
                     .flat()
                     .sort((a1: Advice, a2: Advice) => {
                         const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
@@ -678,7 +678,7 @@ class JoinpointFactory<T> {
             throw new AspectError(ctxt as AdviceContext, `joinPoint already proceeded`);
         };
 
-        const jp = function(args?: any[]) {
+        const jp = function (args?: any[]) {
             args = args ?? defaultArgsProvider();
             if (!isArray(args)) {
                 throw new AspectError(ctxt as AdviceContext, `Joinpoint arguments expected to be array. Got: ${args}`);

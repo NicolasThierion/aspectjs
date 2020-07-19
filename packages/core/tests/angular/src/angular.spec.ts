@@ -1,22 +1,23 @@
 import {
-    getWeaver,
-    Aspect,
-    Compile,
-    on,
-    AfterContext,
-    AfterReturnContext,
-    AfterThrowContext,
-    AroundContext,
-    BeforeContext,
-    AnnotationType,
-    Before,
-    Around,
     After,
+    AfterContext,
     AfterReturn,
+    AfterReturnContext,
     AfterThrow,
-    LoadTimeWeaver,
-    setWeaver,
+    AfterThrowContext,
     AnnotationFactory,
+    AnnotationType,
+    Around,
+    AroundContext,
+    Aspect,
+    Before,
+    BeforeContext,
+    Compile,
+    getWeaver,
+    LoadTimeWeaver,
+    on,
+    setWeaver,
+    AspectType,
 } from '@aspectjs/core';
 
 export interface Labeled {
@@ -24,7 +25,7 @@ export interface Labeled {
     addLabel?: (...args: any[]) => any;
 }
 
-export function setupWeaver(...aspects: object[]): void {
+export function setupWeaver(...aspects: AspectType[]): void {
     const weaver = new LoadTimeWeaver().enable(...aspects);
     setWeaver(weaver);
     weaver.load();
@@ -73,7 +74,7 @@ describe('AspectJS', () => {
                 @Compile(on.class.withAnnotations(AClass))
                 compileClass(ctxt: BeforeContext<Labeled, AnnotationType.CLASS>) {
                     const id = this.id;
-                    return function() {
+                    return function () {
                         labels.push(`${id}_compileClass`);
                     };
                 }
@@ -181,7 +182,6 @@ describe('AspectJS', () => {
 
                 beforeEach(() => {
                     @AClass()
-                    // eslint-disable-next-line @typescript-eslint/class-name-casing
                     class A_ {
                         @AProperty()
                         labels: string[];

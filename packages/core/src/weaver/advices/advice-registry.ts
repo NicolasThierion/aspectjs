@@ -1,11 +1,12 @@
 import { Advice } from './types';
 import { assert, getMetaOrDefault, getProto } from '../../utils';
+import { AspectType } from '../types';
 
 const ADVICES_KEY = 'aspectjs.registry.aspect.advices';
 const ADVICES_REGISTRY_KEY = 'aspectjs.registry.aspect.advices.registry';
 
 export class AdvicesRegistry {
-    static create(aspect: object, ...advices: Advice[]) {
+    static create(aspect: AspectType, ...advices: Advice[]) {
         const advicesRegistry = getMetaOrDefault(ADVICES_REGISTRY_KEY, getProto(aspect), () =>
             _recursiveGetAdvicesForAspect(aspect),
         );
@@ -16,7 +17,7 @@ export class AdvicesRegistry {
             return advices;
         }, advicesRegistry);
     }
-    static getAdvicesForAspect(aspect: object): Advice[] {
+    static getAdvicesForAspect(aspect: AspectType): Advice[] {
         return getMetaOrDefault(ADVICES_KEY, getProto(aspect), () => {
             const advices = _recursiveGetAdvicesForAspect(aspect);
             assert(!!Object.values(advices).length, `Aspect ${aspect.constructor.name} does not define any advice`);
@@ -26,7 +27,7 @@ export class AdvicesRegistry {
     }
 }
 
-function _recursiveGetAdvicesForAspect(aspect: object): Record<string, Advice> {
+function _recursiveGetAdvicesForAspect(aspect: AspectType): Record<string, Advice> {
     return getMetaOrDefault(ADVICES_REGISTRY_KEY, getProto(aspect), () => {
         const parentProto = Reflect.getPrototypeOf(getProto(aspect));
 

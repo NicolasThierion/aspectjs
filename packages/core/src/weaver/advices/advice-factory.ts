@@ -2,7 +2,6 @@ import { Advice } from './types';
 import { assert, isFunction } from '../../utils';
 import { AdvicesRegistry } from './advice-registry';
 import { Pointcut, PointcutPhase } from './pointcut';
-import { WeavingError } from '../errors/weaving-error';
 import { AnnotationType } from '../../annotation/annotation.types';
 import { AdviceError } from '../errors/advice-error';
 
@@ -14,10 +13,10 @@ export class AdviceFactory {
                 pointcut.ref.startsWith('property#set'),
         );
 
-        return function(aspect: any, propertyKey: string | symbol) {
+        return function (aspect: any, propertyKey: string | symbol) {
             assert(isFunction(aspect[propertyKey]));
 
-            const advice = function(...args: any[]) {
+            const advice = function (...args: any[]) {
                 return aspect[propertyKey].bind(this)(...args);
             } as Advice;
             advice.pointcut = pointcut;

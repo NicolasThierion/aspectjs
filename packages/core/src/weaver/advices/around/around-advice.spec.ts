@@ -271,7 +271,7 @@ describe('@Around advice', () => {
         describe('that leverage "around" advice', () => {
             beforeEach(() => {
                 aroundAdvice = jasmine
-                    .createSpy('aroundAdvice', function(ctxt, jp) {
+                    .createSpy('aroundAdvice', function (ctxt, jp) {
                         return jp();
                     })
                     .and.callThrough();
@@ -402,7 +402,7 @@ describe('@Around advice', () => {
         describe('that leverage "around" advice', () => {
             beforeEach(() => {
                 aroundAdvice = jasmine
-                    .createSpy('aroundAdvice', function(ctxt, jp) {
+                    .createSpy('aroundAdvice', function (ctxt, jp) {
                         return jp();
                     })
                     .and.callThrough();
@@ -532,7 +532,7 @@ describe('@Around advice', () => {
         describe('that leverage "around" advice', () => {
             beforeEach(() => {
                 aroundAdvice = jasmine
-                    .createSpy('aroundAdvice', function(ctxt, jp) {
+                    .createSpy('aroundAdvice', function (ctxt, jp) {
                         return jp();
                     })
                     .and.callThrough();
@@ -547,7 +547,7 @@ describe('@Around advice', () => {
 
                 it('should return the value returned by the advice', () => {
                     aroundAdvice = jasmine
-                        .createSpy('aroundAdvice', function(ctxt, jp) {
+                        .createSpy('aroundAdvice', function (ctxt, jp) {
                             return ['newValue'];
                         })
                         .and.callThrough();

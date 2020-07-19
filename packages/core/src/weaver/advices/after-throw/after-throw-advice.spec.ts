@@ -3,11 +3,9 @@ import { AfterThrow } from './after-throw.decorator';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../tests/helpers';
 import { Compile } from '../compile/compile.decorator';
-import { WeavingError } from '../../errors/weaving-error';
 import { Aspect } from '../aspect';
-import Spy = jasmine.Spy;
 import { AnnotationType } from '../../../annotation/annotation.types';
-import { AdviceError } from '../../errors/advice-error';
+import Spy = jasmine.Spy;
 
 const thrownError = new Error('expected');
 
@@ -15,7 +13,7 @@ describe('@AfterThrow advice', () => {
     let afterThrowAdvice: Spy;
     let adviceError: Error;
     beforeEach(() => {
-        afterThrowAdvice = jasmine.createSpy('afterThrowAdvice', function() {}).and.callThrough();
+        afterThrowAdvice = jasmine.createSpy('afterThrowAdvice', function () {}).and.callThrough();
         adviceError = undefined;
     });
 
@@ -42,7 +40,7 @@ describe('@AfterThrow advice', () => {
                 let A: any;
                 beforeEach(() => {
                     afterThrowAdvice = jasmine
-                        .createSpy('afterThrowAdvice', function(
+                        .createSpy('afterThrowAdvice', function (
                             ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>,
                             error: Error,
                         ) {
@@ -54,7 +52,6 @@ describe('@AfterThrow advice', () => {
                         .and.callThrough();
 
                     @AClass()
-                    // eslint-disable-next-line @typescript-eslint/class-name-casing
                     class A_ implements Labeled {
                         public labels: string[];
 

@@ -6,7 +6,7 @@ describe('PointcutExpression', () => {
         return;
     });
 
-    describe('for a property getter', function() {
+    describe('for a property getter', function () {
         it('should toString the property name', () => {
             expect(on.property.toString()).toEqual('property#get *');
         });

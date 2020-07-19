@@ -99,10 +99,10 @@ describe('given a class', () => {
             it('should return all annotations', () => {
                 const annotations = AnnotationFactory.getBundle(A).all();
                 expect(annotations.length).toEqual(4);
-                expect(annotations.map(c => c.name)).toContain(AClassDecorator.name);
-                expect(annotations.map(c => c.name)).toContain(AMethodDecorator.name);
-                expect(annotations.map(c => c.name)).toContain(AParameterDecorator.name);
-                expect(annotations.map(c => c.name)).toContain(APropertyDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(AClassDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(AMethodDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(AParameterDecorator.name);
+                expect(annotations.map((c) => c.name)).toContain(APropertyDecorator.name);
             });
         });
         describe('method "bundle.all(annotationName)"', () => {
@@ -148,11 +148,7 @@ describe('given a class', () => {
         describe('method bundle.at()', () => {
             describe('given no argument', () => {
                 it('should return an empty array', () => {
-                    expect(
-                        AnnotationFactory.getBundle(A)
-                            .at(undefined)
-                            .all(),
-                    ).toEqual([]);
+                    expect(AnnotationFactory.getBundle(A).at(undefined).all()).toEqual([]);
                 });
             });
         });

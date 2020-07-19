@@ -86,7 +86,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
             });
         });
 
-        describe('with null arguments', function() {
+        describe('with null arguments', function () {
             beforeEach(() => {
                 methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => {}).and.callThrough();
             });
@@ -95,7 +95,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
             });
         });
 
-        describe('with null return value', function() {
+        describe('with null return value', function () {
             beforeEach(() => {
                 methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => null).and.callThrough();
             });

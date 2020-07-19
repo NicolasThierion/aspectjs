@@ -7,6 +7,7 @@ export class ObjectMarshaller extends MemoMarshaller {
     readonly modes: MemoMarshallerMode.SYNC;
     readonly types = ['Object', 'object'];
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     marshal(frame: MemoFrame<object>, context: MarshallingContext): MemoFrame<object> {
         assert(!!frame.type);
         if (!frame.value) {
@@ -25,6 +26,7 @@ export class ObjectMarshaller extends MemoMarshaller {
                 }, {} as any),
         );
     }
+    // eslint-disable-next-line @typescript-eslint/ban-types
     unmarshal(frame: MemoFrame<object>, context: UnmarshallingContext): object {
         if (frame.value === null) {
             return null;

@@ -74,8 +74,8 @@ describe('AfterReturnContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
             });
             it('should be shared across two @AfterReturn advices on the same class', () => {
                 @AClass()
@@ -154,9 +154,9 @@ describe('AfterReturnContext', () => {
                     @AClass()
                     @BClass()
                     class Test {}
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                     new Test();
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
                 });
             });
 
@@ -169,7 +169,7 @@ describe('AfterReturnContext', () => {
                     @BClass()
                     @AClass()
                     class Test {}
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                     new Test();
                     expect(afterReturnAAdvice).toHaveBeenCalled();
                 });
@@ -233,9 +233,9 @@ describe('AfterReturnContext', () => {
                     prop: any;
                 }
 
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                 new Test().prop;
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
                 expect(data.advices).toEqual(['afterReturnA', 'afterReturnB']);
             });
 
@@ -249,17 +249,17 @@ describe('AfterReturnContext', () => {
                 }
                 const t = new Test();
 
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).not.toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
                 t.prop1;
                 t.prop2;
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(f => expect(f).toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterReturnB']);
             });
 
             it('should be shared between a @AfterReturn and a @After advice on the same property', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     @AProperty()
@@ -267,11 +267,11 @@ describe('AfterReturnContext', () => {
                     prop: any;
                 }
 
-                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach(f =>
+                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach((f) =>
                     expect(f).not.toHaveBeenCalled(),
                 );
                 new Test().prop;
-                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach(f =>
+                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach((f) =>
                     expect(f).toHaveBeenCalled(),
                 );
                 expect(data.advices).toEqual(['afterReturnA', 'afterReturnB', 'afterA', 'afterB']);
@@ -327,9 +327,9 @@ describe('AfterReturnContext', () => {
                         @BProperty()
                         prop: any;
                     }
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().prop;
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 
@@ -344,9 +344,9 @@ describe('AfterReturnContext', () => {
                         @AProperty()
                         prop: any;
                     }
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().prop;
-                    [afterReturnAAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterReturnAAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
         });
@@ -407,9 +407,9 @@ describe('AfterReturnContext', () => {
                     @BProperty()
                     prop: any;
                 }
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 new Test().prop = 'toto';
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 expect(data.advices).toEqual(['afterReturnA', 'afterReturnB']);
             });
 
@@ -423,29 +423,29 @@ describe('AfterReturnContext', () => {
                     prop2: any;
                 }
 
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 const t = new Test();
                 t.prop1 = 'toto';
                 t.prop2 = 'toto';
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterReturnB']);
             });
 
             it('should be shared between a @AfterReturn and a @After advice on the same property', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     @AProperty()
                     @BProperty()
                     prop: any;
                 }
-                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach(fn =>
+                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach((fn) =>
                     expect(fn).not.toHaveBeenCalled(),
                 );
                 new Test().prop = '';
-                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach(fn =>
+                [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach((fn) =>
                     expect(fn).toHaveBeenCalled(),
                 );
                 expect(data.advices).toEqual(['afterReturnA', 'afterReturnB', 'afterA', 'afterB']);
@@ -568,8 +568,8 @@ describe('AfterReturnContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
             });
 
             it('should be shared across two @AfterReturn advices on the same method', () => {
@@ -578,9 +578,9 @@ describe('AfterReturnContext', () => {
                     @BMethod()
                     someMethod(): any {}
                 }
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 new Test().someMethod();
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterReturnA', 'afterReturnB']);
             });
@@ -595,18 +595,18 @@ describe('AfterReturnContext', () => {
                     method2(): any {}
                 }
 
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                 const t = new Test();
                 t.method1();
                 t.method2();
-                [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
 
                 expect(data.advices).toEqual(['afterReturnB']);
             });
 
             it('should be shared between a @AfterReturn and a @After advice on the same method', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     @AMethod()
@@ -668,9 +668,9 @@ describe('AfterReturnContext', () => {
                         method(): any {}
                     }
 
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().method();
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 
@@ -736,8 +736,8 @@ describe('AfterReturnContext', () => {
             beforeEach(() => {
                 data = null;
 
-                afterReturnAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnA'));
-                afterReturnBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterReturnB'));
+                afterReturnAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnA'));
+                afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
             });
             it('should be shared across two @AfterReturn advices on the same parameter', () => {
                 class Test {
@@ -759,8 +759,8 @@ describe('AfterReturnContext', () => {
             });
 
             it('should be shared between a @AfterReturn and a @After advice on the same parameters', () => {
-                afterAAdvice.and.callFake(ctxt => pushData(ctxt, 'afterA'));
-                afterBAdvice.and.callFake(ctxt => pushData(ctxt, 'afterB'));
+                afterAAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterA'));
+                afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
                     someMethod(@AParameter() @BParameter() param: any): any {}
@@ -816,9 +816,9 @@ describe('AfterReturnContext', () => {
                         someMethod(@AParameter() @BParameter() param: any): any {}
                     }
 
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).not.toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
                     new Test().someMethod('');
-                    [afterReturnAAdvice, afterReturnBAdvice].forEach(fn => expect(fn).toHaveBeenCalled());
+                    [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).toHaveBeenCalled());
                 });
             });
 

@@ -8,6 +8,7 @@ import { MemoAspect } from '../../memo.aspect';
 import { IdbMemoDriver } from './idb-memo.driver';
 import { LsMemoDriver } from '../localstorage/localstorage.driver';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const idb = require('fake-indexeddb') as typeof indexedDB;
 
 interface Runner {

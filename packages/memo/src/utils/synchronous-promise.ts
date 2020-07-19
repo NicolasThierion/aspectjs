@@ -6,7 +6,7 @@ export class SynchronousPromise<T = any> implements PromiseLike<T> {
     constructor(private _value: T, private _promise?: Promise<T>, private _error?: any) {
         if (this._promise) {
             this._resolved = false;
-            this._promise.then(r => {
+            this._promise.then((r) => {
                 this._resolved = true;
                 this._value = r;
                 return r;

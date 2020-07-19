@@ -70,14 +70,14 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
 
         const holders = this._getContextHolders(ctxt.target, true);
 
-        holders.forEach(holder => {
+        holders.forEach((holder) => {
             AnnotationLocationFactory.create(ctxt.target);
             getOrDefault(holder.byAnnotationName, name, () => []).push(ctxt);
             holder.all.push(ctxt as ClassAnnotationContext<T>);
         });
 
         if (ctxt.target.type === AnnotationType.PARAMETER) {
-            holders.forEach(h => {
+            holders.forEach((h) => {
                 h.all = h.all.sort((d1, d2) => d1.target.parameterIndex - d2.target.parameterIndex);
                 h.byAnnotationName[name] = h.byAnnotationName[name].sort(
                     (d1, d2) => d1.target.parameterIndex - d2.target.parameterIndex,
@@ -174,7 +174,7 @@ class AnnotationContextSelectorImpl<T, A extends AnnotationType> implements Anno
 
 // TODO turn into aspect
 function Enumerable(value: boolean): PropertyDecorator {
-    return function(target: any, propertyKey: string) {
+    return function (target: any, propertyKey: string) {
         const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey) ?? {};
         if (descriptor.enumerable !== value) {
             descriptor.enumerable = value;

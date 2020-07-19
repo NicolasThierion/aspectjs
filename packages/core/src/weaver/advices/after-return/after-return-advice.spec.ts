@@ -11,7 +11,7 @@ import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../../te
 describe('@AfterReturn advice', () => {
     let afterReturn: Spy;
     beforeEach(() => {
-        afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {}).and.callThrough();
+        afterReturn = jasmine.createSpy('afterReturnAdvice', function (ctxt) {}).and.callThrough();
     });
     describe('applied on some class', () => {
         beforeEach(() => {
@@ -26,7 +26,7 @@ describe('@AfterReturn advice', () => {
             }
 
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     ctxt.instance.labels = ctxt.instance.labels ?? [];
                     ctxt.instance.labels.push('AClass');
                 })
@@ -97,7 +97,7 @@ describe('@AfterReturn advice', () => {
     describe('applied on a property', () => {
         beforeEach(() => {
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
@@ -201,7 +201,7 @@ describe('@AfterReturn advice', () => {
     describe('applied on a property setter', () => {
         beforeEach(() => {
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
@@ -263,7 +263,7 @@ describe('@AfterReturn advice', () => {
                 }
                 a = new A();
 
-                afterReturn = jasmine.createSpy('afterReturnAdvice', function(ctxt) {});
+                afterReturn = jasmine.createSpy('afterReturnAdvice', function (ctxt) {});
             });
 
             it('should call the aspect', () => {
@@ -309,7 +309,7 @@ describe('@AfterReturn advice', () => {
     describe('applied on a method', () => {
         beforeEach(() => {
             afterReturn = jasmine
-                .createSpy('afterReturnAdvice', function(ctxt) {
+                .createSpy('afterReturnAdvice', function (ctxt) {
                     return ctxt.value;
                 })
                 .and.callThrough();
@@ -359,7 +359,7 @@ describe('@AfterReturn advice', () => {
                 a = new A();
 
                 afterReturn = jasmine
-                    .createSpy('afterReturnAdvice', function(ctxt, _returnValue) {
+                    .createSpy('afterReturnAdvice', function (ctxt, _returnValue) {
                         returnValue = _returnValue;
                         return ctxt.value.concat('afterReturn');
                     })

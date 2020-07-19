@@ -45,7 +45,7 @@ export class AnnotationFactory {
         const groupId = this._groupId;
 
         // create the annotation (ie: decorator provider)
-        const annotation = function(...annotationArgs: any[]): Decorator {
+        const annotation = function (...annotationArgs: any[]): Decorator {
             const decorator = _createDecorator(annotation as any, annotationArgs);
             _createAnnotationRef(decorator, annotationStub, groupId);
 
@@ -78,14 +78,14 @@ function _createAnnotationRef<A extends Annotation<AnnotationType>, D extends De
     annotation.groupId = groupId;
     Reflect.defineProperty(annotation, 'toString', {
         enumerable: false,
-        value: function() {
+        value: function () {
             return `@${annotation.groupId}:${annotation.name}`;
         },
     });
 
     Reflect.defineProperty(annotation, Symbol.toPrimitive, {
         enumerable: false,
-        value: function() {
+        value: function () {
             return `@${annotation.name}`;
         },
     });
@@ -121,7 +121,7 @@ function _createDecorator<A extends AnnotationType>(annotation: Annotation<A>, a
         [AnnotationType.PARAMETER]: _createParameterDecoration,
     };
 
-    return function(...targetArgs: any[]): Function | PropertyDescriptor | void {
+    return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
         // assert the weaver is loaded before invoking the underlying decorator
         const weaver = getWeaver();
 
@@ -194,12 +194,10 @@ function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, AnnotationType.C
         () => ctxt.target.proto.constructor,
     );
 
-    getWeaver()
-        .load()
-        .class[PointcutPhase.COMPILE](ctxt);
+    getWeaver().load().class[PointcutPhase.COMPILE](ctxt);
     const ctorName = ctxt.target.proto.constructor.name;
 
-    const ctor = function(...ctorArgs: any[]): T {
+    const ctor = function (...ctorArgs: any[]): T {
         const runner = getWeaver().load();
 
         ctxt.args = ctorArgs;
@@ -263,9 +261,7 @@ function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AnnotationType.P
         ctxt.target.propertyKey,
     );
     const refDescriptor = {
-        ...(getWeaver()
-            .load()
-            .property[PointcutPhase.COMPILE](ctxt) ?? ctxt.target.descriptor),
+        ...(getWeaver().load().property[PointcutPhase.COMPILE](ctxt) ?? ctxt.target.descriptor),
     };
 
     if ((refDescriptor as Record<string, any>).hasOwnProperty('value')) {
@@ -279,7 +275,7 @@ function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AnnotationType.P
     let newDescriptor = {
         ...refDescriptor,
     };
-    newDescriptor.get = function() {
+    newDescriptor.get = function () {
         const runner = getWeaver().load();
         ctxt.args = [];
         const r = runner.property.getter;
@@ -300,7 +296,7 @@ function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AnnotationType.P
     };
 
     if (_isWritable(newDescriptor)) {
-        newDescriptor.set = function(...args: any[]) {
+        newDescriptor.set = function (...args: any[]) {
             const r = getWeaver().load().property.setter;
             try {
                 ctxt.args = args;
@@ -353,16 +349,15 @@ function _createMethodDecoration(ctxt: AdviceContextImpl<any, AnnotationType.MET
 
     // invoke compile method or get default descriptor
     const refDescriptor =
-        getWeaver()
-            .load()
-            .method[PointcutPhase.COMPILE](ctxt) ?? Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey);
+        getWeaver().load().method[PointcutPhase.COMPILE](ctxt) ??
+        Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey);
 
     assert(!!refDescriptor);
 
     Reflect.defineMetadata('aspectjs.refDescriptor', refDescriptor, target.proto, ctxt.target.propertyKey);
 
     const newDescriptor = { ...refDescriptor };
-    newDescriptor.value = function(...args: any[]) {
+    newDescriptor.value = function (...args: any[]) {
         const r = getWeaver().load().method;
         try {
             ctxt.args = args;
@@ -398,7 +393,7 @@ function _createParameterDecoration(ctxt: AdviceContextImpl<any, AnnotationType.
     // Return value of parameter decorators is ignored
     // Moreover, Reflect.decorate will overwrite any changes made on proto[propertyKey]
     // We monkey patch Object.defineProperty to prevent this;
-    Object.defineProperty = function(o: any, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>) {
+    Object.defineProperty = function (o: any, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>) {
         if (o === ctxt.target.proto && p === ctxt.target.propertyKey) {
             // prevent writing back old descriptor
             Object.defineProperty = _defineProperty;
