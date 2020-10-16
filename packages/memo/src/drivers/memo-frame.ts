@@ -1,7 +1,7 @@
 export interface MemoMetaFrame {
     type?: string;
     instanceType?: string;
-    expiry?: Date;
+    expiration?: Date;
     version?: string;
 }
 
@@ -12,7 +12,7 @@ export interface MemoMetaFrame {
 export class MemoFrame<T = unknown> implements MemoMetaFrame {
     type?: string;
     instanceType?: string;
-    expiry?: Date;
+    expiration?: Date;
     version?: string;
     value: T;
     private _resolved: boolean;

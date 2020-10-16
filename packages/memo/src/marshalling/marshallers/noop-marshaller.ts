@@ -1,4 +1,4 @@
-import { MemoFrame } from '../drivers/memo-frame';
+import { MemoFrame } from '../../drivers/memo-frame';
 import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
 
 export abstract class NoopMarshaller extends MemoMarshaller {

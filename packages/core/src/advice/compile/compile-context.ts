@@ -3,7 +3,7 @@ import { AnnotationContext } from '../../annotation/context/context';
 import { AnnotationTarget } from '../../annotation/target/annotation-target';
 import { CompileAdvice } from '../types';
 
-export interface CompileContext<T, A extends AnnotationType> {
+export interface CompileContext<T = unknown, A extends AnnotationType = any> {
     /** The annotation context **/
     readonly annotation: AnnotationContext<T, A>;
     /** The symbol targeted by this advice (class, method, property or parameter **/

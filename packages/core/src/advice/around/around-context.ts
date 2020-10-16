@@ -4,7 +4,7 @@ import { AnnotationTarget } from '../../annotation/target/annotation-target';
 import { JoinPoint } from '../../weaver/types';
 import { AroundAdvice } from '../types';
 
-export interface AroundContext<T, A extends AnnotationType> {
+export interface AroundContext<T = unknown, A extends AnnotationType = any> {
     /** The annotation context **/
     readonly annotation: AnnotationContext<T, A>;
     /** The 'this' instance bound to the current execution context **/

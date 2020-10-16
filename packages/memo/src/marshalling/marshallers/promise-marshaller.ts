@@ -1,6 +1,6 @@
-import { MemoFrame } from '../drivers/memo-frame';
-import { UnmarshallingContext, MarshallingContext } from '../memo.types';
+import { MemoFrame } from '../../drivers/memo-frame';
 import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
+import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
 export class PromiseMarshaller extends MemoMarshaller<Promise<any>, any> {
     readonly modes = [MemoMarshallerMode.ASYNC, MemoMarshallerMode.SYNC];

@@ -9,11 +9,12 @@ export class MemoKey {
     public readonly argsKey: string;
     private readonly _strValue: string;
 
-    constructor(key: Omit<MemoKey, '_strValue'>) {
-        this.namespace = key.namespace;
+    constructor(key: Omit<MemoKey, '_strValue'>, namespace?: string) {
+        this.namespace = namespace ?? key.namespace;
         this.targetKey = key.targetKey;
         this.instanceId = key.instanceId;
         this.argsKey = key.argsKey;
+        // TODO murmurhash this key after namespace
         this._strValue = `${KEY_IDENTIFIER}:${this.namespace}/{${this.targetKey}#${this.instanceId}}(${this.argsKey})`;
     }
 
@@ -33,20 +34,6 @@ export class MemoKey {
 
 export interface MemoEntry<T = any> {
     readonly key: MemoKey;
-    readonly value: T;
-    readonly expiry?: Date;
-}
-
-export interface MarshallingContext<T = unknown> {
-    key: MemoKey;
-    blacklist?: Map<any, MemoFrame<T>>;
-    defaultMarshal(value: T): MemoFrame<T>;
-    readonly async: Promise<any>[]; // marshalling will wait until these promises are resolved
-}
-
-export interface UnmarshallingContext {
-    key: MemoKey;
-    blacklist?: Map<MemoFrame, any>;
-    defaultUnmarshal<T>(frame: MemoFrame<T>): T;
-    readonly async: Promise<any>[]; // unmarshalling will wait until these promises are resolved
+    readonly frame: MemoFrame<T>;
+    readonly expiration?: Date;
 }

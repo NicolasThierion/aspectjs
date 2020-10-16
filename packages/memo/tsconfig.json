@@ -15,5 +15,6 @@
     "node_modules/@types/node/globals.d.ts",
     "./pubxlic_api.ts",
     "./memo.ts"
-  ]
+  ],
+  "exclude": ["*.spec.ts"]
 }

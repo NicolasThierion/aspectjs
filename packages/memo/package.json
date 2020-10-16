@@ -22,7 +22,7 @@
   },
   "peerDependencies": {
     "@aspectjs/core": "1.1.0",
-    "rxjs": "^6.5.5"
+    "rxjs": "^6.6.3"
   },
   "devDependencies": {
     "@aspectjs/core": "1.1.0",
@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@emotion/hash": "^0.8.0",
+    "fast-copy": "^2.1.0",
     "flatted": "^3.0.4",
     "lz-string": "^1.4.4",
     "murmurhash3js": "^3.0.1"

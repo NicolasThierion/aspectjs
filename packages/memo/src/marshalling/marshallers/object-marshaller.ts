@@ -1,7 +1,7 @@
-import { MemoFrame } from '../drivers/memo-frame';
-import { UnmarshallingContext, MarshallingContext } from '../memo.types';
-import { assert } from '../utils/utils';
+import { MemoFrame } from '../../drivers/memo-frame';
+import { assert } from '../../utils/utils';
 import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
+import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
 export class ObjectMarshaller extends MemoMarshaller {
     readonly modes: MemoMarshallerMode.SYNC;
@@ -9,7 +9,6 @@ export class ObjectMarshaller extends MemoMarshaller {
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     marshal(frame: MemoFrame<object>, context: MarshallingContext): MemoFrame<object> {
-        assert(!!frame.type);
         if (!frame.value) {
             return frame;
         }

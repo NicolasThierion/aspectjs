@@ -4,7 +4,6 @@ import { Memo } from '../../memo.annotation';
 import { JitWeaver, setWeaver } from '@aspectjs/core';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { MemoAspect } from '../../memo.aspect';
-import { DEFAULT_MARSHALLERS } from '../../profiles/default.profile';
 
 const DEFAULT_ARGS = ['a', 'b', 'c', 'd'];
 
@@ -30,7 +29,6 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
                         new MemoAspect().drivers(
                             new LsMemoDriver({
                                 serializer,
-                                marshallers: DEFAULT_MARSHALLERS,
                             }),
                         ),
                     )
@@ -85,7 +83,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
             });
         });
 
-        describe('with null arguments', function () {
+        describe('with null arguments', function() {
             beforeEach(() => {
                 methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => {}).and.callThrough();
             });
@@ -94,7 +92,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
             });
         });
 
-        describe('with null return value', function () {
+        describe('with null return value', function() {
             beforeEach(() => {
                 methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => null).and.callThrough();
             });

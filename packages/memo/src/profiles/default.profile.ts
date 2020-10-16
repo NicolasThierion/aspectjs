@@ -2,25 +2,6 @@ import { WeaverProfile } from '@aspectjs/core';
 import { IdbMemoDriver, LsMemoDriver, LzMemoSerializer } from '../drivers';
 import { DefaultCacheableAspect } from '../cacheable/cacheable.aspect';
 import { MemoAspect } from '../memo.aspect';
-import {
-    AnyMarshaller,
-    ArrayMarshaller,
-    BasicMarshaller,
-    DateMarshaller,
-    MemoMarshaller,
-    ObjectMarshaller,
-    PromiseMarshaller,
-} from '../marshallers';
-
-/** Default marshallers used bu the default profile */
-export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
-    new ObjectMarshaller(),
-    new ArrayMarshaller(),
-    new DateMarshaller(),
-    new PromiseMarshaller(),
-    new AnyMarshaller(),
-    new BasicMarshaller(),
-];
 
 /**
  * Weaver profile configured with
@@ -31,12 +12,9 @@ export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
 export const defaultMemoProfile = new WeaverProfile().enable(
     new MemoAspect().drivers(
         new LsMemoDriver({
-            marshallers: DEFAULT_MARSHALLERS,
             serializer: new LzMemoSerializer(),
         }),
-        new IdbMemoDriver({
-            marshallers: DEFAULT_MARSHALLERS,
-        }),
+        new IdbMemoDriver(),
     ),
     new DefaultCacheableAspect(),
 );

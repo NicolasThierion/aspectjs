@@ -1,5 +1,5 @@
 import { getWeaver } from '@aspectjs/core';
-import { MemoDriver, MemoDriverOptions } from '../memo.driver';
+import { MemoDriver } from '../memo.driver';
 import { MemoEntry, MemoKey } from '../../memo.types';
 import { assert, isPromise } from '../../utils/utils';
 import { MemoFrame, MemoMetaFrame } from '../memo-frame';
@@ -12,12 +12,15 @@ enum TransactionMode {
     READONLY = 'readonly',
     READ_WRITE = 'readwrite',
 }
-export interface IndexedDbDriverOptions extends MemoDriverOptions {
+export interface IndexedDbDriverOptions {
     indexedDB: typeof indexedDB;
     localStorageDriver: LsMemoDriver;
 }
 
 export class IdbMemoDriver extends MemoDriver {
+    static readonly NAME = 'indexedDb';
+    readonly NAME = IdbMemoDriver.NAME;
+
     static readonly DATABASE_NAME = 'IndexedDbMemoAspect_db';
     static readonly STORE_NAME = 'results';
     static readonly DATABASE_VERSION = 1; // change this value whenever a backward-incompatible change is made to the store
@@ -26,7 +29,7 @@ export class IdbMemoDriver extends MemoDriver {
     private _localStorageDriver: MemoDriver;
 
     constructor(protected _params: Partial<IndexedDbDriverOptions> = {}) {
-        super(_params);
+        super();
         this._init$ = this._openDb();
     }
 
@@ -37,10 +40,6 @@ export class IdbMemoDriver extends MemoDriver {
     private get _ls(): MemoDriver {
         this._localStorageDriver = this._findLsDriver();
         return this._localStorageDriver;
-    }
-
-    get NAME(): 'indexedDb' {
-        return 'indexedDb';
     }
 
     getKeys(namespace: string): Promise<MemoKey[]> {
@@ -73,16 +72,16 @@ export class IdbMemoDriver extends MemoDriver {
     }
 
     read<T>(key: MemoKey): MemoFrame<T> {
-        const meta = this._ls.getValue(key);
+        const meta = this._ls.getValue(metaKey(key));
 
         if (!meta) {
             return null;
         }
 
-        assert(!!meta.value.type);
+        assert(!!meta.frame.type);
         const frame = new MemoFrame<T>({
             ...meta,
-            ...meta.value,
+            ...meta.frame,
         }).setAsyncValue(this._runTransactional((tx) => tx.get(key.toString())).then((frame) => frame.value));
 
         this._scheduler.add(meta.key.toString(), () => frame.async);
@@ -103,12 +102,12 @@ export class IdbMemoDriver extends MemoDriver {
     }
 
     write(key: MemoKey, frame: MemoFrame): Promise<any> {
-        const { value, expiry, ...metaFrame } = frame;
+        const { value, expiration, ...metaFrame } = frame;
 
         const metaEntry: MemoEntry<MemoMetaFrame> = {
-            key,
-            expiry,
-            value: metaFrame,
+            key: metaKey(key),
+            expiration: expiration,
+            frame: metaFrame as MemoFrame,
         };
         // store only the Memo without its value
         this._ls.setValue(metaEntry);
@@ -165,4 +164,8 @@ export class IdbMemoDriver extends MemoDriver {
         }
         return drivers['localStorage'];
     }
+}
+
+function metaKey(key: MemoKey) {
+    return new MemoKey(key, `${key.namespace}[idb_meta]`);
 }

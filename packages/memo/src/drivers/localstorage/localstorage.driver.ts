@@ -1,4 +1,4 @@
-import { MemoDriver, MemoDriverOptions } from '../memo.driver';
+import { MemoDriver } from '../memo.driver';
 import { MemoKey } from '../../memo.types';
 import { parse, stringify } from 'flatted';
 import { MemoFrame } from '../memo-frame';
@@ -10,7 +10,7 @@ export interface LsMemoSerializer<T = unknown, U = unknown> {
     serialize(obj: MemoFrame<T>): string;
 }
 
-export interface LsMemoDriverOptions extends MemoDriverOptions {
+export interface LsMemoDriverOptions {
     localStorage?: typeof localStorage;
     serializer?: LsMemoSerializer;
 }
@@ -19,7 +19,7 @@ enum RawMemoField {
     VALUE,
     TYPE,
     INSTANCE_TYPE,
-    EXPIRY,
+    EXPIRATION,
     VERSION,
 }
 const F = RawMemoField;
@@ -35,7 +35,7 @@ export const DEFAULT_LS_DRIVER_OPTIONS = {
                 value: raw[F.VALUE],
                 type: raw[F.TYPE],
                 instanceType: raw[F.INSTANCE_TYPE],
-                expiry: raw[F.EXPIRY] ? new Date(raw[F.EXPIRY]) : undefined,
+                expiration: raw[F.EXPIRATION] ? new Date(raw[F.EXPIRATION]) : undefined,
                 version: raw[F.VERSION],
             });
         },
@@ -51,8 +51,8 @@ export const DEFAULT_LS_DRIVER_OPTIONS = {
             if (!isUndefined(obj.instanceType)) {
                 raw[F.INSTANCE_TYPE] = obj.instanceType;
             }
-            if (!isUndefined(obj.expiry)) {
-                raw[F.EXPIRY] = obj.expiry;
+            if (!isUndefined(obj.expiration)) {
+                raw[F.EXPIRATION] = obj.expiration;
             }
             if (!isUndefined(obj.version)) {
                 raw[F.VERSION] = obj.version;
@@ -63,12 +63,14 @@ export const DEFAULT_LS_DRIVER_OPTIONS = {
 };
 
 export class LsMemoDriver extends MemoDriver {
+    static readonly NAME = 'localStorage';
+    readonly NAME = LsMemoDriver.NAME;
+
     protected readonly _options: LsMemoDriverOptions;
-    readonly NAME = 'localStorage';
 
     constructor(options?: LsMemoDriverOptions) {
-        super({ ...DEFAULT_LS_DRIVER_OPTIONS, ...options });
-
+        super();
+        this._options = { ...DEFAULT_LS_DRIVER_OPTIONS, ...options };
         if (!this._ls) {
             throw new Error('localStorage not available on this platform, and no implementation was provided');
         }

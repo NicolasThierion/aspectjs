@@ -56,24 +56,18 @@ export class CacheTypeStoreImpl implements CacheTypeStore {
     }
 
     getTypeKey<T extends Prototype>(prototype: T): string {
-        const key = _generateTypeId(prototype);
-        if (!this._prototypes[key]) {
-            throw new TypeError(
-                `Cannot find cache key for object ${prototype.constructor.name}. Are you sure you are caching a class annotated with "@Cacheable()"?`,
-            );
-        }
-        return key;
+        return Reflect.getOwnMetadata('@aspectjs/cacheable:typekey', prototype);
     }
 
-    addPrototype<T extends Prototype>(proto: Prototype, key: string, version?: string): void {
-        if (this._prototypes[key] && this._prototypes[key] !== proto) {
+    addPrototype<T extends Prototype>(proto: Prototype, typeId: string, version?: string): void {
+        if (this._prototypes[typeId] && this._prototypes[typeId] !== proto) {
             throw new Error(
-                `Cannot add key for ${proto?.constructor?.name}: key already exists for ${this._prototypes[key]?.constructor?.name}`,
+                `Cannot call @Cacheable({typeId = ${typeId}}) on ${proto?.constructor?.name}: typeId is already assigned to ${this._prototypes[typeId]?.constructor?.name}`,
             );
         }
 
-        this._versions[key] = version;
-        this._prototypes[key] = proto;
+        this._versions[typeId] = version;
+        this._prototypes[typeId] = proto;
     }
 
     getVersion<T extends Prototype>(key: string): string {

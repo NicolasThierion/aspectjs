@@ -3,7 +3,7 @@ import { AnnotationContext } from '../../annotation/context/context';
 import { AnnotationTarget } from '../../annotation/target/annotation-target';
 import { BeforeAdvice } from '../types';
 
-export interface BeforeContext<T, A extends AnnotationType> {
+export interface BeforeContext<T = unknown, A extends AnnotationType = any> {
     /** The annotation context **/
     readonly annotation: AnnotationContext<T, A>;
     /** The 'this' instance bound to the current execution context **/

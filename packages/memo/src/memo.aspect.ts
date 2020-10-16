@@ -1,11 +1,35 @@
 import { MemoDriver } from './drivers/memo.driver';
-import { MemoKey } from './memo.types';
+import { MemoEntry, MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
-import { Around, AroundContext, Aspect, Before, BeforeContext, JoinPoint, on, AspectError } from '@aspectjs/core';
+import { Around, AroundContext, Aspect, AspectError, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
 import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils/utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
 import { x86 } from 'murmurhash3js';
+import { MarshallersRegistry } from './marshalling/marshallers-registry';
+import copy from 'fast-copy';
+import {
+    ArrayMarshaller,
+    BasicMarshaller,
+    CacheableMarshaller,
+    DateMarshaller,
+    MemoMarshaller,
+    ObjectMarshaller,
+    PromiseMarshaller,
+} from './marshalling/marshallers';
+import { InstantPromise } from './utils/instant-promise';
+import { MemoFrame } from './drivers';
+import { clone, Mutable } from '@aspectjs/core/src/utils';
+
+export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
+    new ObjectMarshaller(),
+    new ArrayMarshaller(),
+    new DateMarshaller(),
+    new PromiseMarshaller(),
+    new CacheableMarshaller(),
+    new BasicMarshaller(),
+];
+Object.freeze(DEFAULT_MARSHALLERS);
 
 const MEMO_ID_REFLECT_KEY = '@aspectjs:memo/id';
 let internalId = 0;
@@ -15,6 +39,7 @@ export interface MemoAspectOptions {
     expiration?: Date | number | (() => Date | number);
     id?: string | number | ((ctxt: BeforeContext<any, any>) => string | number);
     contextKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
+    marshallers?: MemoMarshaller[];
 }
 
 export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
@@ -36,6 +61,7 @@ export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
         });
     },
     expiration: undefined,
+    marshallers: DEFAULT_MARSHALLERS,
 };
 
 @Aspect('@aspectjs/memo')
@@ -44,9 +70,13 @@ export class MemoAspect {
     private readonly _drivers: Record<string, MemoDriver> = {};
     /** maps memo keys with its unregister function for garbage collector timeouts */
     private readonly _entriesGc: Record<string, number> = {};
+    private _marshallers: MarshallersRegistry;
+    private _pendingResults: Record<string, any> = {};
 
     constructor(params?: MemoAspectOptions) {
-        this._params = { ...params, ...DEFAULT_MEMO_ASPECT_OPTIONS };
+        this._params = { ...DEFAULT_MEMO_ASPECT_OPTIONS, ...params };
+        this._marshallers = new MarshallersRegistry();
+        this._marshallers.addMarshaller(...(this._params.marshallers ?? []));
     }
 
     getDrivers() {
@@ -66,9 +96,14 @@ export class MemoAspect {
                 );
             }
             this._drivers[d.NAME] = d;
+            d.marshallersRegistry = this._marshallers;
             this._initGc(d);
         });
         return this;
+    }
+
+    addMarshaller(...marshallers: MemoMarshaller[]): void {
+        this._marshallers.addMarshaller(...marshallers);
     }
 
     /**
@@ -95,12 +130,15 @@ export class MemoAspect {
         }
 
         const options = ctxt.annotation.args[0] as MemoOptions;
-        const expiry = this.getExpiry(ctxt, options);
+        const expiration = this.getExpiration(ctxt, options);
         const drivers = _selectCandidateDrivers(this._drivers, ctxt);
 
         const proceedJoinpoint = () => {
             // value not cached. Call the original method
             const value = jp();
+
+            const marshallingContext = this._marshallers.createMarshallingContext(key);
+
             const driver = drivers
                 .map((d) => [d, d.getPriority(value)])
                 .filter((dp) => dp[1] > 0)
@@ -110,30 +148,48 @@ export class MemoAspect {
             if (!driver) {
                 throw new AspectError(
                     ctxt,
-                    `Driver ${drivers[0].NAME} does not accept value ${value} returned by memoized method`,
+                    `Driver ${drivers[0].NAME} does not accept value ${value} returned by ${ctxt.target.label}`,
                 );
             }
-            /*value =  */ driver.setValue({
+
+            // promise resolution may not arrive in time in case the same method is called right after.
+            // store the result in a temporary variable in order to be available right away
+            const entry = {
                 key,
-                expiry,
-                value,
-            });
-            if (expiry) {
-                this._scheduleCleaner(driver, key, expiry);
+                expiration,
+                frame: undefined as MemoFrame,
+            } as Mutable<MemoEntry>;
+            this._pendingResults[key.toString()] = value;
+
+            // marshall the value into a frame
+            entry.frame = marshallingContext.marshal(value);
+
+            if (expiration) {
+                this._scheduleCleaner(driver, key, expiration);
             }
+
+            InstantPromise.all(...marshallingContext.async).then(() => {
+                driver.setValue(entry).then(() => {
+                    if (this._pendingResults[key.toString()] === value) {
+                        delete this._pendingResults[key.toString()];
+                    }
+                });
+            });
             return value;
         };
 
+        if (this._pendingResults[key.toString()]) {
+            return copy(this._pendingResults[key.toString()]);
+        }
         for (const d of drivers) {
             try {
-                const memo = d.getValue(key);
-                if (memo) {
-                    if (memo.expiry && memo.expiry < new Date()) {
+                const entry = d.getValue(key);
+                if (entry) {
+                    if (entry.expiration && entry.expiration < new Date()) {
                         // remove data if expired
                         this._removeValue(d, key);
                     } else {
-                        // getting value may trigger lazy deserialize that may produce errors.
-                        return memo.value;
+                        return this._marshallers.createUnmarshallingContext(key).unmarshal(entry.frame);
                     }
                 }
             } catch (e) {
@@ -145,6 +201,7 @@ export class MemoAspect {
                 }
             }
         }
+
         // found no driver for this value. Call the real method
         return proceedJoinpoint();
     }
@@ -153,6 +210,7 @@ export class MemoAspect {
         driver.remove(key);
         // get gc timeout handle
         const t = this._entriesGc[key.toString()];
+        delete this._pendingResults[key.toString()];
 
         if (t !== undefined) {
             // this entry is not eligible for gc
@@ -176,13 +234,13 @@ export class MemoAspect {
         driver.getKeys().then((keys) => {
             keys.forEach((k) => {
                 Promise.resolve(driver.getValue(k)).then((memo) => {
-                    this._scheduleCleaner(driver, k, memo.expiry);
+                    this._scheduleCleaner(driver, k, memo.expiration);
                 });
             });
         });
     }
 
-    private getExpiry(ctxt: AroundContext<any, any>, options: MemoOptions): Date | undefined {
+    private getExpiration(ctxt: AroundContext<any, any>, options: MemoOptions): Date | undefined {
         const exp = provider(options?.expiration)();
         if (exp) {
             if (exp instanceof Date) {

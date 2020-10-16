@@ -8,7 +8,7 @@ export * from './src/memo.types';
 export * from './src/cacheable/cacheable.annotation';
 export * from './src/cacheable/cacheable.aspect';
 export * from './src/drivers';
-export * from './src/marshallers';
+export * from './src/marshalling/marshallers';
 
 export function registerDefaultMemo() {
     getWeaver().enable(defaultMemoProfile);

@@ -11,13 +11,6 @@ interface Runner {
 }
 
 let processFn: (...args: any[]) => any;
-function _setupMemoAspect(...drivers: MemoDriver[]): void {
-    drivers.forEach((d) => {
-        spyOn(d, 'getValue');
-        spyOn(d, 'setValue');
-    });
-    setWeaver(new JitWeaver().enable(new MemoAspect().drivers(...drivers), new DefaultCacheableAspect()));
-}
 
 function _createRunner(driver?: typeof MemoDriver | string) {
     processFn = processFn ?? jasmine.createSpy('process');
@@ -69,7 +62,11 @@ describe('MemoAspect', () => {
         processFn = jasmine.createSpy('process');
         driver1 = new (class extends DummyDriver {})('driver1', 1);
         driver2 = new (class extends DummyDriver {})('driver2', 2);
-        _setupMemoAspect(driver1, driver2);
+        [driver1, driver2].forEach((d) => {
+            spyOn(d, 'getValue').and.callThrough();
+            spyOn(d, 'setValue').and.callThrough();
+        });
+        setWeaver(new JitWeaver().enable(new MemoAspect().drivers(driver1, driver2), new DefaultCacheableAspect()));
     });
     describe('given an advice', () => {
         describe('that do not specify driver type', () => {
@@ -119,7 +116,7 @@ describe('MemoAspect', () => {
                     it('should throw an error', () => {
                         expect(() => r.process()).toThrow(
                             new Error(
-                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by memoized method',
+                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method "RunnerImpl.process"',
                             ),
                         );
                     });
@@ -162,9 +159,11 @@ describe('MemoAspect', () => {
                     it('should throw an error', () => {
                         expect(() => r.process()).toThrow(
                             new Error(
-                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by memoized method',
+                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method "RunnerImpl.process"',
                             ),
                         );
+                        //    @Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method RunnerImpl.process
+                        //    @Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method "RunnerImpl.process"
                     });
                 });
             });

@@ -1,4 +1,4 @@
-import { UnmarshallingContext, MarshallingContext } from './memo.types';
+import { MarshallingContext, UnmarshallingContext } from './marshalling/marshalling-context';
 
 export class MemoAspectError extends Error {
     constructor(public readonly message: string) {

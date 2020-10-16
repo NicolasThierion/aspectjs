@@ -1,18 +1,29 @@
 import { getWeaver, WeavingError } from '@aspectjs/core';
-import { MemoFrame } from '../drivers/memo-frame';
-import { MarshallingContext, UnmarshallingContext } from '../memo.types';
-import { assert, provider } from '../utils/utils';
-import { VersionConflictError } from '../errors';
-import { CacheableAspect, CacheTypeStore } from '../cacheable/cacheable.aspect';
+import { MemoFrame } from '../../drivers/memo-frame';
+import { assert, provider } from '../../utils/utils';
+import { VersionConflictError } from '../../errors';
+import { CacheableAspect, CacheTypeStore } from '../../cacheable/cacheable.aspect';
 import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
 import { ObjectMarshaller } from './object-marshaller';
+import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
-export class AnyMarshaller extends MemoMarshaller {
+export class CacheableMarshaller extends MemoMarshaller {
     readonly modes: MemoMarshallerMode.SYNC;
     readonly types = '*';
+    private _objectMarshaller: ObjectMarshaller;
+    private _nonCacheableHandler: (proto: object) => void;
 
-    constructor(private _objectMarshaller = new ObjectMarshaller()) {
+    constructor(options?: { objectMarshaller: ObjectMarshaller; nonCacheableHandler: (proto: object) => void }) {
         super();
+        this._objectMarshaller = options?.objectMarshaller ?? new ObjectMarshaller();
+        this._nonCacheableHandler =
+            options?.nonCacheableHandler ??
+            ((proto) => {
+                const name = proto.constructor.name;
+                throw new TypeError(
+                    `Type "${name}" is not annotated with "@Cacheable()". Please add "@Cacheable()" on class "${name}", or register a proper MemeMarshaller fot the type.`,
+                );
+            });
     }
     marshal(frame: MemoFrame<object>, context: MarshallingContext): MemoFrame {
         // delete wrap.type; // Do not store useless type, as INSTANCE_TYPE is used for objects of non-built-in types.
@@ -20,6 +31,11 @@ export class AnyMarshaller extends MemoMarshaller {
 
         const ts = typeStore();
         const instanceType = ts.getTypeKey(proto);
+
+        if (!instanceType) {
+            this._nonCacheableHandler(proto);
+        }
+
         const newFrame = this._objectMarshaller.marshal(frame, context);
 
         newFrame.instanceType = instanceType;

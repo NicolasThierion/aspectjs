@@ -306,7 +306,7 @@ If you store an object and none of the configured marshaller is applicable, the 
 ## Features
 - synchronous or asynchronous
 - fast data compression
-- cache expiry
+- cache expiration
 
 [info]: ../../.README/picto/12px/info.png
 [tip]: ../../.README/picto/12px/success.png
