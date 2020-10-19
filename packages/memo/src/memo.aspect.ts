@@ -5,7 +5,7 @@ import { Around, AroundContext, Aspect, AspectError, Before, BeforeContext, Join
 import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils/utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
-import { x86 } from 'murmurhash3js';
+import { murmurhash } from './utils/murmurhash';
 import { MarshallersRegistry } from './marshalling/marshallers-registry';
 import copy from 'fast-copy';
 import {
@@ -19,7 +19,7 @@ import {
 } from './marshalling/marshallers';
 import { InstantPromise } from './utils/instant-promise';
 import { MemoFrame } from './drivers';
-import { clone, Mutable } from '@aspectjs/core/src/utils';
+import { Mutable } from '@aspectjs/core/src/utils';
 
 export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
     new ObjectMarshaller(),
@@ -56,7 +56,7 @@ export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
         return new MemoKey({
             namespace: ctxt.data.namespace,
             instanceId: ctxt.data.instanceId,
-            argsKey: x86.hash128(stringify(ctxt.args)),
+            argsKey: murmurhash(stringify(ctxt.args)),
             targetKey: ctxt.target.ref,
         });
     },
