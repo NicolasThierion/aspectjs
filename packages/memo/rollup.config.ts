@@ -1,9 +1,7 @@
 import { RollupOptions } from 'rollup';
-import { RollupConfigUtils } from '../build/build.utils';
+// @ts-ignore
+import { RollupConfigUtils } from '../../build/build.utils';
 
-const rollupOptions: RollupOptions[] = RollupConfigUtils.scanPackages('package.json').createRollupConfigs({
-    external: ['@aspectjs/core'],
-    input: ['memo.ts'],
-}).all;
+const rollupOptions: RollupOptions[] = RollupConfigUtils.package('package.json').withAll().getRollupConfigs();
 
 export default rollupOptions;

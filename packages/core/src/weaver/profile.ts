@@ -1,12 +1,13 @@
-import { isString } from '../utils';
-import { ASPECT_OPTIONS_REFLECT_KEY } from '../advice/aspect';
+import { getAspectOptions } from '../utils/utils';
+import { AspectType } from './types';
+import { assert, isObject, isString } from '@aspectjs/core/utils';
 
 let profileId = 0;
 
 export class WeaverProfile {
     public readonly name: string;
     protected _aspectsRegistry: {
-        [aspectId: string]: any;
+        [aspectId: string]: AspectType;
     } = {};
 
     constructor(name?: string) {
@@ -22,14 +23,19 @@ export class WeaverProfile {
         });
         return this;
     }
-    disable(...aspects: object[]): this {
+    disable(...aspects: (object | string)[]): this {
         aspects.forEach((p) => {
             if (p instanceof WeaverProfile) {
+                // disable profile
                 Object.values(p._aspectsRegistry).forEach((p) => this.disable(p));
-            } else {
+            } else if (isObject(p)) {
+                // disable aspect
                 this.setEnabled(p, false);
+            } else {
+                assert(isString(p));
+                // delete aspect by id
+                delete this._aspectsRegistry[p];
             }
-            Reflect.defineMetadata('@aspectjs/aspect:enabled', false, p);
         });
         return this;
     }
@@ -37,47 +43,33 @@ export class WeaverProfile {
         this._aspectsRegistry = {};
         return this;
     }
-    setEnabled(aspect: object, enabled: boolean): this {
-        const id = _getAspectId(aspect);
+    setEnabled(aspect: AspectType, enabled: boolean): this {
+        const id = getAspectOptions(aspect).id;
         if (enabled) {
             // avoid enabling an aspect twice
-            if (!Reflect.getOwnMetadata('@aspectjs/aspect:enabled', aspect)) {
-                const oldAspect = this._aspectsRegistry[id];
-                if (oldAspect) {
-                    console.warn(
-                        `Aspect ${aspect.constructor.name} overrides aspect "${
-                            oldAspect?.constructor.name ?? 'unknown'
-                        }" already registered for name ${id}`,
-                    );
-                }
-                Reflect.defineMetadata('@aspectjs/aspect:enabled', false, aspect);
-
-                this._aspectsRegistry[id] = aspect;
+            const oldAspect = this._aspectsRegistry[id];
+            if (oldAspect && oldAspect !== aspect) {
+                console.warn(
+                    `Aspect ${aspect.constructor.name} overrides aspect "${
+                        oldAspect?.constructor.name ?? 'unknown'
+                    }" already registered for name ${id}`,
+                );
             }
+
+            this._aspectsRegistry[id] = aspect;
         } else {
             delete this._aspectsRegistry[id];
         }
 
         return this;
     }
-    getAspect(aspectId: string) {
-        return this._aspectsRegistry[aspectId];
-    }
-}
+    getAspect(aspect: string | AspectType): AspectType | undefined {
+        // TODO should accept aspect class as well
 
-let _globalAspectId = 0;
-
-function _getAspectId(obj: object): string {
-    const options = Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, obj.constructor);
-    if (!options) {
-        throw new TypeError(`${obj.constructor.name} is not an Aspect`);
-    }
-    if (!options.id) {
-        return `AnonymousAspect#${_globalAspectId++}`;
-    } else {
-        if (!isString(options.id)) {
-            throw new TypeError(`Aspect ${obj.constructor.name} should have a string id. Got: ${options.id}`);
+        if (isString(aspect)) {
+            return this._aspectsRegistry[aspect];
+        } else {
+            return this._aspectsRegistry[getAspectOptions(aspect).id];
         }
     }
-    return options.id;
 }

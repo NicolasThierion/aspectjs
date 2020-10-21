@@ -1,7 +1,7 @@
 import { AdviceContext, AfterThrowContext, CompileContext } from '../advice-context';
 import { AfterThrow } from './after-throw.decorator';
 import { on } from '../pointcut';
-import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Compile } from '../compile/compile.decorator';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../annotation/annotation.types';
@@ -10,10 +10,11 @@ import Spy = jasmine.Spy;
 const thrownError = new Error('expected');
 
 describe('@AfterThrow advice', () => {
-    let afterThrowAdvice: Spy;
+    let advice: Spy;
     let adviceError: Error;
+    let aspectClass: any;
     beforeEach(() => {
-        afterThrowAdvice = jasmine.createSpy('afterThrowAdvice', function () {}).and.callThrough();
+        advice = jasmine.createSpy('advice', function () {}).and.callThrough();
         adviceError = undefined;
     });
 
@@ -23,15 +24,13 @@ describe('@AfterThrow advice', () => {
             class AfterThrowAspect {
                 @AfterThrow(on.class.withAnnotations(AClass))
                 apply(ctxt: AfterThrowContext<any, AnnotationType.CLASS>, error: Error): void {
-                    expect(this).toEqual(jasmine.any(AfterThrowAspect));
-
                     expect(error).toEqual(ctxt.error);
                     adviceError = error;
 
-                    return afterThrowAdvice(ctxt, error);
+                    return advice.bind(this)(ctxt, error);
                 }
             }
-
+            aspectClass = AfterThrowAspect;
             setupWeaver(new AfterThrowAspect());
         });
 
@@ -39,17 +38,14 @@ describe('@AfterThrow advice', () => {
             describe('with a constructor that throws', () => {
                 let A: any;
                 beforeEach(() => {
-                    afterThrowAdvice = jasmine
-                        .createSpy('afterThrowAdvice', function (
-                            ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>,
-                            error: Error,
-                        ) {
+                    advice = jasmine
+                        .createSpy('afterThrowAdvice')
+                        .and.callFake(function (ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>, error: Error) {
                             ctxt.instance.labels = ctxt.instance.labels ?? [];
                             ctxt.instance.labels.push('A');
 
                             throw ctxt.error;
-                        })
-                        .and.callThrough();
+                        });
 
                     @AClass()
                     class A_ implements Labeled {
@@ -64,11 +60,22 @@ describe('@AfterThrow advice', () => {
                     A = A_;
                 });
 
+                it('should bind this to the aspect instance', () => {
+                    advice = jasmine.createSpy('advice').and.callFake(function () {
+                        expect(this).toEqual(jasmine.any(aspectClass));
+                    });
+
+                    try {
+                        new A('ctor');
+                    } catch (e) {}
+                    expect(advice).toHaveBeenCalled();
+                });
+
                 it('should call the aspect', () => {
                     expect(() => {
                         new A('ctor');
                     }).toThrow();
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
 
                 it('should pass the error as 2nd parameter of advice', () => {
@@ -76,17 +83,17 @@ describe('@AfterThrow advice', () => {
                         new A('ctor');
                     } catch (e) {}
                     expect(adviceError).toEqual(thrownError);
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
 
                 describe('when the aspect swallows the exception', () => {
                     beforeEach(() => {
-                        afterThrowAdvice = jasmine
-                            .createSpy('afterThrowAdvice', (ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) => {
+                        advice = jasmine
+                            .createSpy('afterThrowAdvice')
+                            .and.callFake((ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) => {
                                 ctxt.instance.labels = ctxt.instance.labels ?? [];
                                 ctxt.instance.labels.push('A');
-                            })
-                            .and.callThrough();
+                            });
                     });
 
                     it('should not throw', () => {
@@ -107,7 +114,7 @@ describe('@AfterThrow advice', () => {
                             const a = new A('ctor');
                             labels = a.labels;
                         }).not.toThrow();
-                        expect(afterThrowAdvice).toHaveBeenCalled();
+                        expect(advice).toHaveBeenCalled();
                         expect(labels).toEqual(['A']);
                     });
                 });
@@ -115,13 +122,13 @@ describe('@AfterThrow advice', () => {
 
             describe('and the aspect returns a new value', () => {
                 beforeEach(() => {
-                    afterThrowAdvice = jasmine
-                        .createSpy('afterThrowAdvice', (ctxt: AdviceContext<Labeled, AnnotationType.CLASS>) => {
+                    advice = jasmine
+                        .createSpy('afterThrowAdvice')
+                        .and.callFake((ctxt: AdviceContext<Labeled, AnnotationType.CLASS>) => {
                             return Object.assign(Object.create(ctxt.target.proto), {
                                 labels: ['ABis'],
                             });
-                        })
-                        .and.callThrough();
+                        });
                 });
 
                 it('should assign "this" instance to the returned value', () => {
@@ -152,7 +159,7 @@ describe('@AfterThrow advice', () => {
                         }
                     }
 
-                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                    expect(advice).not.toHaveBeenCalled();
                 });
             });
         });
@@ -181,7 +188,7 @@ describe('@AfterThrow advice', () => {
             class AfterThrowAspect {
                 @AfterThrow(on.property.withAnnotations(AProperty))
                 afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
-                    afterThrowAdvice(ctxt, error);
+                    advice(ctxt, error);
                     return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
                 }
             }
@@ -206,7 +213,7 @@ describe('@AfterThrow advice', () => {
 
                 it('should not call the aspect', () => {
                     const labels = a.labels;
-                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                    expect(advice).not.toHaveBeenCalled();
                 });
 
                 it('should return the original value', () => {
@@ -225,7 +232,7 @@ describe('@AfterThrow advice', () => {
 
                     a = new A();
 
-                    afterThrowAdvice = jasmine.createSpy(
+                    advice = jasmine.createSpy(
                         'afterThrowAdviceSpy',
                         (ctxt: AfterThrowContext<any, any>, error: Error) => {},
                     );
@@ -235,7 +242,7 @@ describe('@AfterThrow advice', () => {
                     try {
                         console.log(a.labels);
                     } catch (e) {}
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
 
                 describe('when the aspect swallows the exception', () => {
@@ -295,7 +302,7 @@ describe('@AfterThrow advice', () => {
             class AfterThrowAspect {
                 @AfterThrow(on.property.setter.withAnnotations(AProperty))
                 afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
-                    afterThrowAdvice(ctxt, error);
+                    advice(ctxt, error);
                     return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
                 }
             }
@@ -321,7 +328,7 @@ describe('@AfterThrow advice', () => {
 
                 it('should not call the aspect', () => {
                     a.labels = [];
-                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                    expect(advice).not.toHaveBeenCalled();
                 });
 
                 it('should assign the value', () => {
@@ -341,18 +348,18 @@ describe('@AfterThrow advice', () => {
 
                     a = new A();
 
-                    afterThrowAdvice = jasmine
-                        .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                    advice = jasmine
+                        .createSpy('afterThrowAdviceSpy')
+                        .and.callFake((ctxt: AfterThrowContext<any, any>, error: Error) => {
                             adviceError = error;
-                        })
-                        .and.callThrough();
+                        });
                 });
 
                 it('should call the aspect', () => {
                     try {
                         a.labels = [];
                     } catch (e) {}
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
 
                 it('should pass the error as 2nd parameter of advice', () => {
@@ -360,7 +367,7 @@ describe('@AfterThrow advice', () => {
                         a.labels = [];
                     } catch (e) {}
                     expect(adviceError).toEqual(thrownError);
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
 
                 describe('when the aspect swallows the exception', () => {
@@ -411,17 +418,17 @@ describe('@AfterThrow advice', () => {
             class AfterThrowAspect {
                 @AfterThrow(on.method.withAnnotations(AMethod))
                 afterThrow(ctxt: AfterThrowContext<any, AnnotationType.METHOD>, error: Error): void {
-                    return afterThrowAdvice(ctxt, error);
+                    return advice(ctxt, error);
                 }
             }
 
             setupWeaver(new AfterThrowAspect());
 
-            afterThrowAdvice = jasmine
-                .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+            advice = jasmine
+                .createSpy('afterThrowAdviceSpy')
+                .and.callFake((ctxt: AfterThrowContext<any, any>, error: Error) => {
                     adviceError = error;
-                })
-                .and.callThrough();
+                });
         });
 
         describe('calling the method', () => {
@@ -439,7 +446,7 @@ describe('@AfterThrow advice', () => {
 
                 it('should not call the aspect', () => {
                     a.addLabel();
-                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                    expect(advice).not.toHaveBeenCalled();
                 });
             });
 
@@ -457,11 +464,11 @@ describe('@AfterThrow advice', () => {
                     a = new A();
                 });
                 it('should call the aspect', () => {
-                    expect(afterThrowAdvice).not.toHaveBeenCalled();
+                    expect(advice).not.toHaveBeenCalled();
                     try {
                         a.addLabel();
                     } catch (e) {}
-                    expect(afterThrowAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
 
                 it('should pass the error as 2nd parameter of advice', () => {
@@ -481,11 +488,11 @@ describe('@AfterThrow advice', () => {
                     });
 
                     it('should return the value returned by the aspect', () => {
-                        afterThrowAdvice = jasmine
-                            .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                        advice = jasmine
+                            .createSpy('afterThrowAdviceSpy')
+                            .and.callFake((ctxt: AfterThrowContext<any, any>, error: Error) => {
                                 return 'newValue';
-                            })
-                            .and.callThrough();
+                            });
 
                         expect(a.addLabel()).toEqual('newValue');
                     });
@@ -493,11 +500,11 @@ describe('@AfterThrow advice', () => {
 
                 describe('and the aspect throws a new exception', () => {
                     beforeEach(() => {
-                        afterThrowAdvice = jasmine
-                            .createSpy('afterThrowAdviceSpy', (ctxt: AfterThrowContext<any, any>, error: Error) => {
+                        advice = jasmine
+                            .createSpy('afterThrowAdviceSpy')
+                            .and.callFake((ctxt: AfterThrowContext<any, any>, error: Error) => {
                                 throw new Error('new Error');
-                            })
-                            .and.callThrough();
+                            });
                     });
                     it('should throw the new error', () => {
                         expect(() => {

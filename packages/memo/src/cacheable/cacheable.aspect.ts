@@ -1,6 +1,6 @@
 import { AnnotationType, Aspect, Compile, CompileContext, on } from '@aspectjs/core';
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
-import { assert, getMetaOrDefault, isObject } from '../utils/utils';
+import { assert, getOrComputeMetadata, isObject } from '@aspectjs/core/utils';
 
 type Prototype = {
     constructor: Function;
@@ -77,7 +77,7 @@ export class CacheTypeStoreImpl implements CacheTypeStore {
 
 let globalId = 0;
 function _generateTypeId(proto: any): string {
-    return getMetaOrDefault('@aspectjs/cacheable:typekey', proto, () => {
+    return getOrComputeMetadata('@aspectjs/cacheable:typekey', proto, () => {
         return `${proto.constructor.name}#${globalId++}`;
     });
 }

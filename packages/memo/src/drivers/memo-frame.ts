@@ -1,4 +1,6 @@
-export interface MemoMetaFrame {
+import { isPromise } from '@aspectjs/core/utils';
+
+export interface MemoTypeInfoFrame {
     type?: string;
     instanceType?: string;
     expiration?: Date;
@@ -9,7 +11,7 @@ export interface MemoMetaFrame {
  * A MemoEntry once marshalled
  */
 
-export class MemoFrame<T = unknown> implements MemoMetaFrame {
+export class MemoFrame<T = unknown> implements MemoTypeInfoFrame {
     type?: string;
     instanceType?: string;
     expiration?: Date;
@@ -17,7 +19,6 @@ export class MemoFrame<T = unknown> implements MemoMetaFrame {
     value: T;
     private _resolved: boolean;
     public async: Promise<T>;
-
     constructor(frame: Partial<MemoFrame<T>>) {
         Object.assign(this, frame);
     }
@@ -39,5 +40,9 @@ export class MemoFrame<T = unknown> implements MemoMetaFrame {
             return (frame.value as any) as T;
         });
         return frame;
+    }
+
+    isAsync() {
+        return isPromise(this.async);
     }
 }

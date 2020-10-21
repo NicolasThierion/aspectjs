@@ -1,13 +1,14 @@
 import { AnnotationLocation, AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
-import { assert, getMetaOrDefault, getOrDefault, isUndefined } from '../../utils';
+import { assert, getOrComputeMetadata, isUndefined } from '@aspectjs/core/utils';
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
 import { AnnotationContext, ClassAnnotationContext } from '../context/context';
 import { Annotation, AnnotationType } from '../annotation.types';
 import { AnnotationLocationFactory } from '../target/annotation-target.factory';
+import { locator } from '../../utils/utils';
 
 export abstract class AnnotationBundleRegistry {
     static of<T>(target: AnnotationTarget<T, any>): AnnotationsBundle<T> {
-        return getMetaOrDefault(
+        return getOrComputeMetadata(
             'aspectjs.bundle',
             target.proto,
             () => new AnnotationsBundleImpl(target.declaringClass),
@@ -72,7 +73,10 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
 
         holders.forEach((holder) => {
             AnnotationLocationFactory.create(ctxt.target);
-            getOrDefault(holder.byAnnotationName, name, () => []).push(ctxt);
+            locator(holder.byAnnotationName)
+                .at(name)
+                .orElse(() => [])
+                .push(ctxt);
             holder.all.push(ctxt as ClassAnnotationContext<T>);
         });
 
@@ -105,32 +109,21 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
             const byAnnotation = this._contextHolders[target.type];
             byAnnotation.byPropertyName = byAnnotation.byPropertyName ?? ({} as any);
 
-            const byPropertyName = getOrDefault(
-                byAnnotation.byPropertyName as any,
-                target.propertyKey,
-                () => {
+            const byPropertyName = locator(byAnnotation.byPropertyName as any)
+                .at(target.propertyKey)
+                .orElse(() => {
                     return { all: [], byAnnotationName: {} } as AnnotationContextsHolder<any, any>;
-                },
-                save,
-            ) as AnnotationContextsHolder<T, A>;
+                }, save) as AnnotationContextsHolder<T, A>;
 
             if (target.type === AnnotationType.PARAMETER) {
                 byPropertyName.byIndex = byPropertyName.byIndex ?? {};
-                const byIndex = getOrDefault(
-                    byPropertyName.byIndex as any,
-                    `${target.parameterIndex}`,
-                    _createContextsHolder,
-                    save,
-                ) as AnnotationContextsHolder<T, A>;
+                const byIndex = locator(byPropertyName.byIndex)
+                    .at(`${target.parameterIndex}`)
+                    .orElse(_createContextsHolder, save);
 
                 assert(!save || !isNaN(target.parameterIndex));
 
-                const allArgsContext = getOrDefault(
-                    byPropertyName.byIndex as any,
-                    `NaN`,
-                    _createContextsHolder,
-                    save,
-                ) as AnnotationContextsHolder<T, A>;
+                const allArgsContext = locator(byPropertyName.byIndex).at(`NaN`).orElse(_createContextsHolder, save);
 
                 return [byIndex, allArgsContext, byPropertyName, byAnnotation, this._global];
             }

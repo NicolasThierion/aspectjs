@@ -1,12 +1,13 @@
 import { getWeaver } from '@aspectjs/core';
 import { MemoDriver } from '../memo.driver';
 import { MemoEntry, MemoKey } from '../../memo.types';
-import { assert, isPromise } from '../../utils/utils';
-import { MemoFrame, MemoMetaFrame } from '../memo-frame';
+import { assert } from '@aspectjs/core/utils';
+import { MemoFrame, MemoTypeInfoFrame } from '../memo-frame';
 import { LsMemoDriver } from '../localstorage/localstorage.driver';
 import { MemoAspect } from '../../memo.aspect';
 import { MemoAspectError } from '../../errors';
 import { Scheduler } from '../scheduler';
+import { MarshallingContext } from '../../marshalling/marshalling-context';
 
 enum TransactionMode {
     READONLY = 'readonly',
@@ -67,8 +68,12 @@ export class IdbMemoDriver extends MemoDriver {
         });
     }
 
-    getPriority(type: any): number {
-        return isPromise(type) ? 100 : 0;
+    getPriority(context: MarshallingContext): number {
+        return 100;
+    }
+
+    accepts(context: MarshallingContext): boolean {
+        return context.frame.isAsync();
     }
 
     read<T>(key: MemoKey): MemoFrame<T> {
@@ -104,7 +109,7 @@ export class IdbMemoDriver extends MemoDriver {
     write(key: MemoKey, frame: MemoFrame): Promise<any> {
         const { value, expiration, ...metaFrame } = frame;
 
-        const metaEntry: MemoEntry<MemoMetaFrame> = {
+        const metaEntry: MemoEntry<MemoTypeInfoFrame> = {
             key: metaKey(key),
             expiration: expiration,
             frame: metaFrame as MemoFrame,

@@ -68,13 +68,11 @@ describe('Given a @Memo method that returns a class instance', () => {
 
         describe('that contains Date attributes', () => {
             beforeEach(() => {
-                joinpoint = jasmine
-                    .createSpy('process', () => {
-                        const a = new CacheableA();
-                        a.date = new Date();
-                        return a;
-                    })
-                    .and.callThrough();
+                joinpoint = jasmine.createSpy('process').and.callFake(() => {
+                    const a = new CacheableA();
+                    a.date = new Date();
+                    return a;
+                });
             });
 
             it('should return an object with attributes of correct types', () => {
@@ -95,11 +93,11 @@ describe('Given a @Memo method that returns a class instance', () => {
                 CachedClass = _CachedClass;
             });
             beforeEach(() => {
-                joinpoint = jasmine.createSpy('process', () => new CachedClass()).and.callThrough();
+                joinpoint = jasmine.createSpy('process').and.callFake(() => new CachedClass());
             });
             describe('that differs from the cached one', () => {
                 beforeEach(() => {
-                    version = jasmine.createSpy('version', () => `${Math.random()}`).and.callThrough();
+                    version = jasmine.createSpy('version').and.callFake(() => `${Math.random()}`);
                 });
                 it('should invalidate cache', () => {
                     expect(memoMethod()).toEqual(memoMethod());
@@ -110,9 +108,9 @@ describe('Given a @Memo method that returns a class instance', () => {
             xdescribe('with semver format', () => {
                 describe('and the version satisfies the previous one', () => {
                     xit('should not invalidate the cache', () => {
-                        version = jasmine.createSpy('version', () => '1.2.3').and.callThrough();
+                        version = jasmine.createSpy('version').and.callFake(() => '1.2.3');
                         const res1 = memoMethod();
-                        version = jasmine.createSpy('version', () => '1.5.0').and.callThrough();
+                        version = jasmine.createSpy('version').and.callFake(() => '1.5.0');
                         const res2 = memoMethod();
 
                         expect(res1).toEqual(res2);
@@ -122,9 +120,9 @@ describe('Given a @Memo method that returns a class instance', () => {
 
                 describe('and the version does not satisfy the previous one', () => {
                     xit('should invalidate the cache', () => {
-                        version = jasmine.createSpy('version', () => '1.2.3').and.callThrough();
+                        version = jasmine.createSpy('version').and.callFake(() => '1.2.3');
                         const res1 = memoMethod();
-                        version = jasmine.createSpy('version', () => '2.0.0').and.callThrough();
+                        version = jasmine.createSpy('version').and.callFake(() => '2.0.0');
                         const res2 = memoMethod();
 
                         expect(res1).toEqual(res2);

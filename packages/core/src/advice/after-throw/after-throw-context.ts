@@ -19,5 +19,5 @@ export interface AfterThrowContext<T = unknown, A extends AnnotationType = any> 
     /** any data set by the advices, shared across all advice going through  this execution context **/
     readonly data: Record<string, any>;
     /** The list of pending advices for the same phase. Change this list to change all the advices that are going to get applied after the currently applied advice **/
-    advices: AfterThrowAdvice<A>[];
+    advices: AfterThrowAdvice<T, A>[];
 }

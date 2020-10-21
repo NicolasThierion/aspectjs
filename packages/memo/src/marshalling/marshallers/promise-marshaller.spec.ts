@@ -35,8 +35,8 @@ describe('Calling a @Memo method that returns a Promise', () => {
             describe('when the promise is resolved', () => {
                 beforeEach(() => {
                     joinpoint = jasmine
-                        .createSpy('methodSpy', (...args: any[]) => Promise.resolve('value'))
-                        .and.callThrough();
+                        .createSpy('methodSpy')
+                        .and.callFake((...args: any[]) => Promise.resolve('value'));
                 });
 
                 it('should resolve to the cached value', async () => {

@@ -1,4 +1,4 @@
-import { assert } from '../utils';
+import { assert } from '@aspectjs/core/utils';
 import { WeavingError } from '../weaver/errors/weaving-error';
 import {
     Annotation,
@@ -10,87 +10,24 @@ import {
     PropertyAnnotation,
 } from '../annotation/annotation.types';
 
-export interface Pointcut {
-    options: PointcutOption;
-    type: AnnotationType;
-    annotation: AnnotationRef;
-    name: string;
-    phase: PointcutPhase;
-    ref: string;
-}
-
 export interface PointcutOption {
     priority?: number;
 }
 
-export abstract class PointcutExpression {
-    protected _annotations: Annotation<AnnotationType>[] = [];
-    protected _name = '*';
+export class PointcutExpression {
+    private readonly _name = '*'; // TODO
+    private readonly _expr: string;
 
-    withAnnotations(...annotation: Annotation<AnnotationType>[]): PointcutExpression {
-        this._annotations = annotation;
-        return this;
+    static of<T extends AnnotationType>(type: T, annotation: AnnotationRef) {
+        return AnnotationPointcutExpressionBuilders[type].withAnnotations(annotation as any);
     }
-}
-
-export class ClassPointcutExpression extends PointcutExpression {
-    constructor(private _selector?: PointcutExpression) {
-        super();
-    }
-
-    toString(): string {
-        return _trimSpaces(
-            `class ${this._annotations.map((a) => a.toString()).join(',')}${
-                this._selector ? ` ${this._selector}` : ''
-            } ${this._name}`,
+    constructor(private _label: string, private _annotations: AnnotationRef[] = []) {
+        this._expr = _trimSpaces(
+            `${this._label} ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`,
         );
     }
-
-    withAnnotations(...annotations: ClassAnnotation[]): ClassPointcutExpression {
-        return super.withAnnotations(...annotations);
-    }
-}
-
-export class PropertyPointcutExpression extends PointcutExpression {
-    public readonly setter = new PropertySetterPointcutExpression();
-
     toString(): string {
-        return _trimSpaces(`property#get ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
-    }
-
-    withAnnotations(...annotations: PropertyAnnotation[]): PropertyPointcutExpression {
-        super.withAnnotations(...annotations);
-        return this;
-    }
-}
-
-export class PropertySetterPointcutExpression extends PointcutExpression {
-    toString(): string {
-        return _trimSpaces(`property#set ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
-    }
-
-    withAnnotations(...annotation: PropertyAnnotation[]): PropertySetterPointcutExpression {
-        return super.withAnnotations(...annotation);
-    }
-}
-
-export class MethodPointcutExpression extends PointcutExpression {
-    toString(): string {
-        return _trimSpaces(`method ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
-    }
-
-    withAnnotations(...annotation: MethodAnnotation[]): MethodPointcutExpression {
-        return super.withAnnotations(...annotation);
-    }
-}
-
-export class ParameterPointcutExpression extends PointcutExpression {
-    toString(): string {
-        return _trimSpaces(`parameter ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`);
-    }
-
-    withAnnotations(...annotation: ParameterAnnotation[]): ParameterPointcutExpression {
-        return super.withAnnotations(...annotation);
+        return this._expr;
     }
 }
 
@@ -98,44 +35,41 @@ function _trimSpaces(s: string) {
     return s.replace(/\s+/, ' ');
 }
 
-// TODO Causes backward incompatibilities between typescript 3.7 & typescript <=3.5 .d.ts files.
-// class PointcutExpressionFactory {
-//     get class() {
-//         return new ClassPointcutExpression();
-//     }
-//
-//     get property() {
-//         return new PropertyPointcutExpression();
-//     }
-//
-//     get method() {
-//         return new MethodPointcutExpression();
-//     }
-//     get parameter() {
-//         return new ParameterPointcutExpression();
-//     }
-// }
+class AnnotationPointcutExpressionBuilder<A extends Annotation<any>> {
+    constructor(private _label: string) {}
 
-interface PointcutExpressionFactory {
-    readonly class: ClassPointcutExpression;
-    readonly property: PropertyPointcutExpression;
-    readonly method: MethodPointcutExpression;
-    readonly parameter: ParameterPointcutExpression;
+    withAnnotations(...annotation: Annotation[]): PointcutExpression {
+        return new PointcutExpression(this._label, annotation);
+    }
 }
-export const on: PointcutExpressionFactory = new (class implements PointcutExpressionFactory {
-    get class() {
-        return new ClassPointcutExpression();
+
+class PropertyAnnotationPointcutExpressionBuilder {
+    readonly setter = new AnnotationPointcutExpressionBuilder<ParameterAnnotation>('property#set');
+
+    withAnnotations(...annotation: PropertyAnnotation[]): PointcutExpression {
+        return new PointcutExpression('property#get', annotation);
     }
-    get method() {
-        return new MethodPointcutExpression();
-    }
-    get parameter() {
-        return new ParameterPointcutExpression();
-    }
-    get property() {
-        return new PropertyPointcutExpression();
-    }
-})();
+}
+
+interface PointcutExpressionBuilder {
+    readonly class: AnnotationPointcutExpressionBuilder<ClassAnnotation>;
+    readonly property: PropertyAnnotationPointcutExpressionBuilder;
+    readonly method: AnnotationPointcutExpressionBuilder<MethodAnnotation>;
+    readonly parameter: AnnotationPointcutExpressionBuilder<ParameterAnnotation>;
+}
+
+const AnnotationPointcutExpressionBuilders = {
+    [AnnotationType.CLASS]: new AnnotationPointcutExpressionBuilder<ClassAnnotation>('class'),
+    [AnnotationType.METHOD]: new AnnotationPointcutExpressionBuilder<MethodAnnotation>('method'),
+    [AnnotationType.PARAMETER]: new AnnotationPointcutExpressionBuilder<MethodAnnotation>('parameter'),
+    [AnnotationType.PROPERTY]: new PropertyAnnotationPointcutExpressionBuilder(),
+};
+export const on: PointcutExpressionBuilder = {
+    class: AnnotationPointcutExpressionBuilders[AnnotationType.CLASS],
+    method: AnnotationPointcutExpressionBuilders[AnnotationType.METHOD],
+    parameter: AnnotationPointcutExpressionBuilders[AnnotationType.PARAMETER],
+    property: AnnotationPointcutExpressionBuilders[AnnotationType.PROPERTY],
+};
 
 export enum PointcutPhase {
     COMPILE = 'Compile',
@@ -146,28 +80,35 @@ export enum PointcutPhase {
     AFTERTHROW = 'AfterThrow',
 }
 
+export interface Pointcut<A extends AnnotationType = any> {
+    readonly options: PointcutOption;
+    readonly type: A;
+    readonly annotation: AnnotationRef;
+    readonly name: string;
+    readonly phase: PointcutPhase;
+    readonly ref: string;
+}
+
 export namespace Pointcut {
-    export function of(phase: PointcutPhase, exp: string, options: PointcutOption): Pointcut;
-    export function of(phase: PointcutPhase, exp: PointcutExpression, options: PointcutOption): Pointcut;
+    const POINTCUT_REGEXPS = {
+        [AnnotationType.CLASS]: new RegExp('class(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*'),
+        [AnnotationType.PROPERTY]: new RegExp(
+            'property#(?:get|set)(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
+        ),
+        [AnnotationType.METHOD]: new RegExp('method(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*'),
+        [AnnotationType.PARAMETER]: new RegExp(
+            'parameter(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
+        ),
+    };
+
+    export function of(phase: PointcutPhase, exp: string, options?: PointcutOption): Pointcut;
+    export function of(phase: PointcutPhase, exp: PointcutExpression, options?: PointcutOption): Pointcut;
     export function of(phase: PointcutPhase, exp: PointcutExpression | string, options: PointcutOption = {}): Pointcut {
         const ref = exp.toString();
 
-        const pointcutRegexes = {
-            [AnnotationType.CLASS]: new RegExp('class(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*'),
-            [AnnotationType.PROPERTY]: new RegExp(
-                'property#(?:get|set)(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
-            ),
-            [AnnotationType.METHOD]: new RegExp(
-                'method(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
-            ),
-            [AnnotationType.PARAMETER]: new RegExp(
-                'parameter(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*',
-            ),
-        };
-
         let pointcut: Pointcut;
 
-        for (const entry of Object.entries(pointcutRegexes)) {
+        for (const entry of Object.entries(POINTCUT_REGEXPS)) {
             const [type, regex] = entry;
             const match = regex.exec(ref);
 
@@ -194,21 +135,21 @@ export namespace Pointcut {
     }
 }
 
-export interface CompilePointcut extends Pointcut {
+export interface CompilePointcut<A extends AnnotationType = any> extends Pointcut<A> {
     phase: PointcutPhase.COMPILE;
 }
-export interface AroundPointcut extends Pointcut {
+export interface AroundPointcut<A extends AnnotationType = any> extends Pointcut<A> {
     phase: PointcutPhase.AROUND;
 }
-export interface BeforePointcut extends Pointcut {
+export interface BeforePointcut<A extends AnnotationType = any> extends Pointcut<A> {
     phase: PointcutPhase.BEFORE;
 }
-export interface AfterReturnPointcut extends Pointcut {
+export interface AfterReturnPointcut<A extends AnnotationType = any> extends Pointcut<A> {
     phase: PointcutPhase.AFTERRETURN;
 }
-export interface AfterPointcut extends Pointcut {
+export interface AfterPointcut<A extends AnnotationType = any> extends Pointcut<A> {
     phase: PointcutPhase.AFTER;
 }
-export interface AfterThrowPointcut extends Pointcut {
+export interface AfterThrowPointcut<A extends AnnotationType = any> extends Pointcut<A> {
     phase: PointcutPhase.AFTERTHROW;
 }

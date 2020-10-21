@@ -1,14 +1,14 @@
 import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.decorator';
 import { on } from '../pointcut';
-import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
-import Spy = jasmine.Spy;
+import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../annotation/annotation.types';
+import Spy = jasmine.Spy;
 
 describe('@Before advice', () => {
     let advice: Spy;
-
+    let aspectClass: any;
     beforeEach(() => {
         advice = jasmine.createSpy('advice');
     });
@@ -22,15 +22,27 @@ describe('@Before advice', () => {
             class AAspect {
                 @Before(on.class.withAnnotations(AClass))
                 applyBefore(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
-                    expect(this).toEqual(jasmine.any(AAspect));
                     thisInstance = ctxt.instance;
 
-                    advice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
+            aspectClass = AAspect;
 
             setupWeaver(new AAspect());
         });
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+
+            @AClass()
+            class A {}
+
+            new A();
+            expect(advice).toHaveBeenCalled();
+        });
+
         it('should call the aspect before the constructor', () => {
             @AClass()
             class A {
@@ -64,11 +76,10 @@ describe('@Before advice', () => {
             class AAspect {
                 @Before(on.property.withAnnotations(AProperty))
                 applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
-                    expect(this).toEqual(jasmine.any(AAspect));
-
-                    advice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
+            aspectClass = AAspect;
 
             setupWeaver(new AAspect());
 
@@ -80,6 +91,15 @@ describe('@Before advice', () => {
             a = new A();
         });
 
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+            const labels = a.labels;
+
+            expect(advice).toHaveBeenCalled();
+        });
+
         it('should call the aspect before the property is get', () => {
             expect(advice).not.toHaveBeenCalled();
             const labels = a.labels;
@@ -88,11 +108,9 @@ describe('@Before advice', () => {
 
         it('should have a non null context.instance', () => {
             let thisInstance: any;
-            advice = jasmine
-                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
-                    thisInstance = ctxt.instance;
-                })
-                .and.callThrough();
+            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {
+                thisInstance = ctxt.instance;
+            });
             const labels = a.labels;
             expect(thisInstance).toEqual(a);
         });
@@ -106,11 +124,10 @@ describe('@Before advice', () => {
             class AAspect {
                 @Before(on.property.setter.withAnnotations(AProperty))
                 applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
-                    expect(this).toEqual(jasmine.any(AAspect));
-
-                    advice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
+            aspectClass = AAspect;
 
             setupWeaver(new AAspect());
 
@@ -120,7 +137,16 @@ describe('@Before advice', () => {
             }
 
             a = new A();
-            advice = jasmine.createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {}).and.callThrough();
+            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {});
+        });
+
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+            a.labels = ['set'];
+
+            expect(advice).toHaveBeenCalled();
         });
 
         it('should call the aspect before the property is set', () => {
@@ -131,11 +157,9 @@ describe('@Before advice', () => {
 
         it('should have a non null context.instance', () => {
             let thisInstance: any;
-            advice = jasmine
-                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
-                    thisInstance = ctxt.instance;
-                })
-                .and.callThrough();
+            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {
+                thisInstance = ctxt.instance;
+            });
             a.labels = [];
             expect(thisInstance).toEqual(a);
         });
@@ -149,12 +173,11 @@ describe('@Before advice', () => {
             class AAspect {
                 @Before(on.method.withAnnotations(AMethod))
                 applyBefore(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
-                    expect(this).toEqual(jasmine.any(AAspect));
-
-                    advice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
 
+            aspectClass = AAspect;
             setupWeaver(new AAspect());
 
             class A {
@@ -164,8 +187,17 @@ describe('@Before advice', () => {
 
             a = new A();
             advice = jasmine
-                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, AnnotationType.METHOD>) => {})
-                .and.callThrough();
+                .createSpy('beforeAdvice')
+                .and.callFake((ctxt: BeforeContext<any, AnnotationType.METHOD>) => {});
+        });
+
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+            a.addLabel();
+
+            expect(advice).toHaveBeenCalled();
         });
 
         it('should call the aspect before the method is called', () => {
@@ -176,11 +208,9 @@ describe('@Before advice', () => {
 
         it('should have a non null context.instance', () => {
             let thisInstance: any;
-            advice = jasmine
-                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
-                    thisInstance = ctxt.instance;
-                })
-                .and.callThrough();
+            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {
+                thisInstance = ctxt.instance;
+            });
             a.addLabel();
             expect(thisInstance).toEqual(a);
         });
@@ -194,12 +224,10 @@ describe('@Before advice', () => {
             class AAspect {
                 @Before(on.parameter.withAnnotations(AParameter))
                 applyBefore(ctxt: AdviceContext<any, AnnotationType.PARAMETER>): void {
-                    expect(this).toEqual(jasmine.any(AAspect));
-
-                    advice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
-
+            aspectClass = AAspect;
             methodSpy = jasmine.createSpy('methodSpy');
             setupWeaver(new AAspect());
 
@@ -211,8 +239,18 @@ describe('@Before advice', () => {
 
             a = new A();
             advice = jasmine
-                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, AnnotationType.METHOD>) => {})
-                .and.callThrough();
+                .createSpy('beforeAdvice')
+                .and.callFake((ctxt: BeforeContext<any, AnnotationType.METHOD>) => {});
+        });
+
+        it('should bind "this" to the aspect instance', () => {
+            advice = jasmine
+                .createSpy('beforeAdvice')
+                .and.callFake(function (ctxt: BeforeContext<any, AnnotationType.METHOD>) {
+                    expect(this).toEqual(jasmine.any(aspectClass));
+                });
+
+            a.addLabel('a');
         });
 
         it('should call the aspect before the method is called', () => {
@@ -224,11 +262,9 @@ describe('@Before advice', () => {
 
         it('should have a non null context.instance', () => {
             let thisInstance: any;
-            advice = jasmine
-                .createSpy('beforeAdvice', (ctxt: BeforeContext<any, any>) => {
-                    thisInstance = ctxt.instance;
-                })
-                .and.callThrough();
+            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {
+                thisInstance = ctxt.instance;
+            });
             a.addLabel();
             expect(thisInstance).toEqual(a);
         });

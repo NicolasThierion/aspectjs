@@ -16,9 +16,9 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
         }
 
         let cached: Cached;
-        let methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => args.reverse()).and.callThrough();
+        let methodSpy: jasmine.Spy;
         beforeEach(() => {
-            methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => args.reverse()).and.callThrough();
+            methodSpy = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => args.reverse());
             serializer = new LzMemoSerializer();
             spyOn(serializer, 'deserialize').and.callThrough();
             spyOn(serializer, 'serialize').and.callThrough();
@@ -83,18 +83,18 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
             });
         });
 
-        describe('with null arguments', function() {
+        describe('with null arguments', function () {
             beforeEach(() => {
-                methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => {}).and.callThrough();
+                methodSpy = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => {});
             });
             it('should not produce errors', () => {
                 expect(() => cached.method(null)).not.toThrow();
             });
         });
 
-        describe('with null return value', function() {
+        describe('with null return value', function () {
             beforeEach(() => {
-                methodSpy = jasmine.createSpy('methodSpy', (...args: any[]) => null).and.callThrough();
+                methodSpy = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => null);
             });
 
             it('should return null', () => {

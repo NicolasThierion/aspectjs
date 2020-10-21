@@ -1,39 +1,21 @@
 import { WeaverProfile } from './profile';
 import { MutableAdviceContext } from '../advice/advice-context';
-import { PointcutPhase } from '../advice/pointcut';
-import { JitWeaver } from './jit/jit-weaver';
-
-export type AdviceRunners = {
-    [type in 'class' | 'method' | 'parameter']: {
-        [k in PointcutPhase]: (ctxt: MutableAdviceContext<any>) => any;
-    };
-} & {
-    property: {
-        [k in 'getter' | 'setter']: {
-            [PointcutPhase.AROUND]: (ctxt: MutableAdviceContext<any>) => any;
-            [PointcutPhase.BEFORE]: (ctxt: MutableAdviceContext<any>) => any;
-            [PointcutPhase.AFTERRETURN]: (ctxt: MutableAdviceContext<any>) => any;
-            [PointcutPhase.AFTER]: (ctxt: MutableAdviceContext<any>) => any;
-            [PointcutPhase.AFTERTHROW]: (ctxt: MutableAdviceContext<any>) => any;
-        };
-    } & {
-        [PointcutPhase.COMPILE]: (ctxt: MutableAdviceContext<any>) => any;
-    };
-};
+import { AnnotationType } from '../annotation/annotation.types';
 
 export interface Weaver extends WeaverProfile {
+    /**
+     * Enable some aspects.
+     * @param aspects
+     */
     enable(...aspects: any[]): this;
     disable(...aspects: any[]): this;
-    load(): AdviceRunners;
     reset(): this;
-    isLoaded(): boolean;
-}
 
-let _weaver: Weaver;
-export function getWeaver(): Weaver {
-    return _weaver;
-}
+    enhanceClass<T>(ctxt: MutableAdviceContext<T, AnnotationType.CLASS>): new () => T;
 
-export function setWeaver(weaver: Weaver): void {
-    _weaver = weaver;
+    enhanceProperty<T>(ctxt: MutableAdviceContext<T, AnnotationType.PROPERTY>): PropertyDescriptor;
+
+    enhanceMethod<T>(ctxt: MutableAdviceContext<T, AnnotationType.METHOD>): PropertyDescriptor;
+
+    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AnnotationType.METHOD>): void;
 }

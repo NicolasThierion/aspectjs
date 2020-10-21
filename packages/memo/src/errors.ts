@@ -1,4 +1,4 @@
-import { MarshallingContext, UnmarshallingContext } from './marshalling/marshalling-context';
+import { UnmarshallingContext } from './marshalling/marshalling-context';
 
 export class MemoAspectError extends Error {
     constructor(public readonly message: string) {
@@ -7,7 +7,7 @@ export class MemoAspectError extends Error {
 }
 
 export class VersionConflictError extends MemoAspectError {
-    constructor(public readonly message: string, public readonly context: UnmarshallingContext | MarshallingContext) {
+    constructor(public readonly message: string, public readonly context: UnmarshallingContext) {
         super(message);
     }
 }

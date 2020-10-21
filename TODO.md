@@ -24,11 +24,19 @@ remove rollup-copy-plugin & rollup-plugin-cleaner
  - add `ObservableMemoMarshaller`
  
 ## Refactor
+- fork murmurhash3js
+- add LICENSE.md
 - use AnnotationRef = {module, name} in bundles & contexts
-- add priority on advices
+- add @Order on advices
 - do not nest decorators when multiple annotations on the same symbol
 - test `on.X.annotations(\<empty\>)` should return all advices
 
 
 ## Chore
 - test lerna publish & lerna version
+
+
+### tests
+ - test @Memo with HttpClient observables
+ -  test Weaver.getAspect(AspectClass)
+  

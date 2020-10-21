@@ -1,6 +1,6 @@
 import { AnnotationType } from '../annotation.types';
 
-export interface AnnotationTarget<T, A extends AnnotationType> {
+export interface AnnotationTarget<T = unknown, A extends AnnotationType = any> {
     readonly location: AnnotationLocation<T, A>;
     readonly type: A;
     readonly proto: any;

@@ -2,10 +2,20 @@ import { AdviceContext, CompileContext } from '../advice-context';
 import { Aspect } from '../aspect';
 import { Compile } from './compile.decorator';
 import { on } from '../pointcut';
-import { AClass, AMethod, AParameter, AProperty, BClass, BMethod, BParameter, BProperty } from '../../../tests/helpers';
-import { AnnotationType } from '../../annotation/annotation.types';
-import { setWeaver, Weaver } from '../../weaver/weaver';
+import {
+    AClass,
+    AMethod,
+    AParameter,
+    AProperty,
+    BClass,
+    BMethod,
+    BParameter,
+    BProperty,
+} from '../../../testing/src/helpers';
+import { weaverContext } from '../../weaver/weaver-context';
+import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
+import { AnnotationType } from '../../annotation/annotation.types';
 import { Before } from '../before/before.decorator';
 
 describe('CompileContext', () => {
@@ -16,7 +26,7 @@ describe('CompileContext', () => {
     let beforeBAdvice = jasmine.createSpy('beforeBAdvice');
 
     beforeEach(() => {
-        setWeaver((weaver = new JitWeaver()));
+        weaverContext.setWeaver((weaver = new JitWeaver()));
         compileAAdvice = jasmine.createSpy('compileAAdvice');
         compileBAdvice = jasmine.createSpy('compileBAdvice');
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');

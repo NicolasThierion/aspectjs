@@ -2,8 +2,9 @@ import { MemoDriver } from '../memo.driver';
 import { MemoKey } from '../../memo.types';
 import { parse, stringify } from 'flatted';
 import { MemoFrame } from '../memo-frame';
-import { isUndefined } from '../../utils/utils';
+import { isUndefined } from '@aspectjs/core/utils';
 import { InstantPromise } from '../../utils/instant-promise';
+import { MarshallingContext } from '../../marshalling/marshalling-context';
 
 export interface LsMemoSerializer<T = unknown, U = unknown> {
     deserialize(obj: string): MemoFrame<T>;
@@ -94,9 +95,9 @@ export class LsMemoDriver extends MemoDriver {
 
     /**
      * Accepts all kind of results
-     * @param type
+     * @param context
      */
-    getPriority(type: any): number {
+    getPriority(context: MarshallingContext): number {
         return 10;
     }
 

@@ -1,10 +1,8 @@
 import { MemoEntry, MemoKey } from '../memo.types';
 import { MemoFrame } from './memo-frame';
-import { MarshallersRegistry } from '../marshalling/marshallers-registry';
+import { MarshallingContext } from '../marshalling/marshalling-context';
 
 export abstract class MemoDriver {
-    public marshallersRegistry: MarshallersRegistry;
-
     abstract getKeys(namespace?: string): Promise<MemoKey[]>;
 
     /**
@@ -12,10 +10,16 @@ export abstract class MemoDriver {
      */
     abstract get NAME(): string;
 
-    /** Get the priority this driver should be picked up to handle the given type.
-     *  Priority < 1 means this driver do nit supports the given type.
+    /**
+     * Get the priority this driver should be picked up to handle the given type.
      */
-    abstract getPriority(type: any): number;
+    getPriority(context: MarshallingContext): number {
+        return 0;
+    }
+
+    accepts(context: MarshallingContext): boolean {
+        return true;
+    }
 
     /**
      * Returns the cached value.

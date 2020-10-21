@@ -1,5 +1,7 @@
-import { AnnotationFactory } from '@aspectjs/core';
+import { AnnotationFactory, AnnotationRef } from '@aspectjs/core';
 
+// TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
+AnnotationRef;
 const af = new AnnotationFactory('aspectjs');
 
 export interface CacheableOptions {

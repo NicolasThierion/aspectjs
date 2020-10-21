@@ -55,7 +55,7 @@ type Provider<T> = (...args: any[]) => T;
  * An Annotation is an EcmaScript decorator with no behavior.
  * It relies on an annotation compiler with annotation processors to get the things done.
  */
-export type Annotation<T extends AnnotationType> = (T extends AnnotationType.CLASS
+export type Annotation<T extends AnnotationType = any> = (T extends AnnotationType.CLASS
     ? ClassAnnotation
     : T extends AnnotationType.METHOD
     ? MethodAnnotation
@@ -64,7 +64,8 @@ export type Annotation<T extends AnnotationType> = (T extends AnnotationType.CLA
     : T extends AnnotationType.PROPERTY
     ? PropertyAnnotation
     : never) & // eslint-disable-next-line @typescript-eslint/ban-types
-    Function;
+    Function &
+    AnnotationRef;
 
 type DecoratorType = ClassDecorator | MethodDecorator | ParameterDecorator | PropertyDecorator;
 

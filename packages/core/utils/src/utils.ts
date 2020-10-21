@@ -1,3 +1,8 @@
+let __debug = false;
+export function __setDebug(debug: boolean) {
+    __debug = debug;
+}
+
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
@@ -5,7 +10,8 @@ export type Mutable<T> = {
 export function assert(condition: boolean, errorProvider?: () => Error): void;
 export function assert(condition: boolean, msg?: string): void;
 export function assert(condition: boolean, msg?: string | (() => Error)) {
-    if (!condition) {
+    if (__debug && !condition) {
+        debugger;
         const e = isFunction(msg) ? (msg as Function)() : new Error(msg ?? 'assertion error');
         const stack = e.stack.split('\n');
         stack.splice(1, 1);
@@ -15,7 +21,7 @@ export function assert(condition: boolean, msg?: string | (() => Error)) {
     }
 }
 
-export function getMetaOrDefault<T>(
+export function getOrComputeMetadata<T>(
     key: string,
     target: any,
     valueGenerator: () => T,
@@ -33,25 +39,11 @@ export function getMetaOrDefault<T>(
     return value;
 }
 
-export function getOrDefault<U extends Record<string, any>, K extends keyof U>(
-    obj: U,
-    key: K,
-    valueProvider: () => U[K],
-    save?: boolean,
-): U[K];
-export function getOrDefault<T>(obj: any[], key: number, valueProvider: () => T, save?: boolean): T;
-export function getOrDefault<T>(obj: any, key: string | number, valueProvider: () => T, save = true): T {
-    assert(!!obj);
-    const value = obj[key] ?? valueProvider();
-    if (save) {
-        obj[key] = value;
-    }
-    return value;
-}
-
 export function getProto(target: Record<string, any> | Function): Record<string, any> {
     if (isFunction(target)) {
         return target.prototype;
+    } else if (target === null || target === undefined) {
+        return target;
     }
     return target.hasOwnProperty('constructor') ? target : Object.getPrototypeOf(target);
 }
@@ -61,7 +53,7 @@ export function isObject(value: any): value is object {
 }
 
 export function isArray(value: any): value is any[] {
-    return !isUndefined(value) && Object.getPrototypeOf(value) === Array.prototype;
+    return !isUndefined(value) && value !== null && Object.getPrototypeOf(value) === Array.prototype;
 }
 
 export function isString(value: any): value is string {
@@ -86,4 +78,12 @@ export function isEmpty(value: any): boolean {
 
 export function clone<T>(obj: T): T {
     return { ...obj };
+}
+
+export function isPromise(obj: any): obj is Promise<any> {
+    return isFunction(obj?.then);
+}
+
+export function provider<T, A>(arg: T | ((a: A) => T)): (a?: A) => T {
+    return isFunction(arg) ? arg : () => arg;
 }

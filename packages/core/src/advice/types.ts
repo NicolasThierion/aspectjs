@@ -6,51 +6,57 @@ import {
     AroundPointcut,
     BeforePointcut,
     CompilePointcut,
+    PointcutPhase,
 } from './pointcut';
 import { AnnotationType } from '../annotation/annotation.types';
 import { JoinPoint } from '../weaver/types';
 
-export type CompileAdvice<T, A extends AnnotationType> = {
+export type CompileAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
-    pointcut?: CompilePointcut;
-} & ((ctxt: AdviceContext<T, A>) => void | Function | PropertyDescriptor);
+    pointcut?: CompilePointcut<A>;
+} & ((ctxt: AdviceContext<T, A>) => A extends AnnotationType.CLASS ? undefined | Function : PropertyDescriptor);
 
-export type BeforeAdvice<T> = {
+export type BeforeAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
     pointcut?: BeforePointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>) => void);
-export type BeforeClassAdvice<T> = {
-    name: string;
-    aspect: object;
-    pointcut?: BeforePointcut;
-} & ((ctxt: Omit<AdviceContext<T, AnnotationType>, 'instance'>) => void);
-export type AfterAdvice<T> = {
+} & ((ctxt: AdviceContext<T, A>) => void);
+export type AfterAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
     pointcut?: AfterPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>) => void);
-export type AfterReturnAdvice<T> = {
+} & ((ctxt: AdviceContext<T, A>) => void);
+export type AfterReturnAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
     pointcut?: AfterReturnPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>, returnValue: any) => T | null | undefined);
-export type AfterThrowAdvice<T> = {
+} & ((ctxt: AdviceContext<T, A>, returnValue: any) => T | null | undefined);
+export type AfterThrowAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
     pointcut?: AfterThrowPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>, thrownError: Error) => T | null | undefined);
-export type AroundAdvice<T> = {
+} & ((ctxt: AdviceContext<T, A>, thrownError: Error) => T | null | undefined);
+export type AroundAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
     pointcut?: AroundPointcut;
-} & ((ctxt: AdviceContext<T, AnnotationType>, joinPoint: JoinPoint, args: any[]) => any);
+} & ((ctxt: AdviceContext<T, A>, joinPoint: JoinPoint, args: any[]) => any);
 
-export type Advice =
-    | CompileAdvice<any, AnnotationType>
-    | BeforeAdvice<any>
-    | AfterAdvice<any>
-    | AfterReturnAdvice<any>
-    | AfterThrowAdvice<any>
-    | AroundAdvice<any>;
+export type Advice<
+    T = unknown,
+    A extends AnnotationType = any,
+    V extends PointcutPhase = any
+> = V extends PointcutPhase.COMPILE
+    ? CompileAdvice<T, A>
+    : V extends PointcutPhase.BEFORE
+    ? BeforeAdvice<T, A>
+    : V extends PointcutPhase.AROUND
+    ? AroundAdvice<T, A>
+    : V extends PointcutPhase.AFTERRETURN
+    ? AfterReturnAdvice<T, A>
+    : V extends PointcutPhase.AFTERTHROW
+    ? AfterThrowAdvice<T, A>
+    : V extends PointcutPhase.AFTER
+    ? AfterAdvice<T, A>
+    : never;

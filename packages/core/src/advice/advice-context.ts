@@ -10,7 +10,10 @@ import { AroundContext } from './around/around-context';
 import { CompileContext } from './compile/compile-context';
 import { Advice } from './types';
 
-export type AdviceContext<T = any, A extends AnnotationType = any> =
+/**
+ * @public
+ */
+export type AdviceContext<T = unknown, A extends AnnotationType = any> =
     | AfterContext<T, A>
     | BeforeContext<T, A>
     | AfterReturnContext<T, A>
@@ -18,14 +21,14 @@ export type AdviceContext<T = any, A extends AnnotationType = any> =
     | AroundContext<T, A>
     | CompileContext<T, A>;
 
-export interface MutableAdviceContext<A extends AnnotationType> {
-    annotation?: AnnotationContext<unknown, A>;
-    instance?: unknown;
+export interface MutableAdviceContext<T = unknown, A extends AnnotationType = any> {
+    annotation?: AnnotationContext<T, A>;
+    instance?: T;
     value?: unknown;
     args?: unknown[];
     error?: Error;
     joinpoint?: JoinPoint;
-    target: AnnotationTarget<any, A>;
+    target: AnnotationTarget<T, A>;
     /** any data set by the advices, shared across all advice going through  this execution context **/
     data: Record<string, any>;
     /** The list of pending advices for the same phase. Change this list to change all the advices that are going to get applied after the currently applied advice **/

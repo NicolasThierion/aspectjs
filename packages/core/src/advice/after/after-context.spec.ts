@@ -1,11 +1,21 @@
 import { AdviceContext, AfterContext, AfterReturnContext } from '../advice-context';
 import { Aspect } from '../aspect';
 import { on } from '../pointcut';
-import { AClass, AMethod, AParameter, AProperty, BClass, BMethod, BParameter, BProperty } from '../../../tests/helpers';
-import { AnnotationType } from '../../annotation/annotation.types';
-import { setWeaver, Weaver } from '../../weaver/weaver';
-import { JitWeaver } from '../../weaver/jit/jit-weaver';
+import {
+    AClass,
+    AMethod,
+    AParameter,
+    AProperty,
+    BClass,
+    BMethod,
+    BParameter,
+    BProperty,
+} from '../../../testing/src/helpers';
 import { After } from './after.decorator';
+import { weaverContext } from '../../weaver/weaver-context';
+import { Weaver } from '../../weaver/weaver';
+import { JitWeaver } from '../../weaver/jit/jit-weaver';
+import { AnnotationType } from '../../annotation/annotation.types';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;
@@ -13,7 +23,8 @@ describe('AfterReturnContext', () => {
     let afterBAdvice = jasmine.createSpy('afterBAdvice');
 
     beforeEach(() => {
-        setWeaver((weaver = new JitWeaver()));
+        // TODO use setupWeaver
+        weaverContext.setWeaver((weaver = new JitWeaver()));
         afterAAdvice = jasmine.createSpy('afterAAdvice');
         afterBAdvice = jasmine.createSpy('afterBAdvice');
     });

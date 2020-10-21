@@ -1,23 +1,30 @@
 import { MemoFrame } from '../../drivers/memo-frame';
-import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
+import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
 export class PromiseMarshaller extends MemoMarshaller<Promise<any>, any> {
-    readonly modes = [MemoMarshallerMode.ASYNC, MemoMarshallerMode.SYNC];
     readonly types = 'Promise';
 
-    marshal(frame: MemoFrame<Promise<unknown>>, context: MarshallingContext): MemoFrame<Promise<any>> {
-        context.async.push(frame.value.then((v) => frame.setValue(context.defaultMarshal(v))));
+    marshal(
+        frame: MemoFrame<Promise<unknown>>,
+        context: MarshallingContext,
+        defaultMarshal: MarshalFn,
+    ): MemoFrame<Promise<any>> {
+        frame.setAsyncValue(frame.value.then((v) => defaultMarshal(v)));
         return frame;
     }
 
-    unmarshal(frame: MemoFrame<MemoFrame<any>>, context: UnmarshallingContext): Promise<any> {
-        if (context.async.length) {
-            return Promise.all(context.async).then((results) => {
-                return context.defaultUnmarshal(results[0]);
+    unmarshal(
+        frame: MemoFrame<MemoFrame<any>>,
+        context: UnmarshallingContext,
+        defaultUnmarshal: UnmarshalFn,
+    ): Promise<any> {
+        if (frame.isAsync()) {
+            return frame.async.then((v) => {
+                return defaultUnmarshal(v);
             });
         } else {
-            return Promise.resolve(context.defaultUnmarshal(frame.value));
+            return Promise.resolve(defaultUnmarshal(frame.value));
         }
     }
 }

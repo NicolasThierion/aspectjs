@@ -156,9 +156,7 @@ describe(`IdbMemoDriver`, () => {
 
             describe('as a date', () => {
                 beforeEach(() => {
-                    memoOptions.expiration = moment(initDate)
-                        .add(2, 'm')
-                        .toDate();
+                    memoOptions.expiration = moment(initDate).add(2, 'm').toDate();
                 });
 
                 describe('when data did not expire', () => {
@@ -341,10 +339,10 @@ describe(`IdbMemoDriver`, () => {
             });
         });
 
-        function nonAsyncShouldThrow(returnValue: any) {
+        function nonAsyncShouldThrow(returnValue: any, type: string) {
             return () => {
                 beforeEach(() => {
-                    joinpoint = jasmine.createSpy('joinpoint', () => returnValue).and.callThrough();
+                    joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => returnValue);
                 });
 
                 it('should throw an Error', () => {
@@ -352,25 +350,25 @@ describe(`IdbMemoDriver`, () => {
                         memoMethod();
                     }).toThrow(
                         new Error(
-                            `@Memo on method "MemoClassImpl.memoMethod": Driver indexedDb does not accept value ${returnValue} returned by method "MemoClassImpl.memoMethod"`,
+                            `@Memo on method "MemoClassImpl.memoMethod": Driver indexedDb does not accept value of type ${type} returned by method "MemoClassImpl.memoMethod"`,
                         ),
                     );
                 });
             };
         }
 
-        describe('that returns a Date', nonAsyncShouldThrow(new Date()));
+        describe('that returns a Date', nonAsyncShouldThrow(new Date(), 'Date'));
 
-        describe('that returns an object', nonAsyncShouldThrow({}));
+        describe('that returns an object', nonAsyncShouldThrow({}, 'Object'));
 
-        describe('that returns null', nonAsyncShouldThrow(null));
+        describe('that returns null', nonAsyncShouldThrow(null, 'object'));
 
-        describe('that returns undefined', nonAsyncShouldThrow(undefined));
+        describe('that returns undefined', nonAsyncShouldThrow(undefined, 'undefined'));
 
-        describe('that returns a boolean', nonAsyncShouldThrow(false));
+        describe('that returns a boolean', nonAsyncShouldThrow(false, 'Boolean'));
 
-        describe('that returns a number', nonAsyncShouldThrow(12));
+        describe('that returns a number', nonAsyncShouldThrow(12, 'Number'));
 
-        describe('that returns an array', nonAsyncShouldThrow([Promise.resolve()]));
+        describe('that returns an array', nonAsyncShouldThrow([Promise.resolve()], 'Array'));
     });
 });

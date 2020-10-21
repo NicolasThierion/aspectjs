@@ -12,7 +12,7 @@
   "typings": "dist/memo.d.ts",
   "scripts": {
     "build": "rm -rf dist && rollup --config rollup.config.js && yarn typings",
-    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist",
+    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist/typings && api-extractor run --local --verbose && rimraf dist/typings",
     "test": "lerna link && nyc jasmine --config=jasmine.json",
     "dev": "nodemon  -w src --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",

@@ -1,28 +1,20 @@
-import { AnnotationFactory } from '../../annotation/factory/factory';
-import { WeavingError } from '../errors/weaving-error';
 import { JitWeaver } from './jit-weaver';
+import { weaverContext } from '../weaver-context';
 import { Aspect } from '../../advice/aspect';
-import { setWeaver } from '../weaver';
+import { WeavingError } from '../errors/weaving-error';
 
 let weaver: JitWeaver;
 
-let factory: AnnotationFactory;
-
-const FACTORY_GROUP_TEST_ID = 'testFactory';
 const WEAVER_TEST_NAME = 'testWeaver';
 
 describe('JitWeaver', () => {
     beforeEach(() => {
-        factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
         weaver = new JitWeaver(WEAVER_TEST_NAME);
-        setWeaver(weaver);
+        weaverContext.setWeaver(weaver);
     });
 
     describe('.enable()', () => {
-        describe('after weaver has proceeded', () => {
-            beforeEach(() => {
-                weaver.load();
-            });
+        xdescribe('after weaver has proceeded', () => {
             it('should throw an error', () => {
                 expect(() => {
                     @Aspect('AClassLabel')

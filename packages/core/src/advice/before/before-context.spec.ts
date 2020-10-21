@@ -1,12 +1,22 @@
 import { AdviceContext, AroundContext, BeforeContext, CompileContext } from '../advice-context';
 import { Aspect } from '../aspect';
 import { on } from '../pointcut';
-import { AClass, AMethod, AParameter, AProperty, BClass, BMethod, BParameter, BProperty } from '../../../tests/helpers';
-import { AnnotationType } from '../../annotation/annotation.types';
-import { setWeaver, Weaver } from '../../weaver/weaver';
-import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { Around } from '../around/around.decorator';
+import {
+    AClass,
+    AMethod,
+    AParameter,
+    AProperty,
+    BClass,
+    BMethod,
+    BParameter,
+    BProperty,
+} from '../../../testing/src/helpers';
 import { Before } from './before.decorator';
+import { weaverContext } from '../../weaver/weaver-context';
+import { Around } from '../around/around.decorator';
+import { AnnotationType } from '../../annotation/annotation.types';
+import { JitWeaver } from '../../weaver/jit/jit-weaver';
+import { Weaver } from '../../weaver/weaver';
 
 describe('BeforeContext', () => {
     let weaver: Weaver;
@@ -16,7 +26,7 @@ describe('BeforeContext', () => {
     let aroundBAdvice = jasmine.createSpy('aroundBAdvice');
 
     beforeEach(() => {
-        setWeaver((weaver = new JitWeaver()));
+        weaverContext.setWeaver((weaver = new JitWeaver()));
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');
         beforeBAdvice = jasmine.createSpy('beforeBAdvice');
         aroundAAdvice = jasmine.createSpy('aroundAAdvice');

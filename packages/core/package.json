@@ -16,15 +16,15 @@
   "unpkg": "dist/umd/core.umd.min.js",
   "module": "dist/fesm2015/core.js",
   "fesm2015": "dist/fesm2015/core.js",
-  "esm2015": "dist/esm2015/core.js",
+  "esm2015": "dist/esm2015/public_api.js",
   "sideEffects": false,
   "typings": "dist/core.d.ts",
   "scripts": {
     "build": "rm -rf dist && rollup --config ./rollup.config.js && yarn typings",
-    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist",
+    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist/typings && api-extractor run --local --verbose && rimraf dist/typings",
     "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
-    "test:integration": "yarn build && cd tests/angular && yarn install && yarn add ../../ && yarn test",
+    "test:integration": "yarn build && cd testing/angular && yarn install && yarn add ../../ && yarn test",
     "size": "rollup --config ./rollup.config.js && size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
@@ -34,7 +34,7 @@
   ],
   "directories": {
     "lib": "src",
-    "test": "tests",
+    "test": "testing",
     "dist": "dist"
   },
   "repository": {

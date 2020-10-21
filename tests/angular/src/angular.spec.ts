@@ -28,7 +28,6 @@ export interface Labeled {
 export function setupWeaver(...aspects: AspectType[]): void {
     const weaver = new JitWeaver().enable(...aspects);
     setWeaver(weaver);
-    weaver.load();
 }
 
 export const AClass = new AnnotationFactory('tests').create(function AClass(): ClassDecorator {

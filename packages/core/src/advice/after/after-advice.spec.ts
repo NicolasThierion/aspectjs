@@ -1,35 +1,44 @@
 import { After } from './after.decorator';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
-import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../tests/helpers';
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../annotation/annotation.types';
 import Spy = jasmine.Spy;
 
-let afterAdvice: Spy;
+let advice: Spy;
 
 describe('@After advice', () => {
+    let aspectClass: any;
     describe('applied on a class', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AfterAspect {
                 @After(on.class.withAnnotations(AClass))
                 apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): void {
-                    expect(this).toEqual(jasmine.any(AfterAspect));
-                    afterAdvice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
+            aspectClass = AfterAspect;
 
-            afterAdvice = jasmine
-                .createSpy('afterAdvice', function (ctxt) {
-                    ctxt.instance.labels = ctxt.instance.labels ?? [];
-                    ctxt.instance.labels.push('AClass');
-                })
-                .and.callThrough();
+            advice = jasmine.createSpy('advice').and.callFake(function (ctxt) {
+                ctxt.instance.labels = ctxt.instance.labels ?? [];
+                ctxt.instance.labels.push('AClass');
+            });
 
             setupWeaver(new AfterAspect());
         });
 
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+
+            @AClass()
+            class X {}
+            new X();
+            expect(advice).toHaveBeenCalled();
+        });
         describe('when advice returns a value', () => {
             it('should throw an error', () => {
                 @Aspect('AClassLabel')
@@ -105,12 +114,12 @@ describe('@After advice', () => {
                             throw new Error('');
                         }
                     }
-                    expect(afterAdvice).not.toHaveBeenCalled();
+                    expect(advice).not.toHaveBeenCalled();
 
                     try {
                         new A();
                     } catch (e) {}
-                    expect(afterAdvice).toHaveBeenCalled();
+                    expect(advice).toHaveBeenCalled();
                 });
             });
         });
@@ -122,17 +131,29 @@ describe('@After advice', () => {
             class AfterAspect {
                 @After(on.property.withAnnotations(AProperty))
                 apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
-                    expect(this).toEqual(jasmine.any(AfterAspect));
-
-                    afterAdvice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
+            aspectClass = AfterAspect;
 
-            afterAdvice = jasmine
-                .createSpy('afterAdvice', function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
-                .and.callThrough();
+            advice = jasmine.createSpy('advice').and.callFake(function () {});
 
             setupWeaver(new AfterAspect());
+        });
+
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+            class A implements Labeled {
+                @AProperty()
+                labels?: string[];
+            }
+
+            const instance = new A() as Labeled;
+            const labels = instance.labels;
+
+            expect(advice).toHaveBeenCalled();
         });
 
         describe('getting the annotated property', () => {
@@ -145,7 +166,7 @@ describe('@After advice', () => {
                 const instance = new A() as Labeled;
                 const labels = instance.labels;
 
-                expect(afterAdvice).toHaveBeenCalled();
+                expect(advice).toHaveBeenCalled();
             });
 
             it("should return the original property's value", () => {
@@ -193,15 +214,14 @@ describe('@After advice', () => {
             class AfterAspect {
                 @After(on.method.withAnnotations(AMethod))
                 apply(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
-                    expect(this).toEqual(jasmine.any(AfterAspect));
-
-                    afterAdvice(ctxt);
+                    advice.bind(this)(ctxt);
                 }
             }
 
-            afterAdvice = jasmine
-                .createSpy('afterAdvice', function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {})
-                .and.callThrough();
+            aspectClass = AfterAspect;
+            advice = jasmine
+                .createSpy('advice')
+                .and.callFake(function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {});
 
             setupWeaver(new AfterAspect());
 
@@ -215,11 +235,19 @@ describe('@After advice', () => {
             a = new A() as Labeled;
         });
 
+        it('should bind this to the aspect instance', () => {
+            advice = jasmine.createSpy('advice').and.callFake(function () {
+                expect(this).toEqual(jasmine.any(aspectClass));
+            });
+            a.addLabel();
+            expect(advice).toHaveBeenCalled();
+        });
+
         describe('calling the method', () => {
             it('should invoke the aspect', () => {
-                expect(afterAdvice).not.toHaveBeenCalled();
+                expect(advice).not.toHaveBeenCalled();
                 a.addLabel();
-                expect(afterAdvice).toHaveBeenCalled();
+                expect(advice).toHaveBeenCalled();
             });
 
             it("should return the original property's value", () => {

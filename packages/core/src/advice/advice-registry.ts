@@ -1,36 +1,59 @@
 import { Advice } from './types';
-import { assert, getMetaOrDefault, getProto } from '../utils';
+import { getOrComputeMetadata, getProto } from '@aspectjs/core/utils';
 import { AspectType } from '../weaver/types';
+import { assertIsAspect } from '../utils/utils';
 
-const ADVICES_KEY = 'aspectjs.registry.aspect.advices';
-const ADVICES_REGISTRY_KEY = 'aspectjs.registry.aspect.advices.registry';
+let registryId = 0;
 
+/**
+ * Stores the aspects along with their advices.
+ */
 export class AdvicesRegistry {
-    static create(aspect: AspectType, ...advices: Advice[]) {
-        const advicesRegistry = getMetaOrDefault(ADVICES_REGISTRY_KEY, getProto(aspect), () =>
-            _recursiveGetAdvicesForAspect(aspect),
-        );
-
-        advices.reduce((advices, a) => {
-            advices[`${a.pointcut.ref}=>${a.name}`] = a;
-            a.aspect = aspect;
-            return advices;
-        }, advicesRegistry);
+    private readonly _aspectRegistryKey: string;
+    // private readonly _advicesByPointcuts: Record<string, Advice[]> = {};
+    constructor() {
+        this._aspectRegistryKey = `aspectjs.adviceRegistry(${registryId++}).byAspects`;
     }
-    static getAdvicesForAspect(aspect: AspectType): Advice[] {
-        return getMetaOrDefault(ADVICES_KEY, getProto(aspect), () => {
-            const advices = _recursiveGetAdvicesForAspect(aspect);
-            assert(!!Object.values(advices).length, `Aspect ${aspect.constructor.name} does not define any advice`);
 
-            return Object.values(advices);
+    /**
+     * Register a new advice, with its pointcut and the aspect is belongs to.
+     * @param aspect The aspect that defines the advice
+     * @param advice the advices to register.
+     */
+    register(aspect: object, advice: Advice): void {
+        const byAspectRegistry = this._getRegistry(this._aspectRegistryKey, aspect);
+        const a = advice;
+        const k = `${a.pointcut.ref}=>${a.name}`;
+        byAspectRegistry[k] = a;
+
+        // const pc = advice.pointcut;
+        // this._advicesByPointcuts[pc.ref] = this._advicesByPointcuts[pc.ref] ?? [];
+        // this._advicesByPointcuts[pc.ref].push(a);
+    }
+
+    getAdvicesByAspect(aspect: AspectType): Advice[] {
+        assertIsAspect(aspect);
+
+        return Object.values(this._getRegistry(this._aspectRegistryKey, aspect))
+            .flat()
+            .map((advice) => {
+                const bound = advice.bind(aspect);
+                Object.defineProperties(bound, Object.getOwnPropertyDescriptors(advice));
+                return bound as Advice;
+            });
+    }
+
+    // getAdvicesByPointcut(pc: Pointcut): Advice[] {
+    //     return this._advicesByPointcuts[pc.ref] ?? [];
+    // }
+
+    private _getRegistry(registerKey: string, aspect: AspectType): Record<string, Advice> {
+        const proto = getProto(aspect);
+
+        return getOrComputeMetadata(registerKey, proto, () => {
+            const parentProto = Reflect.getPrototypeOf(proto);
+
+            return parentProto === Object.prototype ? {} : this._getRegistry(registerKey, parentProto);
         });
     }
-}
-
-function _recursiveGetAdvicesForAspect(aspect: AspectType): Record<string, Advice> {
-    return getMetaOrDefault(ADVICES_REGISTRY_KEY, getProto(aspect), () => {
-        const parentProto = Reflect.getPrototypeOf(getProto(aspect));
-
-        return parentProto === Object.prototype ? {} : _recursiveGetAdvicesForAspect(parentProto);
-    });
 }

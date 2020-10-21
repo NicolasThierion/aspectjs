@@ -1,12 +1,13 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "composite": true
-  },
   "include": [
     "src/**/*.ts",
+    "testing/**/*.ts",
     "public_api.ts",
-    "core.ts",
+    "index.ts",
     "node_modules/@types/node/globals.d.ts"
+  ],
+  "exclude": [
+    "dist"
   ]
 }

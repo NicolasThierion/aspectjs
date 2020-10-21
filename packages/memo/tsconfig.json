@@ -7,14 +7,14 @@
       "es2019.array"
     ]
   },
-  "references": [{
+  "references": [{ // conflicts on utils.ts being already compiled: https://github.com/Microsoft/TypeScript/issues/26691
     "path": "../core/tsconfig.json"
   }],
   "include": [
     "src/**/*.ts",
     "node_modules/@types/node/globals.d.ts",
-    "./pubxlic_api.ts",
-    "./memo.ts"
+    "./index.ts",
+    "./public_api.ts"
   ],
-  "exclude": ["*.spec.ts"]
+  "exclude": ["**/*.spec.ts"]
 }

@@ -1,26 +1,35 @@
 import { MemoFrame } from '../../drivers/memo-frame';
-import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
+import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { from, Observable } from 'rxjs';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
+import { share, shareReplay } from 'rxjs/operators';
 
 export class ObservableMarshaller extends MemoMarshaller<Observable<any>, any> {
-    readonly modes = [MemoMarshallerMode.ASYNC, MemoMarshallerMode.SYNC];
     readonly types = 'Observable';
 
-    marshal(frame: MemoFrame<Observable<unknown>>, context: MarshallingContext): MemoFrame<Observable<any>> {
-        context.async.push(frame.value.toPromise().then((v) => frame.setValue(context.defaultMarshal(v))));
+    marshal(
+        frame: MemoFrame<Observable<unknown>>,
+        context: MarshallingContext,
+        defaultMarshal: MarshalFn,
+    ): MemoFrame<Observable<any>> {
+        frame.setAsyncValue(
+            frame.value
+                .pipe(shareReplay(1))
+                .toPromise()
+                .then((v) => defaultMarshal(v)),
+        );
         return frame;
     }
 
-    unmarshal(frame: MemoFrame<MemoFrame<any>>, context: UnmarshallingContext): Observable<any> {
-        if (context.async.length) {
-            return from(
-                Promise.all(context.async).then((results) => {
-                    return context.defaultUnmarshal(results[0]);
-                }),
-            );
+    unmarshal(
+        frame: MemoFrame<MemoFrame<any>>,
+        context: UnmarshallingContext,
+        defaultUnmarshal: UnmarshalFn,
+    ): Observable<any> {
+        if (frame.isAsync()) {
+            return from(frame.async.then((v) => defaultUnmarshal(v))).pipe(share());
         } else {
-            return from(context.defaultUnmarshal(frame.value));
+            return from(Promise.resolve(defaultUnmarshal(frame.value)));
         }
     }
 }

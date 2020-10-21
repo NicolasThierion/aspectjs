@@ -1,7 +1,10 @@
 {
+  "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "esModuleInterop": true,
     "declaration": true,
+    "composite": true,
+    "declarationMap": true,
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
@@ -17,16 +20,17 @@
       "es2019.array"
     ],
     "types": ["reflect-metadata", "jasmine", "node"],
-    "target": "es6"
+    "target": "es6",
+    "baseUrl": "."
   },
-  "exclude": [
+   "exclude": [
     "dist",
     "build",
     "node_modules",
     "**/*.spec.ts"
   ],
   "include": [
-    "packages/**/*.ts",
+    "./build/**/*.ts",
     "node_modules/@types/node/globals.d.ts"
   ]
 }

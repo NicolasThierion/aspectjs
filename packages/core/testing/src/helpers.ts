@@ -1,16 +1,15 @@
-import { JitWeaver } from '../src/weaver/jit/jit-weaver';
-import { AnnotationFactory } from '../src/annotation/factory/factory';
-import { setWeaver } from '../src/weaver/weaver';
-import { AspectType } from '../src/weaver/types';
+import { AspectType } from '../../src/weaver/types';
+import { JitWeaver } from '../../src/weaver/jit/jit-weaver';
+import { AnnotationFactory } from '../../src/annotation/factory/annotation-factory';
+import { weaverContext } from '../../src/weaver/weaver-context';
 
 export interface Labeled {
     labels?: string[];
     addLabel?: (...args: any[]) => any;
 }
-export function setupWeaver(...aspects: AspectType[]): void {
+export function setupWeaver(...aspects: AspectType[]) {
     const weaver = new JitWeaver().enable(...aspects);
-    setWeaver(weaver);
-    weaver.load();
+    weaverContext.setWeaver(weaver);
 }
 
 export const AClass = new AnnotationFactory('tests').create(function AClass(): ClassDecorator {

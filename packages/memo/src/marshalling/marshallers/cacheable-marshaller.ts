@@ -1,14 +1,14 @@
 import { getWeaver, WeavingError } from '@aspectjs/core';
 import { MemoFrame } from '../../drivers/memo-frame';
-import { assert, provider } from '../../utils/utils';
+import { assert } from '@aspectjs/core/utils';
+import { provider } from '@aspectjs/core/utils';
 import { VersionConflictError } from '../../errors';
 import { CacheableAspect, CacheTypeStore } from '../../cacheable/cacheable.aspect';
-import { MemoMarshaller, MemoMarshallerMode } from './marshaller';
+import { MarshalFn, MemoMarshaller } from './marshaller';
 import { ObjectMarshaller } from './object-marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
 export class CacheableMarshaller extends MemoMarshaller {
-    readonly modes: MemoMarshallerMode.SYNC;
     readonly types = '*';
     private _objectMarshaller: ObjectMarshaller;
     private _nonCacheableHandler: (proto: object) => void;
@@ -25,7 +25,7 @@ export class CacheableMarshaller extends MemoMarshaller {
                 );
             });
     }
-    marshal(frame: MemoFrame<object>, context: MarshallingContext): MemoFrame {
+    marshal(frame: MemoFrame<object>, context: MarshallingContext, defaultMarshal: MarshalFn): MemoFrame {
         // delete wrap.type; // Do not store useless type, as INSTANCE_TYPE is used for objects of non-built-in types.
         const proto = Reflect.getPrototypeOf(frame.value);
 
@@ -36,15 +36,15 @@ export class CacheableMarshaller extends MemoMarshaller {
             this._nonCacheableHandler(proto);
         }
 
-        const newFrame = this._objectMarshaller.marshal(frame, context);
+        const newFrame = this._objectMarshaller.marshal(frame, context, defaultMarshal);
 
         newFrame.instanceType = instanceType;
         newFrame.version = provider(ts.getVersion(instanceType))();
 
         return newFrame;
     }
-    unmarshal(frame: MemoFrame<object>, context: UnmarshallingContext): any {
-        frame.value = this._objectMarshaller.unmarshal(frame, context);
+    unmarshal(frame: MemoFrame<object>, context: UnmarshallingContext, defaultUnmarshal: MarshalFn): any {
+        frame.value = this._objectMarshaller.unmarshal(frame, context, defaultUnmarshal);
 
         assert(!!frame.instanceType);
         const ts = typeStore();

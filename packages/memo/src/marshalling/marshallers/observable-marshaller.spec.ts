@@ -5,13 +5,13 @@ import { DEFAULT_MARSHALLERS } from '../../memo.aspect';
 import { ObservableMarshaller } from './observable-marshaller';
 import { delay } from 'rxjs/operators';
 
-xdescribe('Calling a @Memo method that returns an Observable', () => {
+describe('Calling a @Memo method that returns an Observable', () => {
     let joinpoint: jasmine.Spy;
     let memoMethod: () => Observable<any>;
 
     beforeEach(() => {
         setupMemoAspect();
-        joinpoint = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => of('value').pipe(delay(1)));
+        joinpoint = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => of('value').pipe(delay(10)));
         localStorage.clear();
     });
 
@@ -29,6 +29,7 @@ xdescribe('Calling a @Memo method that returns an Observable', () => {
         });
     });
 
+    // TODO
     [LsMemoDriver.NAME, IdbMemoDriver.NAME].forEach((driverName) => {
         describe(`when @Memo is configured with driver "${driverName}"`, () => {
             describe('and MemoAspect is configured with the ObservableMarshaller', () => {
@@ -48,7 +49,7 @@ xdescribe('Calling a @Memo method that returns an Observable', () => {
                             expect(memoMethod()).toEqual(jasmine.any(Observable));
                         });
 
-                        xit('should call the real method once', () => {
+                        it('should call the real method once', () => {
                             memoMethod();
                             memoMethod();
 
@@ -57,14 +58,8 @@ xdescribe('Calling a @Memo method that returns an Observable', () => {
                     });
                 });
 
-                describe('when the promise is resolved', () => {
-                    beforeEach(() => {
-                        joinpoint = jasmine
-                            .createSpy('methodSpy', (...args: any[]) => Promise.resolve('value'))
-                            .and.callThrough();
-                    });
-
-                    xit('should resolve to the cached value', async () => {
+                describe('when the observable is resolved', () => {
+                    it('should resolve to the cached value', async () => {
                         const value1 = await memoMethod().toPromise();
                         const value2 = await memoMethod().toPromise();
                         expect(value1).toEqual('value');

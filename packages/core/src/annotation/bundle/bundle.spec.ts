@@ -1,12 +1,12 @@
-import { AnnotationFactory } from '../factory/factory';
+import { AnnotationFactory } from '../factory/annotation-factory';
 import { AnnotationsBundle } from './bundle';
 import { ClassAnnotation, MethodAnnotation, ParameterAnnotation, PropertyAnnotation } from '../annotation.types';
 import { AnnotationLocationFactory } from '../target/annotation-target.factory';
-import { setWeaver } from '../../weaver/weaver';
+import { weaverContext } from '../../weaver/weaver-context';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 
 describe('given a class', () => {
-    beforeEach(() => setWeaver(new JitWeaver()));
+    beforeEach(() => weaverContext.setWeaver(new JitWeaver()));
     class X {
         someProp: any;
 

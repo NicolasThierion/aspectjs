@@ -1,7 +1,7 @@
 import { Before } from './before/before.decorator';
 import { on } from './pointcut';
 import { AfterContext, AfterReturnContext, AfterThrowContext, AroundContext, BeforeContext } from './advice-context';
-import { AClass, AMethod, AProperty, BMethod, Labeled, setupWeaver } from '../../tests/helpers';
+import { AClass, AMethod, AProperty, BMethod, Labeled, setupWeaver } from '../../testing/src/helpers';
 import { Around } from './around/around.decorator';
 import { After } from './after/after.decorator';
 import { AfterReturn } from './after-return/after-return.decorator';
@@ -61,9 +61,9 @@ describe('@Aspect', () => {
     });
 
     describe('that inherits from other class that define advices', () => {
-        let parentMethodAdvice1 = jasmine.createSpy('parentMethodAdvice1');
-        let parentMethodAdvice2 = jasmine.createSpy('parentMethodAdvice2');
-        let childMethodAdvice = jasmine.createSpy('parentMethodAdvice');
+        let parentMethodAdvice1: jasmine.Spy;
+        let parentMethodAdvice2: jasmine.Spy;
+        let childMethodAdvice: jasmine.Spy;
 
         beforeEach(() => {
             parentMethodAdvice1 = jasmine.createSpy('parentMethodAdvice1');
@@ -110,7 +110,7 @@ describe('@Aspect', () => {
             expect(childMethodAdvice).toHaveBeenCalledTimes(1);
         });
 
-        describe('when child chall override advice of parent class', function () {
+        describe('when child class overrides advice of parent class', function () {
             it('should not invoke parent advice', () => {
                 expect(parentMethodAdvice2).not.toHaveBeenCalled();
 

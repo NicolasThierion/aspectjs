@@ -1,10 +1,13 @@
-import { JitWeaver, setWeaver } from '@aspectjs/core';
+import { JitWeaver } from '@aspectjs/core';
+
 import { MemoAspect } from './memo.aspect';
 import { DefaultCacheableAspect } from './cacheable/cacheable.aspect';
 import { MemoDriver } from './drivers/memo.driver';
 import { MemoKey } from './memo.types';
 import { Memo } from './memo.annotation';
 import { InstantPromise } from './utils/instant-promise';
+import { MarshallingContext } from './marshalling/marshalling-context';
+import { weaverContext } from '@aspectjs/core';
 
 interface Runner {
     process(...args: any[]): any;
@@ -27,7 +30,7 @@ function _createRunner(driver?: typeof MemoDriver | string) {
 }
 
 class DummyDriver extends MemoDriver {
-    constructor(public readonly name: string, public priority: number) {
+    constructor(public readonly name: string, public priority: number, public _accepts: boolean) {
         super();
     }
     get NAME(): string {
@@ -47,8 +50,11 @@ class DummyDriver extends MemoDriver {
     getKeys(namespace?: string): Promise<MemoKey[]> {
         return Promise.resolve([]);
     }
+    accepts(context: MarshallingContext) {
+        return this._accepts;
+    }
 
-    getPriority(type: any): number {
+    getPriority(context: MarshallingContext): number {
         return this.priority;
     }
 }
@@ -60,13 +66,15 @@ describe('MemoAspect', () => {
 
     beforeEach(() => {
         processFn = jasmine.createSpy('process');
-        driver1 = new (class extends DummyDriver {})('driver1', 1);
-        driver2 = new (class extends DummyDriver {})('driver2', 2);
+        driver1 = new (class extends DummyDriver {})('driver1', 1, true);
+        driver2 = new (class extends DummyDriver {})('driver2', 2, true);
         [driver1, driver2].forEach((d) => {
             spyOn(d, 'getValue').and.callThrough();
             spyOn(d, 'setValue').and.callThrough();
         });
-        setWeaver(new JitWeaver().enable(new MemoAspect().drivers(driver1, driver2), new DefaultCacheableAspect()));
+        weaverContext.setWeaver(
+            new JitWeaver().enable(new MemoAspect().drivers(driver1, driver2), new DefaultCacheableAspect()),
+        );
     });
     describe('given an advice', () => {
         describe('that do not specify driver type', () => {
@@ -105,18 +113,16 @@ describe('MemoAspect', () => {
                 describe('but the specified driver do not accept the return value', () => {
                     beforeEach(() => {
                         r = _createRunner(driver1.NAME);
-                        processFn = jasmine
-                            .createSpy('process', () => {
-                                return 'UnsupportedValue';
-                            })
-                            .and.callThrough();
-                        driver1.priority = 0;
+                        processFn = jasmine.createSpy('process').and.callFake(() => {
+                            return 'UnsupportedValue';
+                        });
+                        driver1._accepts = false;
                     });
 
                     it('should throw an error', () => {
                         expect(() => r.process()).toThrow(
                             new Error(
-                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method "RunnerImpl.process"',
+                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value of type String returned by method "RunnerImpl.process"',
                             ),
                         );
                     });
@@ -148,22 +154,20 @@ describe('MemoAspect', () => {
                 describe('but the specified driver do not accept the return value', () => {
                     beforeEach(() => {
                         r = _createRunner(Reflect.getPrototypeOf(driver1).constructor as any);
-                        processFn = jasmine
-                            .createSpy('process', () => {
-                                return 'UnsupportedValue';
-                            })
-                            .and.callThrough();
-                        driver1.priority = 0;
+                        processFn = jasmine.createSpy('process').and.callFake(() => {
+                            return 'UnsupportedValue';
+                        });
+                        driver1._accepts = false;
                     });
 
                     it('should throw an error', () => {
                         expect(() => r.process()).toThrow(
                             new Error(
-                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method "RunnerImpl.process"',
+                                '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value of type String returned by method "RunnerImpl.process"',
                             ),
                         );
-                        //    @Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method RunnerImpl.process
-                        //    @Memo on method "RunnerImpl.process": Driver driver1 does not accept value UnsupportedValue returned by method "RunnerImpl.process"
+                        //    @Memo on method "RunnerImpl.process": Driver driver1 does not accept value of type UnsupportedValue returned by method RunnerImpl.process
+                        //    @Memo on method "RunnerImpl.process": Driver driver1 does not accept value of type UnsupportedValue returned by method "RunnerImpl.process"
                     });
                 });
             });

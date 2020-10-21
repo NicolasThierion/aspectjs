@@ -1,7 +1,7 @@
 import { Memo } from '../../memo.annotation';
 import moment from 'moment';
 import { createMemoMethod, setupMemoAspect } from '../../utils/spec-helpers';
-import { BeforeContext } from '@aspectjs/core/src/advice/before/before-context';
+import { BeforeContext } from '@aspectjs/core';
 
 interface Runner {
     run(...args: any[]): any;
@@ -123,9 +123,7 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
 
         describe('as a date', () => {
             beforeEach(() => {
-                memoOptions.expiration = moment(initDate)
-                    .add(2, 'm')
-                    .toDate();
+                memoOptions.expiration = moment(initDate).add(2, 'm').toDate();
             });
 
             describe('when data did not expire', () => {

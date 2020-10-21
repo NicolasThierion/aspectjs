@@ -2,7 +2,15 @@ import { MemoDriver } from './drivers/memo.driver';
 import { MemoEntry, MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
 import { Around, AroundContext, Aspect, AspectError, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
-import { getMetaOrDefault, isFunction, isString, isUndefined, provider } from './utils/utils';
+import {
+    getOrComputeMetadata,
+    getProto,
+    isFunction,
+    isString,
+    isUndefined,
+    Mutable,
+    provider,
+} from '@aspectjs/core/utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
 import { murmurhash } from './utils/murmurhash';
@@ -17,9 +25,7 @@ import {
     ObjectMarshaller,
     PromiseMarshaller,
 } from './marshalling/marshallers';
-import { InstantPromise } from './utils/instant-promise';
 import { MemoFrame } from './drivers';
-import { Mutable } from '@aspectjs/core/src/utils';
 
 export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
     new ObjectMarshaller(),
@@ -47,7 +53,7 @@ export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
         const { id, _id, hashcode, _hashcode } = ctxt.instance;
         const result = id ?? _id ?? hashcode ?? _hashcode;
         if (isUndefined(result)) {
-            return getMetaOrDefault(MEMO_ID_REFLECT_KEY, ctxt.instance, () => internalId++);
+            return getOrComputeMetadata(MEMO_ID_REFLECT_KEY, ctxt.instance, () => internalId++);
         }
         return result;
     },
@@ -76,7 +82,7 @@ export class MemoAspect {
     constructor(params?: MemoAspectOptions) {
         this._params = { ...DEFAULT_MEMO_ASPECT_OPTIONS, ...params };
         this._marshallers = new MarshallersRegistry();
-        this._marshallers.addMarshaller(...(this._params.marshallers ?? []));
+        this._marshallers.addMarshaller(...DEFAULT_MARSHALLERS, ...(this._params.marshallers ?? []));
     }
 
     getDrivers() {
@@ -96,7 +102,6 @@ export class MemoAspect {
                 );
             }
             this._drivers[d.NAME] = d;
-            d.marshallersRegistry = this._marshallers;
             this._initGc(d);
         });
         return this;
@@ -113,7 +118,6 @@ export class MemoAspect {
     @Before(on.method.withAnnotations(Memo))
     protected createKey(ctxt: BeforeContext<any, any>): void {
         const memoParams = ctxt.annotation.args[0] as MemoOptions;
-
         ctxt.data.namespace = provider(memoParams?.namespace)() ?? provider(this._params?.namespace)();
         ctxt.data.instanceId = `${provider(memoParams?.id)(ctxt) ?? provider(this._params?.id)(ctxt)}`;
         ctxt.data.contextKey = this._params.contextKey(ctxt);
@@ -135,40 +139,40 @@ export class MemoAspect {
 
         const proceedJoinpoint = () => {
             // value not cached. Call the original method
-            const value = jp();
+            const value = (this._pendingResults[key.toString()] = jp());
 
-            const marshallingContext = this._marshallers.createMarshallingContext(key);
+            // marshall the value into a frame
+            const marshallingContext = this._marshallers.marshal(key, value);
 
             const driver = drivers
-                .map((d) => [d, d.getPriority(value)])
-                .filter((dp) => dp[1] > 0)
+                .filter((d) => d.accepts(marshallingContext))
+                .map((d) => [d, d.getPriority(marshallingContext)])
                 .sort((dp1: any, dp2: any) => dp2[1] - dp1[1])
                 .map((dp) => dp[0])[0] as MemoDriver;
 
             if (!driver) {
                 throw new AspectError(
                     ctxt,
-                    `Driver ${drivers[0].NAME} does not accept value ${value} returned by ${ctxt.target.label}`,
+                    `Driver ${drivers[0].NAME} does not accept value of type ${
+                        getProto(value)?.constructor?.name ?? typeof value
+                    } returned by ${ctxt.target.label}`,
                 );
             }
-
-            // promise resolution may not arrive in time in case the same method is called right after.
-            // store the result in a temporary variable in order to be available right away
-            const entry = {
-                key,
-                expiration,
-                frame: undefined as MemoFrame,
-            } as Mutable<MemoEntry>;
-            this._pendingResults[key.toString()] = value;
-
-            // marshall the value into a frame
-            entry.frame = marshallingContext.marshal(value);
 
             if (expiration) {
                 this._scheduleCleaner(driver, key, expiration);
             }
 
-            InstantPromise.all(...marshallingContext.async).then(() => {
+            marshallingContext.then((frame: MemoFrame<any>) => {
+                // promise resolution may not arrive in time in case the same method is called right after.
+                // store the result in a temporary variable in order to be available right away
+                const entry = {
+                    key,
+                    expiration,
+                    frame: undefined as MemoFrame,
+                } as Mutable<MemoEntry>;
+
+                entry.frame = frame;
                 driver.setValue(entry).then(() => {
                     if (this._pendingResults[key.toString()] === value) {
                         delete this._pendingResults[key.toString()];
@@ -189,7 +193,7 @@ export class MemoAspect {
                         // remove data if expired
                         this._removeValue(d, key);
                     } else {
-                        return this._marshallers.createUnmarshallingContext(key).unmarshal(entry.frame);
+                        return this._marshallers.unmarshal(key, entry.frame);
                     }
                 }
             } catch (e) {

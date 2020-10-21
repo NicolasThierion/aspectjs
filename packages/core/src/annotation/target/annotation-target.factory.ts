@@ -1,15 +1,14 @@
 import {
     assert,
     clone,
-    getMetaOrDefault,
-    getOrDefault,
+    getOrComputeMetadata,
     getProto,
     isFunction,
     isNumber,
     isObject,
     isUndefined,
     Mutable,
-} from '../../utils';
+} from '@aspectjs/core/utils';
 import {
     AnnotationLocation,
     AnnotationTarget,
@@ -21,6 +20,7 @@ import {
     PropertyAdviceTarget,
 } from './annotation-target';
 import { AnnotationType } from '../annotation.types';
+import { locator } from '../../utils/utils';
 
 const TARGET_GENERATORS = {
     [AnnotationType.CLASS]: _createClassAnnotationTarget,
@@ -29,14 +29,29 @@ const TARGET_GENERATORS = {
     [AnnotationType.PARAMETER]: _createParameterAnnotationTarget,
 };
 
+let globalTargetId = 0;
+
 const REF_GENERATORS = {
-    [AnnotationType.CLASS]: (d: Mutable<Partial<ClassAdviceTarget<any>>>) => `c[${d.proto.constructor.name}]`,
+    [AnnotationType.CLASS]: (d: Mutable<Partial<ClassAdviceTarget<any>>>) =>
+        `c[${d.proto.constructor.name}]#${getOrComputeMetadata('aspectjs.targetId', d.proto, () => globalTargetId++)}`,
     [AnnotationType.PROPERTY]: (d: Mutable<Partial<PropertyAdviceTarget<any>>>) =>
-        `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
+        `c[${d.proto.constructor.name}].p[${d.propertyKey}]#${getOrComputeMetadata(
+            'aspectjs.targetId',
+            d.proto,
+            () => globalTargetId++,
+        )}`,
     [AnnotationType.METHOD]: (d: Mutable<Partial<MethodAdviceTarget<any>>>) =>
-        `c[${d.proto.constructor.name}].p[${d.propertyKey}]`,
+        `c[${d.proto.constructor.name}].p[${d.propertyKey}]#${getOrComputeMetadata(
+            'aspectjs.targetId',
+            d.proto,
+            () => globalTargetId++,
+        )}`,
     [AnnotationType.PARAMETER]: (d: Mutable<Partial<ParameterAdviceTarget<any>>>) =>
-        `c[${d.proto.constructor.name}].p[${d.propertyKey}].a[${d.parameterIndex}]`,
+        `c[${d.proto.constructor.name}].p[${d.propertyKey}].a[${d.parameterIndex}]#${getOrComputeMetadata(
+            'aspectjs.targetId',
+            d.proto,
+            () => globalTargetId++,
+        )}`,
 };
 
 export abstract class AnnotationTargetFactory {
@@ -89,7 +104,7 @@ export abstract class AnnotationTargetFactory {
 
         const ref = REF_GENERATORS[type](dtarget as any);
 
-        return getMetaOrDefault(_metaKey(ref), dtarget.proto, () => {
+        return getOrComputeMetadata(_metaKey(ref), dtarget.proto, () => {
             const target = (TARGET_GENERATORS[type] as any)(dtarget as any);
             Reflect.setPrototypeOf(target, AnnotationTargetImpl.prototype);
 
@@ -253,56 +268,61 @@ export abstract class AnnotationLocationFactory {
         assert((dtarget.type === AnnotationType.CLASS) === ((rootTarget as any) === dtarget));
 
         // retrieve the declaringClass location (location of the declaringClass target)
-        const rootLocation = getOrDefault(rootTarget, 'location', () => _createLocation(rootTarget)); // if no rootLocation exists, create a new one.
+        const rootLocation = locator(rootTarget)
+            .at('location')
+            .orElse(() => _createLocation(rootTarget)); // if no rootLocation exists, create a new one.
 
         if (dtarget.type === AnnotationType.CLASS) {
             return rootLocation as AnnotationLocation<T, A>;
         } else {
             // add a new location to the declaringClass location if it does not exists
             if (dtarget.type === AnnotationType.PROPERTY) {
-                return getOrDefault(
-                    rootLocation as any,
-                    ((dtarget as any) as PropertyAdviceTarget<T>).propertyKey,
-                    () => _createLocation(dtarget),
-                );
+                return locator(rootLocation as any)
+                    .at(dtarget.propertyKey)
+                    .orElse(() => _createLocation(dtarget));
             } else {
                 const pdtarget = (dtarget as any) as PropertyAdviceTarget<T>;
-                const methodLocation = getOrDefault(rootLocation as any, pdtarget.propertyKey, () => {
-                    const methodTarget = AnnotationTargetFactory.create(
-                        {
-                            proto: pdtarget.proto,
-                            propertyKey: pdtarget.propertyKey,
-                            descriptor: Object.getOwnPropertyDescriptor(pdtarget.proto, pdtarget.propertyKey) as any,
-                            location: new AdviceLocationImpl() as any,
-                        },
-                        AnnotationType.METHOD,
-                    );
+                const methodLocation = locator(rootLocation as any)
+                    .at(pdtarget.propertyKey)
+                    .orElse(() => {
+                        const methodTarget = AnnotationTargetFactory.create(
+                            {
+                                proto: pdtarget.proto,
+                                propertyKey: pdtarget.propertyKey,
+                                descriptor: Object.getOwnPropertyDescriptor(
+                                    pdtarget.proto,
+                                    pdtarget.propertyKey,
+                                ) as any,
+                                location: new AdviceLocationImpl() as any,
+                            },
+                            AnnotationType.METHOD,
+                        );
 
-                    const ml = _createLocation(methodTarget, methodTarget.location) as MethodAnnotationLocation<T>;
+                        const ml = _createLocation(methodTarget, methodTarget.location) as MethodAnnotationLocation<T>;
 
-                    // if type = argument, ensure method loc already exists
-                    getOrDefault(ml, 'args', () => {
-                        const argsTarget = AnnotationTargetFactory.create({
-                            proto: dtarget.proto,
-                            propertyKey: pdtarget.propertyKey,
-                            parameterIndex: NaN as any,
-                            location: [] as any,
-                        });
+                        // if type = argument, ensure method loc already exists
+                        locator(ml)
+                            .at('args')
+                            .orElse(() => {
+                                const argsTarget = AnnotationTargetFactory.create({
+                                    proto: dtarget.proto,
+                                    propertyKey: pdtarget.propertyKey,
+                                    parameterIndex: NaN as any,
+                                    location: [] as any,
+                                });
 
-                        return _createLocation(argsTarget) as any;
+                                return _createLocation(argsTarget) as any;
+                            });
+
+                        return ml;
                     });
-
-                    return ml;
-                });
 
                 if (dtarget.type === AnnotationType.METHOD) {
                     return methodLocation as MethodAnnotationLocation<T>;
                 } else {
-                    return getOrDefault(
-                        methodLocation.args,
-                        ((dtarget as any) as ParameterAdviceTarget<T>).parameterIndex,
-                        () => _createLocation(dtarget) as ParameterAnnotationLocation<T>,
-                    );
+                    return locator(methodLocation.args)
+                        .at(((dtarget as any) as ParameterAdviceTarget<T>).parameterIndex)
+                        .orElse(() => _createLocation(dtarget));
                 }
             }
         }

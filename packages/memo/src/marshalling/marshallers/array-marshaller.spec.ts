@@ -33,7 +33,8 @@ describe('Given a @Memo method that returns an Array', () => {
             memoMethod();
         });
         it('should return an array of objects of correct type', () => {
-            expect(memoMethod()).toEqual(memoMethod());
+            const r = memoMethod();
+            expect(memoMethod()).toEqual(r);
             expect(joinpoint).toHaveBeenCalledTimes(1);
             expect(memoMethod()).toEqual(jasmine.any(Array));
             expect(memoMethod()[0]).toEqual(jasmine.any(CacheableA));
@@ -42,7 +43,7 @@ describe('Given a @Memo method that returns an Array', () => {
 
     describe('of dates', () => {
         beforeEach(() => {
-            joinpoint = jasmine.createSpy('joinpoint', () => [new Date(10000), new Date(20000)]).and.callThrough();
+            joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => [new Date(10000), new Date(20000)]);
         });
 
         it('should return an array of correct type', () => {
@@ -55,12 +56,10 @@ describe('Given a @Memo method that returns an Array', () => {
 
     describe('of arrays', () => {
         beforeEach(() => {
-            joinpoint = jasmine
-                .createSpy('joinpoint', () => [
-                    ['a', 'b'],
-                    ['c', 'd'],
-                ])
-                .and.callThrough();
+            joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => [
+                ['a', 'b'],
+                ['c', 'd'],
+            ]);
         });
 
         it('should return an array of correct type', () => {
@@ -74,16 +73,14 @@ describe('Given a @Memo method that returns an Array', () => {
     describe('with cyclic elements', () => {
         let result: any;
         beforeEach(() => {
-            joinpoint = jasmine
-                .createSpy('joinpoint', () => {
-                    const arr1 = [] as any[];
-                    const arr2 = [] as any[];
-                    arr1.push('1', arr1, arr2);
-                    arr2.push('2', arr1);
+            joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => {
+                const arr1 = [] as any[];
+                const arr2 = [] as any[];
+                arr1.push('1', arr1, arr2);
+                arr2.push('2', arr1);
 
-                    return (result = arr1);
-                })
-                .and.callThrough();
+                return (result = arr1);
+            });
         });
 
         it('should return an array of correct type', () => {
@@ -96,8 +93,8 @@ describe('Given a @Memo method that returns an Array', () => {
     describe('of promises', () => {
         beforeEach(() => {
             joinpoint = jasmine
-                .createSpy('methodSpy', (...args: any[]) => [Promise.resolve('a'), Promise.resolve('b')])
-                .and.callThrough();
+                .createSpy('methodSpy')
+                .and.callFake((...args: any[]) => [Promise.resolve('a'), Promise.resolve('b')]);
         });
 
         describe('when all the promises are resolved', () => {
