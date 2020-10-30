@@ -56,7 +56,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
 
         const originalCtor = _compileClass(ctxt, plan.compileAdvices);
         const ctorName = originalCtor.name;
-        const ctor = function (...ctorArgs: any[]): T {
+        let ctor = function (...ctorArgs: any[]): T {
             ctxt.args = ctorArgs;
 
             try {
@@ -82,7 +82,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
             }
         };
 
-        _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
+        ctor = _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
 
         ctor.prototype = ctxt.target.proto;
         ctor.prototype.constructor = ctor;
@@ -100,8 +100,6 @@ export class JitWeaver extends WeaverProfile implements Weaver {
             ...refDescriptor,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const weaver = this;
         newDescriptor.get = function () {
             try {
                 ctxt.args = [];
@@ -209,23 +207,25 @@ export class JitWeaver extends WeaverProfile implements Weaver {
 }
 
 class JoinpointFactory<T> {
-    static create(
-        ctxt: MutableAdviceContext<any>,
-        fn: (...args: any[]) => any,
-        defaultArgsProvider = () => ctxt.args,
-    ): JoinPoint {
-        const alreadyCalledFn = (): void => {
+    static create<T>(instance: T, context: MutableAdviceContext<T>, fn: (...args: any[]) => any): JoinPoint;
+    static create<T>(context: MutableAdviceContext<T>, fn: (...args: any[]) => any): JoinPoint;
+    static create<T>(...args: any[]): JoinPoint {
+        let fn = args.pop() as (...args: any[]) => any;
+        const ctxt = args.pop() as MutableAdviceContext<T>;
+        const instance = args.pop() as T;
+
+        function alreadyCalledFn(): void {
             throw new AspectError(ctxt as AdviceContext, `joinPoint already proceeded`);
-        };
+        }
 
         return function (args?: any[]) {
-            args = args ?? defaultArgsProvider();
+            args = args ?? ctxt.args;
             if (!isArray(args)) {
                 throw new AspectError(ctxt as AdviceContext, `Joinpoint arguments expected to be array. Got: ${args}`);
             }
             const jp = fn;
             fn = alreadyCalledFn as any;
-            return jp.bind(ctxt.instance)(...args);
+            return jp.bind(instance ?? ctxt.instance)(...args);
         };
     }
 }
@@ -238,19 +238,23 @@ function _isPropertySet(a: Advice) {
     return a.pointcut.ref.startsWith('property#set');
 }
 
-function _setFunctionName(fn: Function, name: string, tag?: string): void {
+function _setFunctionName<T, F extends (...args: any[]) => T>(fn: F, name: string, tag?: string): F {
     assert(typeof fn === 'function');
 
-    Object.defineProperty(fn, 'name', {
+    // const newFn = fn;
+    const newFn = new Function('fn', `return function ${name}(...args) { return fn.apply(this, args) };`)(fn);
+    !Object.defineProperty(newFn, 'name', {
         value: name,
     });
     tag = tag ?? name;
 
-    Object.defineProperty(fn, Symbol.toPrimitive, {
+    Object.defineProperty(newFn, Symbol.toPrimitive, {
         enumerable: false,
         configurable: true,
         value: () => tag,
     });
+
+    return newFn;
 }
 
 function _isDescriptorWritable(propDescriptor: PropertyDescriptor) {
@@ -270,11 +274,11 @@ function _compileClass<T>(
         () => ctxt.target.proto.constructor,
     );
 
-    ctxt.advices = [...advices];
+    advices = [...advices];
     let advice: CompileAdvice<T, AnnotationType.CLASS>;
     let ctor: Function;
-    while (ctxt.advices.length) {
-        advice = ctxt.advices.shift() as CompileAdvice<T, AnnotationType.CLASS>;
+    while (advices.length) {
+        advice = advices.shift() as CompileAdvice<T, AnnotationType.CLASS>;
         ctor = advice(ctxt as AdviceContext<T, AnnotationType.CLASS>);
     }
 
@@ -293,86 +297,67 @@ function _aroundClass<T>(
     aroundPlans: AroundAdvicePlan<T, AnnotationType.CLASS>[],
     originalConstructor: new (...args: any[]) => any,
 ): void {
-    // aroundPlans.forEach((aroundPlan) => {
-    //
-    // })
-    const proto = ctxt.target.proto;
+    // originalConstructor may create a new instance, but we should keep the original not to mess up with instanceof.
+    const originalInstance = ctxt.instance;
+    let instance = originalInstance;
 
-    // this partial instance will take place until ctor is called
-    const partialThis = Object.create(proto);
+    const advices = aroundPlans.map((a) => a.around);
 
-    // TODO
-    // _beforeClass(ctxt, aroundPlans.before);
-    ctxt.advices = aroundPlans.map((a) => a.around);
-
-    // create ctor joinpoint
-    const originalJp = JoinpointFactory.create(
-        ctxt,
-        (...args: any[]) => new originalConstructor(...args),
-        () => ctxtCopy.args,
-    );
-    const originalThis = ctxt.instance;
+    // Original constructor will create a new instance, no matter the mutations applied on current instance until now.
+    // For this reason, accessing ctxt.instance is not allowed before calling original joinpoint.
+    // The safeContext is a copy of the context, that will throw an error if joinpoint is called after instance has been used.
     let thisAccess: AroundAdvice<any>;
-    let lastAdvice: AroundAdvice<any>;
-    // safe ctxt copy with protected this access
-    const ctxtCopy: MutableAdviceContext<any> = ctxt.clone();
-    delete ctxtCopy.instance;
-    Reflect.defineProperty(ctxtCopy, 'instance', {
+    const safeContext: MutableAdviceContext<any> = ctxt.clone();
+    delete safeContext.instance;
+    Reflect.defineProperty(safeContext, 'instance', {
         get() {
             thisAccess = lastAdvice;
-            return ctxt.instance;
+            return instance;
         },
     });
-    function createNextJoinpoint() {
-        return JoinpointFactory.create(
-            ctxt,
-            (...args: any[]) => {
-                if (ctxtCopy.advices.length) {
-                    lastAdvice = ctxtCopy.advices.shift() as AroundAdvice<any>;
 
-                    const nextJp = createNextJoinpoint() as any;
-                    ctxtCopy.joinpoint = nextJp;
-                    ctxtCopy.args = args;
-
-                    return (ctxt.instance = lastAdvice(ctxtCopy as any, nextJp, args) ?? ctxtCopy.instance);
-                } else {
-                    if (thisAccess) {
-                        // ensure 'this' instance has not been read before joinpoint gets called.
-                        throw new AdviceError(
-                            thisAccess,
-                            `Cannot get "this" instance of constructor before calling constructor joinpoint`,
-                        );
-                    }
-                    return (ctxt.instance = originalJp(args) ?? ctxt.instance);
-                }
-            },
-            () => ctxtCopy.args,
-        );
-    }
-
-    if (ctxtCopy.advices.length) {
-        ctxt.instance = partialThis;
-        const jp = createNextJoinpoint();
-        try {
-            ctxt.instance = jp();
-        } catch (e) {
-            // as of ES6 classes, 'this' is no more available after ctor thrown.
-            // replace 'this' with partial this
-
-            ctxt.instance = partialThis;
-
-            throw e;
+    // create the joinpoint for the original ctor
+    let joinpoint = JoinpointFactory.create(originalInstance, safeContext, (...args: any[]) => {
+        if (thisAccess) {
+            // ensure orininal ctor is not called after instance was already accessed
+            throw new AdviceError(
+                thisAccess,
+                `Cannot call constructor joinpoint when AroundContext.instance was already used`,
+            );
         }
-    } else {
-        ctxt.instance = originalJp(ctxt.args);
+
+        return (instance = new originalConstructor(...args));
+    });
+
+    advices.reverse().forEach((a) => {
+        const nextJp = joinpoint;
+        joinpoint = JoinpointFactory.create(ctxt, (...args: any[]) => {
+            safeContext.joinpoint = nextJp;
+            safeContext.args = args;
+            lastAdvice = a;
+            return (instance = a(safeContext as any, nextJp, args) ?? instance);
+        });
+    });
+
+    let lastAdvice: AroundAdvice<any>;
+
+    instance = originalInstance;
+    const jp = joinpoint;
+    try {
+        instance = jp();
+    } catch (e) {
+        // as of ES6 classes, 'this' is no more available after ctor thrown.
+        // replace 'this' with partial this
+        instance = originalInstance;
+        throw e;
     }
 
-    // assign 'this' to the object created by the original ctor at joinpoint;
-    Object.assign(originalThis, ctxt.instance);
-    ctxt.instance = originalThis;
+    // We need to keep originalThis as the instance, because of instanceof.
+    // Merge the new 'this' into originalThis;
+    Object.assign(originalInstance, instance);
+    ctxt.instance = originalInstance;
 
     delete ctxt.joinpoint;
-    // TODO what in case advice returns brand new 'this'?
 }
 
 function _afterReturnClass<T>(
@@ -381,9 +366,9 @@ function _afterReturnClass<T>(
 ): T {
     let newInstance = ctxt.instance;
 
-    ctxt.advices = [...advices];
-    while (ctxt.advices.length) {
-        const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
+    advices = [...advices];
+    while (advices.length) {
+        const advice = advices.shift() as AfterReturnAdvice<any>;
         ctxt.value = ctxt.instance;
         newInstance = advice(ctxt as AdviceContext<any, any>, ctxt.value);
         if (!isUndefined(newInstance)) {
@@ -398,14 +383,14 @@ function _afterThrowClass<T>(
     ctxt: MutableAdviceContext<T, AnnotationType.CLASS>,
     advices: AfterThrowAdvice<T, AnnotationType.CLASS>[],
 ): void {
-    ctxt.advices = [...advices];
-    if (!ctxt.advices.length) {
+    advices = [...advices];
+    if (!advices.length) {
         // pass-trough errors by default
         throw ctxt.error;
     } else {
         let newInstance = ctxt.instance;
-        while (ctxt.advices.length) {
-            const advice = ctxt.advices.shift() as AfterThrowAdvice<any>;
+        while (advices.length) {
+            const advice = advices.shift() as AfterThrowAdvice<any>;
             newInstance = advice(ctxt as AdviceContext<any, any>, ctxt.error);
             if (!isUndefined(newInstance)) {
                 ctxt.instance = newInstance;
@@ -450,12 +435,12 @@ function _compileProperty<T>(
         target.propertyKey,
     );
 
-    ctxt.advices = [...advices];
+    advices = [...advices];
     let advice: CompileAdvice<T, AnnotationType.PROPERTY>;
     let newDescriptor: PropertyDescriptor = ctxt.target.descriptor;
 
-    while (ctxt.advices.length) {
-        advice = ctxt.advices.shift() as CompileAdvice<T, AnnotationType.PROPERTY>;
+    while (advices.length) {
+        advice = advices.shift() as CompileAdvice<T, AnnotationType.PROPERTY>;
         newDescriptor = advice(ctxt as CompileContext<T, AnnotationType.PROPERTY>) ?? newDescriptor;
     }
 
@@ -591,12 +576,12 @@ function _compileMethod<T>(
         ),
     );
 
-    ctxt.advices = advices;
+    advices = advices;
     let advice: CompileAdvice<T, AnnotationType.METHOD>;
     let newDescriptor: PropertyDescriptor;
 
-    while (ctxt.advices.length) {
-        advice = ctxt.advices.shift() as CompileAdvice<any, AnnotationType.METHOD>;
+    while (advices.length) {
+        advice = advices.shift() as CompileAdvice<any, AnnotationType.METHOD>;
         newDescriptor = (advice(ctxt as AdviceContext<any, any>) as PropertyDescriptor) ?? newDescriptor;
     }
 
@@ -658,10 +643,8 @@ function _applyAroundMethod<A extends AnnotationType>(
     // create method joinpoint
     const originalJp = JoinpointFactory.create(ctxt, refMethod);
 
-    ctxt.advices = advices;
-
     let lastAdvice: AroundAdvice<any>;
-    if (ctxt.advices.length) {
+    if (advices.length) {
         const jp = createNextJoinpoint();
         ctxt.value = jp();
     } else {
@@ -672,8 +655,8 @@ function _applyAroundMethod<A extends AnnotationType>(
 
     function createNextJoinpoint() {
         return JoinpointFactory.create(ctxt, (...args: any[]) => {
-            if (ctxt.advices.length) {
-                lastAdvice = ctxt.advices.shift() as AroundAdvice<any>;
+            if (advices.length) {
+                lastAdvice = advices.shift() as AroundAdvice<any>;
 
                 const nextJp = createNextJoinpoint() as any;
                 ctxt.joinpoint = nextJp;
@@ -740,9 +723,8 @@ function _afterParameter(ctxt: MutableAdviceContext<AnnotationType.PARAMETER>): 
 }
 
 function _applyNonReturningAdvices(ctxt: MutableAdviceContext<any>, advices: Advice[]) {
-    ctxt.advices = advices;
-    while (ctxt.advices.length) {
-        const advice = ctxt.advices.shift() as AfterAdvice;
+    while (advices.length) {
+        const advice = advices.shift() as AfterAdvice;
         const retVal = advice(ctxt as AdviceContext);
         if (!isUndefined(retVal)) {
             throw new AdviceError(advice, `Returning from advice is not supported`);
@@ -754,13 +736,11 @@ function _applyAfterReturnAdvices<T, A extends AnnotationType>(
     ctxt: MutableAdviceContext<T, A>,
     advices: AfterReturnAdvice<T, A>[],
 ) {
-    ctxt.advices = advices;
-
-    if (ctxt.advices.length) {
+    if (advices.length) {
         ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
 
-        while (ctxt.advices.length) {
-            const advice = ctxt.advices.shift() as AfterReturnAdvice<any>;
+        while (advices.length) {
+            const advice = advices.shift() as AfterReturnAdvice<any>;
             ctxt.value = advice(ctxt as AfterReturnContext<any, AnnotationType>, ctxt.value);
         }
     }
@@ -773,13 +753,11 @@ function _applyAfterThrowAdvices<T, A extends AnnotationType>(
     advices: AfterThrowAdvice<T, A>[],
     prohibitReturn = false,
 ) {
-    ctxt.advices = advices;
-
-    if (ctxt.advices.length) {
+    if (advices.length) {
         ctxt.value = ctxt.value ?? undefined; // force key 'value' to be present
 
-        while (ctxt.advices.length) {
-            const advice = ctxt.advices.shift() as AfterThrowAdvice;
+        while (advices.length) {
+            const advice = advices.shift() as AfterThrowAdvice;
             ctxt.value = advice(ctxt as AfterThrowContext<any, AnnotationType>, ctxt.error);
 
             if (prohibitReturn && !isUndefined(ctxt.value)) {

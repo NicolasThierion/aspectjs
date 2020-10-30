@@ -3,11 +3,11 @@ import { AroundContext, BeforeContext } from '../advice-context';
 import { WeavingError } from '../../weaver/errors/weaving-error';
 import { Around } from './around.decorator';
 import { on } from '../pointcut';
-import { AClass, AMethod, AProperty, BClass, Labeled, setupWeaver } from '../../../testing/src/helpers';
-import Spy = jasmine.Spy;
+import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
 import { AnnotationType } from '../../annotation/annotation.types';
 import { Before } from '../before/before.decorator';
+import Spy = jasmine.Spy;
 
 describe('@Around advice', () => {
     let beforeAdvice: Spy;
@@ -74,7 +74,7 @@ describe('@Around advice', () => {
             expect(ctor).toHaveBeenCalledBefore(afterAdvice);
         });
 
-        describe('when referencing "this" before the joinpoint is called', () => {
+        describe('"this" value before the joinpoint is called', () => {
             beforeEach(() => {
                 aroundAdvice = jasmine
                     .createSpy('aroundAdvice')
@@ -84,7 +84,7 @@ describe('@Around advice', () => {
                     });
             });
 
-            it('should throw', () => {
+            it('should be null', () => {
                 expect(() => {
                     @AClass()
                     class A {
@@ -96,7 +96,7 @@ describe('@Around advice', () => {
                     new A();
                 }).toThrow(
                     new WeavingError(
-                        '@Around(@AClass) AroundClassAspect.apply(): Cannot get "this" instance of constructor before calling constructor joinpoint',
+                        '@Around(@AClass) AroundClassAspect.apply(): Cannot call constructor joinpoint when AroundContext.instance was already used',
                     ),
                 );
             });
