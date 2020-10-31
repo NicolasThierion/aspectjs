@@ -1,0 +1,29 @@
+import {
+    AdviceTarget,
+    ClassAdviceTarget,
+    MethodAdviceTarget,
+    ParameterAdviceTarget,
+    PropertyAdviceTarget,
+} from '../../advice/target/advice-target';
+import { AnnotationRef, AdviceType } from '../annotation.types';
+
+export interface AnnotationContext<T, A extends AdviceType> extends AnnotationRef {
+    readonly args: any[];
+    readonly target: AdviceTarget<T, A>;
+}
+
+export interface ClassAnnotationContext<T> extends AnnotationContext<T, AdviceType.CLASS> {
+    readonly target: ClassAdviceTarget<T>;
+}
+
+export interface MethodAnnotationContext<T> extends AnnotationContext<T, AdviceType.METHOD> {
+    readonly target: MethodAdviceTarget<T>;
+}
+
+export interface PropertyAnnotationContext<T> extends AnnotationContext<T, AdviceType.PROPERTY> {
+    readonly target: PropertyAdviceTarget<T>;
+}
+
+export interface ParameterAnnotationContext<T> extends AnnotationContext<T, AdviceType.PARAMETER> {
+    readonly target: ParameterAdviceTarget<T>;
+}

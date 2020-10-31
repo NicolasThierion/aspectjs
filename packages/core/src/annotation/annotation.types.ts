@@ -1,8 +1,8 @@
-export enum AnnotationType {
-    CLASS = 'AnnotationType.CLASS',
-    PROPERTY = 'AnnotationType.PROPERTY',
-    METHOD = 'AnnotationType.METHOD',
-    PARAMETER = 'AnnotationType.PARAMETER',
+export enum AdviceType {
+    CLASS = 'AdviceType.CLASS',
+    PROPERTY = 'AdviceType.PROPERTY',
+    METHOD = 'AdviceType.METHOD',
+    PARAMETER = 'AdviceType.PARAMETER',
 }
 
 export interface AnnotationRef {
@@ -55,13 +55,13 @@ type Provider<T> = (...args: any[]) => T;
  * An Annotation is an EcmaScript decorator with no behavior.
  * It relies on an annotation compiler with annotation processors to get the things done.
  */
-export type Annotation<T extends AnnotationType = any> = (T extends AnnotationType.CLASS
+export type Annotation<T extends AdviceType = any> = (T extends AdviceType.CLASS
     ? ClassAnnotation
-    : T extends AnnotationType.METHOD
+    : T extends AdviceType.METHOD
     ? MethodAnnotation
-    : T extends AnnotationType.PARAMETER
+    : T extends AdviceType.PARAMETER
     ? ParameterAnnotation
-    : T extends AnnotationType.PROPERTY
+    : T extends AdviceType.PROPERTY
     ? PropertyAnnotation
     : never) & // eslint-disable-next-line @typescript-eslint/ban-types
     Function &

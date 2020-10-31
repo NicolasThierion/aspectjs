@@ -1,4 +1,4 @@
-import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
+import { AnnotationRef, AdviceType } from '../../annotation/annotation.types';
 import { MutableAdviceContext } from '../../advice/advice-context';
 import {
     Advice,
@@ -10,24 +10,23 @@ import {
     CompileAdvice,
 } from '../../advice/types';
 import { AspectType } from '../types';
-import { getAspectOptions, locator } from '../../utils/utils';
+import { getAspectOptions } from '../../utils/utils';
 import { AspectOptions } from '../../advice/aspect';
 import { weaverContext } from '../weaver-context';
 import { PointcutPhase } from '../../advice/pointcut';
-import { AnnotationTarget } from '../../annotation/target/annotation-target';
+import { AdviceTarget } from '../../advice/target/advice-target';
 import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
-
-export interface AroundAdvicePlan<T = unknown, A extends AnnotationType = any> {
-    before: BeforeAdvice<T, A>[];
-    around: AroundAdvice<T, A>;
-    after: AfterAdvice<T, A>[];
-}
+import { WeaverHooks } from '../weaver-hooks';
+import { JoinpointFactory } from '../joinpoint-factory';
+import { WeavingError } from '../errors/weaving-error';
+import { locator } from '../../utils/locator';
+import { assert } from '@aspectjs/core/utils';
 
 export class AdviceExecutionPlanFactory {
     private readonly _aspects: Set<AspectType> = new Set<AspectType>();
     private _dirty = true;
     private _advicesByPointcut: {
-        [type in AnnotationType]?: {
+        [type in AdviceType]?: {
             [phase in PointcutPhase]?: {
                 byAnnotation: {
                     [annotationRef: string]: Advice<unknown, type, phase>[];
@@ -43,51 +42,31 @@ export class AdviceExecutionPlanFactory {
         this.enable(...aspects);
     }
 
-    create<T, A extends AnnotationType = any>(ctxt: MutableAdviceContext<T, A>): ExecutionPlan<T, A> {
+    create<T, A extends AdviceType = any>(
+        target: AdviceTarget<T, A>,
+        filter?: (a: Advice) => boolean,
+    ): ExecutionPlan<T, A> {
         this._load();
 
-        const compileAdvices: CompileAdvice<T, A>[] = this._getAdvices(PointcutPhase.COMPILE, ctxt.target);
-        const beforeAdvices: BeforeAdvice<T, A>[] = this._getAdvices(PointcutPhase.BEFORE, ctxt.target);
-        const aroundAdvices: AroundAdvice<T, A>[] = this._getAdvices(PointcutPhase.AROUND, ctxt.target);
-        const afterReturnAdvices: AfterReturnAdvice<T, A>[] = this._getAdvices(PointcutPhase.AFTERRETURN, ctxt.target);
-        const afterThrowAdvices: AfterThrowAdvice<T, A>[] = this._getAdvices(PointcutPhase.AFTERTHROW, ctxt.target);
-        const afterAdvices: AfterAdvice<T, A>[] = this._getAdvices(PointcutPhase.AFTER, ctxt.target);
-        const aroundAdvicePlans: AroundAdvicePlan<T, A>[] = [];
-        // nest before & after advices into around advices that have higher priority
-        while (aroundAdvices.length) {
-            const before: BeforeAdvice<T, A>[] = [];
-            const after: AfterAdvice<T, A>[] = [];
-            const around = aroundAdvices.shift();
-
-            while (
-                beforeAdvices.length &&
-                around.pointcut.options.priority > beforeAdvices[0].pointcut.options.priority
-            ) {
-                before.push(beforeAdvices.shift());
-            }
-
-            while (
-                afterAdvices.length &&
-                around.pointcut.options.priority < afterAdvices[0].pointcut.options.priority
-            ) {
-                after.push(afterAdvices.shift());
-            }
-            const aroundAdvicePlan: AroundAdvicePlan<T, A> = {
-                before,
-                after,
-                around,
-            };
-            aroundAdvicePlans.push(aroundAdvicePlan);
+        if (filter) {
+            return new ExecutionPlan<T, A>(
+                this._getAdvices(PointcutPhase.COMPILE, target).filter(filter),
+                this._getAdvices(PointcutPhase.BEFORE, target).filter(filter),
+                this._getAdvices(PointcutPhase.AROUND, target).filter(filter),
+                this._getAdvices(PointcutPhase.AFTERRETURN, target).filter(filter),
+                this._getAdvices(PointcutPhase.AFTERTHROW, target).filter(filter),
+                this._getAdvices(PointcutPhase.AFTER, target).filter(filter),
+            );
+        } else {
+            return new ExecutionPlan<T, A>(
+                this._getAdvices(PointcutPhase.COMPILE, target),
+                this._getAdvices(PointcutPhase.BEFORE, target),
+                this._getAdvices(PointcutPhase.AROUND, target),
+                this._getAdvices(PointcutPhase.AFTERRETURN, target),
+                this._getAdvices(PointcutPhase.AFTERTHROW, target),
+                this._getAdvices(PointcutPhase.AFTER, target),
+            );
         }
-
-        return new ExecutionPlan<T, A>(
-            compileAdvices,
-            beforeAdvices,
-            aroundAdvicePlans,
-            afterReturnAdvices,
-            afterThrowAdvices,
-            afterAdvices,
-        );
     }
 
     disable(...aspects: AspectType[]): void {
@@ -100,9 +79,9 @@ export class AdviceExecutionPlanFactory {
         aspects.forEach((a) => this._aspects.add(a));
     }
 
-    private _getAdvices<T, A extends AnnotationType, P extends PointcutPhase>(
+    private _getAdvices<T, A extends AdviceType, P extends PointcutPhase>(
         phase: P,
-        target: AnnotationTarget<T, A>,
+        target: AdviceTarget<T, A>,
     ): Advice<T, A, P>[] {
         this._load();
 
@@ -132,6 +111,10 @@ export class AdviceExecutionPlanFactory {
         ] as Advice<T, A, P>[];
     }
 
+    /**
+     * Sort the aspects according to their precedence & store by phase & type
+     * @private
+     */
     private _load() {
         if (this._dirty) {
             this._advicesByTarget = {};
@@ -162,15 +145,71 @@ export class AdviceExecutionPlanFactory {
     }
 }
 
-export class ExecutionPlan<T = unknown, A extends AnnotationType = any> {
+/**
+ * Sort the advices according to their precedence & store by phase & type, so they are ready to execute.
+ */
+export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
     constructor(
         public readonly compileAdvices: CompileAdvice<T, A>[],
         public readonly beforeAdvices: BeforeAdvice<T, A>[],
-        public readonly aroundAdvices: AroundAdvicePlan<T, A>[],
+        public readonly aroundAdvices: AroundAdvice<T, A>[],
         public readonly afterReturnAdvices: AfterReturnAdvice<T, A>[],
         public readonly afterThrowAdvices: AfterThrowAdvice<T, A>[],
         public readonly afterAdvices: AfterAdvice<T, A>[],
     ) {}
+
+    /**
+     * Executes the advices of the plan in proper order, calling the provided hooks.
+     * /!\ DO NOT EXECUTES COMPILE ADVICES
+     * // TODO handle compile advices as well.
+     */
+    execute<C extends MutableAdviceContext<T, A>>(ctxt: C, hooks: WeaverHooks<T, A>): (...args: any[]) => T {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const plan = this;
+        const originalSymbol = hooks.compile(ctxt);
+        assert(!!originalSymbol);
+
+        return function (...args: any[]): T {
+            ctxt.args = args;
+            ctxt.instance = this;
+
+            // create the joinpoint for the original method
+            const jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
+                const restoreJp = ctxt.joinpoint;
+                const restoreArgs = ctxt.args;
+                ctxt.args = args;
+                delete ctxt.joinpoint;
+
+                try {
+                    hooks.preBefore?.call(hooks, ctxt);
+                    hooks.before(ctxt, plan.beforeAdvices);
+
+                    hooks.initialJoinpoint.call(hooks, ctxt, originalSymbol);
+
+                    hooks.preAfterReturn?.call(hooks, ctxt);
+                    return hooks.afterReturn(ctxt, plan.afterReturnAdvices);
+                } catch (e) {
+                    // consider WeavingErrors as not recoverable by an aspect
+                    if (e instanceof WeavingError) {
+                        throw e;
+                    }
+                    ctxt.error = e;
+
+                    hooks.preAfterThrow?.call(hooks, ctxt);
+                    return hooks.afterThrow(ctxt, plan.afterThrowAdvices);
+                } finally {
+                    delete ctxt.error;
+                    hooks.preAfter?.call(hooks, ctxt);
+                    hooks.after(ctxt, plan.afterAdvices);
+                    ctxt.joinpoint = restoreJp;
+                    ctxt.args = restoreArgs;
+                }
+            });
+
+            hooks.preAround?.call(hooks, ctxt);
+            return hooks.around(ctxt, plan.aroundAdvices, jp)(args);
+        };
+    }
 }
 
 function _annotationId(annotation: AnnotationRef): string {

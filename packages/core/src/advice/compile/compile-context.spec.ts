@@ -15,7 +15,7 @@ import {
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import { Before } from '../before/before.decorator';
 
 describe('CompileContext', () => {
@@ -40,24 +40,24 @@ describe('CompileContext', () => {
             @Aspect()
             class ClassAspectA {
                 @Compile(on.class.withAnnotations(AClass), { priority: 10 })
-                compileA(ctxt: CompileContext<any, AnnotationType.PROPERTY>) {
+                compileA(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Before(on.class.withAnnotations(AClass), { priority: 10 })
-                beforeA(ctxt: CompileContext<any, AnnotationType.PROPERTY>) {
+                beforeA(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     beforeAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ClassAspectB {
                 @Compile(on.class.withAnnotations(BClass), { priority: 9 })
-                compileB(ctxt: CompileContext<any, AnnotationType.PROPERTY>) {
+                compileB(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Before(on.class.withAnnotations(BClass), { priority: 9 })
-                beforeB(ctxt: CompileContext<any, AnnotationType.PROPERTY>) {
+                beforeB(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     beforeBAdvice(ctxt);
                 }
             }
@@ -119,24 +119,24 @@ describe('CompileContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Compile(on.property.withAnnotations(AProperty), { priority: 10 })
-                compileA(ctxt: CompileContext<any, AnnotationType.CLASS>) {
+                compileA(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Before(on.property.withAnnotations(AProperty), { priority: 10 })
-                beforeA(ctxt: CompileContext<any, AnnotationType.CLASS>) {
+                beforeA(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     beforeAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Compile(on.property.withAnnotations(BProperty), { priority: 9 })
-                compileB(ctxt: CompileContext<any, AnnotationType.CLASS>) {
+                compileB(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Before(on.property.withAnnotations(BProperty), { priority: 9 })
-                beforeB(ctxt: CompileContext<any, AnnotationType.CLASS>) {
+                beforeB(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     beforeBAdvice(ctxt);
                 }
             }
@@ -204,24 +204,24 @@ describe('CompileContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Compile(on.method.withAnnotations(AMethod), { priority: 10 })
-                compileA(ctxt: CompileContext<any, AnnotationType.METHOD>) {
+                compileA(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Before(on.method.withAnnotations(AMethod), { priority: 10 })
-                beforeA(ctxt: CompileContext<any, AnnotationType.METHOD>) {
+                beforeA(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     beforeAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Compile(on.method.withAnnotations(BMethod), { priority: 9 })
-                compileB(ctxt: CompileContext<any, AnnotationType.METHOD>) {
+                compileB(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Before(on.method.withAnnotations(BMethod), { priority: 9 })
-                beforeB(ctxt: CompileContext<any, AnnotationType.METHOD>) {
+                beforeB(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     beforeBAdvice(ctxt);
                 }
             }
@@ -289,24 +289,24 @@ describe('CompileContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Compile(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                compileA(ctxt: CompileContext<any, AnnotationType.PARAMETER>) {
+                compileA(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Before(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                beforeA(ctxt: CompileContext<any, AnnotationType.PARAMETER>) {
+                beforeA(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     beforeAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ParameterAspectB {
                 @Compile(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                compileB(ctxt: CompileContext<any, AnnotationType.PARAMETER>) {
+                compileB(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Before(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                beforeB(ctxt: CompileContext<any, AnnotationType.PARAMETER>) {
+                beforeB(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     beforeBAdvice(ctxt);
                 }
             }

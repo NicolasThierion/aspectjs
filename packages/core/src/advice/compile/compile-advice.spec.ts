@@ -14,15 +14,15 @@ import {
 } from '../../../testing/src/helpers';
 import { WeavingError } from '../../weaver/errors/weaving-error';
 import { Aspect } from '../aspect';
-import { AnnotationTarget } from '../../annotation/target/annotation-target';
-import { AnnotationContext } from '../../annotation/context/context';
-import { AnnotationRef, AnnotationType } from '../../annotation/annotation.types';
+import { AdviceTarget } from '../target/advice-target';
+import { AnnotationContext } from '../../annotation/context/annotation-context';
+import { AnnotationRef, AdviceType } from '../../annotation/annotation.types';
 
 let advice = jasmine.createSpy('compileAspectA');
 let compileAdviceB = jasmine.createSpy('compileAspectB');
 
 describe('@Compile advice', () => {
-    let target: AnnotationTarget<any, AnnotationType>;
+    let target: AdviceTarget<any, AdviceType>;
     let instance: any;
     let aspectClass: any;
     describe('applied on a class', () => {
@@ -33,7 +33,7 @@ describe('@Compile advice', () => {
             @Aspect('AClassLabel')
             class CompileAspectA {
                 @Compile(on.class.withAnnotations(AClass))
-                apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): any {
+                apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
                     return advice.bind(this)(ctxt);
                 }
             }
@@ -42,14 +42,14 @@ describe('@Compile advice', () => {
             @Aspect('BClassLabel')
             class CompileAspectB {
                 @Compile(on.class.withAnnotations(BClass))
-                apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): any {
+                apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
                     return compileAdviceB.bind(this)(ctxt);
                 }
             }
 
             advice = jasmine
                 .createSpy('compileAdvice')
-                .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                .and.callFake(function (ctxt: AdviceContext<any, AdviceType.CLASS>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 });
@@ -95,7 +95,7 @@ describe('@Compile advice', () => {
                 ctor = jasmine.createSpy('ctor');
                 advice = jasmine
                     .createSpy('compileAdvice')
-                    .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                    .and.callFake(function (ctxt: AdviceContext<any, AdviceType.CLASS>) {
                         target = ctxt.target;
                         instance = (ctxt as any).instance;
 
@@ -150,7 +150,7 @@ describe('@Compile advice', () => {
             @Aspect('APropertyLabel')
             class CompileAspectA {
                 @Compile(on.property.withAnnotations(AProperty))
-                apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): any {
+                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
                     return advice.bind(this)(ctxt);
                 }
             }
@@ -158,14 +158,14 @@ describe('@Compile advice', () => {
             @Aspect('BPropertyLabel')
             class CompileAspectB {
                 @Compile(on.property.withAnnotations(BProperty))
-                apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): any {
+                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
                     return compileAdviceB.bind(this)(ctxt);
                 }
             }
 
             advice = jasmine
                 .createSpy('compileAdvice')
-                .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 });
@@ -215,7 +215,7 @@ describe('@Compile advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                             return ({
                                 get: '',
                             } as any) as PropertyDescriptor;
@@ -237,7 +237,7 @@ describe('@Compile advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                             return {
                                 value: ['propAspect'],
                             };
@@ -265,7 +265,7 @@ describe('@Compile advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                             return {
                                 get: () => ['propAspect'],
                             };
@@ -296,7 +296,7 @@ describe('@Compile advice', () => {
 
                     advice = jasmine
                         .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                             return {
                                 get: () => val,
                                 set: (_val: any) => (val = _val),
@@ -366,13 +366,13 @@ describe('@Compile advice', () => {
 
     describe('applied on a method', () => {
         let annotation: AnnotationRef;
-        let target: AnnotationTarget<unknown, AnnotationType.METHOD>;
+        let target: AdviceTarget<unknown, AdviceType.METHOD>;
 
         beforeEach(() => {
             @Aspect()
             class CompileAspectA {
                 @Compile(on.method.withAnnotations(AMethod))
-                compileMethod(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                compileMethod(ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
                     return advice(ctxt);
                 }
             }
@@ -380,14 +380,14 @@ describe('@Compile advice', () => {
             @Aspect()
             class CompileAspectB {
                 @Compile(on.method.withAnnotations(BMethod))
-                compileMethod(ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                compileMethod(ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
                     return compileAdviceB(ctxt);
                 }
             }
 
             advice = jasmine
                 .createSpy('compileAdvice')
-                .and.callFake(function (ctxt: CompileContext<Labeled, AnnotationType.METHOD>) {
+                .and.callFake(function (ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                     annotation = ctxt.annotation;
@@ -429,7 +429,7 @@ describe('@Compile advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.CLASS>) {
                             const descriptor = {
                                 ...Reflect.getOwnPropertyDescriptor(ctxt.target.proto, ctxt.target.propertyKey),
                             };
@@ -517,20 +517,20 @@ describe('@Compile advice', () => {
     });
     describe('applied on a method parameter', () => {
         let annotation: AnnotationContext<any, any>;
-        let target: AnnotationTarget<unknown, AnnotationType.PARAMETER>;
+        let target: AdviceTarget<unknown, AdviceType.PARAMETER>;
 
         beforeEach(() => {
             @Aspect()
             class CompileAspect {
                 @Compile(on.parameter.withAnnotations(AParameter))
-                compileParameter(ctxt: CompileContext<Labeled, AnnotationType.PARAMETER>) {
+                compileParameter(ctxt: CompileContext<Labeled, AdviceType.PARAMETER>) {
                     return advice(ctxt);
                 }
             }
 
             advice = jasmine
                 .createSpy('compileAdvice')
-                .and.callFake(function (ctxt: CompileContext<Labeled, AnnotationType.PARAMETER>) {
+                .and.callFake(function (ctxt: CompileContext<Labeled, AdviceType.PARAMETER>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                     annotation = ctxt.annotation;

@@ -3,7 +3,7 @@ import { Before } from './before.decorator';
 import { on } from '../pointcut';
 import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import Spy = jasmine.Spy;
 
 describe('@Before advice', () => {
@@ -21,7 +21,7 @@ describe('@Before advice', () => {
             @Aspect('AClassLabel')
             class AAspect {
                 @Before(on.class.withAnnotations(AClass))
-                applyBefore(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
+                applyBefore(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     thisInstance = ctxt.instance;
 
                     advice.bind(this)(ctxt);
@@ -64,7 +64,7 @@ describe('@Before advice', () => {
             }
             new A();
 
-            expect(thisInstance).toBeUndefined();
+            expect(thisInstance).toBeNull();
         });
     });
 
@@ -75,7 +75,7 @@ describe('@Before advice', () => {
             @Aspect('AClassLabel')
             class AAspect {
                 @Before(on.property.withAnnotations(AProperty))
-                applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
+                applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -123,7 +123,7 @@ describe('@Before advice', () => {
             @Aspect('AClassLabel')
             class AAspect {
                 @Before(on.property.setter.withAnnotations(AProperty))
-                applyBefore(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
+                applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -172,7 +172,7 @@ describe('@Before advice', () => {
             @Aspect('AClassLabel')
             class AAspect {
                 @Before(on.method.withAnnotations(AMethod))
-                applyBefore(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
+                applyBefore(ctxt: AdviceContext<any, AdviceType.METHOD>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -188,7 +188,7 @@ describe('@Before advice', () => {
             a = new A();
             advice = jasmine
                 .createSpy('beforeAdvice')
-                .and.callFake((ctxt: BeforeContext<any, AnnotationType.METHOD>) => {});
+                .and.callFake((ctxt: BeforeContext<any, AdviceType.METHOD>) => {});
         });
 
         it('should bind this to the aspect instance', () => {
@@ -223,7 +223,7 @@ describe('@Before advice', () => {
             @Aspect()
             class AAspect {
                 @Before(on.parameter.withAnnotations(AParameter))
-                applyBefore(ctxt: AdviceContext<any, AnnotationType.PARAMETER>): void {
+                applyBefore(ctxt: AdviceContext<any, AdviceType.PARAMETER>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -240,13 +240,13 @@ describe('@Before advice', () => {
             a = new A();
             advice = jasmine
                 .createSpy('beforeAdvice')
-                .and.callFake((ctxt: BeforeContext<any, AnnotationType.METHOD>) => {});
+                .and.callFake((ctxt: BeforeContext<any, AdviceType.METHOD>) => {});
         });
 
         it('should bind "this" to the aspect instance', () => {
             advice = jasmine
                 .createSpy('beforeAdvice')
-                .and.callFake(function (ctxt: BeforeContext<any, AnnotationType.METHOD>) {
+                .and.callFake(function (ctxt: BeforeContext<any, AdviceType.METHOD>) {
                     expect(this).toEqual(jasmine.any(aspectClass));
                 });
 

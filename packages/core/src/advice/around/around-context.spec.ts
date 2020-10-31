@@ -16,7 +16,8 @@ import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { AfterReturn } from '../after-return/after-return.decorator';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
+import { JoinPoint } from '../../weaver/types';
 
 describe('AroundContext', () => {
     let weaver: Weaver;
@@ -33,31 +34,31 @@ describe('AroundContext', () => {
         afterReturnBAdvice = jasmine.createSpy('afterReturnBAdvice');
     });
 
-    describe('on a class', () => {
+    describe('for a class', () => {
         let classAspectB: any;
         beforeEach(() => {
             @Aspect()
             class ClassAspectA {
                 @Around(on.class.withAnnotations(AClass), { priority: 10 })
-                aroundA(ctxt: AroundContext<any, AnnotationType.PROPERTY>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
 
                 @AfterReturn(on.class.withAnnotations(AClass), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.PROPERTY>): void {
-                    afterReturnAAdvice(ctxt);
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    afterReturnAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class ClassAspectB {
                 @Around(on.class.withAnnotations(BClass), { priority: 9 })
-                aroundB(ctxt: AroundContext<any, AnnotationType.PROPERTY>): void {
-                    aroundBAdvice(ctxt);
+                aroundB(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    aroundBAdvice(ctxt, jp);
                 }
 
                 @AfterReturn(on.class.withAnnotations(BClass), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.PROPERTY>): void {
-                    afterReturnBAdvice(ctxt);
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    afterReturnBAdvice(ctxt, jp);
                 }
             }
             classAspectB = ClassAspectB;
@@ -116,6 +117,33 @@ describe('AroundContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
             });
         });
+
+        describe('attribute ctxt.instance', () => {
+            let instanceBefore: any;
+            let instanceAfter: any;
+            beforeEach(() => {
+                aroundAAdvice = jasmine
+                    .createSpy('aroundAdvice')
+                    .and.callFake((ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                        instanceBefore = ctxt.instance;
+                        jp();
+                        instanceAfter = ctxt.instance;
+                    });
+            });
+
+            describe('before the joinpoint is called', () => {
+                it('should be null', () => {
+                    @AClass()
+                    class A {
+                        labels = ['A'];
+                    }
+
+                    new A();
+                    expect(instanceBefore).toBeNull();
+                    expect(instanceAfter).toEqual(jasmine.any(A));
+                });
+            });
+        });
     });
 
     describe('on a property', () => {
@@ -124,24 +152,24 @@ describe('AroundContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Around(on.property.withAnnotations(AProperty), { priority: 10 })
-                aroundA(ctxt: AroundContext<any, AnnotationType.CLASS>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
 
                 @AfterReturn(on.property.withAnnotations(AProperty), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
-                    afterReturnAAdvice(ctxt);
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
+                    afterReturnAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Around(on.property.withAnnotations(BProperty), { priority: 9 })
-                aroundB(ctxt: AroundContext<any, AnnotationType.CLASS>): void {
+                aroundB(ctxt: AroundContext<any, AdviceType.PROPERTY>): void {
                     aroundBAdvice(ctxt);
                 }
 
                 @AfterReturn(on.property.withAnnotations(BProperty), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.PROPERTY>): void {
                     afterReturnBAdvice(ctxt);
                 }
             }
@@ -229,24 +257,24 @@ describe('AroundContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Around(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                aroundA(ctxt: AroundContext<any, AnnotationType.CLASS>): void {
+                aroundA(ctxt: AroundContext<any, AdviceType.CLASS>): void {
                     aroundAAdvice(ctxt);
                 }
 
                 @AfterReturn(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Around(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                aroundB(ctxt: AroundContext<any, AnnotationType.CLASS>): void {
+                aroundB(ctxt: AroundContext<any, AdviceType.CLASS>): void {
                     aroundBAdvice(ctxt);
                 }
 
                 @AfterReturn(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnBAdvice(ctxt);
                 }
             }
@@ -331,24 +359,24 @@ describe('AroundContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Around(on.method.withAnnotations(AMethod), { priority: 10 })
-                aroundA(ctxt: AroundContext<any, AnnotationType.METHOD>): void {
+                aroundA(ctxt: AroundContext<any, AdviceType.METHOD>): void {
                     aroundAAdvice(ctxt);
                 }
 
                 @AfterReturn(on.method.withAnnotations(AMethod), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.METHOD>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.METHOD>): void {
                     afterReturnAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Around(on.method.withAnnotations(BMethod), { priority: 9 })
-                aroundB(ctxt: AroundContext<any, AnnotationType.METHOD>): void {
+                aroundB(ctxt: AroundContext<any, AdviceType.METHOD>): void {
                     aroundBAdvice(ctxt);
                 }
 
                 @AfterReturn(on.method.withAnnotations(BMethod), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.METHOD>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.METHOD>): void {
                     afterReturnBAdvice(ctxt);
                 }
             }
@@ -430,24 +458,24 @@ describe('AroundContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Around(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                aroundA(ctxt: AroundContext<any, AnnotationType.PARAMETER>): void {
+                aroundA(ctxt: AroundContext<any, AdviceType.PARAMETER>): void {
                     aroundAAdvice(ctxt);
                 }
 
                 @AfterReturn(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.PARAMETER>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.PARAMETER>): void {
                     afterReturnAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ParameterAspectB {
                 @Around(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                aroundB(ctxt: AroundContext<any, AnnotationType.PARAMETER>): void {
+                aroundB(ctxt: AroundContext<any, AdviceType.PARAMETER>): void {
                     aroundBAdvice(ctxt);
                 }
 
                 @AfterReturn(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.PARAMETER>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.PARAMETER>): void {
                     afterReturnBAdvice(ctxt);
                 }
             }

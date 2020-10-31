@@ -3,7 +3,7 @@ import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import Spy = jasmine.Spy;
 
 let advice: Spy;
@@ -15,7 +15,7 @@ describe('@After advice', () => {
             @Aspect('AClassLabel')
             class AfterAspect {
                 @After(on.class.withAnnotations(AClass))
-                apply(ctxt: AdviceContext<any, AnnotationType.CLASS>): void {
+                apply(ctxt: AdviceContext<any, AdviceType.CLASS>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -44,7 +44,7 @@ describe('@After advice', () => {
                 @Aspect('AClassLabel')
                 class BadAfterAspect {
                     @After(on.class.withAnnotations(AClass))
-                    apply(ctxt: AdviceContext<any, AnnotationType.CLASS>) {
+                    apply(ctxt: AdviceContext<any, AdviceType.CLASS>) {
                         return function () {};
                     }
                 }
@@ -130,7 +130,7 @@ describe('@After advice', () => {
             @Aspect('APropertyLabel')
             class AfterAspect {
                 @After(on.property.withAnnotations(AProperty))
-                apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>): void {
+                apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -187,7 +187,7 @@ describe('@After advice', () => {
                 @Aspect('APropertyLabel')
                 class BadAfterAspect {
                     @After(on.property.setter.withAnnotations(AProperty))
-                    apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                    apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                         return Object.getOwnPropertyDescriptor({ test: 'test' }, 'test');
                     }
                 }
@@ -213,7 +213,7 @@ describe('@After advice', () => {
             @Aspect('AMethod')
             class AfterAspect {
                 @After(on.method.withAnnotations(AMethod))
-                apply(ctxt: AdviceContext<any, AnnotationType.METHOD>): void {
+                apply(ctxt: AdviceContext<any, AdviceType.METHOD>): void {
                     advice.bind(this)(ctxt);
                 }
             }
@@ -221,7 +221,7 @@ describe('@After advice', () => {
             aspectClass = AfterAspect;
             advice = jasmine
                 .createSpy('advice')
-                .and.callFake(function (ctxt: AfterContext<any, AnnotationType.PROPERTY>) {});
+                .and.callFake(function (ctxt: AfterContext<any, AdviceType.PROPERTY>) {});
 
             setupWeaver(new AfterAspect());
 
@@ -260,7 +260,7 @@ describe('@After advice', () => {
                 @Aspect('AMethod')
                 class BadAfterAspect {
                     @After(on.method.withAnnotations(AMethod))
-                    apply(ctxt: AdviceContext<any, AnnotationType.PROPERTY>) {
+                    apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
                         return Object.getOwnPropertyDescriptor({ test: 'test' }, 'test');
                     }
                 }

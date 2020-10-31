@@ -1,14 +1,14 @@
 import { Advice } from './types';
 import { assert, isFunction } from '@aspectjs/core/utils';
 import { Pointcut, PointcutPhase } from './pointcut';
-import { AnnotationType } from '../annotation/annotation.types';
+import { AdviceType } from '../annotation/annotation.types';
 import { AdviceError } from '../weaver/errors/advice-error';
 import { weaverContext } from '../weaver/weaver-context';
 
 export class AdviceFactory {
     static create(pointcut: Pointcut): MethodDecorator {
         assert(
-            !(pointcut.type === AnnotationType.PROPERTY) ||
+            !(pointcut.type === AdviceType.PROPERTY) ||
                 pointcut.ref.startsWith('property#get') ||
                 pointcut.ref.startsWith('property#set'),
         );
@@ -17,7 +17,7 @@ export class AdviceFactory {
             assert(isFunction(aspect[propertyKey]));
 
             const advice = function (...args: any[]) {
-                return aspect[propertyKey].bind(this)(...args);
+                return aspect[propertyKey].apply(this, args);
             } as Advice;
             advice.pointcut = pointcut;
             advice.aspect = aspect;

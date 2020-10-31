@@ -3,10 +3,6 @@ export function __setDebug(debug: boolean) {
     __debug = debug;
 }
 
-export type Mutable<T> = {
-    -readonly [K in keyof T]: T[K];
-};
-
 export function assert(condition: boolean, errorProvider?: () => Error): void;
 export function assert(condition: boolean, msg?: string): void;
 export function assert(condition: boolean, msg?: string | (() => Error)) {

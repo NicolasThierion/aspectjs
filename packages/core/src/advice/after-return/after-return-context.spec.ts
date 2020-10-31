@@ -15,7 +15,7 @@ import { AfterReturn } from './after-return.decorator';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import { After } from '../after/after.decorator';
 
 describe('AfterReturnContext', () => {
@@ -39,24 +39,24 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class ClassAspectA {
                 @AfterReturn(on.class.withAnnotations(AClass), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.PROPERTY>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.PROPERTY>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @After(on.class.withAnnotations(AClass), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.PROPERTY>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ClassAspectB {
                 @AfterReturn(on.class.withAnnotations(BClass), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.PROPERTY>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.PROPERTY>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @After(on.class.withAnnotations(BClass), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.PROPERTY>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -119,24 +119,24 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @AfterReturn(on.property.withAnnotations(AProperty), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @After(on.property.withAnnotations(AProperty), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @AfterReturn(on.property.withAnnotations(BProperty), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @After(on.property.withAnnotations(BProperty), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -221,24 +221,24 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @AfterReturn(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @After(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @AfterReturn(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.CLASS>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @After(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -322,24 +322,24 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @AfterReturn(on.method.withAnnotations(AMethod), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.METHOD>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.METHOD>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @After(on.method.withAnnotations(AMethod), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.METHOD>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @AfterReturn(on.method.withAnnotations(BMethod), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.METHOD>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.METHOD>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @After(on.method.withAnnotations(BMethod), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.METHOD>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -416,24 +416,24 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @AfterReturn(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                afterReturnA(ctxt: AfterReturnContext<any, AnnotationType.PARAMETER>): void {
+                afterReturnA(ctxt: AfterReturnContext<any, AdviceType.PARAMETER>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @After(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.PARAMETER>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ParameterAspectB {
                 @AfterReturn(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                afterReturnB(ctxt: AfterReturnContext<any, AnnotationType.PARAMETER>): void {
+                afterReturnB(ctxt: AfterReturnContext<any, AdviceType.PARAMETER>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @After(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.PARAMETER>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterBAdvice(ctxt);
                 }
             }

@@ -3,7 +3,7 @@ import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
 import { Compile } from '../compile/compile.decorator';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import Spy = jasmine.Spy;
 
@@ -18,7 +18,7 @@ describe('@AfterReturn advice', () => {
             @Aspect('AClassLabel')
             class AfterReturnAspect {
                 @AfterReturn(on.class.withAnnotations(AClass))
-                apply(ctxt: AfterReturnContext<any, AnnotationType.CLASS>, retVal: any): void {
+                apply(ctxt: AfterReturnContext<any, AdviceType.CLASS>, retVal: any): void {
                     expect(retVal).toEqual(ctxt.value);
                     return advice.bind(this)(ctxt, retVal);
                 }
@@ -81,7 +81,7 @@ describe('@AfterReturn advice', () => {
                     beforeEach(() => {
                         advice = jasmine
                             .createSpy('afterReturn')
-                            .and.callFake((ctxt: AdviceContext<Labeled, AnnotationType.CLASS>) => {
+                            .and.callFake((ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
                                 return Object.assign(Object.create(ctxt.target.proto), {
                                     labels: ['ABis'],
                                 });

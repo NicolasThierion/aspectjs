@@ -21,9 +21,9 @@ export * from './advice/after/after.decorator';
 export * from './weaver/jit/jit-weaver';
 export * from './annotation/annotation.types';
 export * from './annotation/bundle/bundle';
-export * from './annotation/context/context';
+export * from './annotation/context/annotation-context';
 export * from './annotation/factory/annotation-factory';
-export * from './annotation/target/annotation-target';
+export * from './advice/target/advice-target';
 
 // TODO create function "setupAspectWeaver" to avoid side effects
 

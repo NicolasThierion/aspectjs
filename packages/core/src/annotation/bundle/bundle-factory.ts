@@ -1,13 +1,13 @@
-import { AnnotationLocation, AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
+import { AdviceLocation, AdviceTarget, ClassAdviceTarget } from '../../advice/target/advice-target';
 import { assert, getOrComputeMetadata, isUndefined } from '@aspectjs/core/utils';
 import { AnnotationContextSelector, AnnotationsBundle } from './bundle';
-import { AnnotationContext, ClassAnnotationContext } from '../context/context';
-import { Annotation, AnnotationType } from '../annotation.types';
-import { AnnotationLocationFactory } from '../target/annotation-target.factory';
-import { locator } from '../../utils/utils';
+import { AnnotationContext, ClassAnnotationContext } from '../context/annotation-context';
+import { Annotation, AdviceType } from '../annotation.types';
+import { AnnotationLocationFactory } from '../../advice/target/annotation-target.factory';
+import { locator } from '../../utils/locator';
 
 export abstract class AnnotationBundleRegistry {
-    static of<T>(target: AnnotationTarget<T, any>): AnnotationsBundle<T> {
+    static of<T>(target: AdviceTarget<T, any>): AnnotationsBundle<T> {
         return getOrComputeMetadata(
             'aspectjs.bundle',
             target.proto,
@@ -15,14 +15,14 @@ export abstract class AnnotationBundleRegistry {
         );
     }
 
-    static addContext<T>(target: AnnotationTarget<T, any>, context: AnnotationContext<any, any>): AnnotationsBundle<T> {
+    static addContext<T>(target: AdviceTarget<T, any>, context: AnnotationContext<any, any>): AnnotationsBundle<T> {
         const bundle = AnnotationBundleRegistry.of(target) as AnnotationsBundleImpl<T>;
         bundle.addAnnotationContext(context);
         return bundle;
     }
 }
 
-interface AnnotationContextsHolder<T, A extends AnnotationType> {
+interface AnnotationContextsHolder<T, A extends AdviceType> {
     byAnnotationName: {
         [decoratorName: string]: AnnotationContext<T, A>[];
     };
@@ -35,7 +35,7 @@ interface AnnotationContextsHolder<T, A extends AnnotationType> {
     };
 }
 
-function _createContextsHolder<T, A extends AnnotationType>(): AnnotationContextsHolder<T, A> {
+function _createContextsHolder<T, A extends AdviceType>(): AnnotationContextsHolder<T, A> {
     return {
         byAnnotationName: {},
         all: [],
@@ -43,22 +43,22 @@ function _createContextsHolder<T, A extends AnnotationType>(): AnnotationContext
 }
 
 class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
-    private _target: AnnotationTarget<T, AnnotationType.CLASS>;
+    private _target: AdviceTarget<T, AdviceType.CLASS>;
 
     private _contextHolders = {
-        [AnnotationType.PROPERTY]: _createContextsHolder<any, any>(),
-        [AnnotationType.CLASS]: _createContextsHolder<any, any>(),
-        [AnnotationType.METHOD]: _createContextsHolder<any, any>(),
-        [AnnotationType.PARAMETER]: _createContextsHolder<any, any>(),
+        [AdviceType.PROPERTY]: _createContextsHolder<any, any>(),
+        [AdviceType.CLASS]: _createContextsHolder<any, any>(),
+        [AdviceType.METHOD]: _createContextsHolder<any, any>(),
+        [AdviceType.PARAMETER]: _createContextsHolder<any, any>(),
     };
 
-    private _global = _createContextsHolder<T, AnnotationType>();
+    private _global = _createContextsHolder<T, AdviceType>();
 
     constructor(target: ClassAdviceTarget<T>) {
         this._target = target;
     }
 
-    at<A extends AnnotationType>(location: AnnotationLocation<T, A>): AnnotationContextSelector<T, A> {
+    at<A extends AdviceType>(location: AdviceLocation<T, A>): AnnotationContextSelector<T, A> {
         const target = AnnotationLocationFactory.getTarget<T, A>(location);
 
         return new AnnotationContextSelectorImpl<T, A>(
@@ -66,7 +66,7 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         );
     }
 
-    addAnnotationContext(ctxt: AnnotationContext<T, AnnotationType>): void {
+    addAnnotationContext(ctxt: AnnotationContext<T, AdviceType>): void {
         const name = ctxt.toString();
 
         const holders = this._getContextHolders(ctxt.target, true);
@@ -80,7 +80,7 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
             holder.all.push(ctxt as ClassAnnotationContext<T>);
         });
 
-        if (ctxt.target.type === AnnotationType.PARAMETER) {
+        if (ctxt.target.type === AdviceType.PARAMETER) {
             holders.forEach((h) => {
                 h.all = h.all.sort((d1, d2) => d1.target.parameterIndex - d2.target.parameterIndex);
                 h.byAnnotationName[name] = h.byAnnotationName[name].sort(
@@ -91,20 +91,20 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
     }
 
     @Enumerable(false)
-    private _getContextHolders<A extends AnnotationType>(
-        target: AnnotationTarget<T, A>,
+    private _getContextHolders<A extends AdviceType>(
+        target: AdviceTarget<T, A>,
         save: boolean,
-    ): AnnotationContextsHolder<T, AnnotationType>[] {
+    ): AnnotationContextsHolder<T, AdviceType>[] {
         if (!target) {
             return [];
         }
 
-        if (target.type === AnnotationType.CLASS) {
+        if (target.type === AdviceType.CLASS) {
             return [this._contextHolders[target.type], this._global];
         } else if (
-            target.type === AnnotationType.PARAMETER ||
-            target.type === AnnotationType.PROPERTY ||
-            target.type === AnnotationType.METHOD
+            target.type === AdviceType.PARAMETER ||
+            target.type === AdviceType.PROPERTY ||
+            target.type === AdviceType.METHOD
         ) {
             const byAnnotation = this._contextHolders[target.type];
             byAnnotation.byPropertyName = byAnnotation.byPropertyName ?? ({} as any);
@@ -115,7 +115,7 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
                     return { all: [], byAnnotationName: {} } as AnnotationContextsHolder<any, any>;
                 }, save) as AnnotationContextsHolder<T, A>;
 
-            if (target.type === AnnotationType.PARAMETER) {
+            if (target.type === AdviceType.PARAMETER) {
                 byPropertyName.byIndex = byPropertyName.byIndex ?? {};
                 const byIndex = locator(byPropertyName.byIndex)
                     .at(`${target.parameterIndex}`)
@@ -134,26 +134,26 @@ class AnnotationsBundleImpl<T> implements AnnotationsBundle<T> {
         assert(false, `unknown decorator type: ${target.type}`);
     }
 
-    all<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+    all<A extends AdviceType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
         return new AnnotationContextSelectorImpl<T, A>(this._global).all(annotation);
     }
 
-    class<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
-        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.CLASS]).all(annotation);
+    class<A extends AdviceType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AdviceType.CLASS]).all(annotation);
     }
-    properties<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
-        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.PROPERTY]).all(annotation);
+    properties<A extends AdviceType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AdviceType.PROPERTY]).all(annotation);
     }
-    methods<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
-        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.METHOD]).all(annotation);
+    methods<A extends AdviceType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AdviceType.METHOD]).all(annotation);
     }
-    parameters<A extends AnnotationType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
-        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AnnotationType.PARAMETER]).all(annotation);
+    parameters<A extends AdviceType>(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {
+        return new AnnotationContextSelectorImpl<T, A>(this._contextHolders[AdviceType.PARAMETER]).all(annotation);
     }
 }
 
-class AnnotationContextSelectorImpl<T, A extends AnnotationType> implements AnnotationContextSelector<T, A> {
-    constructor(private _holder: AnnotationContextsHolder<T, AnnotationType>) {
+class AnnotationContextSelectorImpl<T, A extends AdviceType> implements AnnotationContextSelector<T, A> {
+    constructor(private _holder: AnnotationContextsHolder<T, AdviceType>) {
         assert(!!this._holder);
     }
     all(annotation?: Annotation<A>): readonly AnnotationContext<T, A>[] {

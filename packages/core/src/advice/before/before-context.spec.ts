@@ -14,23 +14,24 @@ import {
 import { Before } from './before.decorator';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Around } from '../around/around.decorator';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { Weaver } from '../../weaver/weaver';
+import { JoinPoint } from '../../weaver/types';
 
 describe('BeforeContext', () => {
     let weaver: Weaver;
-    let beforeAAdvice = jasmine.createSpy('beforeAAdvice');
-    let beforeBAdvice = jasmine.createSpy('beforeBAdvice');
-    let aroundAAdvice = jasmine.createSpy('aroundAAdvice');
-    let aroundBAdvice = jasmine.createSpy('aroundBAdvice');
+    let beforeAAdvice: jasmine.Spy;
+    let beforeBAdvice: jasmine.Spy;
+    let aroundAAdvice: jasmine.Spy;
+    let aroundBAdvice: jasmine.Spy;
 
     beforeEach(() => {
         weaverContext.setWeaver((weaver = new JitWeaver()));
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');
         beforeBAdvice = jasmine.createSpy('beforeBAdvice');
-        aroundAAdvice = jasmine.createSpy('aroundAAdvice');
-        aroundBAdvice = jasmine.createSpy('aroundBAdvice');
+        aroundAAdvice = jasmine.createSpy('aroundAAdvice').and.callFake((ctxt, jp) => jp());
+        aroundBAdvice = jasmine.createSpy('aroundBAdvice').and.callFake((ctxt, jp) => jp());
     });
 
     describe('on a class', () => {
@@ -39,25 +40,25 @@ describe('BeforeContext', () => {
             @Aspect()
             class ClassAspectA {
                 @Before(on.class.withAnnotations(AClass), { priority: 10 })
-                beforeA(ctxt: BeforeContext<any, AnnotationType.PROPERTY>): void {
+                beforeA(ctxt: BeforeContext<any, AdviceType.PROPERTY>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Around(on.class.withAnnotations(AClass), { priority: 10 })
-                aroundA(ctxt: AroundContext<any, AnnotationType.PROPERTY>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class ClassAspectB {
                 @Before(on.class.withAnnotations(BClass), { priority: 9 })
-                beforeB(ctxt: BeforeContext<any, AnnotationType.PROPERTY>): void {
+                beforeB(ctxt: BeforeContext<any, AdviceType.PROPERTY>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Around(on.class.withAnnotations(BClass), { priority: 9 })
-                aroundB(ctxt: AroundContext<any, AnnotationType.PROPERTY>): void {
-                    aroundBAdvice(ctxt);
+                aroundB(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
+                    aroundBAdvice(ctxt, jp);
                 }
             }
             classAspectB = ClassAspectB;
@@ -100,20 +101,20 @@ describe('BeforeContext', () => {
             });
 
             it('should be shared between a @Before and a @Around advice on the same class', () => {
-                aroundAAdvice.and.callFake((ctxt: AroundContext<any, any>) => {
+                aroundAAdvice.and.callFake((ctxt: AroundContext, jp: JoinPoint) => {
                     pushData(ctxt, 'aroundA');
-                    return ctxt.joinpoint();
+                    return jp();
                 });
-                aroundBAdvice.and.callFake((ctxt: AroundContext<any, any>) => {
+                aroundBAdvice.and.callFake((ctxt: AroundContext, jp: JoinPoint) => {
                     pushData(ctxt, 'aroundB');
-                    return ctxt.joinpoint();
+                    return jp();
                 });
 
                 @AClass()
                 @BClass()
                 class Test {}
                 new Test();
-                expect(data.advices).toEqual(['beforeA', 'beforeB', 'aroundA', 'aroundB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
     });
@@ -123,25 +124,25 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Before(on.property.withAnnotations(AProperty), { priority: 10 })
-                beforeA(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
+                beforeA(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Around(on.property.withAnnotations(AProperty), { priority: 10 })
-                aroundA(ctxt: CompileContext<any, AnnotationType.CLASS>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Before(on.property.withAnnotations(BProperty), { priority: 9 })
-                beforeB(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
+                beforeB(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Around(on.property.withAnnotations(BProperty), { priority: 9 })
-                aroundB(ctxt: CompileContext<any, AnnotationType.CLASS>): void {
-                    aroundBAdvice(ctxt);
+                aroundB(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    aroundBAdvice(ctxt, jp);
                 }
             }
             propertyAspectB = PropertyAspectB;
@@ -195,13 +196,13 @@ describe('BeforeContext', () => {
             });
 
             it('should be shared between a @Before and a @Around advice on the same property', () => {
-                aroundAAdvice.and.callFake((ctxt) => {
+                aroundAAdvice.and.callFake((ctxt, jp: JoinPoint) => {
                     pushData(ctxt, 'aroundA');
-                    return ctxt.joinpoint();
+                    return jp();
                 });
-                aroundBAdvice.and.callFake((ctxt) => {
+                aroundBAdvice.and.callFake((ctxt, jp: JoinPoint) => {
                     pushData(ctxt, 'aroundB');
-                    return ctxt.joinpoint();
+                    return jp();
                 });
 
                 class Test {
@@ -217,7 +218,7 @@ describe('BeforeContext', () => {
                 [beforeAAdvice, beforeBAdvice, aroundAAdvice, aroundBAdvice].forEach((f) =>
                     expect(f).toHaveBeenCalled(),
                 );
-                expect(data.advices).toEqual(['beforeA', 'beforeB', 'aroundA', 'aroundB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
     });
@@ -227,25 +228,25 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Before(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                beforeA(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
+                beforeA(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Around(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                aroundA(ctxt: CompileContext<any, AnnotationType.CLASS>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Before(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                beforeB(ctxt: BeforeContext<any, AnnotationType.CLASS>): void {
+                beforeB(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Around(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                aroundB(ctxt: CompileContext<any, AnnotationType.CLASS>): void {
-                    aroundBAdvice(ctxt);
+                aroundB(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                    aroundBAdvice(ctxt, jp);
                 }
             }
             propertyAspectB = PropertyAspectB;
@@ -298,13 +299,13 @@ describe('BeforeContext', () => {
             });
 
             it('should be shared between a @Before and a @Around advice on the same property', () => {
-                aroundAAdvice.and.callFake((ctxt) => {
+                aroundAAdvice.and.callFake((ctxt, jp: JoinPoint) => {
                     pushData(ctxt, 'aroundA');
-                    return ctxt.joinpoint();
+                    return jp();
                 });
-                aroundBAdvice.and.callFake((ctxt) => {
+                aroundBAdvice.and.callFake((ctxt, jp: JoinPoint) => {
                     pushData(ctxt, 'aroundB');
-                    return ctxt.joinpoint();
+                    return jp();
                 });
 
                 class Test {
@@ -319,7 +320,7 @@ describe('BeforeContext', () => {
                 [beforeAAdvice, beforeBAdvice, aroundAAdvice, aroundBAdvice].forEach((fn) =>
                     expect(fn).toHaveBeenCalled(),
                 );
-                expect(data.advices).toEqual(['beforeA', 'beforeB', 'aroundA', 'aroundB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
     });
@@ -329,25 +330,25 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Before(on.method.withAnnotations(AMethod), { priority: 10 })
-                beforeA(ctxt: BeforeContext<any, AnnotationType.METHOD>): void {
+                beforeA(ctxt: BeforeContext<any, AdviceType.METHOD>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Around(on.method.withAnnotations(AMethod), { priority: 10 })
-                aroundA(ctxt: CompileContext<any, AnnotationType.METHOD>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: CompileContext<any, AdviceType.METHOD>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @Before(on.method.withAnnotations(BMethod), { priority: 9 })
-                beforeB(ctxt: BeforeContext<any, AnnotationType.METHOD>): void {
+                beforeB(ctxt: BeforeContext<any, AdviceType.METHOD>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Around(on.method.withAnnotations(BMethod), { priority: 9 })
-                aroundB(ctxt: CompileContext<any, AnnotationType.METHOD>): void {
-                    aroundBAdvice(ctxt);
+                aroundB(ctxt: CompileContext<any, AdviceType.METHOD>, jp: JoinPoint): void {
+                    aroundBAdvice(ctxt, jp);
                 }
             }
             methodAspectB = PropertyAspectB;
@@ -418,7 +419,7 @@ describe('BeforeContext', () => {
                 }
 
                 new Test().method();
-                expect(data.advices).toEqual(['beforeA', 'beforeB', 'aroundA', 'aroundB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
     });
@@ -428,25 +429,25 @@ describe('BeforeContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Before(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                beforeA(ctxt: BeforeContext<any, AnnotationType.PARAMETER>): void {
+                beforeA(ctxt: BeforeContext<any, AdviceType.PARAMETER>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Around(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                aroundA(ctxt: CompileContext<any, AnnotationType.PARAMETER>): void {
-                    aroundAAdvice(ctxt);
+                aroundA(ctxt: CompileContext<any, AdviceType.PARAMETER>, jp: JoinPoint): void {
+                    aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class ParameterAspectB {
                 @Before(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                beforeB(ctxt: BeforeContext<any, AnnotationType.PARAMETER>): void {
+                beforeB(ctxt: BeforeContext<any, AdviceType.PARAMETER>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Around(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                aroundB(ctxt: CompileContext<any, AnnotationType.PARAMETER>): void {
-                    aroundBAdvice(ctxt);
+                aroundB(ctxt: CompileContext<any, AdviceType.PARAMETER>, jp: JoinPoint): void {
+                    aroundBAdvice(ctxt, jp);
                 }
             }
             parameterAspectB = ParameterAspectB;
@@ -501,7 +502,7 @@ describe('BeforeContext', () => {
                 }
 
                 new Test().someMethod('');
-                expect(data.advices).toEqual(['beforeA', 'beforeB', 'aroundA', 'aroundB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
     });

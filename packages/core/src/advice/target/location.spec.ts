@@ -1,7 +1,7 @@
 import { AnnotationLocationFactory } from './annotation-target.factory';
 import { weaverContext } from '../../weaver/weaver-context';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AnnotationFactory } from '../factory/annotation-factory';
+import { AnnotationFactory } from '../../annotation/factory/annotation-factory';
 
 describe('AnnotationLocationFactory', () => {
     beforeEach(() => weaverContext.setWeaver(new JitWeaver()));

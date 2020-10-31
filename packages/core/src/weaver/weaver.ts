@@ -1,6 +1,6 @@
 import { WeaverProfile } from './profile';
 import { MutableAdviceContext } from '../advice/advice-context';
-import { AnnotationType } from '../annotation/annotation.types';
+import { AdviceType } from '../annotation/annotation.types';
 
 export interface Weaver extends WeaverProfile {
     /**
@@ -11,11 +11,11 @@ export interface Weaver extends WeaverProfile {
     disable(...aspects: any[]): this;
     reset(): this;
 
-    enhanceClass<T>(ctxt: MutableAdviceContext<T, AnnotationType.CLASS>): new () => T;
+    enhanceClass<T>(ctxt: MutableAdviceContext<T, AdviceType.CLASS>): new () => T;
 
-    enhanceProperty<T>(ctxt: MutableAdviceContext<T, AnnotationType.PROPERTY>): PropertyDescriptor;
+    enhanceProperty<T>(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>): PropertyDescriptor;
 
-    enhanceMethod<T>(ctxt: MutableAdviceContext<T, AnnotationType.METHOD>): PropertyDescriptor;
+    enhanceMethod<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor;
 
-    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AnnotationType.METHOD>): void;
+    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): void;
 }

@@ -1,12 +1,12 @@
-import { AnnotationType } from '../../annotation/annotation.types';
-import { AnnotationContext } from '../../annotation/context/context';
-import { AnnotationTarget } from '../../annotation/target/annotation-target';
+import { AdviceType } from '../../annotation/annotation.types';
+import { AnnotationContext } from '../../annotation/context/annotation-context';
+import { AdviceTarget } from '../target/advice-target';
 
-export interface CompileContext<T = unknown, A extends AnnotationType = any> {
+export interface CompileContext<T = unknown, A extends AdviceType = any> {
     /** The annotation context **/
     readonly annotation: AnnotationContext<T, A>;
     /** The symbol targeted by this advice (class, method, property or parameter **/
-    readonly target: AnnotationTarget<T, A>;
+    readonly target: AdviceTarget<T, A>;
     /** any data set by the advices, shared across all advice going through  this execution context **/
     readonly data: Record<string, any>;
 }

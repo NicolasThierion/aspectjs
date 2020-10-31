@@ -63,13 +63,11 @@ export class WeaverProfile {
 
         return this;
     }
-    getAspect(aspect: string | AspectType): AspectType | undefined {
-        // TODO should accept aspect class as well
-
+    getAspect<T extends AspectType>(aspect: string | (new () => T)): T | undefined {
         if (isString(aspect)) {
-            return this._aspectsRegistry[aspect];
+            return this._aspectsRegistry[aspect] as T;
         } else {
-            return this._aspectsRegistry[getAspectOptions(aspect).id];
+            return this._aspectsRegistry[getAspectOptions(aspect).id] as T;
         }
     }
 }

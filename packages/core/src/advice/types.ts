@@ -8,36 +8,36 @@ import {
     CompilePointcut,
     PointcutPhase,
 } from './pointcut';
-import { AnnotationType } from '../annotation/annotation.types';
+import { AdviceType } from '../annotation/annotation.types';
 import { JoinPoint } from '../weaver/types';
 
-export type CompileAdvice<T = unknown, A extends AnnotationType = any> = {
+export type CompileAdvice<T = unknown, A extends AdviceType = any> = {
     name: string;
     aspect: object;
     pointcut?: CompilePointcut<A>;
-} & ((ctxt: AdviceContext<T, A>) => A extends AnnotationType.CLASS ? undefined | Function : PropertyDescriptor);
+} & ((ctxt: AdviceContext<T, A>) => A extends AdviceType.CLASS ? undefined | Function : PropertyDescriptor);
 
-export type BeforeAdvice<T = unknown, A extends AnnotationType = any> = {
+export type BeforeAdvice<T = unknown, A extends AdviceType = any> = {
     name: string;
     aspect: object;
     pointcut?: BeforePointcut;
 } & ((ctxt: AdviceContext<T, A>) => void);
-export type AfterAdvice<T = unknown, A extends AnnotationType = any> = {
+export type AfterAdvice<T = unknown, A extends AdviceType = any> = {
     name: string;
     aspect: object;
     pointcut?: AfterPointcut;
 } & ((ctxt: AdviceContext<T, A>) => void);
-export type AfterReturnAdvice<T = unknown, A extends AnnotationType = any> = {
+export type AfterReturnAdvice<T = unknown, A extends AdviceType = any> = {
     name: string;
     aspect: object;
     pointcut?: AfterReturnPointcut;
 } & ((ctxt: AdviceContext<T, A>, returnValue: any) => T | null | undefined);
-export type AfterThrowAdvice<T = unknown, A extends AnnotationType = any> = {
+export type AfterThrowAdvice<T = unknown, A extends AdviceType = any> = {
     name: string;
     aspect: object;
     pointcut?: AfterThrowPointcut;
 } & ((ctxt: AdviceContext<T, A>, thrownError: Error) => T | null | undefined);
-export type AroundAdvice<T = unknown, A extends AnnotationType = any> = {
+export type AroundAdvice<T = unknown, A extends AdviceType = any> = {
     name: string;
     aspect: object;
     pointcut?: AroundPointcut;
@@ -45,7 +45,7 @@ export type AroundAdvice<T = unknown, A extends AnnotationType = any> = {
 
 export type Advice<
     T = unknown,
-    A extends AnnotationType = any,
+    A extends AdviceType = any,
     V extends PointcutPhase = any
 > = V extends PointcutPhase.COMPILE
     ? CompileAdvice<T, A>

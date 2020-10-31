@@ -1,11 +1,10 @@
 import { JoinPoint } from '../../weaver/types';
 import { AroundContext, BeforeContext } from '../advice-context';
-import { WeavingError } from '../../weaver/errors/weaving-error';
 import { Around } from './around.decorator';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import { Before } from '../before/before.decorator';
 import Spy = jasmine.Spy;
 
@@ -34,7 +33,7 @@ describe('@Around advice', () => {
             @Aspect('AClassLabel')
             class AroundClassAspect {
                 @Around(on.class.withAnnotations(AClass))
-                apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
 
@@ -74,66 +73,11 @@ describe('@Around advice', () => {
             expect(ctor).toHaveBeenCalledBefore(afterAdvice);
         });
 
-        describe('"this" value before the joinpoint is called', () => {
-            beforeEach(() => {
-                aroundAdvice = jasmine
-                    .createSpy('aroundAdvice')
-                    .and.callFake((ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
-                        expect(ctxt.instance).not.toBeNull();
-                        jp();
-                    });
-            });
-
-            it('should be null', () => {
-                expect(() => {
-                    @AClass()
-                    class A {
-                        constructor() {
-                            ctor();
-                        }
-                    }
-
-                    new A();
-                }).toThrow(
-                    new WeavingError(
-                        '@Around(@AClass) AroundClassAspect.apply(): Cannot call constructor joinpoint when AroundContext.instance was already used',
-                    ),
-                );
-            });
-        });
-
-        describe('when referencing "this" after the joinpoint is called', () => {
-            beforeEach(() => {
-                aroundAdvice = jasmine
-                    .createSpy('aroundAdvice')
-                    .and.callFake((ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
-                        jp();
-                        ctxt.instance.labels.push('a');
-                    });
-            });
-
-            it('should not throw', () => {
-                @AClass()
-                class A {
-                    labels: string[];
-                    constructor() {
-                        ctor();
-                        this.labels = ['ctor'];
-                    }
-                }
-                expect(() => {
-                    new A();
-                }).not.toThrow();
-
-                expect(new A().labels).toEqual(['ctor', 'a']);
-            });
-        });
-
         describe('when the advice calls the joinpoint', () => {
             beforeEach(() => {
                 aroundAdvice = jasmine
                     .createSpy('aroundAdvice')
-                    .and.callFake((ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                    .and.callFake((ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                         jp(['x']);
                         ctxt.instance.labels.push('a');
                     });
@@ -157,9 +101,10 @@ describe('@Around advice', () => {
             beforeEach(() => {
                 aroundAdvice = jasmine
                     .createSpy('aroundAdvice')
-                    .and.callFake((ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
-                        ctxt.instance.labels = ctxt.instance.labels ?? [];
-                        ctxt.instance.labels.push('a');
+                    .and.callFake((ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                        return {
+                            labels: ['a'],
+                        };
                     });
             });
 
@@ -191,7 +136,7 @@ describe('@Around advice', () => {
                     @Aspect('aAspect')
                     class AAspect {
                         @Around(on.class.withAnnotations(AClass))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('beforeA');
                             jp(aArgsOverride);
                             labels.push('afterA');
@@ -201,7 +146,7 @@ describe('@Around advice', () => {
                     @Aspect('bAspect')
                     class BAspect {
                         @Around(on.class.withAnnotations(AClass))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('beforeB');
                             jp(bArgsOverride);
                             labels.push('afterB');
@@ -253,7 +198,7 @@ describe('@Around advice', () => {
                         @Around(on.class.withAnnotations(AClass), {
                             priority: 10,
                         })
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('A.around.before');
                             jp();
                             labels.push('A.around.after');
@@ -266,55 +211,19 @@ describe('@Around advice', () => {
                             priority: 20,
                         })
                         apply(ctxt: BeforeContext): void {
-                            labels.push('beforeB');
+                            labels.push('B.before');
                         }
                     }
                     setupWeaver(new AAspect(), new BAspect());
                 });
-                it('should call @Before advice before @Around advice', () => {
+                it('should call @Before advice inside @Around advice', () => {
                     @AClass()
                     class A {
                         constructor(label: string) {}
                     }
 
                     new A('ctor');
-                    expect(labels).toEqual(['beforeB', 'A.around.before', 'A.around.after']);
-                });
-            });
-            describe('when before advice has lower priority', () => {
-                let labels: string[];
-                beforeEach(() => {
-                    labels = [];
-
-                    @Aspect('aAspect')
-                    class AAspect {
-                        @Around(on.class.withAnnotations(AClass), {
-                            priority: 2,
-                        })
-                        aroundA(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
-                            labels.push('A.around.before');
-                            jp();
-                            labels.push('A.around.after');
-                        }
-                    }
-
-                    @Aspect('bAspect')
-                    class BAspect {
-                        @Before(on.class.withAnnotations(AClass), {
-                            priority: 1,
-                        })
-                        beforeA(ctxt: BeforeContext): void {
-                            labels.push('A.before');
-                        }
-                    }
-                    setupWeaver(new AAspect(), new BAspect());
-                });
-                xit('should call @Before advice before @Around advice', () => {
-                    @AClass()
-                    class A {}
-
-                    new A();
-                    expect(labels).toEqual(['A.around.before', 'A.before', 'B.around.after']);
+                    expect(labels).toEqual(['A.around.before', 'B.before', 'A.around.after']);
                 });
             });
         });
@@ -326,7 +235,7 @@ describe('@Around advice', () => {
             @Aspect('APropertyLabel')
             class AroundPropertyAspect {
                 @Around(on.property.withAnnotations(AProperty))
-                apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
 
@@ -370,12 +279,10 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
-                        .and.callFake(
-                            (ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
-                                expect(ctxt.instance).not.toBeNull();
-                                return ['around'];
-                            },
-                        );
+                        .and.callFake((ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            expect(ctxt.instance).not.toBeNull();
+                            return ['around'];
+                        });
                 });
 
                 it('should not get the original property value', () => {
@@ -388,7 +295,7 @@ describe('@Around advice', () => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
                         .and.callFake(
-                            (ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            (ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint<string[]>, jpArgs: any[]) => {
                                 expect(ctxt.instance).not.toBeNull();
                                 return jp().concat(['around']);
                             },
@@ -427,7 +334,7 @@ describe('@Around advice', () => {
                         @Aspect('aAspect')
                         class AAspect {
                             @Around(on.property.withAnnotations(AProperty))
-                            apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
+                            apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
                                 return ['beforeA'].concat(jp() as []).concat('afterA');
                             }
                         }
@@ -435,7 +342,7 @@ describe('@Around advice', () => {
                         @Aspect('bAspect')
                         class BAspect {
                             @Around(on.property.withAnnotations(AProperty))
-                            apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
+                            apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
                                 return ['beforeB'].concat(jp() as []).concat('afterB');
                             }
                         }
@@ -462,7 +369,7 @@ describe('@Around advice', () => {
             @Aspect('APropertyLabel')
             class AroundPropertyAspect {
                 @Around(on.property.setter.withAnnotations(AProperty))
-                apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
 
@@ -512,11 +419,9 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
-                        .and.callFake(
-                            (ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
-                                expect(ctxt.instance).not.toBeNull();
-                            },
-                        );
+                        .and.callFake((ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            expect(ctxt.instance).not.toBeNull();
+                        });
                 });
 
                 it('should not call the original property setter', () => {
@@ -530,7 +435,7 @@ describe('@Around advice', () => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
                         .and.callFake(
-                            (ctxt: AroundContext<Labeled, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            (ctxt: AroundContext<Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                                 expect(ctxt.instance).not.toBeNull();
                                 return jp([
                                     []
@@ -556,7 +461,7 @@ describe('@Around advice', () => {
                     @Aspect('aAspect')
                     class AAspect {
                         @Around(on.property.setter.withAnnotations(AProperty))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs[0].push('aroundA');
                             jp(jpArgs);
                         }
@@ -565,7 +470,7 @@ describe('@Around advice', () => {
                     @Aspect('bAspect')
                     class BAspect {
                         @Around(on.property.setter.withAnnotations(AProperty))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs[0].push('aroundB');
                             jp(jpArgs);
                         }
@@ -593,7 +498,7 @@ describe('@Around advice', () => {
             @Aspect()
             class AroundPropertyAspect {
                 @Around(on.method.withAnnotations(AMethod))
-                apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
 
@@ -651,9 +556,7 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
-                        .and.callFake(
-                            (ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {},
-                        );
+                        .and.callFake((ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {});
                 });
 
                 describe('calling the method', () => {
@@ -670,7 +573,7 @@ describe('@Around advice', () => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
                         .and.callFake(
-                            (ctxt: AroundContext<Labeled, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            (ctxt: AroundContext<Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                                 expect(ctxt.instance).not.toBeNull();
                                 return jp(
                                     []
@@ -698,18 +601,18 @@ describe('@Around advice', () => {
                     @Aspect('aAspect')
                     class AAspect {
                         @Around(on.method.withAnnotations(AMethod))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs.push('aroundA');
-                            return jp(jpArgs);
+                            jp(jpArgs);
                         }
                     }
 
                     @Aspect('bAspect')
                     class BAspect {
                         @Around(on.method.withAnnotations(AMethod))
-                        apply(ctxt: AroundContext<any, AnnotationType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
+                        apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs.push('aroundB');
-                            return jp(jpArgs);
+                            jp(jpArgs);
                         }
                     }
                     setupWeaver(new AAspect(), new BAspect());

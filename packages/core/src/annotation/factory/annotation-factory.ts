@@ -1,22 +1,22 @@
 import {
     Annotation,
     AnnotationRef,
-    AnnotationType,
+    AdviceType,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
 import { assert, getOrComputeMetadata, getProto } from '@aspectjs/core/utils';
-import { AnnotationTargetFactory } from '../target/annotation-target.factory';
+import { AnnotationTargetFactory } from '../../advice/target/annotation-target.factory';
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AnnotationsBundle } from '../bundle/bundle';
 import { weaverContext } from '../../weaver/weaver-context';
-import { AnnotationTarget } from '../target/annotation-target';
+import { AdviceTarget } from '../../advice/target/advice-target';
 import { MutableAdviceContext } from '../../advice/advice-context';
 import { JoinPoint } from '../../weaver/types';
 import { Advice } from '../../advice/types';
-import { AnnotationContext } from '../context/context';
+import { AnnotationContext } from '../context/annotation-context';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
@@ -34,7 +34,7 @@ export class AnnotationFactory {
     create<A extends PropertyAnnotationStub>(annotationStub: A): A & AnnotationRef;
     create<A extends ParameterAnnotationStub>(annotationStub: A): A & AnnotationRef;
 
-    create<S extends Annotation<AnnotationType>>(annotationStub: S): S & AnnotationRef {
+    create<S extends Annotation<AdviceType>>(annotationStub: S): S & AnnotationRef {
         if (!annotationStub.name) {
             Reflect.defineProperty(annotationStub, 'name', {
                 value: `anonymousAnnotation#${generatedId++}`,
@@ -58,13 +58,13 @@ export class AnnotationFactory {
         return AnnotationBundleRegistry.of(
             AnnotationTargetFactory.create({
                 proto,
-                type: AnnotationType.CLASS,
+                type: AdviceType.CLASS,
             }),
         );
     }
 }
 
-function _createAnnotationRef<A extends Annotation<AnnotationType>, D extends Decorator>(
+function _createAnnotationRef<A extends Annotation<AdviceType>, D extends Decorator>(
     fn: Function & D,
     annotationStub: A,
     groupId: string,
@@ -96,12 +96,12 @@ function _createAnnotationRef<A extends Annotation<AnnotationType>, D extends De
     return annotation;
 }
 
-function _createDecorator<A extends AnnotationType>(annotation: Annotation<A>, annotationArgs: any[]): Decorator {
+function _createDecorator<A extends AdviceType>(annotation: Annotation<A>, annotationArgs: any[]): Decorator {
     const GENERATORS = {
-        [AnnotationType.CLASS]: _createClassDecoration,
-        [AnnotationType.PROPERTY]: _createPropertyDecoration,
-        [AnnotationType.METHOD]: _createMethodDecoration,
-        [AnnotationType.PARAMETER]: _createParameterDecoration,
+        [AdviceType.CLASS]: _createClassDecoration,
+        [AdviceType.PROPERTY]: _createPropertyDecoration,
+        [AdviceType.METHOD]: _createMethodDecoration,
+        [AdviceType.PARAMETER]: _createParameterDecoration,
     };
 
     return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
@@ -112,7 +112,7 @@ function _createDecorator<A extends AnnotationType>(annotation: Annotation<A>, a
             throw new Error(`Cannot invoke annotation ${annotation.name ?? ''} before "setWeaver()" has been called`);
         }
 
-        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
+        const target = AnnotationTargetFactory.of(targetArgs) as AdviceTarget<any, A>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         AnnotationBundleRegistry.addContext(target, annotationContext);
@@ -124,13 +124,13 @@ function _createDecorator<A extends AnnotationType>(annotation: Annotation<A>, a
     };
 }
 
-class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceContext<unknown, A> {
-    public error?: Error;
-    public instance?: T;
-    public value?: T | unknown;
-    public args?: any[];
-    public joinpoint?: JoinPoint;
-    public target: AnnotationTarget<T, A>;
+class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext<unknown, A> {
+    public error: Error;
+    public instance: T;
+    public value: T | unknown;
+    public args: any[];
+    public joinpoint: JoinPoint;
+    public target: AdviceTarget<T, A>;
     public data: Record<string, any>;
     public advices: Advice[];
 
@@ -148,16 +148,12 @@ class AdviceContextImpl<T, A extends AnnotationType> implements MutableAdviceCon
     }
 }
 
-class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationContext<T, D> {
+class AnnotationContextImpl<T, D extends AdviceType> implements AnnotationContext<T, D> {
     public readonly name: string;
     public readonly groupId: string;
     private readonly _annotation: AnnotationRef;
 
-    constructor(
-        public readonly target: AnnotationTarget<T, D>,
-        public readonly args: any[],
-        annotation: AnnotationRef,
-    ) {
+    constructor(public readonly target: AdviceTarget<T, D>, public readonly args: any[], annotation: AnnotationRef) {
         this.name = annotation.name;
         this.groupId = annotation.groupId;
         this._annotation = annotation;
@@ -168,18 +164,18 @@ class AnnotationContextImpl<T, D extends AnnotationType> implements AnnotationCo
     }
 }
 
-function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, AnnotationType.CLASS>): Function {
+function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, AdviceType.CLASS>): Function {
     return weaverContext.getWeaver().enhanceClass(ctxt);
 }
 
-function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AnnotationType.PROPERTY>): PropertyDescriptor {
+function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AdviceType.PROPERTY>): PropertyDescriptor {
     return weaverContext.getWeaver().enhanceProperty(ctxt);
 }
 
-function _createMethodDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>): PropertyDescriptor {
+function _createMethodDecoration(ctxt: AdviceContextImpl<any, AdviceType.METHOD>): PropertyDescriptor {
     return weaverContext.getWeaver().enhanceMethod(ctxt);
 }
 
-function _createParameterDecoration(ctxt: AdviceContextImpl<any, AnnotationType.METHOD>): void {
+function _createParameterDecoration(ctxt: AdviceContextImpl<any, AdviceType.METHOD>): void {
     return weaverContext.getWeaver().enhanceParameter(ctxt);
 }

@@ -15,7 +15,7 @@ import { After } from './after.decorator';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;
@@ -35,14 +35,14 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class ClassAspectA {
                 @After(on.class.withAnnotations(AClass), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.PROPERTY>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ClassAspectB {
                 @After(on.class.withAnnotations(BClass), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.PROPERTY>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -94,14 +94,14 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @After(on.property.withAnnotations(AProperty), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @After(on.property.withAnnotations(BProperty), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -162,14 +162,14 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @After(on.property.setter.withAnnotations(AProperty), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @After(on.property.setter.withAnnotations(BProperty), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.CLASS>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -234,14 +234,14 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @After(on.method.withAnnotations(AMethod), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.METHOD>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
                 @After(on.method.withAnnotations(BMethod), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.METHOD>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterBAdvice(ctxt);
                 }
             }
@@ -304,14 +304,14 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @After(on.parameter.withAnnotations(AParameter), { priority: 10 })
-                afterA(ctxt: AfterContext<any, AnnotationType.PARAMETER>): void {
+                afterA(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ParameterAspectB {
                 @After(on.parameter.withAnnotations(BParameter), { priority: 9 })
-                afterB(ctxt: AfterContext<any, AnnotationType.PARAMETER>): void {
+                afterB(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterBAdvice(ctxt);
                 }
             }

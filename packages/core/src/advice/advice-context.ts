@@ -1,6 +1,6 @@
-import { AnnotationContext } from '../annotation/context/context';
-import { AnnotationTarget } from '../annotation/target/annotation-target';
-import { AnnotationType } from '../annotation/annotation.types';
+import { AnnotationContext } from '../annotation/context/annotation-context';
+import { AdviceTarget } from './target/advice-target';
+import { AdviceType } from '../annotation/annotation.types';
 import { JoinPoint } from '../weaver/types';
 import { AfterContext } from './after/after-context';
 import { BeforeContext } from './before/before-context';
@@ -12,7 +12,7 @@ import { CompileContext } from './compile/compile-context';
 /**
  * @public
  */
-export type AdviceContext<T = unknown, A extends AnnotationType = any> =
+export type AdviceContext<T = unknown, A extends AdviceType = any> =
     | AfterContext<T, A>
     | BeforeContext<T, A>
     | AfterReturnContext<T, A>
@@ -20,14 +20,30 @@ export type AdviceContext<T = unknown, A extends AnnotationType = any> =
     | AroundContext<T, A>
     | CompileContext<T, A>;
 
-export interface MutableAdviceContext<T = unknown, A extends AnnotationType = any> {
-    annotation?: AnnotationContext<T, A>;
-    instance?: T;
-    value?: unknown;
-    args?: unknown[];
-    error?: Error;
-    joinpoint?: JoinPoint;
-    target: AnnotationTarget<T, A>;
+// export type AdviceContext<
+//     P extends PointcutPhase,
+//     T = unknown,
+//     A extends AdviceType = any
+//     > = P extends PointcutPhase.AFTER
+//     ? AfterContext<T, A>
+//     : P extends PointcutPhase.AFTERRETURN
+//         ? AfterReturnContext<T, A>
+//         : P extends PointcutPhase.AFTERTHROW
+//             ? AfterThrowContext<T, A>
+//             : P extends PointcutPhase.AROUND
+//                 ? AroundContext<T, A>
+//                 : P extends PointcutPhase.COMPILE
+//                     ? CompileContext<T, A>
+//                     : never;
+
+export interface MutableAdviceContext<T = unknown, A extends AdviceType = any> {
+    annotation: AnnotationContext<T, A>;
+    instance: T;
+    value: unknown;
+    args: unknown[];
+    error: Error;
+    joinpoint: JoinPoint;
+    target: AdviceTarget<T, A>;
     /** any data set by the advices, shared across all advice going through  this execution context **/
     data: Record<string, any>;
 

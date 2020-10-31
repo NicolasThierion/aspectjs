@@ -4,7 +4,7 @@ import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Compile } from '../compile/compile.decorator';
 import { Aspect } from '../aspect';
-import { AnnotationType } from '../../annotation/annotation.types';
+import { AdviceType } from '../../annotation/annotation.types';
 import Spy = jasmine.Spy;
 
 const thrownError = new Error('expected');
@@ -23,7 +23,7 @@ describe('@AfterThrow advice', () => {
             @Aspect('AClassLabel')
             class AfterThrowAspect {
                 @AfterThrow(on.class.withAnnotations(AClass))
-                apply(ctxt: AfterThrowContext<any, AnnotationType.CLASS>, error: Error): void {
+                apply(ctxt: AfterThrowContext<any, AdviceType.CLASS>, error: Error): void {
                     expect(error).toEqual(ctxt.error);
                     adviceError = error;
 
@@ -40,7 +40,7 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('afterThrowAdvice')
-                        .and.callFake(function (ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>, error: Error) {
+                        .and.callFake(function (ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>, error: Error) {
                             ctxt.instance.labels = ctxt.instance.labels ?? [];
                             ctxt.instance.labels.push('A');
 
@@ -90,7 +90,7 @@ describe('@AfterThrow advice', () => {
                     beforeEach(() => {
                         advice = jasmine
                             .createSpy('afterThrowAdvice')
-                            .and.callFake((ctxt: AfterThrowContext<Labeled, AnnotationType.CLASS>) => {
+                            .and.callFake((ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>) => {
                                 ctxt.instance.labels = ctxt.instance.labels ?? [];
                                 ctxt.instance.labels.push('A');
                             });
@@ -124,7 +124,7 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('afterThrowAdvice')
-                        .and.callFake((ctxt: AdviceContext<Labeled, AnnotationType.CLASS>) => {
+                        .and.callFake((ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
                             return Object.assign(Object.create(ctxt.target.proto), {
                                 labels: ['ABis'],
                             });
@@ -172,7 +172,7 @@ describe('@AfterThrow advice', () => {
             @Aspect('PropertyThrow')
             class PropertyThrowAspect {
                 @Compile(on.property.withAnnotations(AProperty))
-                compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
+                compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
                     return {
                         get() {
                             throw new Error('expected');
@@ -187,7 +187,7 @@ describe('@AfterThrow advice', () => {
             @Aspect('APropertyLabel')
             class AfterThrowAspect {
                 @AfterThrow(on.property.withAnnotations(AProperty))
-                afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
+                afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
                     advice(ctxt, error);
                     return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
                 }
@@ -259,7 +259,7 @@ describe('@AfterThrow advice', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
                         @AfterThrow(on.property.withAnnotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): any {
+                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
                     }
@@ -285,7 +285,7 @@ describe('@AfterThrow advice', () => {
             @Aspect('PropertyThrow')
             class PropertyThrowAspect {
                 @Compile(on.property.withAnnotations(AProperty))
-                compile(ctxt: CompileContext<any, AnnotationType.PROPERTY>): PropertyDescriptor {
+                compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
                     return {
                         get() {
                             return this._val;
@@ -301,7 +301,7 @@ describe('@AfterThrow advice', () => {
             @Aspect('APropertyLabel')
             class AfterThrowAspect {
                 @AfterThrow(on.property.setter.withAnnotations(AProperty))
-                afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): void {
+                afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
                     advice(ctxt, error);
                     return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
                 }
@@ -386,7 +386,7 @@ describe('@AfterThrow advice', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
                         @AfterThrow(on.property.setter.withAnnotations(AProperty))
-                        afterThrow(ctxt: AfterThrowContext<any, AnnotationType.PROPERTY>, error: Error): any {
+                        afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
                     }
@@ -417,7 +417,7 @@ describe('@AfterThrow advice', () => {
             @Aspect('AfterThrowAspect')
             class AfterThrowAspect {
                 @AfterThrow(on.method.withAnnotations(AMethod))
-                afterThrow(ctxt: AfterThrowContext<any, AnnotationType.METHOD>, error: Error): void {
+                afterThrow(ctxt: AfterThrowContext<any, AdviceType.METHOD>, error: Error): void {
                     return advice(ctxt, error);
                 }
             }
