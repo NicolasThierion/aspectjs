@@ -1,9 +1,16 @@
-import { AdviceType } from '../types';
+import { AdviceType } from '../../advice/types';
+import {
+    AnnotationLocation,
+    ClassAnnotationLocation,
+    MethodAnnotationLocation,
+    ParametersAnnotationLocation,
+    PropertyAnnotationLocation,
+} from '../location/annotation-location';
 
-export interface AnnotationTarget<T = unknown, A extends AdviceType = any> {
-    readonly location: AdviceLocation<T, A>;
+export interface AnnotationTarget<T = unknown, A extends AdviceType = AdviceType> {
+    readonly location: AnnotationLocation<T, A>;
     readonly type: A;
-    readonly proto: any;
+    readonly proto: Record<string, any> & { constructor: new (...args: any[]) => any };
     readonly name: string;
     readonly label: string;
     readonly ref: string;
@@ -43,21 +50,6 @@ export interface MethodAdviceTarget<T> extends AdviceTarget<T, AdviceType.METHOD
 export interface ParameterAdviceTarget<T> extends AdviceTarget<T, AdviceType.PARAMETER> {
     readonly propertyKey: string;
     readonly parameterIndex: number;
-    readonly location: ParameterAnnotationLocation<T>;
+    readonly location: ParametersAnnotationLocation<T>;
     readonly parent: MethodAdviceTarget<T>;
 }
-
-export type AdviceLocation<T, D extends AdviceType> =
-    | undefined
-    | {
-          [prop in keyof T]: T[prop] extends (...any: any[]) => any
-              ? MethodAnnotationLocation<T>
-              : AdviceLocation<T, any>;
-      };
-
-export type ClassAnnotationLocation<T> = AdviceLocation<T, AdviceType.CLASS>;
-export type MethodAnnotationLocation<T> = AdviceLocation<T, AdviceType.METHOD> & {
-    args: ParameterAnnotationLocation<T> & ParameterAnnotationLocation<T>[];
-};
-export type PropertyAnnotationLocation<T> = AdviceLocation<T, AdviceType.PROPERTY>;
-export type ParameterAnnotationLocation<T> = AdviceLocation<T, AdviceType.PARAMETER>;

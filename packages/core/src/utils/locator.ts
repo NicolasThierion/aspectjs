@@ -9,6 +9,14 @@ class Locator<U> {
         return this._obj;
     }
 
+    orElseCompute(valueProvider: () => U): U {
+        return this.orElse(valueProvider, true);
+    }
+
+    orElseGet(valueProvider: () => U): U {
+        return this.orElse(valueProvider, false);
+    }
+
     orElse(valueProvider: () => U, save = true): U {
         const value = this._obj ?? valueProvider();
         if (save) {

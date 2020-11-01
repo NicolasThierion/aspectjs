@@ -1,4 +1,4 @@
-import { AnnotationFactory, AnnotationRef } from '@aspectjs/core';
+import { AnnotationRef } from '@aspectjs/core';
 import { annotationFactory } from '@aspectjs/core/utils';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved

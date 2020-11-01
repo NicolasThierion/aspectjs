@@ -1,5 +1,5 @@
 import { AnnotationFactory } from './annotation-factory';
-import { weaverContext } from '../../weaver/weaver-context';
+import { WEAVER_CONTEXT } from '../../weaver/weaver-context';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 
 let factory: AnnotationFactory;
@@ -21,7 +21,7 @@ describe('Annotation Factory', () => {
 
     beforeEach(() => {
         factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
-        weaverContext.setWeaver(new JitWeaver(WEAVER_TEST_NAME));
+        WEAVER_CONTEXT.setWeaver(new JitWeaver(WEAVER_TEST_NAME));
     });
 
     describe('method "create"', () => {

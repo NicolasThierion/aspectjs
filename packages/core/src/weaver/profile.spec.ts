@@ -2,9 +2,14 @@ import { WeaverProfile } from './profile';
 import { Aspect } from '../advice/aspect';
 
 describe('WeaverProfile', function () {
-    @Aspect('test')
-    class TestAspect {}
-    const testAspect = new TestAspect();
+    let testAspect: any;
+    let TestAspect: any;
+    beforeEach(() => {
+        @Aspect('test')
+        class _TestAspect {}
+        testAspect = new _TestAspect();
+        TestAspect = _TestAspect;
+    });
 
     describe('method "getAspect"', () => {
         describe('given an aspect id', () => {

@@ -1,4 +1,5 @@
 import { isString } from '@aspectjs/core/utils';
+import { ASPECTJS_ANNOTATION_FACTORY, setAspectOptions } from '../utils/utils';
 
 let _globalAspectId = 0;
 
@@ -7,9 +8,9 @@ export interface AspectOptions {
     priority?: number;
 }
 
-export const ASPECT_OPTIONS_REFLECT_KEY = 'aspectjs.aspect.options';
-
-export function Aspect(id: string | AspectOptions = {}): ClassDecorator {
+export const Aspect = ASPECTJS_ANNOTATION_FACTORY.create(function Aspect(
+    id: string | AspectOptions = {},
+): ClassDecorator {
     return function (target: Function) {
         const options = isString(id) ? { id: id } : (id as AspectOptions) ?? {};
 
@@ -19,12 +20,6 @@ export function Aspect(id: string | AspectOptions = {}): ClassDecorator {
             throw new TypeError(`Aspect ${target.name} should have a string id. Got: ${options.id}`);
         }
 
-        Reflect.defineMetadata(ASPECT_OPTIONS_REFLECT_KEY, options, target);
+        setAspectOptions(target, options);
     };
-}
-
-// const annotationFactory = new AnnotationFactory('aspectjs');
-
-// export const Aspect = annotationFactory.create(function Aspect(id: string | AspectOptions = {}): ClassDecorator {
-//     return;
-// });
+});

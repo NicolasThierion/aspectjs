@@ -1,8 +1,8 @@
 import { AdviceFactory } from '../advice-factory';
 import { PointcutPhase, PointcutExpression, PointcutOption, Pointcut } from '../pointcut';
-import { annotationFactory } from '../../utils/utils';
+import { ASPECTJS_ANNOTATION_FACTORY } from '../../utils/utils';
 
-export const After = annotationFactory.create(function After(
+export const After = ASPECTJS_ANNOTATION_FACTORY.create(function After(
     pointcutExp: PointcutExpression,
     options?: PointcutOption,
 ): MethodDecorator {

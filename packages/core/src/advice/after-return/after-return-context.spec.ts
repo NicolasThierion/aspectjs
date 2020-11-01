@@ -12,7 +12,7 @@ import {
     BProperty,
 } from '../../../testing/src/helpers';
 import { AfterReturn } from './after-return.annotation';
-import { weaverContext } from '../../weaver/weaver-context';
+import { WEAVER_CONTEXT } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { AdviceType } from '../types';
@@ -26,7 +26,7 @@ describe('AfterReturnContext', () => {
     let afterBAdvice = jasmine.createSpy('afterBAdvice');
 
     beforeEach(() => {
-        weaverContext.setWeaver((weaver = new JitWeaver()));
+        WEAVER_CONTEXT.setWeaver((weaver = new JitWeaver()));
         afterReturnAAdvice = jasmine.createSpy('afterReturnAAdvice');
         afterReturnBAdvice = jasmine.createSpy('afterReturnBAdvice');
         afterAAdvice = jasmine.createSpy('afterAAdvice');

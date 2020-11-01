@@ -1,6 +1,6 @@
 import { AdviceType } from '../types';
 import { AnnotationContext } from '../../annotation/context/annotation-context';
-import { AdviceTarget } from '../target/advice-target';
+import { AdviceTarget } from '../../annotation/target/annotation-target';
 import { JoinPoint } from '../../weaver/types';
 
 export interface AroundContext<T = unknown, A extends AdviceType = any> {

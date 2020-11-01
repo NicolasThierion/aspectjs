@@ -1,4 +1,4 @@
-import { weaverContext } from './weaver/weaver-context';
+import { WEAVER_CONTEXT } from './weaver/weaver-context';
 import { JitWeaver } from './weaver/jit/jit-weaver';
 
 export * from './weaver/profile';
@@ -23,10 +23,8 @@ export * from './annotation/annotation.types';
 export * from './annotation/bundle/bundle';
 export * from './annotation/context/annotation-context';
 export * from './annotation/factory/annotation-factory';
-export * from './advice/target/advice-target';
-
-// TODO create function "setupAspectWeaver" to avoid side effects
+export * from './annotation/target/annotation-target';
 
 export function setupAspectWeaver() {
-    weaverContext.setWeaver(new JitWeaver());
+    WEAVER_CONTEXT.setWeaver(new JitWeaver());
 }

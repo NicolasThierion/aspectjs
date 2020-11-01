@@ -23,9 +23,7 @@ export class PointcutExpression {
         return AnnotationPointcutExpressionBuilders[type].withAnnotations(annotation as any);
     }
     constructor(private _label: string, private _annotations: AnnotationRef[] = []) {
-        this._expr = _trimSpaces(
-            `${this._label} ${this._annotations.map((a) => a.toString()).join(',')} ${this._name}`,
-        );
+        this._expr = _trimSpaces(`${this._label} ${this._annotations.map((a) => `@${a.ref}`).join(',')} ${this._name}`);
     }
     toString(): string {
         return this._expr;
@@ -116,7 +114,7 @@ export namespace Pointcut {
                 pointcut = {
                     type: type as AdviceType,
                     phase,
-                    annotation: AnnotationRef.of(match.groups.annotation),
+                    annotation: new AnnotationRef(match.groups.annotation),
                     name: match.groups.name,
                     ref,
                     options,

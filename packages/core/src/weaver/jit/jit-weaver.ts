@@ -15,10 +15,10 @@ import {
 import { AdviceError } from '../errors/advice-error';
 import { Weaver } from '../weaver';
 import { AdviceExecutionPlanFactory } from '../execution/plan.factory';
-import { AdviceTarget } from '../../advice/target/advice-target';
+import { AdviceTarget } from '../../annotation/target/annotation-target';
 import { JoinpointFactory } from '../joinpoint-factory';
 import { WeaverHooks } from '../weaver-hooks';
-import { Mutable } from '../../utils/utils';
+import { getReferenceConstructor, Mutable, setReferenceConstructor } from '../../utils/utils';
 
 const _defineProperty = Object.defineProperty;
 type MethodPropertyDescriptor = PropertyDescriptor & { value: (...args: any[]) => any };
@@ -45,33 +45,40 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     enhanceClass<T>(ctxt: MutableAdviceContext<T, AdviceType.CLASS>): new () => T {
-        const plan = this._planFactory.create(ctxt.target);
+        const plan = this._planFactory.create(ctxt.target, new ClassWeaverHooks());
+        const originalCtor = ctxt.target.proto.constructor;
+        const compiledCtor = plan.compile(ctxt);
+        const ctorName = compiledCtor.name;
 
-        const originalCtor = _compileClass(ctxt, plan.compileAdvices);
-        const ctorName = originalCtor.name;
-
-        let ctor = plan.execute(ctxt, new ClassWeaverHooks(originalCtor));
-        ctor = _setFunctionName(ctor, ctorName, `class ${ctorName} {}`);
+        let ctor = plan.link(ctxt);
+        ctor = _setFunctionName(ctor, ctorName, `class ${ctorName}$$enhanced {}`);
 
         ctor.prototype = ctxt.target.proto;
         ctor.prototype.constructor = ctor;
+        setReferenceConstructor(ctor as any, originalCtor);
         return ctor as any;
     }
 
     enhanceProperty<T>(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>): PropertyDescriptor {
-        const gettersPlan = this._planFactory.create(ctxt.target, _isPropertyGet);
-        const settersPlan = this._planFactory.create(ctxt.target, _isPropertySet);
+        const gettersPlan = this._planFactory.create(ctxt.target, new PropertyGetterWeaverHooks(), {
+            name: 'get',
+            fn: _isPropertyGet,
+        });
 
-        const refDescriptor = _compileProperty(ctxt, gettersPlan.compileAdvices.concat(settersPlan.compileAdvices));
+        const refDescriptor = gettersPlan.compile(ctxt);
+        const settersPlan = this._planFactory.create(ctxt.target, new PropertySetterWeaverHooks(refDescriptor), {
+            name: 'set',
+            fn: _isPropertySet,
+        });
 
         let newDescriptor = {
             ...refDescriptor,
         };
 
-        newDescriptor.get = gettersPlan.execute(ctxt, new PropertyGetterWeaverHooks(refDescriptor));
+        newDescriptor.get = gettersPlan.link(ctxt);
 
         if (_isDescriptorWritable(newDescriptor)) {
-            newDescriptor.set = settersPlan.execute(ctxt, new PropertySetterWeaverHooks(refDescriptor));
+            newDescriptor.set = settersPlan.link(ctxt);
             delete newDescriptor.writable;
         } else {
             delete newDescriptor.set;
@@ -89,15 +96,15 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     enhanceMethod<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor {
-        const plan = this._planFactory.create(ctxt.target);
+        const plan = this._planFactory.create(ctxt.target, new MethodWeaverHooks());
 
         // invoke compile method or get default descriptor
-        const refDescriptor = _compileMethod(ctxt, plan.compileAdvices);
+        const refDescriptor = plan.compile(ctxt);
         assert(!!refDescriptor);
 
         const newDescriptor: PropertyDescriptor = { ...refDescriptor };
 
-        newDescriptor.value = plan.execute(ctxt, new MethodWeaverHooks(refDescriptor));
+        newDescriptor.value = plan.link(ctxt);
 
         Reflect.defineProperty(newDescriptor.value, 'name', {
             value: ctxt.target.propertyKey,
@@ -190,6 +197,7 @@ abstract class GenericWeaverHooks<T, A extends AdviceType> implements WeaverHook
 
     abstract compile(
         ctxt: MutableAdviceContext<T, A>,
+        advices: CompileAdvice<T, AdviceType>[],
     ): A extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor;
 
     abstract initialJoinpoint(
@@ -199,14 +207,21 @@ abstract class GenericWeaverHooks<T, A extends AdviceType> implements WeaverHook
 }
 
 class ClassWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.CLASS> {
-    constructor(private originalCtor: { new (...args: any[]): T }) {
-        super();
-    }
-
     private originalInstance: T;
 
-    compile(ctxt: MutableAdviceContext<T, AdviceType.CLASS>) {
-        return this.originalCtor;
+    compile(
+        ctxt: MutableAdviceContext<T, AdviceType.CLASS>,
+        advices: CompileAdvice<T, AdviceType.CLASS>[],
+    ): AdviceType.CLASS extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor {
+        // if another @Compile advice has been applied
+        // replace wrapped ctor by original ctor before it gets wrapped again
+        ctxt.target.proto.constructor = getReferenceConstructor(ctxt.target.proto);
+
+        let ctor: new (...args: any[]) => T;
+        advices.forEach((advice: CompileAdvice<T, AdviceType.CLASS>) => {
+            ctor = advice(ctxt as AdviceContext<T, AdviceType.CLASS>) as any;
+        });
+        return (ctxt.target.proto.constructor = ctor ?? ctxt.target.proto.constructor);
     }
 
     preAround(ctxt: MutableAdviceContext<T, AdviceType.CLASS>) {
@@ -279,18 +294,79 @@ class ClassWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.CLASS> {
 }
 
 class PropertyGetterWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.PROPERTY> {
-    constructor(private refDescriptor: PropertyDescriptor) {
-        super();
-    }
-
     compile(
         ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>,
+        advices: CompileAdvice<T, AdviceType.PROPERTY>[],
     ): AdviceType.PROPERTY extends AdviceType.METHOD
         ? () => T
         : AdviceType.PROPERTY extends AdviceType.CLASS
         ? { new (...args: any[]): T }
         : PropertyDescriptor {
-        return this.refDescriptor;
+        const target = ctxt.target;
+
+        // if another @Compile advice has been applied
+        // replace wrapped descriptor by original descriptor before it gets wrapped again
+        (target as Mutable<AdviceTarget>).descriptor = getOrComputeMetadata(
+            'aspectjs.originalDescriptor',
+            target.proto,
+            target.propertyKey,
+            () => {
+                return (
+                    Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) ?? {
+                        configurable: true,
+                        enumerable: true,
+                        get() {
+                            return Reflect.getOwnMetadata(`aspectjs.propValue`, this, target.propertyKey);
+                        },
+                        set(value: any) {
+                            Reflect.defineMetadata(`aspectjs.propValue`, value, this, target.propertyKey);
+                        },
+                    }
+                );
+            },
+            true,
+        );
+
+        let advice: CompileAdvice<T, AdviceType.PROPERTY>;
+        let newDescriptor: PropertyDescriptor = ctxt.target.descriptor;
+
+        advices.forEach((advice) => {
+            newDescriptor = advice(ctxt) ?? newDescriptor;
+        });
+
+        if (newDescriptor) {
+            if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
+                throw new AdviceError(advice, `${target.label} is not configurable`);
+            }
+
+            // test property validity
+            const surrogate = { prop: '' };
+            const surrogateProp = Reflect.getOwnPropertyDescriptor(surrogate, 'prop');
+            if (isUndefined(newDescriptor.enumerable)) {
+                newDescriptor.enumerable = surrogateProp.enumerable;
+            }
+
+            if (isUndefined(newDescriptor.configurable)) {
+                newDescriptor.configurable = surrogateProp.configurable;
+            }
+
+            // normalize the descriptor
+            newDescriptor = Object.getOwnPropertyDescriptor(
+                Object.defineProperty(surrogate, 'newProp', newDescriptor),
+                'newProp',
+            );
+
+            Reflect.defineProperty(target.proto, target.propertyKey, newDescriptor);
+        }
+
+        if ((newDescriptor as Record<string, any>).hasOwnProperty('value')) {
+            const propValue = newDescriptor.value;
+            newDescriptor.get = () => propValue;
+            delete newDescriptor.writable;
+            delete newDescriptor.value;
+        }
+
+        return newDescriptor;
     }
 
     preBefore(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>): void {
@@ -350,12 +426,63 @@ function _isPropertyGet(a: Advice) {
 }
 
 class MethodWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.METHOD> {
-    constructor(private refDescriptor: PropertyDescriptor) {
-        super();
-    }
+    compile(ctxt: MutableAdviceContext<T, AdviceType.METHOD>, advices: CompileAdvice<T, AdviceType.METHOD>[]) {
+        const target = ctxt.target;
 
-    compile(ctxt: MutableAdviceContext<T, AdviceType.METHOD>) {
-        return this.refDescriptor;
+        // save & restore original descriptor
+        Reflect.defineProperty(
+            target.proto,
+            target.propertyKey,
+            getOrComputeMetadata(
+                'aspectjs.originalDescriptor',
+                target.proto,
+                ctxt.target.propertyKey,
+                () => {
+                    return { ...Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) };
+                },
+                true,
+            ),
+        );
+
+        let lastCompileAdvice = advices[0];
+        let newDescriptor: PropertyDescriptor;
+
+        advices.forEach((advice) => {
+            lastCompileAdvice = advice;
+            newDescriptor =
+                (advice(ctxt as AdviceContext<T, AdviceType.METHOD>) as PropertyDescriptor) ?? newDescriptor;
+        });
+
+        if (isUndefined(newDescriptor)) {
+            return Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) as MethodPropertyDescriptor;
+        } else {
+            if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
+                throw new AdviceError(lastCompileAdvice, `${target.label} is not configurable`);
+            }
+
+            // ensure value is a function
+            if (!isFunction(newDescriptor.value)) {
+                throw new AdviceError(
+                    lastCompileAdvice,
+                    `Expected advice to return a method descriptor. Got: ${newDescriptor.value}`,
+                );
+            }
+
+            if (isUndefined(newDescriptor.enumerable)) {
+                newDescriptor.enumerable = false;
+            }
+            if (isUndefined(newDescriptor.configurable)) {
+                newDescriptor.configurable = true;
+            }
+            // test property validity
+            newDescriptor = Object.getOwnPropertyDescriptor(
+                Object.defineProperty({}, 'surrogate', newDescriptor),
+                'surrogate',
+            );
+
+            Reflect.defineProperty(target.proto, target.propertyKey, newDescriptor);
+            return newDescriptor as MethodPropertyDescriptor;
+        }
     }
     initialJoinpoint(ctxt: MutableAdviceContext<T, AdviceType.METHOD>, refDescriptor: PropertyDescriptor): void {
         ctxt.value = JoinpointFactory.create(ctxt, refDescriptor.value)();
@@ -388,157 +515,6 @@ function _setFunctionName<T, F extends (...args: any[]) => T>(fn: F, name: strin
 function _isDescriptorWritable(propDescriptor: PropertyDescriptor) {
     const desc = propDescriptor as Record<string, any>;
     return !desc || (desc.hasOwnProperty('writable') && desc.writable) || isFunction(desc.set);
-}
-
-function _compileClass<T>(
-    ctxt: MutableAdviceContext<T, AdviceType.CLASS>,
-    advices: CompileAdvice<T, AdviceType.CLASS>[],
-): { new (...args: any[]): T } {
-    // if another @Compile advice has been applied
-    // replace wrapped ctor by original ctor before it gets wrapped again
-    ctxt.target.proto.constructor = getOrComputeMetadata(
-        'aspectjs.originalCtor',
-        ctxt.target.proto,
-        () => ctxt.target.proto.constructor,
-    );
-
-    let ctor: Function;
-    advices.forEach((advice: CompileAdvice<T, AdviceType.CLASS>) => {
-        ctor = advice(ctxt as AdviceContext<T, AdviceType.CLASS>);
-    });
-    return (ctxt.target.proto.constructor = ctor ?? ctxt.target.proto.constructor);
-}
-
-function _compileProperty<T>(
-    ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>,
-    advices: CompileAdvice<T, AdviceType.PROPERTY>[],
-): PropertyDescriptor {
-    const target = ctxt.target;
-
-    // if another @Compile advice has been applied
-    // replace wrapped descriptor by original descriptor before it gets wrapped again
-    (target as Mutable<AdviceTarget<any, any>>).descriptor = getOrComputeMetadata(
-        'aspectjs.originalDescriptor',
-        target.proto,
-        () => {
-            return (
-                Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) ?? {
-                    configurable: true,
-                    enumerable: true,
-                    get() {
-                        return Reflect.getOwnMetadata(`aspectjs.propValue`, this, target.propertyKey);
-                    },
-                    set(value: any) {
-                        Reflect.defineMetadata(`aspectjs.propValue`, value, this, target.propertyKey);
-                    },
-                }
-            );
-        },
-        true,
-        target.propertyKey,
-    );
-
-    let advice: CompileAdvice<T, AdviceType.PROPERTY>;
-    let newDescriptor: PropertyDescriptor = ctxt.target.descriptor;
-
-    advices.forEach((advice) => {
-        newDescriptor = advice(ctxt) ?? newDescriptor;
-    });
-
-    if (newDescriptor) {
-        if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-            throw new AdviceError(advice, `${target.label} is not configurable`);
-        }
-
-        // test property validity
-        const surrogate = { prop: '' };
-        const surrogateProp = Reflect.getOwnPropertyDescriptor(surrogate, 'prop');
-        if (isUndefined(newDescriptor.enumerable)) {
-            newDescriptor.enumerable = surrogateProp.enumerable;
-        }
-
-        if (isUndefined(newDescriptor.configurable)) {
-            newDescriptor.configurable = surrogateProp.configurable;
-        }
-
-        // normalize the descriptor
-        newDescriptor = Object.getOwnPropertyDescriptor(
-            Object.defineProperty(surrogate, 'newProp', newDescriptor),
-            'newProp',
-        );
-
-        Reflect.defineProperty(target.proto, target.propertyKey, newDescriptor);
-    }
-
-    if ((newDescriptor as Record<string, any>).hasOwnProperty('value')) {
-        const propValue = newDescriptor.value;
-        newDescriptor.get = () => propValue;
-        delete newDescriptor.writable;
-        delete newDescriptor.value;
-    }
-
-    return newDescriptor;
-}
-
-function _compileMethod<T>(
-    ctxt: MutableAdviceContext<T, AdviceType.METHOD>,
-    advices: CompileAdvice<T, AdviceType.METHOD>[],
-): MethodPropertyDescriptor {
-    const target = ctxt.target;
-
-    // save & restore original descriptor
-    Reflect.defineProperty(
-        target.proto,
-        target.propertyKey,
-        getOrComputeMetadata(
-            'aspectjs.originalDescriptor',
-            target.proto,
-            () => {
-                return { ...Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) };
-            },
-            true,
-            ctxt.target.propertyKey,
-        ),
-    );
-
-    let lastCompileAdvice = advices[0];
-    let newDescriptor: PropertyDescriptor;
-
-    advices.forEach((advice) => {
-        lastCompileAdvice = advice;
-        newDescriptor = (advice(ctxt as AdviceContext<T, AdviceType.METHOD>) as PropertyDescriptor) ?? newDescriptor;
-    });
-
-    if (isUndefined(newDescriptor)) {
-        return Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey) as MethodPropertyDescriptor;
-    } else {
-        if (Reflect.getOwnPropertyDescriptor(target.proto, target.propertyKey)?.configurable === false) {
-            throw new AdviceError(lastCompileAdvice, `${target.label} is not configurable`);
-        }
-
-        // ensure value is a function
-        if (!isFunction(newDescriptor.value)) {
-            throw new AdviceError(
-                lastCompileAdvice,
-                `Expected advice to return a method descriptor. Got: ${newDescriptor.value}`,
-            );
-        }
-
-        if (isUndefined(newDescriptor.enumerable)) {
-            newDescriptor.enumerable = false;
-        }
-        if (isUndefined(newDescriptor.configurable)) {
-            newDescriptor.configurable = true;
-        }
-        // test property validity
-        newDescriptor = Object.getOwnPropertyDescriptor(
-            Object.defineProperty({}, 'surrogate', newDescriptor),
-            'surrogate',
-        );
-
-        Reflect.defineProperty(target.proto, target.propertyKey, newDescriptor);
-        return newDescriptor as MethodPropertyDescriptor;
-    }
 }
 
 function _compileParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {

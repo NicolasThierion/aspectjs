@@ -6,12 +6,14 @@ import {
     AfterThrowAdvice,
     AroundAdvice,
     BeforeAdvice,
+    CompileAdvice,
 } from '../advice/types';
 import { JoinPoint } from './types';
 
 export interface WeaverHooks<T, A extends AdviceType> {
     compile(
         ctxt: MutableAdviceContext<T, A>,
+        advice: CompileAdvice<T, A>[],
     ): A extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor;
 
     preBefore?(ctxt: MutableAdviceContext<T, A>): void;

@@ -75,6 +75,7 @@ describe('@Before advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
+                constructor() {}
                 @Before(on.property.withAnnotations(AProperty))
                 applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     advice.bind(this)(ctxt);

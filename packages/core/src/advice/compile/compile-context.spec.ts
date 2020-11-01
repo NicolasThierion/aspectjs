@@ -12,7 +12,7 @@ import {
     BParameter,
     BProperty,
 } from '../../../testing/src/helpers';
-import { weaverContext } from '../../weaver/weaver-context';
+import { WEAVER_CONTEXT } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { AdviceType } from '../types';
@@ -26,7 +26,7 @@ describe('CompileContext', () => {
     let beforeBAdvice = jasmine.createSpy('beforeBAdvice');
 
     beforeEach(() => {
-        weaverContext.setWeaver((weaver = new JitWeaver()));
+        WEAVER_CONTEXT.setWeaver((weaver = new JitWeaver()));
         compileAAdvice = jasmine.createSpy('compileAAdvice');
         compileBAdvice = jasmine.createSpy('compileBAdvice');
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');

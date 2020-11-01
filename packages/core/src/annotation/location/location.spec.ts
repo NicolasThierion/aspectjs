@@ -1,10 +1,9 @@
-import { AnnotationLocationFactory } from './annotation-target.factory';
-import { weaverContext } from '../../weaver/weaver-context';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AnnotationFactory } from '../../annotation/factory/annotation-factory';
+import { AnnotationFactory } from '../factory/annotation-factory';
+import { WEAVER_CONTEXT } from '../../weaver/weaver-context';
 
 describe('AnnotationLocationFactory', () => {
-    beforeEach(() => weaverContext.setWeaver(new JitWeaver()));
+    beforeEach(() => WEAVER_CONTEXT.setWeaver(new JitWeaver()));
     class Decorated {
         value: any;
 
@@ -27,7 +26,7 @@ describe('AnnotationLocationFactory', () => {
                     method() {},
                 };
 
-                expect(() => AnnotationLocationFactory.of(x)).toThrow(
+                expect(() => WEAVER_CONTEXT.annotations.location.of(x)).toThrow(
                     new Error('given object is neither a constructor nor a class instance'),
                 );
             });
@@ -40,7 +39,7 @@ describe('AnnotationLocationFactory', () => {
                     method() {},
                 };
 
-                expect(() => AnnotationLocationFactory.of(x)).toThrow(
+                expect(() => WEAVER_CONTEXT.annotations.location.of(x)).toThrow(
                     new Error('given object is neither a constructor nor a class instance'),
                 );
             });
@@ -60,7 +59,7 @@ describe('AnnotationLocationFactory', () => {
                 });
 
                 it('should return an empty location', () => {
-                    const loc = AnnotationLocationFactory.of(a);
+                    const loc = WEAVER_CONTEXT.annotations.location.of(a);
 
                     expect(Object.values(loc).length).toEqual(0);
                 });
@@ -75,8 +74,8 @@ describe('AnnotationLocationFactory', () => {
 
                 const a = new AClass('value');
 
-                const loc = AnnotationLocationFactory.of(a);
-                expect(loc).toBe(AnnotationLocationFactory.of(new AClass(null)));
+                const loc = WEAVER_CONTEXT.annotations.location.of(a);
+                expect(loc).toBe(WEAVER_CONTEXT.annotations.location.of(a));
             });
             describe('that uses decorators on properties', () => {
                 let a: Decorated;
@@ -94,7 +93,7 @@ describe('AnnotationLocationFactory', () => {
                 });
 
                 it('should return an empty location', () => {
-                    const loc = AnnotationLocationFactory.of(a);
+                    const loc = WEAVER_CONTEXT.annotations.location.of(a);
 
                     expect(loc.value).toBeDefined();
                 });

@@ -1,4 +1,5 @@
 let __debug = false;
+
 export function __setDebug(debug: boolean) {
     __debug = debug;
 }
@@ -17,29 +18,50 @@ export function assert(condition: boolean, msg?: string | (() => Error)) {
     }
 }
 
+export function getOrComputeMetadata<T>(key: string, target: object, valueGenerator: () => T, save?: boolean): T;
 export function getOrComputeMetadata<T>(
     key: string,
-    target: any,
+    target: object,
+    propertyKey: string,
     valueGenerator: () => T,
+    save?: boolean,
+): T;
+export function getOrComputeMetadata<T>(
+    key: string,
+    target: object,
+    propertyKey: string | (() => T),
+    valueGenerator?: (() => T) | boolean,
     save = true,
-    propertyKey?: string,
 ): T {
-    let value = Reflect.getOwnMetadata(key, target, propertyKey);
+    let _propertyKey = propertyKey as string;
+    let _valueGenerator = valueGenerator as () => T;
+    if (typeof valueGenerator === 'boolean') {
+        save = valueGenerator;
+    }
+    if (typeof propertyKey === 'function') {
+        _valueGenerator = propertyKey;
+        _propertyKey = undefined;
+    }
+
+    assert(!!target);
+    let value = Reflect.getOwnMetadata(key, target, _propertyKey);
     if (isUndefined(value)) {
-        value = valueGenerator();
+        value = _valueGenerator();
         if (save) {
-            Reflect.defineMetadata(key, value, target, propertyKey);
+            Reflect.defineMetadata(key, value, target, _propertyKey);
         }
     }
 
     return value;
 }
 
-export function getProto(target: Record<string, any> | Function): Record<string, any> {
+export function getProto(
+    target: Record<string, any> | Function,
+): Record<string, any> & { constructor?: new (...args: any[]) => any } {
     if (isFunction(target)) {
         return target.prototype;
     } else if (target === null || target === undefined) {
-        return target;
+        return target as any;
     }
     return target.hasOwnProperty('constructor') ? target : Object.getPrototypeOf(target);
 }

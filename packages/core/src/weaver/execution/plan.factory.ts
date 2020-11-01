@@ -1,43 +1,49 @@
-import { AnnotationRef } from '../../annotation/annotation.types';
 import { MutableAdviceContext } from '../../advice/advice-context';
-import {
-    Advice,
-    AdviceType,
-    AfterAdvice,
-    AfterReturnAdvice,
-    AfterThrowAdvice,
-    AroundAdvice,
-    BeforeAdvice,
-    CompileAdvice,
-} from '../../advice/types';
+import { Advice, AdviceType, CompileAdvice } from '../../advice/types';
 import { AspectType } from '../types';
 import { getAspectOptions } from '../../utils/utils';
 import { AspectOptions } from '../../advice/aspect';
-import { weaverContext } from '../weaver-context';
+import { WEAVER_CONTEXT } from '../weaver-context';
 import { PointcutPhase } from '../../advice/pointcut';
-import { AdviceTarget } from '../../advice/target/advice-target';
-import { AnnotationBundleRegistry } from '../../annotation/bundle/bundle-factory';
+import { AdviceTarget } from '../../annotation/target/annotation-target';
 import { WeaverHooks } from '../weaver-hooks';
 import { JoinpointFactory } from '../joinpoint-factory';
 import { WeavingError } from '../errors/weaving-error';
 import { locator } from '../../utils/locator';
 import { assert } from '@aspectjs/core/utils';
 
-export class AdviceExecutionPlanFactory {
-    private readonly _aspects: Set<AspectType> = new Set<AspectType>();
-    private _dirty = true;
-    private _advicesByPointcut: {
-        [type in AdviceType]?: {
-            [phase in PointcutPhase]?: {
+interface AdvicesExecutionRegistry {
+    byPointcut: {
+        [phase in PointcutPhase]?: {
+            [type in AdviceType]?: {
                 byAnnotation: {
                     [annotationRef: string]: Advice<unknown, type, phase>[];
                 };
             };
         };
     };
-    private _advicesByTarget: {
-        [targetRef: string]: Advice[];
+    byTarget: {
+        [targetRef: string]: {
+            [phase in PointcutPhase]?: Advice<unknown, AdviceType, phase>[];
+        };
     };
+}
+
+interface AdvicesExecutionFilter {
+    name: string;
+    fn: (a: Advice) => boolean;
+}
+
+type AdvicesLoader = (
+    target: AdviceTarget,
+    save: boolean,
+    ...phases: PointcutPhase[]
+) => AdvicesExecutionRegistry['byTarget'][string];
+export class AdviceExecutionPlanFactory {
+    private readonly _aspects: Set<AspectType> = new Set<AspectType>();
+    private readonly _loadedAspects: Set<AspectType> = new Set<AspectType>();
+    private _dirty = true;
+    private _advices: AdvicesExecutionRegistry;
 
     constructor(...aspects: AspectType[]) {
         this.enable(...aspects);
@@ -45,71 +51,32 @@ export class AdviceExecutionPlanFactory {
 
     create<T, A extends AdviceType = any>(
         target: AdviceTarget<T, A>,
-        filter?: (a: Advice) => boolean,
+        hooks: WeaverHooks<T, A>,
+        filter?: {
+            name: string;
+            fn: (a: Advice) => boolean;
+        },
     ): ExecutionPlan<T, A> {
-        this._load();
+        const advicesLoader: AdvicesLoader = (target: AdviceTarget, save: boolean, ...phases: PointcutPhase[]) => {
+            return this._getAdvices(target, filter, save, ...phases);
+        };
 
-        if (filter) {
-            return new ExecutionPlan<T, A>(
-                this._getAdvices(PointcutPhase.COMPILE, target).filter(filter),
-                this._getAdvices(PointcutPhase.BEFORE, target).filter(filter),
-                this._getAdvices(PointcutPhase.AROUND, target).filter(filter),
-                this._getAdvices(PointcutPhase.AFTERRETURN, target).filter(filter),
-                this._getAdvices(PointcutPhase.AFTERTHROW, target).filter(filter),
-                this._getAdvices(PointcutPhase.AFTER, target).filter(filter),
-            );
-        } else {
-            return new ExecutionPlan<T, A>(
-                this._getAdvices(PointcutPhase.COMPILE, target),
-                this._getAdvices(PointcutPhase.BEFORE, target),
-                this._getAdvices(PointcutPhase.AROUND, target),
-                this._getAdvices(PointcutPhase.AFTERRETURN, target),
-                this._getAdvices(PointcutPhase.AFTERTHROW, target),
-                this._getAdvices(PointcutPhase.AFTER, target),
-            );
-        }
+        return new ExecutionPlan<T, A>(hooks, advicesLoader);
     }
 
     disable(...aspects: AspectType[]): void {
         this._dirty = true;
-        aspects.forEach((a) => this._aspects.delete(a));
+        if (this._aspects.size) {
+            aspects.forEach((a) => this._aspects.delete(a));
+        }
+
+        // force reload all aspects
+        this._loadedAspects.forEach((a) => this._aspects.add(a));
+        this._loadedAspects.clear();
     }
 
     enable(...aspects: AspectType[]): void {
-        this._dirty = true;
         aspects.forEach((a) => this._aspects.add(a));
-    }
-
-    private _getAdvices<T, A extends AdviceType, P extends PointcutPhase>(
-        phase: P,
-        target: AdviceTarget<T, A>,
-    ): Advice<T, A, P>[] {
-        this._load();
-
-        return [
-            ...locator(this._advicesByTarget)
-                .at(target.ref)
-                .orElse(() => {
-                    // get all advices that correspond to all the annotations of this context
-                    const bundle = AnnotationBundleRegistry.of(target).at(target.location);
-                    const annotationContexts = bundle.all();
-
-                    return annotationContexts
-                        .map((annotationContext) =>
-                            locator(this._advicesByPointcut)
-                                .at(target.type)
-                                .at(phase)
-                                .at('byAnnotation')
-                                .at(_annotationId(annotationContext))
-                                .orElse(() => [] as any),
-                        )
-                        .flat()
-                        .sort((a1: Advice, a2: Advice) => {
-                            const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
-                            return !p2 && !p2 ? 0 : p2 - p1;
-                        });
-                }),
-        ] as Advice<T, A, P>[];
     }
 
     /**
@@ -118,31 +85,82 @@ export class AdviceExecutionPlanFactory {
      */
     private _load() {
         if (this._dirty) {
-            this._advicesByTarget = {};
-            this._advicesByPointcut = {};
-
-            [...this._aspects]
-                .sort((a1: any, a2: any) => {
-                    // sort by aspect priority
-                    const [o1, o2] = [getAspectOptions(a1), getAspectOptions(a2)] as AspectOptions[];
-                    const [p1, p2] = [o1?.priority ?? 0, o2?.priority ?? 0];
-
-                    return p2 - p1;
-                })
-                .map((aspect: AspectType) => weaverContext.advicesRegistry.getAdvicesByAspect(aspect))
-                .map((advices: Advice[]) => {
-                    advices.forEach((advice) => {
-                        const pc = advice.pointcut;
-                        locator(this._advicesByPointcut)
-                            .at(pc.type)
-                            .at(pc.phase)
-                            .at('byAnnotation')
-                            .at(_annotationId(pc.annotation))
-                            .orElse(() => [])
-                            .push(advice);
-                    });
-                });
+            // TODO incremental loading
+            this._advices = {
+                byPointcut: {},
+                byTarget: {},
+            };
         }
+
+        [...this._aspects]
+            .sort((a1: any, a2: any) => {
+                // sort by aspect priority
+                const [o1, o2] = [getAspectOptions(a1), getAspectOptions(a2)] as AspectOptions[];
+                const [p1, p2] = [o1?.priority ?? 0, o2?.priority ?? 0];
+
+                return p2 - p1;
+            })
+            .map((a) => {
+                this._loadedAspects.add(a);
+                return a;
+            })
+            .map((aspect: AspectType) => WEAVER_CONTEXT.advices.registry.getAdvicesByAspect(aspect))
+            .flat()
+            .forEach((advice: Advice) => {
+                const pc = advice.pointcut;
+                locator(this._advices)
+                    .at('byPointcut')
+                    .at(pc.phase)
+                    .at(pc.type)
+                    .at('byAnnotation')
+                    .at(pc.annotation.ref)
+                    .orElseCompute(() => [])
+                    .push(advice);
+            });
+        this._dirty = false;
+        this._aspects.clear();
+    }
+
+    private _getAdvices<T, A extends AdviceType, P extends PointcutPhase>(
+        target: AdviceTarget<T, A>,
+        filter: AdvicesExecutionFilter,
+        save: boolean,
+        ...phases: PointcutPhase[]
+    ): AdvicesExecutionRegistry['byTarget'][string] {
+        this._load();
+
+        return locator(this._advices)
+            .at('byTarget')
+            .at(`${target.ref}${filter?.name ? `:${filter?.name}` : ''}`)
+            .orElse(() => {
+                // get all advices that correspond to all the annotations of this context
+                const bundle = WEAVER_CONTEXT.annotations.bundle.at(target.location);
+                const annotationContexts = bundle.all();
+
+                return (phases ?? []).reduce((reg, phase) => {
+                    let annotations = annotationContexts
+                        .map((annotationContext) =>
+                            locator(this._advices)
+                                .at('byPointcut')
+                                .at(phase)
+                                .at(target.type)
+                                .at('byAnnotation')
+                                .at(annotationContext.ref)
+                                .orElseGet(() => [] as any),
+                        )
+                        .flat()
+                        .sort((a1: Advice, a2: Advice) => {
+                            const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
+                            return !p2 && !p2 ? 0 : p2 - p1;
+                        });
+
+                    if (filter) {
+                        annotations = annotations.filter(filter.fn);
+                    }
+                    (reg as any)[phase] = annotations;
+                    return reg;
+                }, {} as AdvicesExecutionRegistry['byTarget'][string]);
+            }, save);
     }
 }
 
@@ -150,29 +168,35 @@ export class AdviceExecutionPlanFactory {
  * Sort the advices according to their precedence & store by phase & type, so they are ready to execute.
  */
 export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
-    constructor(
-        public readonly compileAdvices: CompileAdvice<T, A>[],
-        public readonly beforeAdvices: BeforeAdvice<T, A>[],
-        public readonly aroundAdvices: AroundAdvice<T, A>[],
-        public readonly afterReturnAdvices: AfterReturnAdvice<T, A>[],
-        public readonly afterThrowAdvices: AfterThrowAdvice<T, A>[],
-        public readonly afterAdvices: AfterAdvice<T, A>[],
-    ) {}
+    private _compiled = false;
+    private originalSymbol: A extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor;
+
+    constructor(private _hooks: WeaverHooks<T, A>, private _advicesLoader: AdvicesLoader) {}
 
     /**
-     * Executes the advices of the plan in proper order, calling the provided hooks.
-     * /!\ DO NOT EXECUTES COMPILE ADVICES
-     * // TODO handle compile advices as well.
+     * Returns a function that executes the  execution plan for the Before, Around, AfterReturn, AfterThrow & After advices.
      */
-    execute<C extends MutableAdviceContext<T, A>>(ctxt: C, hooks: WeaverHooks<T, A>): (...args: any[]) => T {
+    link<C extends MutableAdviceContext<T, A>>(ctxt: C): (...args: any[]) => T {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const plan = this;
-        const originalSymbol = hooks.compile(ctxt);
-        assert(!!originalSymbol);
+        const hooks = this._hooks;
+        if (!this._compiled) {
+            this.compile(ctxt);
+        }
+        assert(!!this.originalSymbol);
 
         return function (...args: any[]): T {
             ctxt.args = args;
             ctxt.instance = this;
+            const advicesReg = plan._advicesLoader(
+                ctxt.target,
+                true,
+                PointcutPhase.BEFORE,
+                PointcutPhase.AROUND,
+                PointcutPhase.AFTERRETURN,
+                PointcutPhase.AFTERTHROW,
+                PointcutPhase.AFTER,
+            );
 
             // create the joinpoint for the original method
             const jp = JoinpointFactory.create(ctxt, (...args: any[]) => {
@@ -183,12 +207,15 @@ export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
 
                 try {
                     hooks.preBefore?.call(hooks, ctxt);
-                    hooks.before(ctxt, plan.beforeAdvices);
+                    hooks.before(ctxt, advicesReg[PointcutPhase.BEFORE] as Advice<T, A, PointcutPhase.BEFORE>[]);
 
-                    hooks.initialJoinpoint.call(hooks, ctxt, originalSymbol);
+                    hooks.initialJoinpoint.call(hooks, ctxt, plan.originalSymbol);
 
                     hooks.preAfterReturn?.call(hooks, ctxt);
-                    return hooks.afterReturn(ctxt, plan.afterReturnAdvices);
+                    return hooks.afterReturn(
+                        ctxt,
+                        advicesReg[PointcutPhase.AFTERRETURN] as Advice<T, A, PointcutPhase.AFTERRETURN>[],
+                    );
                 } catch (e) {
                     // consider WeavingErrors as not recoverable by an aspect
                     if (e instanceof WeavingError) {
@@ -197,22 +224,39 @@ export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
                     ctxt.error = e;
 
                     hooks.preAfterThrow?.call(hooks, ctxt);
-                    return hooks.afterThrow(ctxt, plan.afterThrowAdvices);
+                    return hooks.afterThrow(
+                        ctxt,
+                        advicesReg[PointcutPhase.AFTERTHROW] as Advice<T, A, PointcutPhase.AFTERTHROW>[],
+                    );
                 } finally {
                     delete ctxt.error;
                     hooks.preAfter?.call(hooks, ctxt);
-                    hooks.after(ctxt, plan.afterAdvices);
+                    hooks.after(ctxt, advicesReg[PointcutPhase.AFTER] as Advice<T, A, PointcutPhase.AFTER>[]);
                     ctxt.joinpoint = restoreJp;
                     ctxt.args = restoreArgs;
                 }
             });
 
             hooks.preAround?.call(hooks, ctxt);
-            return hooks.around(ctxt, plan.aroundAdvices, jp)(args);
+            return hooks.around(
+                ctxt,
+                advicesReg[PointcutPhase.AROUND] as Advice<T, A, PointcutPhase.AROUND>[],
+                jp,
+            )(args);
         };
     }
-}
 
-function _annotationId(annotation: AnnotationRef): string {
-    return `${annotation.groupId}:${annotation.name}`;
+    compile(
+        ctxt: MutableAdviceContext<T, A>,
+    ): A extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor {
+        const compileAdvices = this._advicesLoader(ctxt.target, false, PointcutPhase.COMPILE)[PointcutPhase.COMPILE];
+        this.originalSymbol = this._hooks.compile(ctxt, compileAdvices as CompileAdvice<T, A>[]);
+        this._compiled = true;
+        if (!this.originalSymbol) {
+            throw new WeavingError(
+                `${Reflect.getPrototypeOf(this._hooks).constructor.name}.compile() did not returned a symbol`,
+            );
+        }
+        return this.originalSymbol;
+    }
 }

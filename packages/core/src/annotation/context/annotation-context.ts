@@ -4,10 +4,10 @@ import {
     MethodAdviceTarget,
     ParameterAdviceTarget,
     PropertyAdviceTarget,
-} from '../../advice/target/advice-target';
+} from '../target/annotation-target';
 import { AnnotationRef, AnnotationType } from '../annotation.types';
 
-export interface AnnotationContext<T, A extends AnnotationType> extends AnnotationRef {
+export abstract class AnnotationContext<T = unknown, A extends AnnotationType = any> extends AnnotationRef {
     readonly args: any[];
     readonly target: AdviceTarget<T, A>;
 }

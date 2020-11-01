@@ -22,27 +22,27 @@ export type CompileAdvice<T = unknown, A extends AnnotationType = any> = {
 export type BeforeAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
-    pointcut?: BeforePointcut;
+    pointcut?: BeforePointcut<A>;
 } & ((ctxt: AdviceContext<T, A>) => void);
 export type AfterAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
-    pointcut?: AfterPointcut;
+    pointcut?: AfterPointcut<A>;
 } & ((ctxt: AdviceContext<T, A>) => void);
 export type AfterReturnAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
-    pointcut?: AfterReturnPointcut;
+    pointcut?: AfterReturnPointcut<A>;
 } & ((ctxt: AdviceContext<T, A>, returnValue: any) => T | null | undefined);
 export type AfterThrowAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
-    pointcut?: AfterThrowPointcut;
+    pointcut?: AfterThrowPointcut<A>;
 } & ((ctxt: AdviceContext<T, A>, thrownError: Error) => T | null | undefined);
 export type AroundAdvice<T = unknown, A extends AnnotationType = any> = {
     name: string;
     aspect: object;
-    pointcut?: AroundPointcut;
+    pointcut?: AroundPointcut<A>;
 } & ((ctxt: AdviceContext<T, A>, joinPoint: JoinPoint, args: any[]) => any);
 
 export type Advice<

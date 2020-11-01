@@ -6,12 +6,9 @@ import {
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { assert, getOrComputeMetadata, getProto } from '@aspectjs/core/utils';
-import { AnnotationTargetFactory } from '../../advice/target/annotation-target.factory';
-import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
-import { AnnotationsBundle } from '../bundle/bundle';
-import { weaverContext } from '../../weaver/weaver-context';
-import { AdviceTarget, AnnotationTarget } from '../../advice/target/advice-target';
+import { assert, getOrComputeMetadata } from '@aspectjs/core/utils';
+import { WEAVER_CONTEXT } from '../../weaver/weaver-context';
+import { AdviceTarget, AnnotationTarget } from '../target/annotation-target';
 import { MutableAdviceContext } from '../../advice/advice-context';
 import { JoinPoint } from '../../weaver/types';
 import { Advice, AdviceType } from '../../advice/types';
@@ -25,6 +22,7 @@ let generatedId = 0;
  */
 export class AnnotationFactory {
     private readonly _groupId: string;
+
     constructor(groupId: string) {
         this._groupId = groupId;
     }
@@ -34,18 +32,11 @@ export class AnnotationFactory {
     create<A extends ParameterAnnotationStub>(annotationStub?: A): A & AnnotationRef;
 
     create<S extends Annotation<AdviceType>>(annotationStub?: S): S & AnnotationRef {
-        // ensure annotation has a name.
-        annotationStub = annotationStub ?? (function () {} as S);
-        if (!annotationStub.name) {
-            Reflect.defineProperty(annotationStub, 'name', {
-                value: `anonymousAnnotation#${generatedId++}`,
-            });
-        }
         const groupId = this._groupId;
 
         // create the annotation (ie: decorator provider)
         const annotation = function (...annotationArgs: any[]): Decorator {
-            const decorator = _createRegisterAnnotatopnDecorator(annotation as any, annotationStub, annotationArgs);
+            const decorator = _createRegisterAnnotationDecorator(annotation as any, annotationStub, annotationArgs);
             _createAnnotation(decorator, annotationStub, groupId);
 
             return decorator;
@@ -53,16 +44,6 @@ export class AnnotationFactory {
 
         // turn the stub into an annotation
         return _createAnnotation(annotation, annotationStub, groupId);
-    }
-
-    static getBundle<T>(target: (new () => T) | T): AnnotationsBundle<any> {
-        const proto = getProto(target);
-        return AnnotationBundleRegistry.of(
-            AnnotationTargetFactory.create({
-                proto,
-                type: AdviceType.CLASS,
-            }),
-        );
     }
 }
 
@@ -73,22 +54,19 @@ function _createAnnotation<A extends Annotation<AdviceType>, D extends Decorator
 ): A {
     assert(typeof fn === 'function');
 
-    const annotation = (fn as any) as AnnotationRef & A;
-    Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
-    annotation.groupId = groupId;
-    Reflect.defineProperty(annotation, 'toString', {
-        enumerable: false,
-        value: function () {
-            return `@${annotation.groupId}:${annotation.name}`;
-        },
-    });
+    // ensure annotation has a name.
+    annotationStub = annotationStub ?? (function () {} as A);
+    if (!annotationStub.name) {
+        Reflect.defineProperty(annotationStub, 'name', {
+            value: `anonymousAnnotation#${generatedId++}`,
+        });
+    }
 
-    Reflect.defineProperty(annotation, Symbol.toPrimitive, {
-        enumerable: false,
-        value: function () {
-            return `@${annotation.name}`;
-        },
-    });
+    const annotationRef = new AnnotationRef(groupId, annotationStub.name);
+    const annotation = Object.defineProperties(fn, Object.getOwnPropertyDescriptors(annotationRef)) as AnnotationRef &
+        A;
+    Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
+    assert(Object.getOwnPropertySymbols(annotation).indexOf(Symbol.toPrimitive) >= 0);
 
     getOrComputeMetadata('aspectjs.referenceAnnotation', annotationStub, () => {
         Reflect.defineMetadata('aspectjs.referenceAnnotation', annotationStub, fn);
@@ -98,7 +76,7 @@ function _createAnnotation<A extends Annotation<AdviceType>, D extends Decorator
     return annotation;
 }
 
-function _createRegisterAnnotatopnDecorator<A extends AdviceType, S extends Annotation<AdviceType>>(
+function _createRegisterAnnotationDecorator<A extends AdviceType, S extends Annotation<AdviceType>>(
     annotation: Annotation<A>,
     annotationStub: S,
     annotationArgs: any[],
@@ -113,18 +91,16 @@ function _createRegisterAnnotatopnDecorator<A extends AdviceType, S extends Anno
     return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
         annotationStub(...annotationArgs)?.apply(null, targetArgs);
 
-        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
-        weaverContext.annotationsRegistry.register(target);
-
         // assert the weaver is loaded before invoking the underlying decorator
-        const weaver = weaverContext.getWeaver();
+        const weaver = WEAVER_CONTEXT.getWeaver();
 
         if (!weaver) {
             throw new Error(`Cannot invoke annotation ${annotation.name ?? ''} before "setWeaver()" has been called`);
         }
-
+        const target = WEAVER_CONTEXT.annotations.targetFactory.of(targetArgs) as AnnotationTarget<any, A>;
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
-        AnnotationBundleRegistry.addContext(target, annotationContext);
+
+        WEAVER_CONTEXT.annotations.registry.register(annotationContext);
 
         const ctxt = new AdviceContextImpl(annotationContext);
 
@@ -157,34 +133,24 @@ class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext
     }
 }
 
-class AnnotationContextImpl<T, D extends AdviceType> implements AnnotationContext<T, D> {
-    public readonly name: string;
-    public readonly groupId: string;
-    private readonly _annotation: AnnotationRef;
-
+class AnnotationContextImpl<T, D extends AdviceType> extends AnnotationContext<T, D> {
     constructor(public readonly target: AdviceTarget<T, D>, public readonly args: any[], annotation: AnnotationRef) {
-        this.name = annotation.name;
-        this.groupId = annotation.groupId;
-        this._annotation = annotation;
-    }
-
-    toString(): string {
-        return this._annotation.toString();
+        super(annotation.groupId, annotation.name);
     }
 }
 
 function _createClassDecoration<T>(ctxt: AdviceContextImpl<any, AdviceType.CLASS>): Function {
-    return weaverContext.getWeaver().enhanceClass(ctxt);
+    return WEAVER_CONTEXT.getWeaver().enhanceClass(ctxt);
 }
 
 function _createPropertyDecoration(ctxt: AdviceContextImpl<any, AdviceType.PROPERTY>): PropertyDescriptor {
-    return weaverContext.getWeaver().enhanceProperty(ctxt);
+    return WEAVER_CONTEXT.getWeaver().enhanceProperty(ctxt);
 }
 
 function _createMethodDecoration(ctxt: AdviceContextImpl<any, AdviceType.METHOD>): PropertyDescriptor {
-    return weaverContext.getWeaver().enhanceMethod(ctxt);
+    return WEAVER_CONTEXT.getWeaver().enhanceMethod(ctxt);
 }
 
 function _createParameterDecoration(ctxt: AdviceContextImpl<any, AdviceType.METHOD>): void {
-    return weaverContext.getWeaver().enhanceParameter(ctxt);
+    return WEAVER_CONTEXT.getWeaver().enhanceParameter(ctxt);
 }

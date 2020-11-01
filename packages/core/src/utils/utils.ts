@@ -1,35 +1,54 @@
 import { getProto } from '@aspectjs/core/utils';
 import { AspectType } from '../weaver/types';
-import { ASPECT_OPTIONS_REFLECT_KEY, AspectOptions } from '../advice/aspect';
+import { AspectOptions } from '../advice/aspect';
 import { AnnotationFactory } from '../annotation/factory/annotation-factory';
+import { assert, isFunction } from '@aspectjs/core/utils';
 
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
-export const annotationFactory = new AnnotationFactory('aspectjs');
+export const ASPECTJS_ANNOTATION_FACTORY = new AnnotationFactory('aspectjs');
+const ASPECT_OPTIONS_REFLECT_KEY = 'aspectjs.aspect.options';
+const ASPECT_ORIGINAL_CTOR_KEY = 'aspectjs.referenceConstructor';
+
+export function getReferenceConstructor(proto: object & { constructor: { new (...args: unknown[]): unknown } }) {
+    return Reflect.getOwnMetadata(ASPECT_ORIGINAL_CTOR_KEY, proto) ?? proto.constructor;
+}
+
+export function setReferenceConstructor<T>(
+    ctor: { new (...args: any[]): T },
+    originalCtor: { new (...args: any[]): T },
+) {
+    assert(isFunction(originalCtor));
+    assert(isFunction(ctor));
+    Reflect.defineMetadata(ASPECT_ORIGINAL_CTOR_KEY, originalCtor, getProto(ctor));
+}
 
 export function isAspect(aspect: AspectType | Function) {
-    if (!aspect) {
-        return false;
-    }
-    const proto = getProto(aspect);
-    if (proto.constructor) {
-        if (!!Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, proto.constructor)) {
-            return true;
-        }
-    }
-
-    return false;
+    return !!_getAspectOptions(aspect);
 }
 
 export function assertIsAspect(aspect: AspectType | Function) {
-    const proto = getProto(aspect);
     if (!isAspect(aspect)) {
+        const proto = getProto(aspect);
         throw new TypeError(`${proto.constructor.name} is not an Aspect`);
     }
 }
 
+function _getAspectOptions(aspect: AspectType | Function): AspectOptions {
+    if (!aspect) {
+        return;
+    }
+    const proto = getProto(aspect);
+    if (proto) {
+        return Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, proto);
+    }
+}
 export function getAspectOptions(aspect: AspectType | Function): AspectOptions {
     assertIsAspect(aspect);
-    return Reflect.getOwnMetadata(ASPECT_OPTIONS_REFLECT_KEY, getProto(aspect).constructor);
+    return _getAspectOptions(aspect);
+}
+
+export function setAspectOptions(target: Function, options: AspectOptions) {
+    Reflect.defineMetadata(ASPECT_OPTIONS_REFLECT_KEY, options, getProto(target));
 }

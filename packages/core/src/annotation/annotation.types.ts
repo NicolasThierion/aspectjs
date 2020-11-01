@@ -1,47 +1,53 @@
-export enum AnnotationType {
+import { assert } from '@aspectjs/core/utils';
+
+export enum AnnotationType { // TODO use binary-mask values
     CLASS = 'AnnotationType.CLASS',
     PROPERTY = 'AnnotationType.PROPERTY',
     METHOD = 'AnnotationType.METHOD',
     PARAMETER = 'AnnotationType.PARAMETER',
 }
 
-export interface AnnotationRef {
-    name: string;
-    groupId: string;
-    toString(): string;
-}
+export class AnnotationRef {
+    public readonly ref: string;
+    public readonly name: string;
+    public readonly groupId: string;
 
-export namespace AnnotationRef {
-    export function of(name: string, groupId?: string): AnnotationRef {
-        const annotation = {
-            name,
-            groupId,
-        } as AnnotationRef;
-        if (!groupId) {
-            const ref = name;
+    constructor(ref: string);
+    constructor(groupId: string, name: string);
+    constructor(groupIdOrRef: string, name?: string) {
+        if (!name) {
+            this.ref = groupIdOrRef;
             const ANNOTATION_REF_REGEX = /(?<groupId>\S+):(?<name>\S+)/;
-            const macth = ANNOTATION_REF_REGEX.exec(ref);
-            annotation.groupId = macth.groups.groupId;
-            annotation.name = macth.groups.name;
+            const macth = ANNOTATION_REF_REGEX.exec(this.ref);
+            this.groupId = macth.groups.groupId;
+            this.name = macth.groups.name;
+        } else {
+            this.ref = `${groupIdOrRef}:${name}`;
+            this.name = name;
+            this.groupId = groupIdOrRef;
+        }
+        if (!this.name) {
+            assert(false);
+            throw new Error('cannot create annotation without name');
         }
 
-        Reflect.defineProperty(annotation, 'toString', {
+        if (!this.groupId) {
+            throw new Error('cannot create annotation without groupId');
+        }
+
+        Object.defineProperty(this, Symbol.toPrimitive, {
             enumerable: false,
-            value: function () {
-                return `@${annotation.groupId}:${annotation.name}`;
+            value: () => {
+                return `@${this.name}`;
             },
         });
+    }
 
-        Reflect.defineProperty(annotation, Symbol.toPrimitive, {
-            enumerable: false,
-            value: function () {
-                return `@${annotation.name}`;
-            },
-        });
-
-        return annotation;
+    toString(): string {
+        return `@${this.groupId}:${this.name}`;
     }
 }
+
 /**
  * An Annotation is an EcmaScript decorator with no behavior.
  * It relies on an annotation compiler with annotation processors to get the things done.

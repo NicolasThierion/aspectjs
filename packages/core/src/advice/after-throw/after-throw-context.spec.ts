@@ -12,7 +12,7 @@ import {
     BProperty,
 } from '../../../testing/src/helpers';
 import { AfterThrow } from './after-throw.annotation';
-import { weaverContext } from '../../weaver/weaver-context';
+import { WEAVER_CONTEXT } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { After } from '../after/after.annotation';
@@ -26,7 +26,7 @@ describe('AfterThrowContext', () => {
     let afterBAdvice = jasmine.createSpy('afterBAdvice');
 
     beforeEach(() => {
-        weaverContext.setWeaver((weaver = new JitWeaver()));
+        WEAVER_CONTEXT.setWeaver((weaver = new JitWeaver()));
         afterThrowAAdvice = jasmine.createSpy('afterThrowAAdvice');
         afterThrowBAdvice = jasmine.createSpy('afterThrowBAdvice');
         afterAAdvice = jasmine.createSpy('afterAAdvice');

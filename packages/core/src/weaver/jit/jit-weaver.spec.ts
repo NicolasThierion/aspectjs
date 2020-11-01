@@ -1,5 +1,5 @@
 import { JitWeaver } from './jit-weaver';
-import { weaverContext } from '../weaver-context';
+import { WEAVER_CONTEXT } from '../weaver-context';
 import { Aspect } from '../../advice/aspect';
 import { WeavingError } from '../errors/weaving-error';
 
@@ -10,7 +10,7 @@ const WEAVER_TEST_NAME = 'testWeaver';
 describe('JitWeaver', () => {
     beforeEach(() => {
         weaver = new JitWeaver(WEAVER_TEST_NAME);
-        weaverContext.setWeaver(weaver);
+        WEAVER_CONTEXT.setWeaver(weaver);
     });
 
     describe('.enable()', () => {

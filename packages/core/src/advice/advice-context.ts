@@ -1,5 +1,5 @@
 import { AnnotationContext } from '../annotation/context/annotation-context';
-import { AdviceTarget } from './target/advice-target';
+import { AdviceTarget } from '../annotation/target/annotation-target';
 import { JoinPoint } from '../weaver/types';
 import { AfterContext } from './after/after-context';
 import { BeforeContext } from './before/before-context';

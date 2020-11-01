@@ -9,10 +9,10 @@ let registryId = 0;
  * Stores the aspects along with their advices.
  */
 export class AdvicesRegistry {
-    private readonly _aspectRegistryKey: string;
+    private readonly _advicesRegistryKey: string;
     // private readonly _advicesByPointcuts: Record<string, Advice[]> = {};
     constructor() {
-        this._aspectRegistryKey = `aspectjs.adviceRegistry(${registryId++}).byAspects`;
+        this._advicesRegistryKey = `aspectjs.adviceRegistry(${registryId++}).byAspects`;
     }
 
     /**
@@ -21,7 +21,7 @@ export class AdvicesRegistry {
      * @param advice the advices to register.
      */
     register(aspect: object, advice: Advice): void {
-        const byAspectRegistry = this._getRegistry(this._aspectRegistryKey, aspect);
+        const byAspectRegistry = this._getRegistry(this._advicesRegistryKey, aspect);
         const a = advice;
         const k = `${a.pointcut.ref}=>${a.name}`;
         byAspectRegistry[k] = a;
@@ -34,7 +34,7 @@ export class AdvicesRegistry {
     getAdvicesByAspect(aspect: AspectType): Advice[] {
         assertIsAspect(aspect);
 
-        return Object.values(this._getRegistry(this._aspectRegistryKey, aspect))
+        return Object.values(this._getRegistry(this._advicesRegistryKey, aspect))
             .flat()
             .map((advice) => {
                 const bound = advice.bind(aspect);
