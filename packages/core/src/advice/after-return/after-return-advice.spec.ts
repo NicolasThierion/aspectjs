@@ -1,7 +1,7 @@
-import { AfterReturn } from './after-return.decorator';
+import { AfterReturn } from './after-return.annotation';
 import { AdviceContext, AfterReturnContext } from '../advice-context';
 import { on } from '../pointcut';
-import { Compile } from '../compile/compile.decorator';
+import { Compile } from '../compile/compile.annotation';
 import { Aspect } from '../aspect';
 import { AdviceType } from '../../annotation/annotation.types';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';

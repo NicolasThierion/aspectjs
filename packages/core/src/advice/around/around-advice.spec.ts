@@ -1,11 +1,11 @@
 import { JoinPoint } from '../../weaver/types';
 import { AroundContext, BeforeContext } from '../advice-context';
-import { Around } from './around.decorator';
+import { Around } from './around.annotation';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
 import { AdviceType } from '../../annotation/annotation.types';
-import { Before } from '../before/before.decorator';
+import { Before } from '../before/before.annotation';
 import Spy = jasmine.Spy;
 
 describe('@Around advice', () => {

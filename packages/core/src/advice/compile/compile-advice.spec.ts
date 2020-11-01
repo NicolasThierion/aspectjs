@@ -1,4 +1,4 @@
-import { Compile } from './compile.decorator';
+import { Compile } from './compile.annotation';
 import { AdviceContext, CompileContext } from '../advice-context';
 import { on } from '../pointcut';
 import {

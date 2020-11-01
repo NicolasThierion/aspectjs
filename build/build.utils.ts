@@ -263,7 +263,7 @@ function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, optio
                 }),
                 visualizer({
                     template: 'treemap', // 'treemap', 'sunburst', 'treemap', 'circlepacking', 'network'
-                    filename: `stats/${file}.html`,
+                    filename: `${path.dirname(file)}/stats/${path.basename(file)}.html`,
                 }),
             ],
         },

@@ -1,5 +1,5 @@
 import { AdviceContext, BeforeContext } from '../advice-context';
-import { Before } from './before.decorator';
+import { Before } from './before.annotation';
 import { on } from '../pointcut';
 import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Aspect } from '../aspect';
@@ -11,6 +11,7 @@ describe('@Before advice', () => {
     let aspectClass: any;
     beforeEach(() => {
         advice = jasmine.createSpy('advice');
+        setupWeaver();
     });
 
     describe('applied on a class', () => {

@@ -11,11 +11,11 @@ import {
     BParameter,
     BProperty,
 } from '../../../testing/src/helpers';
-import { Around } from './around.decorator';
+import { Around } from './around.annotation';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AfterReturn } from '../after-return/after-return.decorator';
+import { AfterReturn } from '../after-return/after-return.annotation';
 import { AdviceType } from '../../annotation/annotation.types';
 import { JoinPoint } from '../../weaver/types';
 

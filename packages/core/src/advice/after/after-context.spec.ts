@@ -11,7 +11,7 @@ import {
     BParameter,
     BProperty,
 } from '../../../testing/src/helpers';
-import { After } from './after.decorator';
+import { After } from './after.annotation';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';

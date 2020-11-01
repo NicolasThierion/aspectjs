@@ -1,8 +1,8 @@
 import { AdviceContext, AfterThrowContext, CompileContext } from '../advice-context';
-import { AfterThrow } from './after-throw.decorator';
+import { AfterThrow } from './after-throw.annotation';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
-import { Compile } from '../compile/compile.decorator';
+import { Compile } from '../compile/compile.annotation';
 import { Aspect } from '../aspect';
 import { AdviceType } from '../../annotation/annotation.types';
 import Spy = jasmine.Spy;
@@ -16,6 +16,7 @@ describe('@AfterThrow advice', () => {
     beforeEach(() => {
         advice = jasmine.createSpy('advice', function () {}).and.callThrough();
         adviceError = undefined;
+        setupWeaver();
     });
 
     describe('configured on some class', () => {

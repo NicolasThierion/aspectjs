@@ -29,12 +29,13 @@ export class AnnotationFactory {
     constructor(groupId: string) {
         this._groupId = groupId;
     }
-    create<A extends ClassAnnotationStub>(annotationStub: A): A & AnnotationRef;
-    create<A extends MethodAnnotationStub>(annotationStub: A): A & AnnotationRef;
-    create<A extends PropertyAnnotationStub>(annotationStub: A): A & AnnotationRef;
-    create<A extends ParameterAnnotationStub>(annotationStub: A): A & AnnotationRef;
+    create<A extends ClassAnnotationStub>(annotationStub?: A): A & AnnotationRef;
+    create<A extends MethodAnnotationStub>(annotationStub?: A): A & AnnotationRef;
+    create<A extends PropertyAnnotationStub>(annotationStub?: A): A & AnnotationRef;
+    create<A extends ParameterAnnotationStub>(annotationStub?: A): A & AnnotationRef;
 
-    create<S extends Annotation<AdviceType>>(annotationStub: S): S & AnnotationRef {
+    create<S extends Annotation<AdviceType>>(annotationStub?: S): S & AnnotationRef {
+        annotationStub = annotationStub ?? (function () {} as S);
         if (!annotationStub.name) {
             Reflect.defineProperty(annotationStub, 'name', {
                 value: `anonymousAnnotation#${generatedId++}`,
@@ -44,7 +45,7 @@ export class AnnotationFactory {
 
         // create the annotation (ie: decorator provider)
         const annotation = function (...annotationArgs: any[]): Decorator {
-            const decorator = _createDecorator(annotation as any, annotationArgs);
+            const decorator = _createDecorator(annotation as any, annotationStub, annotationArgs);
             _createAnnotationRef(decorator, annotationStub, groupId);
 
             return decorator;
@@ -96,7 +97,11 @@ function _createAnnotationRef<A extends Annotation<AdviceType>, D extends Decora
     return annotation;
 }
 
-function _createDecorator<A extends AdviceType>(annotation: Annotation<A>, annotationArgs: any[]): Decorator {
+function _createDecorator<A extends AdviceType, S extends Annotation<AdviceType>>(
+    annotation: Annotation<A>,
+    annotationStub: S,
+    annotationArgs: any[],
+): Decorator {
     const GENERATORS = {
         [AdviceType.CLASS]: _createClassDecoration,
         [AdviceType.PROPERTY]: _createPropertyDecoration,
@@ -105,6 +110,8 @@ function _createDecorator<A extends AdviceType>(annotation: Annotation<A>, annot
     };
 
     return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
+        annotationStub(...annotationArgs)?.apply(null, targetArgs);
+
         // assert the weaver is loaded before invoking the underlying decorator
         const weaver = weaverContext.getWeaver();
 

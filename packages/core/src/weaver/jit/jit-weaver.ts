@@ -1,5 +1,5 @@
 import { WeaverProfile } from '../profile';
-import { assert, getOrComputeMetadata, isFunction, isUndefined, Mutable } from '@aspectjs/core/utils';
+import { assert, getOrComputeMetadata, isFunction, isUndefined } from '@aspectjs/core/utils';
 import { AspectType, JoinPoint } from '../types';
 import { AdviceContext, AfterThrowContext, AroundContext, MutableAdviceContext } from '../../advice/advice-context';
 import {
@@ -18,6 +18,7 @@ import { AdviceExecutionPlanFactory } from '../execution/plan.factory';
 import { AdviceTarget } from '../../advice/target/advice-target';
 import { JoinpointFactory } from '../joinpoint-factory';
 import { WeaverHooks } from '../weaver-hooks';
+import { Mutable } from '../../utils/utils';
 
 const _defineProperty = Object.defineProperty;
 type MethodPropertyDescriptor = PropertyDescriptor & { value: (...args: any[]) => any };

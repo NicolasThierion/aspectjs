@@ -1,4 +1,4 @@
-import { After } from './after.decorator';
+import { After } from './after.annotation';
 import { AdviceContext, AfterContext } from '../advice-context';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';

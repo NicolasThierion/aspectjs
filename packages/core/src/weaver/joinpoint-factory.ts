@@ -1,7 +1,8 @@
 import { AroundContext } from '../advice/around/around-context';
 import { JoinPoint } from './types';
 import { AspectError } from './errors/aspect-error';
-import { isArray, Mutable } from '@aspectjs/core/utils';
+import { isArray } from '@aspectjs/core/utils';
+import { Mutable } from '../utils/utils';
 
 export class JoinpointFactory<T> {
     // TODO ctxt = AroundContext

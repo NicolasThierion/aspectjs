@@ -7,7 +7,6 @@ import {
     isNumber,
     isObject,
     isUndefined,
-    Mutable,
 } from '@aspectjs/core/utils';
 import {
     AdviceLocation,
@@ -20,6 +19,7 @@ import {
 } from './advice-target';
 import { AdviceType } from '../../annotation/annotation.types';
 import { locator } from '../../utils/locator';
+import { Mutable } from '../../utils/utils';
 
 const TARGET_GENERATORS = {
     [AdviceType.CLASS]: _createClassAnnotationTarget,

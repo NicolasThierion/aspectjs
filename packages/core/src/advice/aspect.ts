@@ -1,9 +1,6 @@
-import { AnnotationFactory } from '../annotation/factory/annotation-factory';
 import { isString } from '@aspectjs/core/utils';
 
 let _globalAspectId = 0;
-
-const annotationFactory = new AnnotationFactory('aspectjs');
 
 export interface AspectOptions {
     id?: string;
@@ -26,6 +23,8 @@ export function Aspect(id: string | AspectOptions = {}): ClassDecorator {
     };
 }
 
-annotationFactory.create(function Aspect(): ClassDecorator {
-    return;
-});
+// const annotationFactory = new AnnotationFactory('aspectjs');
+
+// export const Aspect = annotationFactory.create(function Aspect(id: string | AspectOptions = {}): ClassDecorator {
+//     return;
+// });

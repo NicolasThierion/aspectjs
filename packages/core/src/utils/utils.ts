@@ -1,9 +1,12 @@
 import { getProto } from '@aspectjs/core/utils';
 import { AspectType } from '../weaver/types';
 import { ASPECT_OPTIONS_REFLECT_KEY, AspectOptions } from '../advice/aspect';
+import { AnnotationFactory } from '../annotation/factory/annotation-factory';
+
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
+export const annotationFactory = new AnnotationFactory('aspectjs');
 
 export function isAspect(aspect: AspectType | Function) {
     if (!aspect) {

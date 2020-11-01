@@ -11,11 +11,11 @@ import {
     BParameter,
     BProperty,
 } from '../../../testing/src/helpers';
-import { AfterThrow } from './after-throw.decorator';
+import { AfterThrow } from './after-throw.annotation';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { After } from '../after/after.decorator';
+import { After } from '../after/after.annotation';
 import { AdviceType } from '../../annotation/annotation.types';
 
 describe('AfterThrowContext', () => {

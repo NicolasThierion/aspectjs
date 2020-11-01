@@ -2,9 +2,9 @@ import { AClass, setupWeaver } from '../../testing/src/helpers';
 import { weaverContext } from '../weaver/weaver-context';
 import { Aspect } from './aspect';
 import { AspectType } from '../weaver/types';
-import { Before } from './before/before.decorator';
+import { Before } from './before/before.annotation';
 import { on, Pointcut, PointcutPhase } from './pointcut';
-import { After } from './after/after.decorator';
+import { After } from './after/after.annotation';
 
 describe('AdvicesRegistry', () => {
     const advicesRegistry = weaverContext.advicesRegistry;

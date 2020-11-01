@@ -1,6 +1,6 @@
 import { AdviceContext, CompileContext } from '../advice-context';
 import { Aspect } from '../aspect';
-import { Compile } from './compile.decorator';
+import { Compile } from './compile.annotation';
 import { on } from '../pointcut';
 import {
     AClass,
@@ -16,7 +16,7 @@ import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { AdviceType } from '../../annotation/annotation.types';
-import { Before } from '../before/before.decorator';
+import { Before } from '../before/before.annotation';
 
 describe('CompileContext', () => {
     let weaver: Weaver;

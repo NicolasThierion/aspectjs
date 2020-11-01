@@ -11,9 +11,9 @@ import {
     BParameter,
     BProperty,
 } from '../../../testing/src/helpers';
-import { Before } from './before.decorator';
+import { Before } from './before.annotation';
 import { weaverContext } from '../../weaver/weaver-context';
-import { Around } from '../around/around.decorator';
+import { Around } from '../around/around.annotation';
 import { AdviceType } from '../../annotation/annotation.types';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { Weaver } from '../../weaver/weaver';
