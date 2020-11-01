@@ -1,7 +1,6 @@
-import { Advice } from './types';
+import { Advice, AdviceType } from './types';
 import { assert, isFunction } from '@aspectjs/core/utils';
 import { Pointcut, PointcutPhase } from './pointcut';
-import { AdviceType } from '../annotation/annotation.types';
 import { AdviceError } from '../weaver/errors/advice-error';
 import { weaverContext } from '../weaver/weaver-context';
 

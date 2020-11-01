@@ -27,7 +27,7 @@ remove rollup-copy-plugin & rollup-plugin-cleaner
 - fork murmurhash3js
 - add LICENSE.md
 - use AnnotationRef = {module, name} in bundles & contexts
-- add @Order on advices
+- add `@Order` on advices
 - do not nest decorators when multiple annotations on the same symbol
 - test `on.X.annotations(\<empty\>)` should return all advices
 
@@ -38,5 +38,5 @@ remove rollup-copy-plugin & rollup-plugin-cleaner
 
 ### tests
  - test @Memo with HttpClient observables
- -  test Weaver.getAspect(AspectClass)
+ - test multiple `@Before` on the same apsect method
   

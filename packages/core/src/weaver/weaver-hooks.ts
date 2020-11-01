@@ -1,6 +1,12 @@
-import { AdviceType } from '../annotation/annotation.types';
 import { MutableAdviceContext } from '../advice/advice-context';
-import { AfterAdvice, AfterReturnAdvice, AfterThrowAdvice, AroundAdvice, BeforeAdvice } from '../advice/types';
+import {
+    AdviceType,
+    AfterAdvice,
+    AfterReturnAdvice,
+    AfterThrowAdvice,
+    AroundAdvice,
+    BeforeAdvice,
+} from '../advice/types';
 import { JoinPoint } from './types';
 
 export interface WeaverHooks<T, A extends AdviceType> {

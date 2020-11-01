@@ -2,7 +2,7 @@ import { Memo, MemoOptions } from '../memo.annotation';
 import { MemoAspect, MemoAspectOptions } from '../memo.aspect';
 import { IdbMemoDriver, LsMemoDriver } from '../drivers';
 import { DefaultCacheableAspect } from '../cacheable/cacheable.aspect';
-import { JitWeaver, getWeaver, setWeaver } from '@aspectjs/core';
+import { weaverContext, JitWeaver } from '@aspectjs/core';
 
 interface MemoClass {
     memoMethod(...args: any[]): any;
@@ -21,12 +21,12 @@ export function createMemoMethod(method?: (...args: any[]) => any, options?: Mem
 }
 
 export function resetWeaver() {
-    setWeaver(new JitWeaver());
+    weaverContext.setWeaver(new JitWeaver());
 }
 export function setupMemoAspect(memoAspectOptions?: MemoAspectOptions): void {
     resetWeaver();
 
     const memoAspect = new MemoAspect(memoAspectOptions);
     memoAspect.drivers(new LsMemoDriver(), new IdbMemoDriver());
-    getWeaver().enable(memoAspect, new DefaultCacheableAspect());
+    weaverContext.getWeaver().enable(memoAspect, new DefaultCacheableAspect());
 }

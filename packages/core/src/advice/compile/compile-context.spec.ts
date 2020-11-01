@@ -15,7 +15,7 @@ import {
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 import { Before } from '../before/before.annotation';
 
 describe('CompileContext', () => {

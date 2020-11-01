@@ -10,12 +10,11 @@ import {
     BMethod,
     BParameter,
     BProperty,
+    setupWeaver,
 } from '../../../testing/src/helpers';
 import { After } from './after.annotation';
-import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
-import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;
@@ -24,7 +23,7 @@ describe('AfterReturnContext', () => {
 
     beforeEach(() => {
         // TODO use setupWeaver
-        weaverContext.setWeaver((weaver = new JitWeaver()));
+        weaver = setupWeaver();
         afterAAdvice = jasmine.createSpy('afterAAdvice');
         afterBAdvice = jasmine.createSpy('afterBAdvice');
     });

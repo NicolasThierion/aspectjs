@@ -4,7 +4,7 @@ import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Compile } from '../compile/compile.annotation';
 import { Aspect } from '../aspect';
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 import Spy = jasmine.Spy;
 
 const thrownError = new Error('expected');

@@ -10,9 +10,10 @@ export interface Labeled {
 export function setupWeaver(...aspects: AspectType[]) {
     const weaver = new JitWeaver().enable(...aspects);
     weaverContext.setWeaver(weaver);
+    return weaver;
 }
 
-export const AClass = new AnnotationFactory('tests').create(function AClass(): ClassDecorator {
+export const AClass = new AnnotationFactory('tests').create(function AClass(): any {
     return;
 });
 

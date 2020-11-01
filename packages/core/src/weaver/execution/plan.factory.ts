@@ -1,7 +1,8 @@
-import { AnnotationRef, AdviceType } from '../../annotation/annotation.types';
+import { AnnotationRef } from '../../annotation/annotation.types';
 import { MutableAdviceContext } from '../../advice/advice-context';
 import {
     Advice,
+    AdviceType,
     AfterAdvice,
     AfterReturnAdvice,
     AfterThrowAdvice,

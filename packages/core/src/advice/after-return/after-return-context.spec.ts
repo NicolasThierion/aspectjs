@@ -15,7 +15,7 @@ import { AfterReturn } from './after-return.annotation';
 import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 import { After } from '../after/after.annotation';
 
 describe('AfterReturnContext', () => {

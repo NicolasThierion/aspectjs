@@ -1,4 +1,4 @@
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 import { AnnotationContext } from '../../annotation/context/annotation-context';
 import { AdviceTarget } from '../target/advice-target';
 

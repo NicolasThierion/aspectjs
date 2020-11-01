@@ -3,12 +3,13 @@ import { WeavingError } from '../weaver/errors/weaving-error';
 import {
     Annotation,
     AnnotationRef,
-    AdviceType,
+    AnnotationType,
     ClassAnnotation,
     MethodAnnotation,
     ParameterAnnotation,
     PropertyAnnotation,
 } from '../annotation/annotation.types';
+import { AdviceType } from './types';
 
 export interface PointcutOption {
     priority?: number;
@@ -59,16 +60,16 @@ interface PointcutExpressionBuilder {
 }
 
 const AnnotationPointcutExpressionBuilders = {
-    [AdviceType.CLASS]: new AnnotationPointcutExpressionBuilder<ClassAnnotation>('class'),
-    [AdviceType.METHOD]: new AnnotationPointcutExpressionBuilder<MethodAnnotation>('method'),
-    [AdviceType.PARAMETER]: new AnnotationPointcutExpressionBuilder<MethodAnnotation>('parameter'),
-    [AdviceType.PROPERTY]: new PropertyAnnotationPointcutExpressionBuilder(),
+    [AnnotationType.CLASS]: new AnnotationPointcutExpressionBuilder<ClassAnnotation>('class'),
+    [AnnotationType.METHOD]: new AnnotationPointcutExpressionBuilder<MethodAnnotation>('method'),
+    [AnnotationType.PARAMETER]: new AnnotationPointcutExpressionBuilder<MethodAnnotation>('parameter'),
+    [AnnotationType.PROPERTY]: new PropertyAnnotationPointcutExpressionBuilder(),
 };
 export const on: PointcutExpressionBuilder = {
-    class: AnnotationPointcutExpressionBuilders[AdviceType.CLASS],
-    method: AnnotationPointcutExpressionBuilders[AdviceType.METHOD],
-    parameter: AnnotationPointcutExpressionBuilders[AdviceType.PARAMETER],
-    property: AnnotationPointcutExpressionBuilders[AdviceType.PROPERTY],
+    class: AnnotationPointcutExpressionBuilders[AnnotationType.CLASS],
+    method: AnnotationPointcutExpressionBuilders[AnnotationType.METHOD],
+    parameter: AnnotationPointcutExpressionBuilders[AnnotationType.PARAMETER],
+    property: AnnotationPointcutExpressionBuilders[AnnotationType.PROPERTY],
 };
 
 export enum PointcutPhase {

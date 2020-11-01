@@ -17,9 +17,9 @@ import {
     ParameterAdviceTarget,
     PropertyAdviceTarget,
 } from './advice-target';
-import { AdviceType } from '../../annotation/annotation.types';
 import { locator } from '../../utils/locator';
 import { Mutable } from '../../utils/utils';
+import { AdviceType } from '../types';
 
 const TARGET_GENERATORS = {
     [AdviceType.CLASS]: _createClassAnnotationTarget,
@@ -66,7 +66,7 @@ export abstract class AnnotationTargetFactory {
         const parameterIndex: number | undefined = isNumber(args[2]) ? args[2] : undefined;
         const proto = getProto(target);
         const descriptor: PropertyDescriptor | undefined = isObject(args[2]) ? args[2] : undefined;
-        const atarget: MutableAnnotationTarget<any, AdviceType> = {
+        const atarget: MutableAdviceTarget<any, AdviceType> = {
             proto,
             propertyKey,
             parameterIndex,
@@ -81,10 +81,7 @@ export abstract class AnnotationTargetFactory {
      * @param dtarget
      * @param type
      */
-    static create<T, A extends AdviceType>(
-        dtarget: MutableAnnotationTarget<T, A>,
-        type?: AdviceType,
-    ): AdviceTarget<T, A> {
+    static create<T, A extends AdviceType>(dtarget: MutableAdviceTarget<T, A>, type?: AdviceType): AdviceTarget<T, A> {
         if (isUndefined(type) && isUndefined(dtarget.type)) {
             if (isNumber(((dtarget as any) as ParameterAdviceTarget<T>).parameterIndex)) {
                 type = AdviceType.PARAMETER;
@@ -134,7 +131,7 @@ class AnnotationTargetImpl {
     }
 }
 
-type MutableAnnotationTarget<T, A extends AdviceType> = Mutable<Partial<AdviceTarget<T, A>>>;
+type MutableAdviceTarget<T, A extends AdviceType> = Mutable<Partial<AdviceTarget<T, A>>>;
 
 function _createClassAnnotationTarget<T, D extends AdviceType.CLASS>(
     dtarget: AnnotationTargetLike<T, D>,

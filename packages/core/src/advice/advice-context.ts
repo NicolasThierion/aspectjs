@@ -1,6 +1,5 @@
 import { AnnotationContext } from '../annotation/context/annotation-context';
 import { AdviceTarget } from './target/advice-target';
-import { AdviceType } from '../annotation/annotation.types';
 import { JoinPoint } from '../weaver/types';
 import { AfterContext } from './after/after-context';
 import { BeforeContext } from './before/before-context';
@@ -8,6 +7,7 @@ import { AfterReturnContext } from './after-return/after-return-context';
 import { AfterThrowContext } from './after-throw/after-throw-context';
 import { AroundContext } from './around/around-context';
 import { CompileContext } from './compile/compile-context';
+import { AdviceType } from './types';
 
 /**
  * @public

@@ -1,7 +1,6 @@
 import {
     Annotation,
     AnnotationRef,
-    AdviceType,
     ClassAnnotationStub,
     MethodAnnotationStub,
     ParameterAnnotationStub,
@@ -12,10 +11,10 @@ import { AnnotationTargetFactory } from '../../advice/target/annotation-target.f
 import { AnnotationBundleRegistry } from '../bundle/bundle-factory';
 import { AnnotationsBundle } from '../bundle/bundle';
 import { weaverContext } from '../../weaver/weaver-context';
-import { AdviceTarget } from '../../advice/target/advice-target';
+import { AdviceTarget, AnnotationTarget } from '../../advice/target/advice-target';
 import { MutableAdviceContext } from '../../advice/advice-context';
 import { JoinPoint } from '../../weaver/types';
-import { Advice } from '../../advice/types';
+import { Advice, AdviceType } from '../../advice/types';
 import { AnnotationContext } from '../context/annotation-context';
 
 type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
@@ -35,6 +34,7 @@ export class AnnotationFactory {
     create<A extends ParameterAnnotationStub>(annotationStub?: A): A & AnnotationRef;
 
     create<S extends Annotation<AdviceType>>(annotationStub?: S): S & AnnotationRef {
+        // ensure annotation has a name.
         annotationStub = annotationStub ?? (function () {} as S);
         if (!annotationStub.name) {
             Reflect.defineProperty(annotationStub, 'name', {
@@ -45,13 +45,14 @@ export class AnnotationFactory {
 
         // create the annotation (ie: decorator provider)
         const annotation = function (...annotationArgs: any[]): Decorator {
-            const decorator = _createDecorator(annotation as any, annotationStub, annotationArgs);
-            _createAnnotationRef(decorator, annotationStub, groupId);
+            const decorator = _createRegisterAnnotatopnDecorator(annotation as any, annotationStub, annotationArgs);
+            _createAnnotation(decorator, annotationStub, groupId);
 
             return decorator;
         };
 
-        return _createAnnotationRef(annotation, annotationStub, groupId);
+        // turn the stub into an annotation
+        return _createAnnotation(annotation, annotationStub, groupId);
     }
 
     static getBundle<T>(target: (new () => T) | T): AnnotationsBundle<any> {
@@ -65,11 +66,11 @@ export class AnnotationFactory {
     }
 }
 
-function _createAnnotationRef<A extends Annotation<AdviceType>, D extends Decorator>(
+function _createAnnotation<A extends Annotation<AdviceType>, D extends Decorator>(
     fn: Function & D,
     annotationStub: A,
     groupId: string,
-): AnnotationRef & A {
+): A {
     assert(typeof fn === 'function');
 
     const annotation = (fn as any) as AnnotationRef & A;
@@ -97,7 +98,7 @@ function _createAnnotationRef<A extends Annotation<AdviceType>, D extends Decora
     return annotation;
 }
 
-function _createDecorator<A extends AdviceType, S extends Annotation<AdviceType>>(
+function _createRegisterAnnotatopnDecorator<A extends AdviceType, S extends Annotation<AdviceType>>(
     annotation: Annotation<A>,
     annotationStub: S,
     annotationArgs: any[],
@@ -112,14 +113,15 @@ function _createDecorator<A extends AdviceType, S extends Annotation<AdviceType>
     return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
         annotationStub(...annotationArgs)?.apply(null, targetArgs);
 
+        const target = AnnotationTargetFactory.of(targetArgs) as AnnotationTarget<any, A>;
+        weaverContext.annotationsRegistry.register(target);
+
         // assert the weaver is loaded before invoking the underlying decorator
         const weaver = weaverContext.getWeaver();
 
         if (!weaver) {
             throw new Error(`Cannot invoke annotation ${annotation.name ?? ''} before "setWeaver()" has been called`);
         }
-
-        const target = AnnotationTargetFactory.of(targetArgs) as AdviceTarget<any, A>;
 
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         AnnotationBundleRegistry.addContext(target, annotationContext);

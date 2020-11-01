@@ -1,6 +1,6 @@
 import { WeaverProfile } from './profile';
 import { MutableAdviceContext } from '../advice/advice-context';
-import { AdviceType } from '../annotation/annotation.types';
+import { AdviceType } from '../advice/types';
 
 export interface Weaver extends WeaverProfile {
     /**

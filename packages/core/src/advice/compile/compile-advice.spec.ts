@@ -16,7 +16,8 @@ import { WeavingError } from '../../weaver/errors/weaving-error';
 import { Aspect } from '../aspect';
 import { AdviceTarget } from '../target/advice-target';
 import { AnnotationContext } from '../../annotation/context/annotation-context';
-import { AnnotationRef, AdviceType } from '../../annotation/annotation.types';
+import { AnnotationRef } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 
 let advice = jasmine.createSpy('compileAspectA');
 let compileAdviceB = jasmine.createSpy('compileAspectB');

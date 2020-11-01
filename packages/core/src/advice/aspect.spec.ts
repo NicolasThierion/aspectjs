@@ -8,11 +8,12 @@ import { AfterReturn } from './after-return/after-return.annotation';
 import { AfterThrow } from './after-throw/after-throw.annotation';
 import { Aspect } from './aspect';
 import { Compile } from './compile/compile.annotation';
-import { AdviceType } from '../annotation/annotation.types';
 import Spy = jasmine.Spy;
 import { JoinPoint } from '../weaver/types';
+import { AdviceType } from './types';
 
 describe('@Aspect', () => {
+    beforeEach(() => setupWeaver());
     describe('with an advice', () => {
         describe('targeted with multiple pointcuts', () => {
             let advice: Spy;

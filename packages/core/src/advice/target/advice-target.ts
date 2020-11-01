@@ -1,6 +1,6 @@
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 
-export interface AdviceTarget<T = unknown, A extends AdviceType = any> {
+export interface AnnotationTarget<T = unknown, A extends AdviceType = any> {
     readonly location: AdviceLocation<T, A>;
     readonly type: A;
     readonly proto: any;
@@ -12,15 +12,16 @@ export interface AdviceTarget<T = unknown, A extends AdviceType = any> {
     readonly descriptor: A extends AdviceType.METHOD ? TypedPropertyDescriptor<T> : never;
     readonly parameterIndex: A extends AdviceType.PARAMETER ? number : never;
     readonly parent: A extends AdviceType.METHOD
-        ? AdviceTarget<any, AdviceType.CLASS>
+        ? AnnotationTarget<any, AdviceType.CLASS>
         : A extends AdviceType.PROPERTY
-        ? AdviceTarget<any, AdviceType.CLASS>
+        ? AnnotationTarget<any, AdviceType.CLASS>
         : A extends AdviceType.PARAMETER
-        ? AdviceTarget<any, AdviceType.METHOD>
+        ? AnnotationTarget<any, AdviceType.METHOD>
         : ClassAdviceTarget<any>;
     readonly declaringClass: ClassAdviceTarget<T>;
     readonly parentClass: ClassAdviceTarget<T>;
 }
+export type AdviceTarget<T = unknown, A extends AdviceType = any> = AnnotationTarget<T, A>;
 
 export interface ClassAdviceTarget<T> extends AdviceTarget<T, AdviceType.CLASS> {
     readonly location: ClassAnnotationLocation<T>;

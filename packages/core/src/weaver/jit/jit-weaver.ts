@@ -4,6 +4,7 @@ import { AspectType, JoinPoint } from '../types';
 import { AdviceContext, AfterThrowContext, AroundContext, MutableAdviceContext } from '../../advice/advice-context';
 import {
     Advice,
+    AdviceType,
     AfterAdvice,
     AfterReturnAdvice,
     AfterThrowAdvice,
@@ -11,7 +12,6 @@ import {
     BeforeAdvice,
     CompileAdvice,
 } from '../../advice/types';
-import { AdviceType } from '../../annotation/annotation.types';
 import { AdviceError } from '../errors/advice-error';
 import { Weaver } from '../weaver';
 import { AdviceExecutionPlanFactory } from '../execution/plan.factory';

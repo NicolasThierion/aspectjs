@@ -16,7 +16,7 @@ import { weaverContext } from '../../weaver/weaver-context';
 import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { AfterReturn } from '../after-return/after-return.annotation';
-import { AdviceType } from '../../annotation/annotation.types';
+import { AdviceType } from '../types';
 import { JoinPoint } from '../../weaver/types';
 
 describe('AroundContext', () => {
