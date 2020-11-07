@@ -1,14 +1,9 @@
 import { RollupOptions } from 'rollup';
+import pkg from './package.json';
+
 // @ts-ignore
 import { RollupConfigUtils } from '../../build/build.utils';
 
-const rollupOptions: RollupOptions[] = RollupConfigUtils.package('package.json')
-    .withAll((options) => {
-        options.external = ['@aspectjs/core/utils'];
-        [options.output].flat()[0].globals = {
-            '@aspectjs/core/utils': 'aspectjs.core.utils',
-        };
-    })
-    .getRollupConfigs();
+const rollupOptions: RollupOptions[] = RollupConfigUtils.package('package.json').withAll().getRollupConfigs();
 
 export default rollupOptions;

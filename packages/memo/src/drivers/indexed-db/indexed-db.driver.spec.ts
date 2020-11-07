@@ -1,6 +1,8 @@
 import { Memo } from '../../memo.annotation';
 import moment from 'moment';
 import { createMemoMethod, setupMemoAspect } from '../../utils/spec-helpers';
+import { IdbMemoDriver } from './idb-memo.driver';
+import { LsMemoDriver } from '..';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 
@@ -8,7 +10,7 @@ interface Runner {
     run(...args: any[]): any;
 }
 
-describe(`IdbMemoDriver`, () => {
+fdescribe(`IdbMemoDriver`, () => {
     describe(`when calling a method annotated with @Memo({type = 'indexedDb'})`, () => {
         let joinpoint: jasmine.Spy;
         let memoMethod: (...args: any[]) => any;
@@ -20,6 +22,9 @@ describe(`IdbMemoDriver`, () => {
 
         const defaultArgs = ['a', 'b', 'c', 'd'];
 
+        function setupIdbMemoAspect() {
+            setupMemoAspect({ drivers: [new IdbMemoDriver(), new LsMemoDriver()] });
+        }
         beforeEach(() => {
             memoOptions = {};
             joinpoint = jasmine.createSpy('memoMethodSpy').and.callFake((...args) => Promise.resolve(args.reverse()));
@@ -30,9 +35,8 @@ describe(`IdbMemoDriver`, () => {
                 driver: 'indexedDb',
             });
 
+            setupIdbMemoAspect();
             localStorage.clear();
-
-            setupMemoAspect();
         });
 
         describe('once', () => {
@@ -79,7 +83,7 @@ describe(`IdbMemoDriver`, () => {
             beforeEach(async () => {
                 await memoMethod(...defaultArgs);
 
-                setupMemoAspect();
+                setupIdbMemoAspect();
             });
 
             it('should use data cached from previous context', async () => {
@@ -173,7 +177,7 @@ describe(`IdbMemoDriver`, () => {
                         beforeEach(() => {
                             memoMethod(...defaultArgs);
 
-                            setupMemoAspect();
+                            setupIdbMemoAspect();
                         });
 
                         it('should remove cached data', testShouldRemoveData);
@@ -200,7 +204,7 @@ describe(`IdbMemoDriver`, () => {
                         beforeEach(() => {
                             memoMethod(...defaultArgs);
 
-                            setupMemoAspect();
+                            setupIdbMemoAspect();
                         });
 
                         it('should remove cached data', testShouldRemoveData);
@@ -249,7 +253,7 @@ describe(`IdbMemoDriver`, () => {
 
                 describe('and object has id or _id attribute', () => {
                     function init(): void {
-                        setupMemoAspect();
+                        setupIdbMemoAspect();
 
                         class RunnerImpl implements Runner {
                             constructor(private id: string) {}
@@ -361,7 +365,7 @@ describe(`IdbMemoDriver`, () => {
 
         describe('that returns an object', nonAsyncShouldThrow({}, 'Object'));
 
-        describe('that returns null', nonAsyncShouldThrow(null, 'object'));
+        fdescribe('that returns null', nonAsyncShouldThrow(null, 'object'));
 
         describe('that returns undefined', nonAsyncShouldThrow(undefined, 'undefined'));
 

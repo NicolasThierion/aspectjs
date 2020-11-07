@@ -1,13 +1,9 @@
-import { JitWeaver } from '@aspectjs/core';
-
-import { MemoAspect } from './memo.aspect';
-import { DefaultCacheableAspect } from './cacheable/cacheable.aspect';
-import { MemoDriver } from './drivers/memo.driver';
+import { MemoDriver } from './drivers';
 import { MemoKey } from './memo.types';
 import { Memo } from './memo.annotation';
-import { InstantPromise } from './utils/instant-promise';
+import { InstantPromise } from './utils';
 import { MarshallingContext } from './marshalling/marshalling-context';
-import { weaverContext } from '@aspectjs/core';
+import { setupMemoAspect } from './utils/spec-helpers';
 
 interface Runner {
     process(...args: any[]): any;
@@ -72,9 +68,10 @@ describe('MemoAspect', () => {
             spyOn(d, 'getValue').and.callThrough();
             spyOn(d, 'setValue').and.callThrough();
         });
-        weaverContext.setWeaver(
-            new JitWeaver().enable(new MemoAspect().drivers(driver1, driver2), new DefaultCacheableAspect()),
-        );
+
+        setupMemoAspect({
+            drivers: [driver1, driver2],
+        });
     });
     describe('given an advice', () => {
         describe('that do not specify driver type', () => {

@@ -1,4 +1,4 @@
-import { MemoFrame } from '../../drivers/memo-frame';
+import { MemoFrame } from '../../drivers';
 import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { from, Observable } from 'rxjs';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';

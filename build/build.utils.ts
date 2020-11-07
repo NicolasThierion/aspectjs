@@ -1,6 +1,6 @@
 import path from 'path';
 import { terser } from 'rollup-plugin-terser';
-import { isArray, mergeWith, cloneDeep } from 'lodash';
+import { isArray, mergeWith } from 'lodash';
 import babelrc from '../.babelrc.json';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import resolve from '@rollup/plugin-node-resolve';
@@ -168,7 +168,7 @@ function _baseConfig(
 ): RollupOptions {
     const config: RollupOptions = {
         input: path.resolve(path.dirname(packagePath), 'public_api.ts'),
-        external: ['@aspectjs/core', '@aspectjs/core/utils'],
+        external: ['@aspectjs/core', /@aspectjs\/.*/],
         plugins: [
             sourcemaps(),
             resolve(),
@@ -240,20 +240,33 @@ function _baseEsm2015(
 
 function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, options: RollupOptions) {
     const file = path.resolve(path.dirname(packagePath), distFile);
-    const name = pkg.name.replace('/', '.').replace(/^@/, '');
+    const name = pkg.name.replace('/', '.').replace(/^@/, '').replace(/-/, '.');
     return mergeWith(
         {},
         _baseConfig(packagePath, pkg, options),
         {
             output: {
+                // noConflict: true,
+                externalLiveBindings: false,
+                exports: 'named',
                 file,
                 name,
+
                 format: 'umd',
                 sourcemap: true,
                 esModule: false,
-                globals: {
-                    '@aspectjs/core': 'aspectjs.core',
-                    '@aspectjs/core/utils': 'aspectjs.core.utils',
+                globals: (name: string) => {
+                    switch (name) {
+                        case '@aspectjs/core':
+                            return 'aspectjs.core';
+                        case '@aspectjs/core/annotations':
+                            return 'aspectjs.core.annotations';
+                        case '@aspectjs/core/utils':
+                            return 'aspectjs.core.utils';
+                    }
+                    if (name.startsWith('@aspectjs/core/internals')) {
+                        return 'aspectjs.core.internals';
+                    }
                 },
             },
             plugins: [
@@ -266,7 +279,7 @@ function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, optio
                     filename: `${path.dirname(file)}/stats/${path.basename(file)}.html`,
                 }),
             ],
-        },
+        } as RollupOptions,
         customizer,
     );
 }

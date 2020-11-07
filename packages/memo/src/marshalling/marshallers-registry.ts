@@ -1,15 +1,15 @@
-import { MemoMarshaller } from './marshallers/marshaller';
+import { MemoMarshaller } from './marshallers';
 import { MemoKey } from '../memo.types';
 import { MarshallingContext, UnmarshallingContext } from './marshalling-context';
 import { MemoFrame } from '../drivers';
 import { assert, isArray, isObject } from '@aspectjs/core/utils';
-import { InstantPromise } from '../utils/instant-promise';
+import { InstantPromise } from '../utils';
 
 export class MarshallersRegistry {
     private _marshallers: Record<string, MemoMarshaller> = {};
 
     addMarshaller(...marshallers: MemoMarshaller[]): this {
-        marshallers.forEach((marshaller) => {
+        (marshallers ?? []).forEach((marshaller) => {
             [marshaller.types].flat().forEach((type: string) => {
                 this._marshallers[type] = marshaller;
             });
@@ -32,7 +32,7 @@ export class MarshallersRegistry {
         return new MarshallingContextImpl(this, key, value);
     }
 
-    unmarshal(key: MemoKey, frame: MemoFrame<any>) {
+    unmarshal(key: MemoKey, frame: MemoFrame<any>): UnmarshallingContext<any> {
         return new UnmarshallingContextImpl(this, key, frame).frame.value;
     }
 }

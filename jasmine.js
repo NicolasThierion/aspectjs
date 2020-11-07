@@ -1,7 +1,7 @@
 require('reflect-metadata');
 require('tsconfig-paths/register');
 require('ts-node/register');
-require('@aspectjs/core/utils').__setDebug(true);
+require('./packages/core/internals/src/utils/utils').__setDebug(true);
 
 // configure reporters
 // eslint-disable-next-line @typescript-eslint/no-var-requires

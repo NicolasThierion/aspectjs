@@ -1,4 +1,5 @@
-import { AdviceType, Aspect, Compile, CompileContext, on } from '@aspectjs/core';
+import { Aspect, Compile } from '@aspectjs/core/annotations';
+import { AdviceType, CompileContext, on } from '@aspectjs/core/types';
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
 import { assert, getOrComputeMetadata, isObject } from '@aspectjs/core/utils';
 

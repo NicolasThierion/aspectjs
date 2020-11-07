@@ -1,9 +1,9 @@
+import { isUndefined } from '@aspectjs/core/utils';
 import { MemoDriver } from '../memo.driver';
 import { MemoKey } from '../../memo.types';
 import { parse, stringify } from 'flatted';
 import { MemoFrame } from '../memo-frame';
-import { isUndefined } from '@aspectjs/core/utils';
-import { InstantPromise } from '../../utils/instant-promise';
+import { InstantPromise } from '../../utils';
 import { MarshallingContext } from '../../marshalling/marshalling-context';
 
 export interface LsMemoSerializer<T = unknown, U = unknown> {

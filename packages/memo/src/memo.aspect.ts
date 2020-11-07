@@ -1,19 +1,13 @@
-import { MemoDriver } from './drivers/memo.driver';
+import { MemoDriver, MemoFrame } from './drivers';
 import { MemoEntry, MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
-import { Around, AroundContext, Aspect, AspectError, Before, BeforeContext, JoinPoint, on } from '@aspectjs/core';
-import {
-    getOrComputeMetadata,
-    getProto,
-    isFunction,
-    isString,
-    isUndefined,
-    Mutable,
-    provider,
-} from '@aspectjs/core/utils';
+import { Around, Aspect } from '@aspectjs/core/annotations';
+import { AroundContext, AspectError, BeforeContext, JoinPoint, on } from '@aspectjs/core/types';
+
+import { getOrComputeMetadata, getProto, isFunction, isString, isUndefined } from '@aspectjs/core/utils';
 import { stringify } from 'flatted';
 import { VersionConflictError } from './errors';
-import { murmurhash } from './utils/murmurhash';
+import { murmurhash, Mutable, provider } from './utils';
 import { MarshallersRegistry } from './marshalling/marshallers-registry';
 import copy from 'fast-copy';
 import {
@@ -25,7 +19,6 @@ import {
     ObjectMarshaller,
     PromiseMarshaller,
 } from './marshalling/marshallers';
-import { MemoFrame } from './drivers';
 
 export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
     new ObjectMarshaller(),
@@ -46,6 +39,7 @@ export interface MemoAspectOptions {
     id?: string | number | ((ctxt: BeforeContext<any, any>) => string | number);
     contextKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
     marshallers?: MemoMarshaller[];
+    drivers?: MemoDriver[];
 }
 
 export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
@@ -68,11 +62,12 @@ export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
     },
     expiration: undefined,
     marshallers: DEFAULT_MARSHALLERS,
+    drivers: [],
 };
 
 @Aspect('@aspectjs/memo')
 export class MemoAspect {
-    protected _params: MemoAspectOptions;
+    protected _options: MemoAspectOptions;
     private readonly _drivers: Record<string, MemoDriver> = {};
     /** maps memo keys with its unregister function for garbage collector timeouts */
     private readonly _entriesGc: Record<string, number> = {};
@@ -80,17 +75,18 @@ export class MemoAspect {
     private _pendingResults: Record<string, any> = {};
 
     constructor(params?: MemoAspectOptions) {
-        this._params = { ...DEFAULT_MEMO_ASPECT_OPTIONS, ...params };
+        this._options = { ...DEFAULT_MEMO_ASPECT_OPTIONS, ...params };
         this._marshallers = new MarshallersRegistry();
-        this._marshallers.addMarshaller(...DEFAULT_MARSHALLERS, ...(this._params.marshallers ?? []));
+        this.addMarshaller(...DEFAULT_MARSHALLERS, ...(this._options.marshallers ?? []));
+        this.addDriver(...(params?.drivers ?? []));
     }
 
-    getDrivers() {
+    getDrivers(): Record<string, MemoDriver> {
         return this._drivers;
     }
 
-    public drivers(...drivers: MemoDriver[]): this {
-        drivers.forEach((d) => {
+    public addDriver(...drivers: MemoDriver[]): this {
+        (drivers ?? []).forEach((d) => {
             if (this._drivers[d.NAME] === d) {
                 return;
             }
@@ -112,23 +108,15 @@ export class MemoAspect {
     }
 
     /**
-     * Generate the key to be used to get/store the memoized result for this execution context
-     * @param ctxt
-     */
-    @Before(on.method.withAnnotations(Memo))
-    protected createKey(ctxt: BeforeContext<any, any>): void {
-        const memoParams = ctxt.annotation.args[0] as MemoOptions;
-        ctxt.data.namespace = provider(memoParams?.namespace)() ?? provider(this._params?.namespace)();
-        ctxt.data.instanceId = `${provider(memoParams?.id)(ctxt) ?? provider(this._params?.id)(ctxt)}`;
-        ctxt.data.contextKey = this._params.contextKey(ctxt);
-    }
-
-    /**
      * Apply the memo pattern. That is, get the result from cache if any, or call the original method and store the result otherwise.
      */
     @Around(on.method.withAnnotations(Memo))
     applyMemo(ctxt: AroundContext<any, any>, jp: JoinPoint): any {
-        const key = ctxt.data.contextKey as MemoKey;
+        const memoParams = ctxt.annotation.args[0] as MemoOptions;
+        ctxt.data.namespace = provider(memoParams?.namespace)() ?? provider(this._options?.namespace)();
+        ctxt.data.instanceId = `${provider(memoParams?.id)(ctxt) ?? provider(this._options?.id)(ctxt)}`;
+        const key = this._options.contextKey(ctxt) as MemoKey;
+
         if (!key) {
             throw new Error('memo key is not defined');
         }

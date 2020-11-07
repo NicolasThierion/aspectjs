@@ -1,5 +1,5 @@
-import { AnnotationRef } from '@aspectjs/core';
-import { annotationFactory } from '@aspectjs/core/utils';
+import { AnnotationRef } from '@aspectjs/core/types';
+import { ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/core/utils';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
 AnnotationRef;
@@ -16,6 +16,6 @@ function Cacheable(typeId?: string | CacheableOptions): ClassDecorator {
     return;
 }
 
-const _Cacheable = annotationFactory.create(Cacheable);
+const _Cacheable = ASPECTJS_ANNOTATION_FACTORY.create(Cacheable);
 
 export { _Cacheable as Cacheable };

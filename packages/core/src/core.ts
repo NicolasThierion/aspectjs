@@ -1,30 +1,33 @@
-import { WEAVER_CONTEXT } from './weaver/weaver-context';
-import { JitWeaver } from './weaver/jit/jit-weaver';
+import { getWeaverContext, setWeaverContext, Weaver, WeaverContext } from '@aspectjs/core/internals/src/weaver';
+import { WeaverContextImpl } from '@aspectjs/core/internals/src/weaver/weaver-context.impl';
 
-export * from './weaver/profile';
-export * from './weaver/types';
-export * from './weaver/weaver';
-export * from './weaver/errors/weaving-error';
-export * from './weaver/errors/advice-error';
-export * from './weaver/errors/aspect-error';
-export * from './advice/advice-context';
-export * from './advice/advice-registry';
-export * from './advice/aspect.annotation';
-export * from './advice/pointcut';
-export * from './advice/types';
-export * from './advice/compile/compile.annotation';
-export * from './advice/before/before.annotation';
-export * from './advice/around/around.annotation';
-export * from './advice/after-return/after-return.annotation';
-export * from './advice/after-throw/after-throw.annotation';
-export * from './advice/after/after.annotation';
-export * from './weaver/jit/jit-weaver';
-export * from './annotation/annotation.types';
-export * from './annotation/bundle/bundle';
-export * from './annotation/context/annotation-context';
-export * from './annotation/factory/annotation-factory';
-export * from './annotation/target/annotation-target';
+// TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
+import { AnnotationLocationFactory } from '@aspectjs/core/internals/src/annotation/location/location.factory';
+import { AnnotationRegistry } from '@aspectjs/core/internals/src/annotation/registry/annotation.registry';
+import { AnnotationTargetFactory } from '@aspectjs/core/internals/src/annotation/target/annotation-target.factory';
+import { RootAnnotationsBundle } from '@aspectjs/core/internals/src/annotation/bundle/bundle';
 
-export function setupAspectWeaver() {
-    WEAVER_CONTEXT.setWeaver(new JitWeaver());
-}
+AnnotationLocationFactory;
+AnnotationRegistry;
+AnnotationTargetFactory;
+RootAnnotationsBundle;
+/**
+ * @public
+ */
+export const WEAVER_CONTEXT = new (class implements WeaverContext {
+    // Allow setWeaverContext to switch implementation of weaver.
+    // This is used for resetWaverContext as a convenience for tests
+    get aspects() {
+        return getWeaverContext().aspects;
+    }
+    get annotations() {
+        return getWeaverContext().annotations;
+    }
+
+    getWeaver(): Weaver {
+        return getWeaverContext().getWeaver();
+    }
+})();
+setWeaverContext(new WeaverContextImpl());
+
+export * from '@aspectjs/core/internals/src/weaver';

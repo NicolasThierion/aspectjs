@@ -1,7 +1,8 @@
 import { Memo } from '../../memo.annotation';
 import moment from 'moment';
 import { createMemoMethod, setupMemoAspect } from '../../utils/spec-helpers';
-import { BeforeContext } from '@aspectjs/core';
+import { BeforeContext } from '@aspectjs/core/types';
+import { LsMemoDriver } from './localstorage.driver';
 
 interface Runner {
     run(...args: any[]): any;
@@ -16,6 +17,10 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
         expiration?: Date | number;
     };
 
+    function setupLsMemoAspect(): void {
+        setupMemoAspect({ drivers: [new LsMemoDriver()] });
+    }
+
     const defaultArgs = ['a', 'b', 'c', 'd'];
     beforeEach(() => {
         memoOptions = {};
@@ -26,9 +31,8 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
             expiration: () => memoOptions.expiration,
             driver: 'localStorage',
         });
-
+        setupLsMemoAspect();
         localStorage.clear();
-        setupMemoAspect();
     });
 
     describe('once', () => {
@@ -66,7 +70,7 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
         beforeEach(() => {
             memoMethod(...defaultArgs);
 
-            setupMemoAspect();
+            setupLsMemoAspect();
         });
 
         it('should use data cached from previous context', () => {
@@ -140,7 +144,7 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
                     beforeEach(() => {
                         memoMethod(...defaultArgs);
 
-                        setupMemoAspect();
+                        setupLsMemoAspect();
                     });
 
                     it('should remove cached data', testShouldRemoveData);
@@ -166,7 +170,7 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
                     beforeEach(() => {
                         memoMethod(...defaultArgs);
                         expect(joinpoint).toHaveBeenCalledTimes(1);
-                        setupMemoAspect();
+                        setupLsMemoAspect();
                     });
 
                     it('should remove cached data', testShouldRemoveData);
@@ -180,21 +184,23 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
         let r2: Runner;
         let run: Runner['run'];
         let idFn = (ctxt: BeforeContext) => undefined as string;
-        class RunnerImpl implements Runner {
-            constructor(props?: Record<string, unknown>) {
-                Object.assign(this, props);
-            }
-            @Memo({
-                id: (ctxt) => idFn(ctxt),
-            })
-            run(...args: any[]): any {
-                return run(...args);
-            }
-        }
-
+        let RunnerImpl: any;
         beforeEach(() => {
-            r1 = new RunnerImpl();
-            r2 = new RunnerImpl();
+            class _RunnerImpl implements Runner {
+                constructor(props?: Record<string, unknown>) {
+                    Object.assign(this, props);
+                }
+                @Memo({
+                    id: (ctxt: BeforeContext) => idFn(ctxt),
+                })
+                run(...args: any[]): any {
+                    return run(...args);
+                }
+            }
+
+            r1 = new _RunnerImpl();
+            r2 = new _RunnerImpl();
+            RunnerImpl = _RunnerImpl;
             run = jasmine.createSpy('memoMethod');
             idFn = (ctxt: BeforeContext) => undefined as string;
         });
@@ -234,7 +240,7 @@ describe(`Calling a method annotated with @Memo({type = 'localstorage'})`, () =>
                     beforeEach(() => {
                         r1.run(...defaultArgs);
                         r2.run(...defaultArgs);
-                        setupMemoAspect();
+                        setupLsMemoAspect();
                     });
                     it('should not use cache from each other', () => {
                         expect(run).toHaveBeenCalledTimes(2);

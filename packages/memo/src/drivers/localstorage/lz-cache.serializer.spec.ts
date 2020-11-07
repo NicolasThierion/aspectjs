@@ -1,39 +1,43 @@
+import { resetWeaverContext } from '@aspectjs/core/testing';
+
 import { LsMemoDriver, LsMemoSerializer } from './localstorage.driver';
 import { LzMemoSerializer } from './lz-memo.serializer';
 import { Memo } from '../../memo.annotation';
-import { JitWeaver, setWeaver } from '@aspectjs/core';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { MemoAspect } from '../../memo.aspect';
 
 const DEFAULT_ARGS = ['a', 'b', 'c', 'd'];
 
 describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
+    let cached: Cached;
+    let methodSpy: jasmine.Spy;
+    let serializer: LsMemoSerializer;
+
+    interface Cached {
+        method(...args: any[]): any;
+    }
+
+    beforeEach(() => {
+        serializer = new LzMemoSerializer();
+
+        resetWeaverContext()
+            .getWeaver()
+            .enable(
+                new MemoAspect().addDriver(
+                    new LsMemoDriver({
+                        serializer,
+                    }),
+                ),
+            )
+            .enable(new DefaultCacheableAspect());
+    });
+
     describe(`when calling a method annotated with @Memo({type = 'localstorage'})`, () => {
-        let serializer: LsMemoSerializer;
-
-        interface Cached {
-            method(...args: any[]): any;
-        }
-
-        let cached: Cached;
-        let methodSpy: jasmine.Spy;
         beforeEach(() => {
             methodSpy = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => args.reverse());
-            serializer = new LzMemoSerializer();
             spyOn(serializer, 'deserialize').and.callThrough();
             spyOn(serializer, 'serialize').and.callThrough();
             localStorage.clear();
-            setWeaver(
-                new JitWeaver()
-                    .enable(
-                        new MemoAspect().drivers(
-                            new LsMemoDriver({
-                                serializer,
-                            }),
-                        ),
-                    )
-                    .enable(new DefaultCacheableAspect()),
-            );
 
             class CachedImpl implements Cached {
                 @Memo()

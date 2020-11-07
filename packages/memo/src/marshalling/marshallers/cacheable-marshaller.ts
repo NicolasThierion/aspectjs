@@ -1,12 +1,14 @@
-import { getWeaver, WeavingError } from '@aspectjs/core';
-import { MemoFrame } from '../../drivers/memo-frame';
+import { WEAVER_CONTEXT } from '@aspectjs/core';
 import { assert } from '@aspectjs/core/utils';
-import { provider } from '@aspectjs/core/utils';
+import { WeavingError } from '@aspectjs/core/types';
+
+import { MemoFrame } from '../../drivers';
 import { VersionConflictError } from '../../errors';
 import { CacheableAspect, CacheTypeStore } from '../../cacheable/cacheable.aspect';
 import { MarshalFn, MemoMarshaller } from './marshaller';
 import { ObjectMarshaller } from './object-marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
+import { provider } from '../../utils';
 
 export class CacheableMarshaller extends MemoMarshaller {
     readonly types = '*';
@@ -66,7 +68,7 @@ export class CacheableMarshaller extends MemoMarshaller {
 }
 
 function typeStore(): CacheTypeStore {
-    const weaver = getWeaver();
+    const weaver = WEAVER_CONTEXT.getWeaver();
     if (!weaver) {
         throw new WeavingError('no weaver configured. Please call setWeaver()');
     }

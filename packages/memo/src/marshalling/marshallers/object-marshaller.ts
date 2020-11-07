@@ -1,5 +1,5 @@
-import { MemoFrame } from '../../drivers/memo-frame';
 import { assert } from '@aspectjs/core/utils';
+import { MemoFrame } from '../../drivers';
 import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 

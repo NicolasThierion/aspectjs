@@ -11,7 +11,7 @@ import { MemoAspect, MemoAspectOptions } from '../memo.aspect';
  */
 export function defaultMemoProfile(memoOptions?: MemoAspectOptions) {
     return new WeaverProfile().enable(
-        new MemoAspect(memoOptions).drivers(
+        new MemoAspect(memoOptions).addDriver(
             new LsMemoDriver({
                 serializer: new LzMemoSerializer(),
             }),

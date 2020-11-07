@@ -1,9 +1,9 @@
-import { getWeaver } from '@aspectjs/core';
+import { WEAVER_CONTEXT } from '@aspectjs/core';
 import { MemoDriver } from '../memo.driver';
 import { MemoEntry, MemoKey } from '../../memo.types';
 import { assert } from '@aspectjs/core/utils';
 import { MemoFrame, MemoTypeInfoFrame } from '../memo-frame';
-import { LsMemoDriver } from '../localstorage/localstorage.driver';
+import { LsMemoDriver } from '..';
 import { MemoAspect } from '../../memo.aspect';
 import { MemoAspectError } from '../../errors';
 import { Scheduler } from '../scheduler';
@@ -161,7 +161,7 @@ export class IdbMemoDriver extends MemoDriver {
             return this._params.localStorageDriver;
         }
 
-        const drivers = (getWeaver().getAspect('@aspectjs/memo') as MemoAspect).getDrivers();
+        const drivers = (WEAVER_CONTEXT.getWeaver().getAspect('@aspectjs/memo') as MemoAspect).getDrivers();
         if (!drivers['localStorage']) {
             throw new MemoAspectError(
                 `${IdbMemoDriver.prototype.constructor.name} requires a "localStorage" driver, but option "localStorageDriver" is not set and no driver could be found with name "localStorage"`,

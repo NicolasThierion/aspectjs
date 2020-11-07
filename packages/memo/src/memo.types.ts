@@ -1,4 +1,4 @@
-import { MemoFrame } from './drivers/memo-frame';
+import { MemoFrame } from './drivers';
 
 const KEY_IDENTIFIER = '@aspectjs:Memo';
 

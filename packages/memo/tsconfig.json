@@ -16,5 +16,5 @@
     "./index.ts",
     "./public_api.ts"
   ],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": []
 }

@@ -1,4 +1,4 @@
-import { MemoFrame } from '../../drivers/memo-frame';
+import { MemoFrame } from '../../drivers';
 import { parse, stringify } from 'flatted';
 import { MemoMarshaller } from './marshaller';
 

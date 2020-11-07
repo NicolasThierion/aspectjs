@@ -1,14 +1,15 @@
 import { Memo, MemoOptions } from '../memo.annotation';
 import { MemoAspect, MemoAspectOptions } from '../memo.aspect';
-import { IdbMemoDriver, LsMemoDriver } from '../drivers';
 import { DefaultCacheableAspect } from '../cacheable/cacheable.aspect';
-import { weaverContext, JitWeaver } from '@aspectjs/core';
+import { Weaver } from '@aspectjs/core';
+import { resetWeaverContext } from '@aspectjs/core/testing';
 
 interface MemoClass {
     memoMethod(...args: any[]): any;
 }
 
 export function createMemoMethod(method?: (...args: any[]) => any, options?: MemoOptions) {
+    debugger;
     class MemoClassImpl implements MemoClass {
         @Memo(options)
         memoMethod(...args: any[]): any {
@@ -20,13 +21,15 @@ export function createMemoMethod(method?: (...args: any[]) => any, options?: Mem
     return r.memoMethod.bind(r);
 }
 
-export function resetWeaver() {
-    weaverContext.setWeaver(new JitWeaver());
-}
-export function setupMemoAspect(memoAspectOptions?: MemoAspectOptions): void {
-    resetWeaver();
+export function setupMemoAspect(memoAspectOptions?: MemoAspectOptions): Weaver {
+    // const weaver = WEAVER_CONTEXT.getWeaver();
+    //
+    // let memoAspect = weaver.getAspect(MemoAspect);
+    // if (!memoAspect) {
+    //     memoAspect = new MemoAspect();
+    //     weaver.enable(memoAspect).enable(new DefaultCacheableAspect());
+    // }
+    // memoAspect.drivers(new LsMemoDriver(), new IdbMemoDriver());
 
-    const memoAspect = new MemoAspect(memoAspectOptions);
-    memoAspect.drivers(new LsMemoDriver(), new IdbMemoDriver());
-    weaverContext.getWeaver().enable(memoAspect, new DefaultCacheableAspect());
+    return resetWeaverContext(new MemoAspect(memoAspectOptions), new DefaultCacheableAspect()).getWeaver();
 }
