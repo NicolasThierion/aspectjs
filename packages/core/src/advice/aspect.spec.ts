@@ -6,11 +6,12 @@ import { Around } from './around/around.annotation';
 import { After } from './after/after.annotation';
 import { AfterReturn } from './after-return/after-return.annotation';
 import { AfterThrow } from './after-throw/after-throw.annotation';
-import { Aspect } from './aspect';
+import { Aspect } from './aspect.annotation';
 import { Compile } from './compile/compile.annotation';
 import Spy = jasmine.Spy;
 import { JoinPoint } from '../weaver/types';
 import { AdviceType } from './types';
+import { Order } from '../annotations/order.annotation';
 
 describe('@Aspect', () => {
     beforeEach(() => setupWeaver());
@@ -133,7 +134,7 @@ describe('given several @Aspects', () => {
         labels = [];
     });
 
-    describe('that do not specify a priority', () => {
+    describe('that do not specify @Order', () => {
         beforeEach(() => {
             @Aspect()
             class LabelAspect {
@@ -329,17 +330,19 @@ describe('given several @Aspects', () => {
             });
         });
     });
-    describe('when the advices specify a priority', () => {
+    describe('when the advices specify an @Order', () => {
         let a: Labeled;
         beforeEach(() => {
             @Aspect()
             class AAspect {
-                @Before(on.class.withAnnotations(AClass), { priority: 10 })
+                @Order(10)
+                @Before(on.class.withAnnotations(AClass))
                 beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
                     labels.push('A_beforeClass');
                 }
 
-                @Around(on.property.withAnnotations(AProperty), { priority: 10 })
+                @Order(10)
+                @Around(on.property.withAnnotations(AProperty))
                 aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
                     labels.push('A_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
@@ -349,12 +352,14 @@ describe('given several @Aspects', () => {
             }
             @Aspect()
             class BAspect {
-                @Before(on.class.withAnnotations(AClass), { priority: 20 })
+                @Order(9)
+                @Before(on.class.withAnnotations(AClass))
                 beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
                     labels.push('B_beforeClass');
                 }
 
-                @Around(on.property.withAnnotations(AProperty), { priority: 20 })
+                @Order(9)
+                @Around(on.property.withAnnotations(AProperty))
                 aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
                     labels.push('B_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
@@ -364,7 +369,7 @@ describe('given several @Aspects', () => {
             }
             setupWeaver(new AAspect(), new BAspect());
         });
-        it('should call the advices in priority order', () => {
+        it('should call the advices in order of precedence', () => {
             @AClass()
             class A implements Labeled {
                 @AProperty()
@@ -385,10 +390,11 @@ describe('given several @Aspects', () => {
             ]);
         });
     });
-    describe('when the aspects specify a priority', () => {
+    describe('when the aspects specify an @Order', () => {
         let a: Labeled;
         beforeEach(() => {
-            @Aspect({ priority: 10 })
+            @Aspect()
+            @Order(0)
             class AAspect {
                 @Before(on.class.withAnnotations(AClass))
                 beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
@@ -403,7 +409,8 @@ describe('given several @Aspects', () => {
                     return r;
                 }
             }
-            @Aspect({ priority: 20 })
+            @Order(1)
+            @Aspect()
             class BAspect {
                 @Before(on.class.withAnnotations(AClass))
                 beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
@@ -418,9 +425,26 @@ describe('given several @Aspects', () => {
                     return r;
                 }
             }
-            setupWeaver(new AAspect(), new BAspect());
+
+            @Order(Order.HIGHEST_PRECEDENCE)
+            @Aspect()
+            class CAspect {
+                @Before(on.class.withAnnotations(AClass))
+                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                    labels.push('C_beforeClass');
+                }
+
+                @Around(on.property.withAnnotations(AProperty))
+                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                    labels.push('C_AroundPropertyGet.before');
+                    const r = ctxt.joinpoint();
+                    labels.push('C_AroundPropertyGet.after');
+                    return r;
+                }
+            }
+            setupWeaver(new AAspect(), new BAspect(), new CAspect());
         });
-        it('should call the advices in priority order', () => {
+        it('should call the advices in order of precedence', () => {
             @AClass()
             class A implements Labeled {
                 @AProperty()
@@ -429,15 +453,20 @@ describe('given several @Aspects', () => {
 
             expect(labels).toEqual([]);
             a = new A();
-            expect(labels).toEqual(['B_beforeClass', 'A_beforeClass']);
+            expect(labels).toEqual(['C_beforeClass', 'A_beforeClass', 'B_beforeClass']);
             console.log(a.labels);
             expect(labels).toEqual([
-                'B_beforeClass',
+                'C_beforeClass',
                 'A_beforeClass',
-                'B_AroundPropertyGet.before',
+                'B_beforeClass',
+
+                'C_AroundPropertyGet.before',
                 'A_AroundPropertyGet.before',
-                'A_AroundPropertyGet.after',
+                'B_AroundPropertyGet.before',
+
                 'B_AroundPropertyGet.after',
+                'A_AroundPropertyGet.after',
+                'C_AroundPropertyGet.after',
             ]);
         });
     });

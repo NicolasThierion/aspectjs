@@ -1,5 +1,5 @@
 import { AdviceContext, AroundContext, BeforeContext, CompileContext } from '../advice-context';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { on } from '../pointcut';
 import {
     AClass,
@@ -18,6 +18,7 @@ import { AdviceType } from '../types';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { Weaver } from '../../weaver/weaver';
 import { JoinPoint } from '../../weaver/types';
+import { Order } from '../../annotations/order.annotation';
 
 describe('BeforeContext', () => {
     let weaver: Weaver;
@@ -39,24 +40,28 @@ describe('BeforeContext', () => {
         beforeEach(() => {
             @Aspect()
             class ClassAspectA {
-                @Before(on.class.withAnnotations(AClass), { priority: 10 })
+                @Order(1)
+                @Before(on.class.withAnnotations(AClass))
                 beforeA(ctxt: BeforeContext<any, AdviceType.PROPERTY>): void {
                     beforeAAdvice(ctxt);
                 }
 
-                @Around(on.class.withAnnotations(AClass), { priority: 10 })
+                @Order(1)
+                @Around(on.class.withAnnotations(AClass))
                 aroundA(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class ClassAspectB {
-                @Before(on.class.withAnnotations(BClass), { priority: 9 })
+                @Order(2)
+                @Before(on.class.withAnnotations(BClass))
                 beforeB(ctxt: BeforeContext<any, AdviceType.PROPERTY>): void {
                     beforeBAdvice(ctxt);
                 }
 
-                @Around(on.class.withAnnotations(BClass), { priority: 9 })
+                @Order(2)
+                @Around(on.class.withAnnotations(BClass))
                 aroundB(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -123,24 +128,28 @@ describe('BeforeContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @Before(on.property.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @Before(on.property.withAnnotations(AProperty))
                 beforeA(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeAAdvice(ctxt);
                 }
 
-                @Around(on.property.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @Around(on.property.withAnnotations(AProperty))
                 aroundA(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @Before(on.property.withAnnotations(BProperty), { priority: 9 })
+                @Order(2)
+                @Before(on.property.withAnnotations(BProperty))
                 beforeB(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeBAdvice(ctxt);
                 }
 
-                @Around(on.property.withAnnotations(BProperty), { priority: 9 })
+                @Order(2)
+                @Around(on.property.withAnnotations(BProperty))
                 aroundB(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -227,24 +236,28 @@ describe('BeforeContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @Before(on.property.setter.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @Before(on.property.setter.withAnnotations(AProperty))
                 beforeA(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeAAdvice(ctxt);
                 }
 
-                @Around(on.property.setter.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @Around(on.property.setter.withAnnotations(AProperty))
                 aroundA(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @Before(on.property.setter.withAnnotations(BProperty), { priority: 9 })
+                @Order(2)
+                @Before(on.property.setter.withAnnotations(BProperty))
                 beforeB(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeBAdvice(ctxt);
                 }
 
-                @Around(on.property.setter.withAnnotations(BProperty), { priority: 9 })
+                @Order(2)
+                @Around(on.property.setter.withAnnotations(BProperty))
                 aroundB(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -329,24 +342,28 @@ describe('BeforeContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @Before(on.method.withAnnotations(AMethod), { priority: 10 })
+                @Order(1)
+                @Before(on.method.withAnnotations(AMethod))
                 beforeA(ctxt: BeforeContext<any, AdviceType.METHOD>): void {
                     beforeAAdvice(ctxt);
                 }
 
-                @Around(on.method.withAnnotations(AMethod), { priority: 10 })
+                @Order(1)
+                @Around(on.method.withAnnotations(AMethod))
                 aroundA(ctxt: CompileContext<any, AdviceType.METHOD>, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @Before(on.method.withAnnotations(BMethod), { priority: 9 })
+                @Order(2)
+                @Before(on.method.withAnnotations(BMethod))
                 beforeB(ctxt: BeforeContext<any, AdviceType.METHOD>): void {
                     beforeBAdvice(ctxt);
                 }
 
-                @Around(on.method.withAnnotations(BMethod), { priority: 9 })
+                @Order(2)
+                @Around(on.method.withAnnotations(BMethod))
                 aroundB(ctxt: CompileContext<any, AdviceType.METHOD>, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -428,24 +445,28 @@ describe('BeforeContext', () => {
         beforeEach(() => {
             @Aspect()
             class ParameterAspectA {
-                @Before(on.parameter.withAnnotations(AParameter), { priority: 10 })
+                @Order(1)
+                @Before(on.parameter.withAnnotations(AParameter))
                 beforeA(ctxt: BeforeContext<any, AdviceType.PARAMETER>): void {
                     beforeAAdvice(ctxt);
                 }
 
-                @Around(on.parameter.withAnnotations(AParameter), { priority: 10 })
+                @Order(1)
+                @Around(on.parameter.withAnnotations(AParameter))
                 aroundA(ctxt: CompileContext<any, AdviceType.PARAMETER>, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
             @Aspect()
             class ParameterAspectB {
-                @Before(on.parameter.withAnnotations(BParameter), { priority: 9 })
+                @Order(2)
+                @Before(on.parameter.withAnnotations(BParameter))
                 beforeB(ctxt: BeforeContext<any, AdviceType.PARAMETER>): void {
                     beforeBAdvice(ctxt);
                 }
 
-                @Around(on.parameter.withAnnotations(BParameter), { priority: 9 })
+                @Order(2)
+                @Around(on.parameter.withAnnotations(BParameter))
                 aroundB(ctxt: CompileContext<any, AdviceType.PARAMETER>, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }

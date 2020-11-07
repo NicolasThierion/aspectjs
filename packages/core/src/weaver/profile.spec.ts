@@ -1,5 +1,5 @@
 import { WeaverProfile } from './profile';
-import { Aspect } from '../advice/aspect';
+import { Aspect } from '../advice/aspect.annotation';
 
 describe('WeaverProfile', function () {
     let testAspect: any;

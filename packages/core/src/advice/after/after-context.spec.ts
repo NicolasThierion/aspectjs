@@ -1,5 +1,5 @@
 import { AdviceContext, AfterContext, AfterReturnContext } from '../advice-context';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { on } from '../pointcut';
 import {
     AClass,
@@ -15,6 +15,7 @@ import {
 import { After } from './after.annotation';
 import { Weaver } from '../../weaver/weaver';
 import { AdviceType } from '../types';
+import { Order } from '../../annotations/order.annotation';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;
@@ -33,14 +34,16 @@ describe('AfterReturnContext', () => {
         beforeEach(() => {
             @Aspect()
             class ClassAspectA {
-                @After(on.class.withAnnotations(AClass), { priority: 10 })
+                @Order(1)
+                @After(on.class.withAnnotations(AClass))
                 afterA(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ClassAspectB {
-                @After(on.class.withAnnotations(BClass), { priority: 9 })
+                @Order(0)
+                @After(on.class.withAnnotations(BClass))
                 afterB(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterBAdvice(ctxt);
                 }
@@ -92,14 +95,16 @@ describe('AfterReturnContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @After(on.property.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @After(on.property.withAnnotations(AProperty))
                 afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @After(on.property.withAnnotations(BProperty), { priority: 9 })
+                @Order(0)
+                @After(on.property.withAnnotations(BProperty))
                 afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -160,14 +165,16 @@ describe('AfterReturnContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @After(on.property.setter.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @After(on.property.setter.withAnnotations(AProperty))
                 afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @After(on.property.setter.withAnnotations(BProperty), { priority: 9 })
+                @Order(0)
+                @After(on.property.setter.withAnnotations(BProperty))
                 afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -232,14 +239,16 @@ describe('AfterReturnContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @After(on.method.withAnnotations(AMethod), { priority: 10 })
+                @Order(1)
+                @After(on.method.withAnnotations(AMethod))
                 afterA(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @After(on.method.withAnnotations(BMethod), { priority: 9 })
+                @Order(0)
+                @After(on.method.withAnnotations(BMethod))
                 afterB(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterBAdvice(ctxt);
                 }
@@ -302,14 +311,16 @@ describe('AfterReturnContext', () => {
         beforeEach(() => {
             @Aspect()
             class ParameterAspectA {
-                @After(on.parameter.withAnnotations(AParameter), { priority: 10 })
+                @Order(1)
+                @After(on.parameter.withAnnotations(AParameter))
                 afterA(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ParameterAspectB {
-                @After(on.parameter.withAnnotations(BParameter), { priority: 9 })
+                @Order(0)
+                @After(on.parameter.withAnnotations(BParameter))
                 afterB(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterBAdvice(ctxt);
                 }

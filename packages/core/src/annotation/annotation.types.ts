@@ -48,18 +48,14 @@ export class AnnotationRef {
     }
 }
 
-/**
- * An Annotation is an EcmaScript decorator with no behavior.
- * It relies on an annotation compiler with annotation processors to get the things done.
- */
-export interface AnnotationStub<T extends DecoratorType> extends Provider<T> {
+export interface AnnotationStub<T extends Decorator> extends Provider<T> {
     name: string;
 }
 type Provider<T> = (...args: any[]) => T;
 
 /**
  * An Annotation is an EcmaScript decorator with no behavior.
- * It relies on an annotation compiler with annotation processors to get the things done.
+ * It relies on an aspect weaver configured with proper aspects to get things done.
  */
 export type Annotation<T extends AnnotationType = any> = (T extends AnnotationType.CLASS
     ? ClassAnnotation
@@ -73,7 +69,20 @@ export type Annotation<T extends AnnotationType = any> = (T extends AnnotationTy
     Function &
     AnnotationRef;
 
-type DecoratorType = ClassDecorator | MethodDecorator | ParameterDecorator | PropertyDecorator;
+declare type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void;
+declare type PropertyDecorator = (target: Object, propertyKey: string | symbol) => void;
+declare type MethodDecorator = <T>(
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<T>,
+) => TypedPropertyDescriptor<T> | void;
+declare type ParameterDecorator = (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
+
+export type Decorator<TFunction extends Function = any, T = any> = (
+    target: TFunction | Object,
+    propertyKey?: string | symbol,
+    descriptor?: TypedPropertyDescriptor<T> | number,
+) => TFunction | void | TypedPropertyDescriptor<T>;
 
 export type ClassAnnotation = AnnotationStub<ClassDecorator> & AnnotationRef;
 export type MethodAnnotation = AnnotationStub<MethodDecorator> & AnnotationRef;

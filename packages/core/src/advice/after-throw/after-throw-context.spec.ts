@@ -1,5 +1,5 @@
 import { AdviceContext, AfterContext, AfterThrowContext } from '../advice-context';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { on } from '../pointcut';
 import {
     AClass,
@@ -17,6 +17,7 @@ import { Weaver } from '../../weaver/weaver';
 import { JitWeaver } from '../../weaver/jit/jit-weaver';
 import { After } from '../after/after.annotation';
 import { AdviceType } from '../types';
+import { Order } from '../../annotations/order.annotation';
 
 describe('AfterThrowContext', () => {
     let weaver: Weaver;
@@ -38,24 +39,28 @@ describe('AfterThrowContext', () => {
         beforeEach(() => {
             @Aspect()
             class ClassAspectA {
-                @AfterThrow(on.class.withAnnotations(AClass), { priority: 10 })
+                @Order(1)
+                @AfterThrow(on.class.withAnnotations(AClass))
                 afterThrowA(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
-                @After(on.class.withAnnotations(AClass), { priority: 10 })
+                @Order(1)
+                @After(on.class.withAnnotations(AClass))
                 afterA(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ClassAspectB {
-                @AfterThrow(on.class.withAnnotations(BClass), { priority: 9 })
+                @Order(0)
+                @AfterThrow(on.class.withAnnotations(BClass))
                 afterThrowB(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
-                @After(on.class.withAnnotations(BClass), { priority: 9 })
+                @Order(0)
+                @After(on.class.withAnnotations(BClass))
                 afterB(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterBAdvice(ctxt);
                 }
@@ -134,24 +139,28 @@ describe('AfterThrowContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @AfterThrow(on.property.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @AfterThrow(on.property.withAnnotations(AProperty))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
-                @After(on.property.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @After(on.property.withAnnotations(AProperty))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @AfterThrow(on.property.withAnnotations(BProperty), { priority: 9 })
+                @Order(0)
+                @AfterThrow(on.property.withAnnotations(BProperty))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
-                @After(on.property.withAnnotations(BProperty), { priority: 9 })
+                @Order(0)
+                @After(on.property.withAnnotations(BProperty))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -244,24 +253,28 @@ describe('AfterThrowContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @AfterThrow(on.property.setter.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @AfterThrow(on.property.setter.withAnnotations(AProperty))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
-                @After(on.property.setter.withAnnotations(AProperty), { priority: 10 })
+                @Order(1)
+                @After(on.property.setter.withAnnotations(AProperty))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @AfterThrow(on.property.setter.withAnnotations(BProperty), { priority: 9 })
+                @Order(0)
+                @AfterThrow(on.property.setter.withAnnotations(BProperty))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
-                @After(on.property.setter.withAnnotations(BProperty), { priority: 9 })
+                @Order(0)
+                @After(on.property.setter.withAnnotations(BProperty))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -353,24 +366,28 @@ describe('AfterThrowContext', () => {
         beforeEach(() => {
             @Aspect()
             class PropertyAspectA {
-                @AfterThrow(on.method.withAnnotations(AMethod), { priority: 10 })
+                @Order(1)
+                @AfterThrow(on.method.withAnnotations(AMethod))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.METHOD>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
-                @After(on.method.withAnnotations(AMethod), { priority: 10 })
+                @Order(1)
+                @After(on.method.withAnnotations(AMethod))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class PropertyAspectB {
-                @AfterThrow(on.method.withAnnotations(BMethod), { priority: 9 })
+                @Order(0)
+                @AfterThrow(on.method.withAnnotations(BMethod))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.METHOD>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
-                @After(on.method.withAnnotations(BMethod), { priority: 9 })
+                @Order(0)
+                @After(on.method.withAnnotations(BMethod))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterBAdvice(ctxt);
                 }
@@ -455,24 +472,28 @@ describe('AfterThrowContext', () => {
         beforeEach(() => {
             @Aspect()
             class ParameterAspectA {
-                @AfterThrow(on.parameter.withAnnotations(AParameter), { priority: 10 })
+                @Order(1)
+                @AfterThrow(on.parameter.withAnnotations(AParameter))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.PARAMETER>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
-                @After(on.parameter.withAnnotations(AParameter), { priority: 10 })
+                @Order(1)
+                @After(on.parameter.withAnnotations(AParameter))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterAAdvice(ctxt);
                 }
             }
             @Aspect()
             class ParameterAspectB {
-                @AfterThrow(on.parameter.withAnnotations(BParameter), { priority: 9 })
+                @Order(0)
+                @AfterThrow(on.parameter.withAnnotations(BParameter))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.PARAMETER>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
-                @After(on.parameter.withAnnotations(BParameter), { priority: 9 })
+                @Order(0)
+                @After(on.parameter.withAnnotations(BParameter))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterBAdvice(ctxt);
                 }

@@ -1,6 +1,6 @@
 import { JitWeaver } from './jit-weaver';
 import { WEAVER_CONTEXT } from '../weaver-context';
-import { Aspect } from '../../advice/aspect';
+import { Aspect } from '../../advice/aspect.annotation';
 import { WeavingError } from '../errors/weaving-error';
 
 let weaver: JitWeaver;

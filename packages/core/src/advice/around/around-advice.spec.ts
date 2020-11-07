@@ -3,10 +3,11 @@ import { AroundContext, BeforeContext } from '../advice-context';
 import { Around } from './around.annotation';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { AdviceType } from '../types';
 import { Before } from '../before/before.annotation';
 import Spy = jasmine.Spy;
+import { Order } from '../../annotations/order.annotation';
 
 describe('@Around advice', () => {
     let beforeAdvice: Spy;
@@ -188,16 +189,15 @@ describe('@Around advice', () => {
         });
 
         describe('in conjunction with @Before advices', () => {
-            describe('when before advice has higher priority', () => {
+            describe('when before advice has highest precedence (lowest order)', () => {
                 let labels: string[];
                 beforeEach(() => {
                     labels = [];
 
                     @Aspect('aAspect')
                     class AAspect {
-                        @Around(on.class.withAnnotations(AClass), {
-                            priority: 10,
-                        })
+                        @Order(1)
+                        @Around(on.class.withAnnotations(AClass))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('A.around.before');
                             jp();
@@ -207,9 +207,8 @@ describe('@Around advice', () => {
 
                     @Aspect('bAspect')
                     class BAspect {
-                        @Before(on.class.withAnnotations(AClass), {
-                            priority: 20,
-                        })
+                        @Order(2)
+                        @Before(on.class.withAnnotations(AClass))
                         apply(ctxt: BeforeContext): void {
                             labels.push('B.before');
                         }

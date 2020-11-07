@@ -13,7 +13,7 @@ import {
     setupWeaver,
 } from '../../../testing/src/helpers';
 import { WeavingError } from '../../weaver/errors/weaving-error';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { AdviceTarget } from '../../annotation/target/annotation-target';
 import { AnnotationContext } from '../../annotation/context/annotation-context';
 import { AnnotationRef } from '../../annotation/annotation.types';

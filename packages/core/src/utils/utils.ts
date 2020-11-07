@@ -1,6 +1,6 @@
 import { getProto } from '@aspectjs/core/utils';
 import { AspectType } from '../weaver/types';
-import { AspectOptions } from '../advice/aspect';
+import { AspectOptions } from '../advice/aspect.annotation';
 import { AnnotationFactory } from '../annotation/factory/annotation-factory';
 import { assert, isFunction } from '@aspectjs/core/utils';
 

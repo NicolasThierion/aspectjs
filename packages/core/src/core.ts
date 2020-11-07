@@ -9,7 +9,7 @@ export * from './weaver/errors/advice-error';
 export * from './weaver/errors/aspect-error';
 export * from './advice/advice-context';
 export * from './advice/advice-registry';
-export * from './advice/aspect';
+export * from './advice/aspect.annotation';
 export * from './advice/pointcut';
 export * from './advice/types';
 export * from './advice/compile/compile.annotation';

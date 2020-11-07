@@ -11,10 +11,6 @@ import {
 } from '../annotation/annotation.types';
 import { AdviceType } from './types';
 
-export interface PointcutOption {
-    priority?: number;
-}
-
 export class PointcutExpression {
     private readonly _name = '*'; // TODO
     private readonly _expr: string;
@@ -80,7 +76,6 @@ export enum PointcutPhase {
 }
 
 export interface Pointcut<A extends AdviceType = any> {
-    readonly options: PointcutOption;
     readonly type: A;
     readonly annotation: AnnotationRef;
     readonly name: string;
@@ -98,9 +93,7 @@ export namespace Pointcut {
         [AdviceType.PARAMETER]: new RegExp('parameter(?:\\s+\\@(?<annotation>\\S+?:\\S+))?(?:\\s+(?<name>\\S+?))\\s*'),
     };
 
-    export function of(phase: PointcutPhase, exp: string, options?: PointcutOption): Pointcut;
-    export function of(phase: PointcutPhase, exp: PointcutExpression, options?: PointcutOption): Pointcut;
-    export function of(phase: PointcutPhase, exp: PointcutExpression | string, options: PointcutOption = {}): Pointcut {
+    export function of(phase: PointcutPhase, exp: PointcutExpression | string): Pointcut {
         const ref = exp.toString();
 
         let pointcut: Pointcut;
@@ -117,7 +110,6 @@ export namespace Pointcut {
                     annotation: new AnnotationRef(match.groups.annotation),
                     name: match.groups.name,
                     ref,
-                    options,
                 };
 
                 Reflect.defineProperty(pointcut, Symbol.toPrimitive, {

@@ -5,7 +5,6 @@ let _globalAspectId = 0;
 
 export interface AspectOptions {
     id?: string;
-    priority?: number;
 }
 
 export const Aspect = ASPECTJS_ANNOTATION_FACTORY.create(function Aspect(

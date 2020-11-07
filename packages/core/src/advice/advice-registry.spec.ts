@@ -1,6 +1,6 @@
 import { AClass, setupWeaver } from '../../testing/src/helpers';
 import { WEAVER_CONTEXT } from '../weaver/weaver-context';
-import { Aspect } from './aspect';
+import { Aspect } from './aspect.annotation';
 import { AspectType } from '../weaver/types';
 import { Before } from './before/before.annotation';
 import { on, PointcutPhase } from './pointcut';

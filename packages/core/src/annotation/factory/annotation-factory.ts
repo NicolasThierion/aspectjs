@@ -2,6 +2,7 @@ import {
     Annotation,
     AnnotationRef,
     ClassAnnotationStub,
+    Decorator,
     MethodAnnotationStub,
     ParameterAnnotationStub,
     PropertyAnnotationStub,
@@ -13,8 +14,6 @@ import { MutableAdviceContext } from '../../advice/advice-context';
 import { JoinPoint } from '../../weaver/types';
 import { Advice, AdviceType } from '../../advice/types';
 import { AnnotationContext } from '../context/annotation-context';
-
-type Decorator = ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator;
 
 let generatedId = 0;
 /**
@@ -30,8 +29,9 @@ export class AnnotationFactory {
     create<A extends MethodAnnotationStub>(annotationStub?: A): A & AnnotationRef;
     create<A extends PropertyAnnotationStub>(annotationStub?: A): A & AnnotationRef;
     create<A extends ParameterAnnotationStub>(annotationStub?: A): A & AnnotationRef;
-
-    create<S extends Annotation<AdviceType>>(annotationStub?: S): S & AnnotationRef {
+    create<A extends Decorator>(annotationStub?: A): A & AnnotationRef;
+    create<A extends Annotation>(annotationStub?: A): A & AnnotationRef;
+    create<A extends Annotation<AdviceType>>(annotationStub?: A): A & AnnotationRef {
         const groupId = this._groupId;
 
         // create the annotation (ie: decorator provider)

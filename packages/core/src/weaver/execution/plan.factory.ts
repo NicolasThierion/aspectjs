@@ -2,7 +2,7 @@ import { MutableAdviceContext } from '../../advice/advice-context';
 import { Advice, AdviceType, CompileAdvice } from '../../advice/types';
 import { AspectType } from '../types';
 import { getAspectOptions } from '../../utils/utils';
-import { AspectOptions } from '../../advice/aspect';
+import { AspectOptions } from '../../advice/aspect.annotation';
 import { WEAVER_CONTEXT } from '../weaver-context';
 import { PointcutPhase } from '../../advice/pointcut';
 import { AdviceTarget } from '../../annotation/target/annotation-target';
@@ -11,6 +11,7 @@ import { JoinpointFactory } from '../joinpoint-factory';
 import { WeavingError } from '../errors/weaving-error';
 import { locator } from '../../utils/locator';
 import { assert } from '@aspectjs/core/utils';
+import { Order } from '../../annotations/order.annotation';
 
 interface AdvicesExecutionRegistry {
     byPointcut: {
@@ -39,6 +40,7 @@ type AdvicesLoader = (
     save: boolean,
     ...phases: PointcutPhase[]
 ) => AdvicesExecutionRegistry['byTarget'][string];
+
 export class AdviceExecutionPlanFactory {
     private readonly _aspects: Set<AspectType> = new Set<AspectType>();
     private readonly _loadedAspects: Set<AspectType> = new Set<AspectType>();
@@ -94,11 +96,12 @@ export class AdviceExecutionPlanFactory {
 
         [...this._aspects]
             .sort((a1: any, a2: any) => {
-                // sort by aspect priority
-                const [o1, o2] = [getAspectOptions(a1), getAspectOptions(a2)] as AspectOptions[];
-                const [p1, p2] = [o1?.priority ?? 0, o2?.priority ?? 0];
+                // sort by aspect order
+                const a = WEAVER_CONTEXT.annotations;
+                const o1 = a.bundle.at(a.location.of(a1)).onClass(Order)[0]?.args[0];
+                const o2 = a.bundle.at(a.location.of(a2)).onClass(Order)[0]?.args[0];
 
-                return p2 - p1;
+                return _compareOrder(o1, o2);
             })
             .map((a) => {
                 this._loadedAspects.add(a);
@@ -150,8 +153,14 @@ export class AdviceExecutionPlanFactory {
                         )
                         .flat()
                         .sort((a1: Advice, a2: Advice) => {
-                            const [p1, p2] = [a1.pointcut.options.priority, a2.pointcut.options.priority];
-                            return !p2 && !p2 ? 0 : p2 - p1;
+                            // sort by advice order
+                            const a = WEAVER_CONTEXT.annotations;
+                            const o1 = a.bundle.at(a.location.of(a1.aspect as any)[a1.name]).onMethod(Order)[0]
+                                ?.args[0];
+                            const o2 = a.bundle.at(a.location.of(a2.aspect as any)[a1.name]).onMethod(Order)[0]
+                                ?.args[0];
+
+                            return _compareOrder(o1, o2);
                         });
 
                     if (filter) {
@@ -259,4 +268,23 @@ export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
         }
         return this.originalSymbol;
     }
+}
+
+function _compareOrder(o1: any, o2: any) {
+    if (o1 === Order.LOWEST_PRECEDENCE || o1 === undefined) {
+        return 1;
+    }
+
+    if (o2 === Order.LOWEST_PRECEDENCE || o2 === undefined) {
+        return -1;
+    }
+
+    if (o1 === Order.HIGHEST_PRECEDENCE) {
+        return -1;
+    }
+
+    if (o2 === Order.HIGHEST_PRECEDENCE) {
+        return 1;
+    }
+    return o1 - o2;
 }

@@ -3,7 +3,7 @@ import { AfterThrow } from './after-throw.annotation';
 import { on } from '../pointcut';
 import { AClass, AMethod, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
 import { Compile } from '../compile/compile.annotation';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { AdviceType } from '../types';
 import Spy = jasmine.Spy;
 

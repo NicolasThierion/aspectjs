@@ -2,7 +2,7 @@ import { AdviceContext, BeforeContext } from '../advice-context';
 import { Before } from './before.annotation';
 import { on } from '../pointcut';
 import { AClass, AMethod, AParameter, AProperty, Labeled, setupWeaver } from '../../../testing/src/helpers';
-import { Aspect } from '../aspect';
+import { Aspect } from '../aspect.annotation';
 import { AdviceType } from '../types';
 import Spy = jasmine.Spy;
 
