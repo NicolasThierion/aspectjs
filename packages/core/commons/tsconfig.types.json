@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist/typings"
+  },
+  "references": [
+    {"path": "../utils/tsconfig.types.json"}
+  ]
+}

@@ -1,17 +1,14 @@
 {
   "extends": "../tsconfig.json",
-  "include": [
-    "index.ts",
-    "public_api.ts",
-    "src/**/*.ts",
-    "testing/**/*.ts",
-    "src/**/*.spec.ts"
-  ],
   "exclude": [
     "dist"
   ],
-  "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "../dist"
-  }
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts"
+  ],
+  "references": [
+    { "path": "../" },
+    { "path": "../commons" }
+  ]
 }

@@ -1,1 +1,1 @@
-export * from '@aspectjs/core/internals/src/annotations';
+export * from './src';

@@ -24,13 +24,10 @@
     "baseUrl": "."
   },
    "exclude": [
-    "dist",
-    "build",
-    "node_modules",
-    "**/*.spec.ts"
+     "dist",
+     "**/node_modules/*"
   ],
   "include": [
-    "./build/**/*.ts",
     "node_modules/@types/node/globals.d.ts"
   ]
 }

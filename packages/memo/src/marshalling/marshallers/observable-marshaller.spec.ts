@@ -13,6 +13,10 @@ describe('Calling a @Memo method that returns an Observable', () => {
         setupMemoAspect();
         joinpoint = jasmine.createSpy('methodSpy').and.callFake((...args: any[]) => of('value').pipe(delay(10)));
         localStorage.clear();
+        jasmine.clock().install();
+    });
+    afterEach(() => {
+        jasmine.clock().uninstall();
     });
 
     describe('when MemoAspect is not configured with the ObservableMarshaller', () => {
@@ -29,7 +33,6 @@ describe('Calling a @Memo method that returns an Observable', () => {
         });
     });
 
-    // TODO
     [LsMemoDriver.NAME, IdbMemoDriver.NAME].forEach((driverName) => {
         describe(`when @Memo is configured with driver "${driverName}"`, () => {
             describe('and MemoAspect is configured with the ObservableMarshaller', () => {
@@ -51,6 +54,22 @@ describe('Calling a @Memo method that returns an Observable', () => {
 
                         it('should call the real method once', () => {
                             memoMethod();
+                            memoMethod();
+
+                            expect(joinpoint).toHaveBeenCalledTimes(1);
+                        });
+                    });
+
+                    describe('when the Observable is completed', () => {
+                        it('should return an Observable', () => {
+                            expect(memoMethod()).toEqual(jasmine.any(Observable));
+                            expect(memoMethod()).toEqual(jasmine.any(Observable));
+                        });
+
+                        it('should call the real method once', () => {
+                            memoMethod();
+
+                            jasmine.clock().tick(20);
                             memoMethod();
 
                             expect(joinpoint).toHaveBeenCalledTimes(1);

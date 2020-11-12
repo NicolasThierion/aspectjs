@@ -1,4 +1,4 @@
-import { resetWeaverContext } from '@aspectjs/core/testing';
+import { setupTestingWeaverContext } from '@aspectjs/core/testing';
 
 import { LsMemoDriver, LsMemoSerializer } from './localstorage.driver';
 import { LzMemoSerializer } from './lz-memo.serializer';
@@ -20,7 +20,7 @@ describe('LocalStorageMemoDriver configured with LzMemoHandler', () => {
     beforeEach(() => {
         serializer = new LzMemoSerializer();
 
-        resetWeaverContext()
+        setupTestingWeaverContext()
             .getWeaver()
             .enable(
                 new MemoAspect().addDriver(

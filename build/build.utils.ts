@@ -1,13 +1,13 @@
-import path from 'path';
-import { terser } from 'rollup-plugin-terser';
-import { isArray, mergeWith } from 'lodash';
-import babelrc from '../.babelrc.json';
-import sourcemaps from 'rollup-plugin-sourcemaps';
-import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import { RollupOptions } from 'rollup';
+import resolve from '@rollup/plugin-node-resolve';
 import * as fs from 'fs';
+import { isArray, mergeWith } from 'lodash';
+import path from 'path';
+import { RollupOptions } from 'rollup';
+import sourcemaps from 'rollup-plugin-sourcemaps';
+import { terser } from 'rollup-plugin-terser';
 import _typescript from 'rollup-plugin-typescript2';
+import babelrc from '../.babelrc.json';
 
 const visualizer = require('rollup-plugin-visualizer');
 const babel = require('rollup-plugin-babel');
@@ -238,9 +238,13 @@ function _baseEsm2015(
     );
 }
 
+function _createGlobalUmdName(name: string) {
+    return name.replace('@aspectjs/', 'aspectjs.').replace('-', '_').replace('/', '_');
+}
+
 function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, options: RollupOptions) {
     const file = path.resolve(path.dirname(packagePath), distFile);
-    const name = pkg.name.replace('/', '.').replace(/^@/, '').replace(/-/, '.');
+    const name = _createGlobalUmdName(pkg.name);
     return mergeWith(
         {},
         _baseConfig(packagePath, pkg, options),
@@ -255,19 +259,16 @@ function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, optio
                 format: 'umd',
                 sourcemap: true,
                 esModule: false,
-                globals: (name: string) => {
-                    switch (name) {
-                        case '@aspectjs/core':
-                            return 'aspectjs.core';
-                        case '@aspectjs/core/annotations':
-                            return 'aspectjs.core.annotations';
-                        case '@aspectjs/core/utils':
-                            return 'aspectjs.core.utils';
-                    }
-                    if (name.startsWith('@aspectjs/core/internals')) {
-                        return 'aspectjs.core.internals';
-                    }
-                },
+                globals: [
+                    '@aspectjs/core',
+                    '@aspectjs/core/types',
+                    '@aspectjs/core/commons',
+                    '@aspectjs/core/annotations',
+                    '@aspectjs/core/utils',
+                ].reduce((globals, name) => {
+                    globals[name] = _createGlobalUmdName(name);
+                    return globals;
+                }, {} as Record<string, string>),
             },
             plugins: [
                 babel({

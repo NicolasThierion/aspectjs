@@ -3,3 +3,4 @@ node_modules
 tests
 .nycrc.json
 rollup.utils.js
+*.tsbuildinfo

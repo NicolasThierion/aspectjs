@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+    "node_modules/@types/node/globals.d.ts"
+  ],
+  "compilerOptions": {
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist/typings"
+  },
+  "references": [
+    { "path": "commons/tsconfig.types.json" },
+    { "path": "annotations/tsconfig.types.json" },
+    { "path": "utils/tsconfig.types.json" }
+  ]
+}

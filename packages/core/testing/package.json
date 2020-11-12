@@ -8,7 +8,7 @@
   "esm2015": "./dist/esm2015/testing.js",
   "typings": "./dist/core-testing.d.ts",
   "scripts": {
-    "build": "rm -rf dist && rollup --config ./rollup.config.js && yarn typings",
-    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist/typings && api-extractor run --local --verbose && rimraf dist/typings"
+    "build": "yarn typings && rollup --config ./rollup.config.js",
+    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
   }
 }

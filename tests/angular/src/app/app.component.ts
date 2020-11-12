@@ -1,28 +1,55 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Memo, ObservableMarshaller, registerDefaultMemo } from '@aspectjs/memo';
-import { shareReplay } from 'rxjs/operators';
+// import { shareReplay } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { AfterReturn, AfterReturnContext, Aspect, getWeaver, on } from '@aspectjs/core';
+import { AfterReturn, Around, Aspect, Before } from '@aspectjs/core/annotations';
+import {
+    AfterReturnContext,
+    AnnotationFactory,
+    AroundContext,
+    BeforeContext,
+    JoinPoint,
+    on,
+} from '@aspectjs/core/commons';
+// import { Memo } from '@aspectjs/memo/dist/src/memo.annotation';
+import { WEAVER_CONTEXT } from '@aspectjs/core';
 
 // getWeaver().enable(defaultMemoProfile);
 localStorage.clear();
 
-@Aspect({ priority: 2000 })
-class ObservableMemoAspect {
-    @AfterReturn(on.method.withAnnotations(Memo))
-    shareReplay(ctxt: AfterReturnContext) {
-        if (ctxt.value instanceof Observable) {
-            return ctxt.value.pipe(shareReplay(1));
-        }
-        return ctxt.value;
+const Monitored = new AnnotationFactory('test').create(function Monitored() {
+    return undefined as any;
+});
+
+@Aspect()
+class MonitoredAspect {
+    @Around(on.method.withAnnotations(Monitored))
+    logBefore(ctxt: AroundContext, jp: JoinPoint) {
+        console.log(`before ${ctxt.target.label}`);
+        jp();
+        console.log(`after ${ctxt.target.label}`);
     }
 }
-getWeaver().enable(new ObservableMemoAspect());
-registerDefaultMemo({
-    marshallers: [new ObservableMarshaller()],
-});
+
+// @Aspect()
+// class ObservableMemoAspect {
+//     // @AfterReturn(on.method.withAnnotations(Memo))
+//     // shareReplay(ctxt: AfterReturnContext) {
+//     //     if (ctxt.value instanceof Observable) {
+//     //         return ctxt.value.pipe(shareReplay(1));
+//     //     }
+//     //     return ctxt.value;
+//     // }
+// }
+
+WEAVER_CONTEXT.getWeaver().enable(
+    // new ObservableMemoAspect(),
+    new MonitoredAspect(),
+);
+// registerDefaultMemo({
+//     marshallers: [new ObservableMarshaller()],
+// });
 
 @Component({
     selector: 'app-root',
@@ -34,12 +61,12 @@ export class AppComponent implements OnInit {
     public users: any[];
     constructor(private httpClient: HttpClient) {}
 
-    @Memo()
+    // @Memo()
     incrementI(args?: any) {
         return this.i++;
     }
 
-    @Memo()
+    // @Memo()
     fetchUsers() {
         return this.httpClient.get('https://jsonplaceholder.typicode.com/users');
     }
@@ -51,6 +78,7 @@ export class AppComponent implements OnInit {
         }, 5000);
     }
 
+    @Monitored()
     ngOnInit(): void {
         this.i = 0;
         this.repeat(() => this.incrementI());

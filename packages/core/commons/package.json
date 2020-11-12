@@ -1,0 +1,14 @@
+{
+  "name": "@aspectjs/core-commons",
+  "private": true,
+  "main": "./dist/bundles/umd/commons.umd.js",
+  "unpkg": "./dist/bundles/umd/commons.umd.min.js",
+  "module": "./dist/bundles/fesm2015/commons.js",
+  "fesm2015": "./dist/bundles/fesm2015/commons.js",
+  "esm2015": "./dist/bundles/esm2015/commons.js",
+  "typings": "./dist/core-commons.d.ts",
+  "scripts": {
+    "build": "yarn typings && rollup --config ./rollup.config.js",
+    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
+  }
+}

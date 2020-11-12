@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+    "**/*.spec.ts"
+  ],
+  "references": [
+    {"path": "../utils"},
+    {"path": "../annotations"},
+    {"path": "../testing"}
+  ]
+}

@@ -1,2 +1,4 @@
 export * from './src/core';
-export { JitWeaver, WeaverProfile } from '@aspectjs/core/internals';
+export * from './src/weaver/weaver-context.impl';
+export * from './src/weaver/plan.factory';
+export * from './src/weaver/jit-weaver';

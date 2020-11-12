@@ -1,17 +1,12 @@
 {
   "extends": "../tsconfig.json",
   "include": [
-    "index.ts",
-    "public_api.ts",
     "src/**/*.ts",
-    "testing/**/*.ts",
-    "src/**/*.spec.ts"
+    "public_api.ts"
   ],
   "exclude": [
-    "dist"
-  ],
-  "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "../dist"
-  }
+    "dist",
+    "rollup.config.ts",
+    "*.spec.ts"
+  ]
 }

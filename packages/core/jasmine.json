@@ -1,8 +1,7 @@
 {
   "spec_files": [
     "src/**/*[Ss]pec.{js,ts}",
-    "utils/**/*[Ss]pec.{js,ts}",
-    "internals/**/*[Ss]pec.{js,ts}"
+    "*/**/*[Ss]pec.{js,ts}"
   ],
   "helpers": [
     "../../jasmine.js",

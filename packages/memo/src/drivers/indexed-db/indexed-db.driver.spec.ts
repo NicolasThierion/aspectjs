@@ -10,7 +10,7 @@ interface Runner {
     run(...args: any[]): any;
 }
 
-fdescribe(`IdbMemoDriver`, () => {
+describe(`IdbMemoDriver`, () => {
     describe(`when calling a method annotated with @Memo({type = 'indexedDb'})`, () => {
         let joinpoint: jasmine.Spy;
         let memoMethod: (...args: any[]) => any;
@@ -23,11 +23,12 @@ fdescribe(`IdbMemoDriver`, () => {
         const defaultArgs = ['a', 'b', 'c', 'd'];
 
         function setupIdbMemoAspect() {
-            setupMemoAspect({ drivers: [new IdbMemoDriver(), new LsMemoDriver()] });
+            setupMemoAspect();
         }
         beforeEach(() => {
             memoOptions = {};
             joinpoint = jasmine.createSpy('memoMethodSpy').and.callFake((...args) => Promise.resolve(args.reverse()));
+            setupIdbMemoAspect();
             memoMethod = createMemoMethod((...args: any[]) => joinpoint(...args), {
                 namespace: () => memoOptions.namespace,
                 id: () => memoOptions.id,
@@ -35,7 +36,6 @@ fdescribe(`IdbMemoDriver`, () => {
                 driver: 'indexedDb',
             });
 
-            setupIdbMemoAspect();
             localStorage.clear();
         });
 
@@ -254,7 +254,10 @@ fdescribe(`IdbMemoDriver`, () => {
                 describe('and object has id or _id attribute', () => {
                     function init(): void {
                         setupIdbMemoAspect();
+                    }
+                    beforeEach(init);
 
+                    beforeEach(() => {
                         class RunnerImpl implements Runner {
                             constructor(private id: string) {}
                             @Memo({})
@@ -265,9 +268,7 @@ fdescribe(`IdbMemoDriver`, () => {
 
                         r1 = new RunnerImpl('1');
                         r2 = new RunnerImpl('2');
-                    }
-                    beforeEach(init);
-
+                    });
                     it('should not use cache from each other', testShouldNotUseSharedCache);
 
                     describe('after the context gets reloaded', () => {
@@ -365,7 +366,7 @@ fdescribe(`IdbMemoDriver`, () => {
 
         describe('that returns an object', nonAsyncShouldThrow({}, 'Object'));
 
-        fdescribe('that returns null', nonAsyncShouldThrow(null, 'object'));
+        describe('that returns null', nonAsyncShouldThrow(null, 'object'));
 
         describe('that returns undefined', nonAsyncShouldThrow(undefined, 'undefined'));
 

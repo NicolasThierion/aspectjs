@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+    "**/*.spec.ts",
+    "commons/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "rollup.config.ts"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@aspectjs/core/annotations": [
+        "annotations/public_api.ts"
+      ],
+      "@aspectjs/core/commons": [
+        "commons/public_api.ts"
+      ]
+    }
+  }
+}

@@ -1,12 +1,18 @@
-import { getWeaverContext, setWeaverContext, Weaver, WeaverContext } from '@aspectjs/core/internals/src/weaver';
-import { WeaverContextImpl } from '@aspectjs/core/internals/src/weaver/weaver-context.impl';
+import {
+    AnnotationLocationFactory,
+    AnnotationRegistry,
+    AnnotationTargetFactory,
+    getWeaverContext,
+    RootAnnotationsBundle,
+    setWeaverContext,
+    Weaver,
+    WeaverContext,
+    AspectsRegistry,
+} from '@aspectjs/core/commons';
+import { WeaverContextImpl } from './weaver/weaver-context.impl';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
-import { AnnotationLocationFactory } from '@aspectjs/core/internals/src/annotation/location/location.factory';
-import { AnnotationRegistry } from '@aspectjs/core/internals/src/annotation/registry/annotation.registry';
-import { AnnotationTargetFactory } from '@aspectjs/core/internals/src/annotation/target/annotation-target.factory';
-import { RootAnnotationsBundle } from '@aspectjs/core/internals/src/annotation/bundle/bundle';
-
+let AspectsRegistry: AspectsRegistry;
 AnnotationLocationFactory;
 AnnotationRegistry;
 AnnotationTargetFactory;
@@ -29,5 +35,3 @@ export const WEAVER_CONTEXT = new (class implements WeaverContext {
     }
 })();
 setWeaverContext(new WeaverContextImpl());
-
-export * from '@aspectjs/core/internals/src/weaver';

@@ -1,14 +1,14 @@
 {
-  "name": "@aspectjs/core-utils",
+  "name": "@aspectjs/core-annotations",
   "private": true,
-  "main": "./dist/umd/utils.umd.js",
-  "unpkg": "./dist/umd/utils.umd.min.js",
-  "module": "./dist/fesm2015/utils.js",
-  "fesm2015": "./dist/fesm2015/utils.js",
-  "esm2015": "./dist/esm2015/utils.js",
-  "typings": "./dist/core-utils.d.ts",
+  "main": "./dist/bundles/umd/annotations.umd.js",
+  "unpkg": "./dist/bundles/umd/annotations.umd.min.js",
+  "module": "./dist/bundles/fesm2015/annotations.js",
+  "fesm2015": "./dist/bundles/fesm2015/annotations.js",
+  "esm2015": "./dist/bundles/esm2015/annotations.js",
+  "typings": "./dist/core-annotations.d.ts",
   "scripts": {
-    "build": "rm -rf dist && rollup --config ./rollup.config.js && yarn typings",
-    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist/typings && api-extractor run --local --verbose && rimraf dist/typings"
+    "build": "yarn typings && rollup --config ./rollup.config.js",
+    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
   }
 }
