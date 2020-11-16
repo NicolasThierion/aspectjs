@@ -21,7 +21,13 @@
     ],
     "types": ["reflect-metadata", "jasmine", "node"],
     "target": "es6",
-    "baseUrl": "."
+    "baseUrl": "packages",
+    "paths": {
+      "@aspectjs/core": ["core/public_api.ts"],
+      "@aspectjs/core/annotations": ["core/annotations/public_api.ts"],
+      "@aspectjs/core/commons": ["core/commons/public_api.ts"],
+      "@aspectjs/core/utils": ["core/utils/public_api.ts"]
+    }
   },
    "exclude": [
      "dist",

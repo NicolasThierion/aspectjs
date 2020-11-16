@@ -7,3 +7,5 @@ export * from './src/cacheable/cacheable.annotation';
 export * from './src/cacheable/cacheable.aspect';
 export * from './src/drivers';
 export * from './src/marshalling/marshallers';
+
+export * from './src/observables';

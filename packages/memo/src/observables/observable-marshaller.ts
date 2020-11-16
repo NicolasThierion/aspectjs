@@ -1,7 +1,7 @@
-import { MemoFrame } from '../../drivers';
-import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
+import { MemoFrame } from '../drivers';
+import { MarshalFn, MemoMarshaller, UnmarshalFn } from '../marshalling/marshallers';
 import { from, Observable } from 'rxjs';
-import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
+import { MarshallingContext, UnmarshallingContext } from '../marshalling/marshalling-context';
 import { share, shareReplay } from 'rxjs/operators';
 
 export class ObservableMarshaller extends MemoMarshaller<Observable<any>, any> {

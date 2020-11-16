@@ -69,4 +69,8 @@ export class WeaverProfile {
             return this._aspectsRegistry[getAspectOptions(aspect).id] as T;
         }
     }
+
+    getAspects<T extends AspectType>(): AspectType[] {
+        return Object.values(this._aspectsRegistry);
+    }
 }

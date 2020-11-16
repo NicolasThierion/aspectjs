@@ -6,4 +6,3 @@ export * from './marshaller';
 export * from './noop-marshaller';
 export * from './object-marshaller';
 export * from './promise-marshaller';
-export * from './observable-marshaller';

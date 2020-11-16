@@ -1,6 +1,6 @@
 import { WEAVER_CONTEXT } from '@aspectjs/core';
 import { assert } from '@aspectjs/core/utils';
-import { WeavingError } from '@aspectjs/core/types';
+import { WeavingError } from '@aspectjs/core/commons';
 
 import { MemoFrame } from '../../drivers';
 import { VersionConflictError } from '../../errors';

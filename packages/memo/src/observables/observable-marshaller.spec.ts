@@ -1,7 +1,7 @@
-import { createMemoMethod, setupMemoAspect } from '../../utils/spec-helpers';
-import { IdbMemoDriver, LsMemoDriver } from '../../drivers';
+import { createMemoMethod, setupMemoAspect } from '../utils/spec-helpers';
+import { IdbMemoDriver, LsMemoDriver } from '../drivers';
 import { Observable, of } from 'rxjs';
-import { DEFAULT_MARSHALLERS } from '../../memo.aspect';
+import { DEFAULT_MARSHALLERS } from '../memo.aspect';
 import { ObservableMarshaller } from './observable-marshaller';
 import { delay } from 'rxjs/operators';
 
@@ -69,7 +69,7 @@ describe('Calling a @Memo method that returns an Observable', () => {
                         it('should call the real method once', () => {
                             memoMethod();
 
-                            jasmine.clock().tick(20);
+                            jasmine.clock().tick(200000);
                             memoMethod();
 
                             expect(joinpoint).toHaveBeenCalledTimes(1);
@@ -78,11 +78,16 @@ describe('Calling a @Memo method that returns an Observable', () => {
                 });
 
                 describe('when the observable is resolved', () => {
-                    it('should resolve to the cached value', async () => {
-                        const value1 = await memoMethod().toPromise();
-                        const value2 = await memoMethod().toPromise();
-                        expect(value1).toEqual('value');
-                        expect(value2).toEqual('value');
+                    it('should resolve to the cached value', () => {
+                        const pvalue1 = memoMethod().toPromise();
+                        const pvalue2 = memoMethod().toPromise();
+
+                        jasmine.clock().tick(200000);
+
+                        return Promise.all([pvalue1, pvalue2]).then((results) => {
+                            expect(results[0]).toEqual('value');
+                            expect(results[1]).toEqual('value');
+                        });
                     });
                 });
             });

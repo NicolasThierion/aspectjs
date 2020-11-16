@@ -1,7 +1,6 @@
-import { AnnotationRef } from '@aspectjs/core/types';
+import { ASPECTJS_ANNOTATION_FACTORY, AnnotationRef } from '@aspectjs/core/commons';
 import { MemoAspectOptions } from './memo.aspect';
 import { MemoDriver } from './drivers';
-import { ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/core/utils';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
 AnnotationRef;

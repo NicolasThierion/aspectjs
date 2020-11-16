@@ -13,14 +13,7 @@
 
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "dist",
-    "baseUrl": ".",
-    "paths": {
-      "@aspectjs/core": ["public_api.ts"],
-      "@aspectjs/core/annotations": ["annotations/public_api.ts"],
-      "@aspectjs/core/commons": ["commons/public_api.ts"],
-      "@aspectjs/core/utils": ["utils/public_api.ts"]
-    }
+    "outDir": "dist"
   },
   "references": [
     { "path": "commons" },

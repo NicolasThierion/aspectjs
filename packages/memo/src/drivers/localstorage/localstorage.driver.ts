@@ -67,18 +67,16 @@ export class LsMemoDriver extends MemoDriver {
     static readonly NAME = 'localStorage';
     readonly NAME = LsMemoDriver.NAME;
 
-    protected readonly _options: LsMemoDriverOptions;
-
-    constructor(options?: LsMemoDriverOptions) {
+    constructor(public options?: LsMemoDriverOptions) {
         super();
-        this._options = { ...DEFAULT_LS_DRIVER_OPTIONS, ...options };
+        this.options = { ...DEFAULT_LS_DRIVER_OPTIONS, ...options };
         if (!this._ls) {
             throw new Error('localStorage not available on this platform, and no implementation was provided');
         }
     }
 
     private get _ls(): typeof localStorage {
-        return this._options.localStorage ?? localStorage;
+        return this.options.localStorage ?? localStorage;
     }
 
     getKeys(namespace: string): Promise<MemoKey[]> {
@@ -102,12 +100,12 @@ export class LsMemoDriver extends MemoDriver {
     }
 
     read<T>(key: MemoKey): MemoFrame<T> {
-        const serializer = this._options?.serializer ?? DEFAULT_LS_DRIVER_OPTIONS.serializer;
+        const serializer = this.options?.serializer ?? DEFAULT_LS_DRIVER_OPTIONS.serializer;
         return serializer.deserialize(this._ls.getItem(key.toString())) as MemoFrame<T>;
     }
 
     write(key: MemoKey, value: MemoFrame): PromiseLike<void> {
-        const serializer = this._options?.serializer ?? DEFAULT_LS_DRIVER_OPTIONS.serializer;
+        const serializer = this.options?.serializer ?? DEFAULT_LS_DRIVER_OPTIONS.serializer;
         this._ls.setItem(key.toString(), serializer.serialize(value));
         return InstantPromise.resolve();
     }

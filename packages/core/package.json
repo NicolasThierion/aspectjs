@@ -24,8 +24,7 @@
     "typings": "tsc --build tsconfig.types.json && api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
-    "test:integration": "yarn build && cd internals/testing/angular && yarn install && yarn add ../../ && yarn test",
-    "size": "rollup --config ./rollup.config.js && size-limit",
+    "size": "size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
@@ -51,7 +50,12 @@
   "size-limit": [
     {
       "limit": "400 ms",
-      "path": "dist/esm/core.mjs"
+      "path": [
+        "dist/bundles/umd/core.umd.min.js",
+        "commons/dist/bundles/umd/commons.umd.min.js",
+        "utils/dist/bundles/umd/utils.umd.min.js",
+        "annotations/dist/bundles/umd/annotations.umd.min.js"
+      ]
     }
   ]
 }

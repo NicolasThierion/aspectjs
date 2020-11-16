@@ -46,13 +46,25 @@ export class JitWeaver extends WeaverProfile implements Weaver {
         this._planFactory = new AdviceExecutionPlanFactory(_context);
     }
 
-    enable(...aspects: AspectType[]): this {
-        this._context.aspects.registry.register(...aspects);
+    enable(...aspects: (AspectType | WeaverProfile)[]): this {
+        aspects.forEach((aspect) => {
+            if (aspect instanceof WeaverProfile) {
+                this._context.aspects.registry.register(...aspect.getAspects());
+            } else {
+                this._context.aspects.registry.register(aspect);
+            }
+        });
         return super.enable(...aspects);
     }
 
-    disable(...aspects: AspectType[]): this {
-        this._context.aspects.registry.remove(...aspects);
+    disable(...aspects: (AspectType | WeaverProfile)[]): this {
+        aspects.forEach((aspect) => {
+            if (aspect instanceof WeaverProfile) {
+                this._context.aspects.registry.remove(...aspect.getAspects());
+            } else {
+                this._context.aspects.registry.remove(aspect);
+            }
+        });
         return super.disable(...aspects);
     }
 

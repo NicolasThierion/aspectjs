@@ -1,7 +1,8 @@
 import { Aspect, Compile } from '@aspectjs/core/annotations';
-import { AdviceType, CompileContext, on } from '@aspectjs/core/types';
-import { Cacheable, CacheableOptions } from './cacheable.annotation';
+import { AdviceType, CompileContext, on } from '@aspectjs/core/commons';
 import { assert, getOrComputeMetadata, isObject } from '@aspectjs/core/utils';
+
+import { Cacheable, CacheableOptions } from './cacheable.annotation';
 
 type Prototype = {
     constructor: Function;

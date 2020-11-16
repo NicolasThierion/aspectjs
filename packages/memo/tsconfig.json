@@ -1,15 +1,17 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "composite": true,
     "lib": [
       "dom",
       "es2019.array"
     ]
   },
-  "references": [{ // conflicts on utils.ts being already compiled: https://github.com/Microsoft/TypeScript/issues/26691
-    "path": "../core/tsconfig.json"
-  }],
+  "references": [
+    { "path": "../core/tsconfig.json" },
+    { "path": "../core/commons/tsconfig.json" },
+    { "path": "../core/testing/tsconfig.json" },
+    { "path": "../core/utils/tsconfig.json" }
+  ],
   "include": [
     "src/**/*.ts",
     "node_modules/@types/node/globals.d.ts",

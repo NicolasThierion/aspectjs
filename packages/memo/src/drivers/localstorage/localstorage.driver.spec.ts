@@ -1,7 +1,9 @@
-import { Memo } from '../../memo.annotation';
+import { BeforeContext } from '@aspectjs/core/commons';
+
 import moment from 'moment';
+
+import { Memo } from '../../memo.annotation';
 import { createMemoMethod, setupMemoAspect } from '../../utils/spec-helpers';
-import { BeforeContext } from '@aspectjs/core/types';
 import { LsMemoDriver } from './localstorage.driver';
 
 interface Runner {

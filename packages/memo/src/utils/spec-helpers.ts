@@ -1,8 +1,9 @@
+import { Weaver } from '@aspectjs/core/commons';
+import { setupTestingWeaverContext } from '@aspectjs/core/testing';
+
 import { Memo, MemoOptions } from '../memo.annotation';
 import { MemoAspect, MemoAspectOptions } from '../memo.aspect';
 import { DefaultCacheableAspect } from '../cacheable/cacheable.aspect';
-import { Weaver } from '@aspectjs/core';
-import { setupTestingWeaverContext } from '@aspectjs/core/testing';
 import { IdbMemoDriver, LsMemoDriver } from '../drivers';
 
 interface MemoClass {

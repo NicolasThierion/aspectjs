@@ -3,20 +3,19 @@
   "version": "1.1.0",
   "description": "Add memoize pattern with a simple annotation",
   "license": "MIT",
-  "main": "dist/umd/memo.umd.js",
-  "unpkg": "dist/umd/memo.umd.min.js",
-  "module": "dist/fesm2015/memo.js",
-  "esm2015": "dist/esm2015/memo.js",
-  "fesm2015": "dist/fesm2015/memo.js",
+  "main": "dist/bundles/umd/memo.umd.js",
+  "unpkg": "dist/bundles/umd/memo.umd.min.js",
+  "module": "dist/bundles/fesm2015/memo.js",
+  "esm2015": "dist/bundles/esm2015/memo.js",
+  "fesm2015": "dist/bundles/fesm2015/memo.js",
   "sideEffects": false,
   "typings": "dist/memo.d.ts",
   "scripts": {
-    "build": "rm -rf dist && rollup --config rollup.config.js && yarn typings",
-    "typings": "tsc --declarationMap --declaration --emitDeclarationOnly --outDir dist/typings && api-extractor run --local --verbose",
-    "test": "lerna link && nyc jasmine --config=jasmine.json",
+    "build": "yarn typings && rollup --config rollup.config.js",
+    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose",
+    "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  -w src --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
-    "test:integration": "cd tests/angular && npm install && npm install ../../dist && npm run test",
-    "size": "rollup --config rollup.config.js && size-limit",
+    "size": "size-limit",
     "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
@@ -37,8 +36,8 @@
   },
   "size-limit": [
     {
-      "limit": "200 ms",
-      "path": "dist/bundles/memo.umd.js"
+      "limit": "400 ms",
+      "path": "dist/bundles/umd/memo.umd.min.js"
     }
   ],
   "keywords": [
