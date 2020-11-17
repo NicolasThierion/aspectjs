@@ -3,10 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { AnnotationFactory, BeforeContext, on } from '@aspectjs/core/commons';
 import { Aspect, Before } from '@aspectjs/core/annotations';
 import { WEAVER_CONTEXT } from '@aspectjs/core';
-import { isString } from '@aspectjs/core/utils';
 
 const af = new AnnotationFactory('test');
-const Deprecated = af.create(function Deprecated(version?: string): MethodDecorator {
+const Deprecated = af.create(function Deprecated(version?: string): any {
     return;
 });
 
@@ -14,10 +13,10 @@ const Deprecated = af.create(function Deprecated(version?: string): MethodDecora
 class DeprecatedAspect {
     private tags: Record<string, boolean> = {};
     @Before(on.method.withAnnotations(Deprecated))
-    logWarnnig(context: BeforeContext) {
+    logWarning(context: BeforeContext) {
         if (!this.tags[context.target.ref]) {
             const args = context.annotation.args[0];
-            console.warn(`${context.target.label} is deprecaed`);
+            console.warn(`${context.target.label} is deprecated`);
             this.tags[context.target.ref] = true;
         }
     }
@@ -31,6 +30,7 @@ WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
     styleUrls: ['./deprecated.component.css'],
 })
 export class DeprecatedComponent implements OnInit {
+    name: string;
     constructor() {}
 
     ngOnInit(): void {
