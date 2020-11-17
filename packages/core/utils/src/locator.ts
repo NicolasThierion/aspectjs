@@ -1,7 +1,9 @@
 /**
  * Null-safe navigation through object properties, that allows to generate missing properties on the fly.
+ *
+ * @public
  */
-class Locator<U> {
+export class Locator<U> {
     constructor(private _obj: U, private _parent?: Locator<any>, private _parentKey?: string | number | symbol) {}
 
     /**
@@ -14,7 +16,7 @@ class Locator<U> {
 
     /**
      * Get the property value
-     * @return the property value (can be null)
+     * @returns the property value (can be null)
      */
     get(): U {
         return this._obj;
@@ -24,7 +26,7 @@ class Locator<U> {
      * Get the property value, or generate a new one with the given function.
      * The generated property is then saved into the object.
      * @param valueProvider - the function used to generate a new value
-     * @return the property value
+     * @returns the property value
      */
     orElseCompute(valueProvider: () => U): U {
         return this.orElse(valueProvider, true);
@@ -34,7 +36,7 @@ class Locator<U> {
      * Get the property value, or generate a new one with the given function.
      * The generated property is **not** saved into the object.
      * @param valueProvider - the function used to generate a new value
-     * @return the property value
+     * @returns the property value
      */
     orElseGet(valueProvider: () => U): U {
         return this.orElse(valueProvider, false);
@@ -44,7 +46,7 @@ class Locator<U> {
      * Get the property value, or generate a new one with the given function.
      * @param valueProvider - the function used to generate a new value
      * @param save - if the generated property should then be saved into the object.
-     * @return the property value
+     * @returns the property value
      */
     orElse(valueProvider: () => U, save = true): U {
         const value = this._obj ?? valueProvider();
@@ -67,8 +69,9 @@ class Locator<U> {
 }
 
 /**
+ * @param obj - the object to navigate through.
+ *
  * @public
- * @param obj
  */
 export function locator<U = unknown>(obj: U) {
     return new Locator(obj);

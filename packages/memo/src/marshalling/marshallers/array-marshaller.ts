@@ -2,6 +2,10 @@ import { MemoFrame } from '../../drivers';
 import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
+/**
+ * Supports marshalling arrays
+ * @public
+ */
 export class ArrayMarshaller extends MemoMarshaller {
     readonly types = 'Array';
 

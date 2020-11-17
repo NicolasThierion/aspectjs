@@ -13,11 +13,20 @@ enum TransactionMode {
     READONLY = 'readonly',
     READ_WRITE = 'readwrite',
 }
+
+/**
+ * Options supported by the IdbMemoDriver
+ * @public
+ */
 export interface IndexedDbDriverOptions {
     indexedDB: typeof indexedDB;
     localStorageDriver: LsMemoDriver;
 }
 
+/**
+ * Memo driver to store async @Memo result into the Indexed Database.
+ * @public
+ */
 export class IdbMemoDriver extends MemoDriver {
     static readonly NAME = 'indexedDb';
     readonly NAME = IdbMemoDriver.NAME;

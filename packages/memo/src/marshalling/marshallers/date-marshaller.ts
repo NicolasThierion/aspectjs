@@ -2,6 +2,10 @@ import { MemoFrame } from '../../drivers';
 import { parse, stringify } from 'flatted';
 import { MemoMarshaller } from './marshaller';
 
+/**
+ * Supports marshalling Dates
+ * @public
+ */
 export class DateMarshaller extends MemoMarshaller<Date, string> {
     readonly types = 'Date';
 

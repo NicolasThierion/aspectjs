@@ -3,6 +3,10 @@ import { MemoFrame } from '../../drivers';
 import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
+/**
+ * Supports marshalling simple objects
+ * @public
+ */
 export class ObjectMarshaller extends MemoMarshaller {
     readonly types = ['Object', 'object'];
 

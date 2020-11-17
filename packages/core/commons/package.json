@@ -1,5 +1,6 @@
 {
   "name": "@aspectjs/core-commons",
+  "version": "0.0.1",
   "private": true,
   "main": "./dist/bundles/umd/commons.umd.js",
   "unpkg": "./dist/bundles/umd/commons.umd.min.js",
@@ -9,6 +10,6 @@
   "typings": "./dist/core-commons.d.ts",
   "scripts": {
     "build": "yarn typings && rollup --config ./rollup.config.js",
-    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
+    "typings": "tsc -b tsconfig.types.json && api-extractor run --local"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core",
-  "version": "1.1.0",
+  "version": "0.0.1",
   "description": "AOP made simple for javascript & typescript, based on decorators",
   "keywords": [
     "decorator",

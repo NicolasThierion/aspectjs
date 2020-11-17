@@ -1,12 +1,12 @@
-/**
- * Stores the aspects along with their advices.
- * @public
- */
 import { AspectType } from './aspect.type';
 import { Advice, AdviceType } from '../advices/types';
 import { PointcutPhase } from '../types';
 import { AdviceTarget } from '../annotation/target/annotation-target';
 
+/**
+ * Stores the aspects along with their advices.
+ * @public
+ */
 export interface AdvicesRegistry {
     byPointcut: {
         [phase in PointcutPhase]?: {
@@ -29,11 +29,19 @@ export interface AdvicesRegistry {
     };
 }
 
+/**
+ * Allows AspectsRegistry.getAdvicesByTarget() to return (& cache results) for filtered advices.
+ * @public
+ */
 export interface AdvicesFilter {
     name: string;
     fn: (a: Advice) => boolean;
 }
 
+/**
+ * Register aspects enabled for the current weaver context.
+ * @public
+ */
 export interface AspectsRegistry {
     /**
      * Register a new advice, with the aspect is belongs to.

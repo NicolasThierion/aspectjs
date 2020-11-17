@@ -3,8 +3,8 @@ import {
     PointcutPhase,
     AdviceTarget,
     WeaverContext,
-    WeaverHooks,
-    JoinpointFactory,
+    _WeaverHooks,
+    _JoinpointFactory,
     WeavingError,
     Advice,
     AdviceType,
@@ -12,7 +12,10 @@ import {
     MutableAdviceContext,
 } from '@aspectjs/core/commons';
 
-interface AdvicesExecutionRegistry {
+/**
+ * @internal
+ */
+export interface _AdvicesExecutionRegistry {
     byPointcut: {
         [phase in PointcutPhase]?: {
             [type in AdviceType]?: {
@@ -29,35 +32,45 @@ interface AdvicesExecutionRegistry {
     };
 }
 
-type AdvicesLoader = (target: AdviceTarget, ...phases: PointcutPhase[]) => AdvicesExecutionRegistry['byTarget'][string];
+/**
+ * @internal
+ */
+export type _AdvicesLoader = (
+    target: AdviceTarget,
+    ...phases: PointcutPhase[]
+) => _AdvicesExecutionRegistry['byTarget'][string];
 
-export class AdviceExecutionPlanFactory {
+/**
+ * @internal
+ */
+export class _AdviceExecutionPlanFactory {
     constructor(private _context: WeaverContext) {}
 
     create<T, A extends AdviceType = any>(
         target: AdviceTarget<T, A>,
-        hooks: WeaverHooks<T, A>,
+        hooks: _WeaverHooks<T, A>,
         filter?: {
             name: string;
             fn: (a: Advice) => boolean;
         },
-    ): ExecutionPlan<T, A> {
-        const advicesLoader: AdvicesLoader = (target: AdviceTarget, ...phases: PointcutPhase[]) => {
+    ): _ExecutionPlan<T, A> {
+        const advicesLoader: _AdvicesLoader = (target: AdviceTarget, ...phases: PointcutPhase[]) => {
             return this._context.aspects.registry.getAdvicesByTarget(target, filter, ...phases);
         };
 
-        return new ExecutionPlan<T, A>(hooks, advicesLoader);
+        return new _ExecutionPlan<T, A>(hooks, advicesLoader);
     }
 }
 
 /**
  * Sort the advices according to their precedence & store by phase & type, so they are ready to execute.
+ * @internal
  */
-export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
+export class _ExecutionPlan<T = unknown, A extends AdviceType = any> {
     private _compiled = false;
     private originalSymbol: A extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor;
 
-    constructor(private _hooks: WeaverHooks<T, A>, private _advicesLoader: AdvicesLoader) {}
+    constructor(private _hooks: _WeaverHooks<T, A>, private _advicesLoader: _AdvicesLoader) {}
 
     /**
      * Returns a function that executes the  execution plan for the Before, Around, AfterReturn, AfterThrow & After advices.
@@ -84,7 +97,7 @@ export class ExecutionPlan<T = unknown, A extends AdviceType = any> {
             );
 
             // create the joinpoint for the original method
-            const jp = JoinpointFactory.create(null, ctxt, (...args: any[]) => {
+            const jp = _JoinpointFactory.create(null, ctxt, (...args: any[]) => {
                 const restoreJp = ctxt.joinpoint;
                 const restoreArgs = ctxt.args;
                 ctxt.args = args;

@@ -6,11 +6,19 @@ import { MemoFrame } from '../memo-frame';
 import { InstantPromise } from '../../utils';
 import { MarshallingContext } from '../../marshalling/marshalling-context';
 
+/**
+ * Serialize & deserialize an object to/from a string so it can be stored into LocalStorage.
+ * @public
+ */
 export interface LsMemoSerializer<T = unknown, U = unknown> {
     deserialize(obj: string): MemoFrame<T>;
     serialize(obj: MemoFrame<T>): string;
 }
 
+/**
+ * Options supported by the LsMemoDriver
+ * @public
+ */
 export interface LsMemoDriverOptions {
     localStorage?: typeof localStorage;
     serializer?: LsMemoSerializer;
@@ -25,6 +33,9 @@ enum RawMemoField {
 }
 const F = RawMemoField;
 
+/**
+ * @public
+ */
 export const DEFAULT_LS_DRIVER_OPTIONS = {
     serializer: {
         deserialize(serialized: string): MemoFrame {
@@ -63,6 +74,10 @@ export const DEFAULT_LS_DRIVER_OPTIONS = {
     } as LsMemoSerializer,
 };
 
+/**
+ * Memo driver to store async @Memo result into the Indexed Database.
+ * @public
+ */
 export class LsMemoDriver extends MemoDriver {
     static readonly NAME = 'localStorage';
     readonly NAME = LsMemoDriver.NAME;
@@ -93,7 +108,7 @@ export class LsMemoDriver extends MemoDriver {
 
     /**
      * Accepts all kind of results
-     * @param context
+     * @param context - the marshalling context for the current 'to-be-stored' value
      */
     getPriority(context: MarshallingContext): number {
         return 10;

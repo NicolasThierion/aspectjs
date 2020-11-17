@@ -26,10 +26,17 @@ export interface WeaverContext {
 }
 
 let _weaverContext: WeaverContext;
-export function getWeaverContext(): WeaverContext {
+
+/**
+ * @internal
+ */
+export function _getWeaverContext(): WeaverContext {
     return _weaverContext;
 }
 
-export function setWeaverContext(weaverContext: WeaverContext) {
+/**
+ * @internal
+ */
+export function _setWeaverContext(weaverContext: WeaverContext) {
     _weaverContext = weaverContext;
 }

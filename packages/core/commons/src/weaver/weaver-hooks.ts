@@ -10,7 +10,10 @@ import {
 } from '../advices';
 import { JoinPoint } from '../types';
 
-export interface WeaverHooks<T, A extends AdviceType> {
+/**
+ * @internal
+ */
+export interface _WeaverHooks<T, A extends AdviceType> {
     compile(
         ctxt: MutableAdviceContext<T, A>,
         advice: CompileAdvice<T, A>[],

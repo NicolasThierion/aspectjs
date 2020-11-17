@@ -10,6 +10,10 @@ import { ObjectMarshaller } from './object-marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 import { provider } from '../../utils';
 
+/**
+ * Supports marshalling instances of classes annotated with @Cacheable
+ * @public
+ */
 export class CacheableMarshaller extends MemoMarshaller {
     readonly types = '*';
     private _objectMarshaller: ObjectMarshaller;

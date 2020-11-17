@@ -4,14 +4,26 @@ import { assert, getOrComputeMetadata, isObject } from '@aspectjs/core/utils';
 
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
 
-type Prototype = {
+/**
+ * @public
+ */
+export type Prototype = {
     constructor: Function;
 };
 
+/**
+ * Store the signature of an object annotated wuth @Cacheable in order
+ * to be able to cache it with the @Memo annotation
+ *
+ * @public
+ */
 export interface CacheableAspect {
     readonly cacheTypeStore: CacheTypeStore;
 }
 
+/**
+ * @public
+ */
 export interface CacheTypeStore {
     getPrototype(key: string): Prototype;
     getVersion(key: string): any;
@@ -23,10 +35,12 @@ export interface CacheTypeStore {
 /**
  * Assign a key to the prototype of a class into a CacheTypeStore,
  * so that Memo drivers can inflate memoized objects with proper types.
+ *
+ * @public
  */
 @Aspect('@aspectjs/cacheable')
 export class DefaultCacheableAspect implements CacheableAspect {
-    constructor(public readonly cacheTypeStore: CacheTypeStore = new CacheTypeStoreImpl()) {}
+    constructor(public readonly cacheTypeStore: CacheTypeStore = new _CacheTypeStoreImpl()) {}
     @Compile(on.class.withAnnotations(Cacheable))
     registerCacheKey(ctxt: CompileContext<any, AdviceType.CLASS>) {
         let options = ctxt.annotation.args[0] as CacheableOptions;
@@ -43,8 +57,9 @@ export class DefaultCacheableAspect implements CacheableAspect {
 
 /**
  * Store class prototypes along with a defined key.
+ * @internal
  */
-export class CacheTypeStoreImpl implements CacheTypeStore {
+export class _CacheTypeStoreImpl implements CacheTypeStore {
     private readonly _prototypes: Record<string, Prototype> = {};
     private readonly _versions: Record<string, string> = {};
 

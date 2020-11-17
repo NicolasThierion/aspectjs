@@ -4,6 +4,10 @@ import { isObservable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { Memo } from '../memo.annotation';
 
+/**
+ * Enable support for Observables memoization.
+ * @public
+ */
 @Aspect('@aspectjs/memo:ObservableMemoSupportAspect')
 export class ObservableMemoSupportAspect {
     @AfterReturn(on.method.withAnnotations(Memo))

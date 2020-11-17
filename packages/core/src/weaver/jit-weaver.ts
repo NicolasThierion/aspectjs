@@ -24,13 +24,13 @@ import {
     Weaver,
     WeaverContext,
     AspectType,
-    WeaverHooks,
+    _WeaverHooks,
     AdviceError,
-    JoinpointFactory,
+    _JoinpointFactory,
     JoinPoint,
     AdviceTarget,
 } from '@aspectjs/core/commons';
-import { AdviceExecutionPlanFactory } from './plan.factory';
+import { _AdviceExecutionPlanFactory } from './plan.factory';
 
 const _defineProperty = Object.defineProperty;
 type MethodPropertyDescriptor = PropertyDescriptor & { value: (...args: any[]) => any };
@@ -40,10 +40,10 @@ type MethodPropertyDescriptor = PropertyDescriptor & { value: (...args: any[]) =
  * @public
  */
 export class JitWeaver extends WeaverProfile implements Weaver {
-    private _planFactory: AdviceExecutionPlanFactory;
+    private _planFactory: _AdviceExecutionPlanFactory;
     constructor(private _context: WeaverContext) {
         super();
-        this._planFactory = new AdviceExecutionPlanFactory(_context);
+        this._planFactory = new _AdviceExecutionPlanFactory(_context);
     }
 
     enable(...aspects: (AspectType | WeaverProfile)[]): this {
@@ -69,7 +69,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     reset(): this {
-        this._planFactory = new AdviceExecutionPlanFactory(this._context);
+        this._planFactory = new _AdviceExecutionPlanFactory(this._context);
         return super.reset();
     }
 
@@ -165,7 +165,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 }
 
-abstract class GenericWeaverHooks<T, A extends AdviceType> implements WeaverHooks<T, A> {
+abstract class GenericWeaverHooks<T, A extends AdviceType> implements _WeaverHooks<T, A> {
     after(ctxt: MutableAdviceContext<T, A>, advices: AfterAdvice<T, A>[]): void {
         _applyNonReturningAdvices(ctxt, advices);
     }
@@ -206,7 +206,7 @@ abstract class GenericWeaverHooks<T, A extends AdviceType> implements WeaverHook
     ): JoinPoint<T> {
         advices.reverse().forEach((advice) => {
             const originalJp = jp;
-            const nextJp = JoinpointFactory.create(advice, ctxt, (...args: unknown[]) => originalJp(args));
+            const nextJp = _JoinpointFactory.create(advice, ctxt, (...args: unknown[]) => originalJp(args));
             jp = (args: any[]) => {
                 ctxt.joinpoint = nextJp;
                 ctxt.args = args;
@@ -267,7 +267,7 @@ class ClassWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.CLASS> {
     ): (args?: any[]) => any {
         advices.reverse().forEach((a) => {
             const originalJp = joinpoint;
-            const nextJp = JoinpointFactory.create(a, ctxt, (...args: unknown[]) => originalJp(args));
+            const nextJp = _JoinpointFactory.create(a, ctxt, (...args: unknown[]) => originalJp(args));
             joinpoint = (args: any[]) => {
                 ctxt.joinpoint = nextJp;
                 ctxt.args = args;
@@ -405,7 +405,7 @@ class PropertyGetterWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.PROP
     }
     initialJoinpoint(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>, originalDescriptor: PropertyDescriptor): void {
         assert(isFunction(originalDescriptor.get));
-        ctxt.value = JoinpointFactory.create(null, ctxt, originalDescriptor.get)();
+        ctxt.value = _JoinpointFactory.create(null, ctxt, originalDescriptor.get)();
     }
 }
 
@@ -422,7 +422,7 @@ class PropertySetterWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.PROP
 
     initialJoinpoint(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>, refDescriptor: PropertyDescriptor): void {
         assert(isFunction(refDescriptor?.set));
-        ctxt.value = JoinpointFactory.create(null, ctxt, refDescriptor.set)(ctxt.args);
+        ctxt.value = _JoinpointFactory.create(null, ctxt, refDescriptor.set)(ctxt.args);
     }
 
     around(

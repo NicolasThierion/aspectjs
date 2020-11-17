@@ -10,7 +10,6 @@
     "**/*.spec.ts"
   ],
   "references": [
-    {"path": "../utils"},
-    {"path": "../annotations"}
+    {"path": "../utils"}
   ]
 }

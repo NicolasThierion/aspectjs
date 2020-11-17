@@ -2,9 +2,9 @@ import {
     AnnotationLocationFactory,
     AnnotationRegistry,
     AnnotationTargetFactory,
-    getWeaverContext,
+    _getWeaverContext,
     RootAnnotationsBundle,
-    setWeaverContext,
+    _setWeaverContext,
     Weaver,
     WeaverContext,
     AspectsRegistry,
@@ -24,14 +24,14 @@ export const WEAVER_CONTEXT = new (class implements WeaverContext {
     // Allow setWeaverContext to switch implementation of weaver.
     // This is used for resetWaverContext as a convenience for tests
     get aspects() {
-        return getWeaverContext().aspects;
+        return _getWeaverContext().aspects;
     }
     get annotations() {
-        return getWeaverContext().annotations;
+        return _getWeaverContext().annotations;
     }
 
     getWeaver(): Weaver {
-        return getWeaverContext().getWeaver();
+        return _getWeaverContext().getWeaver();
     }
 })();
-setWeaverContext(new WeaverContextImpl());
+_setWeaverContext(new WeaverContextImpl());

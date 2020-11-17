@@ -29,6 +29,7 @@
       "@aspectjs/core/utils": ["core/utils/public_api.ts"]
     }
   },
+   "files": [],
    "exclude": [
      "dist",
      "**/node_modules/*"

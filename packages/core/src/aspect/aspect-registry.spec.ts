@@ -1,4 +1,4 @@
-import { getWeaverContext } from '@aspectjs/core/commons';
+import { _getWeaverContext } from '@aspectjs/core/commons';
 import { After, Aspect, Before } from '@aspectjs/core/annotations';
 import { on, PointcutPhase, AspectsRegistry, AspectType } from '@aspectjs/core/commons';
 import { AClass, setupTestingWeaverContext } from '@aspectjs/core/testing';
@@ -7,7 +7,7 @@ describe('AspectsRegistry', () => {
     let aspectsRegistry: AspectsRegistry;
     beforeEach(() => {
         setupTestingWeaverContext();
-        aspectsRegistry = getWeaverContext().aspects.registry;
+        aspectsRegistry = _getWeaverContext().aspects.registry;
     });
     describe('method getAdvicesByAspect()', () => {
         describe('given an object that is not an aspect', () => {
@@ -30,7 +30,7 @@ describe('AspectsRegistry', () => {
                     aspect = new AAspect();
 
                     setupTestingWeaverContext().getWeaver().enable(aspect);
-                    aspectsRegistry = getWeaverContext().aspects.registry;
+                    aspectsRegistry = _getWeaverContext().aspects.registry;
                 });
 
                 it('should return empty array', () => {
@@ -50,7 +50,7 @@ describe('AspectsRegistry', () => {
                     }
                     aspect = new AAspect();
                     setupTestingWeaverContext(aspect);
-                    aspectsRegistry = getWeaverContext().aspects.registry;
+                    aspectsRegistry = _getWeaverContext().aspects.registry;
                 });
 
                 it('should return an array with corresponding advices', () => {

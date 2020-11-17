@@ -2,13 +2,13 @@ import { Advice, AdviceType } from './types';
 import { Pointcut, PointcutPhase } from '../types';
 import { AdviceError } from '../weaver/errors';
 import { assert, getProto, isFunction } from '@aspectjs/core/utils';
-import { getWeaverContext } from '../weaver';
+import { _getWeaverContext } from '../weaver';
 import { AdviceTarget } from '../annotation/target/annotation-target';
 
 /**
  * @internal
  */
-export class AdviceFactory {
+export class _AdviceFactory {
     static create(pointcut: Pointcut, target: AdviceTarget): Advice {
         assert(
             !(pointcut.type === AdviceType.PROPERTY) ||
@@ -39,7 +39,7 @@ export class AdviceFactory {
         }
 
         // assert the weaver is loaded before invoking the underlying decorator
-        const weaverContext = getWeaverContext();
+        const weaverContext = _getWeaverContext();
         if (!weaverContext) {
             throw new Error(
                 `Cannot create aspect ${

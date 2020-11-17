@@ -1,5 +1,6 @@
 {
   "name": "@aspectjs/core-annotations",
+  "version": "0.0.1",
   "private": true,
   "main": "./dist/bundles/umd/annotations.umd.js",
   "unpkg": "./dist/bundles/umd/annotations.umd.min.js",

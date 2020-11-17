@@ -5,14 +5,14 @@ import {
     AdviceType,
     AdviceTarget,
     AspectType,
-    AdviceFactory,
+    _AdviceFactory,
     AdvicesFilter,
     AdvicesRegistry,
     AspectsRegistry,
     Pointcut,
     PointcutExpression,
     PointcutPhase,
-    getWeaverContext,
+    _getWeaverContext,
     WeaverContext,
 } from '@aspectjs/core/commons';
 
@@ -43,7 +43,7 @@ export class AspectsRegistryImpl implements AspectsRegistry {
     register(...aspects: AspectType[]): void {
         (aspects ?? []).forEach((aspect) => {
             // get annotations bundle
-            const annotationsContext = getWeaverContext().annotations;
+            const annotationsContext = _getWeaverContext().annotations;
             const bundle = annotationsContext.bundle.at(annotationsContext.location.of(aspect));
 
             // get @Aspect options
@@ -67,7 +67,7 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                     const expr = annotation.args[0] as PointcutExpression;
                     assert(!!expr);
 
-                    const advice = AdviceFactory.create(
+                    const advice = _AdviceFactory.create(
                         Pointcut.of(adviceDef[1] as PointcutPhase, expr),
                         annotation.target,
                     );

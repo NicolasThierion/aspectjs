@@ -21,6 +21,9 @@ import {
     PromiseMarshaller,
 } from './marshalling/marshallers';
 
+/**
+ * @public marshallers that gets configured with default MemoAspect
+ */
 export const DEFAULT_MARSHALLERS: MemoMarshaller[] = [
     new ObjectMarshaller(),
     new ArrayMarshaller(),
@@ -34,6 +37,10 @@ Object.freeze(DEFAULT_MARSHALLERS);
 const MEMO_ID_REFLECT_KEY = '@aspectjs:memo/id';
 let internalId = 0;
 
+/**
+ * Options accepted by MemoAspect
+ * @public
+ */
 export interface MemoAspectOptions {
     namespace?: string | (() => string);
     expiration?: Date | number | (() => Date | number);
@@ -43,7 +50,7 @@ export interface MemoAspectOptions {
     drivers?: MemoDriver[];
 }
 
-export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
+const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
     id: (ctxt: BeforeContext<any, any>) => {
         const { id, _id, hashcode, _hashcode } = ctxt.instance;
         const result = id ?? _id ?? hashcode ?? _hashcode;
@@ -66,6 +73,10 @@ export const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
     drivers: [],
 };
 
+/**
+ * Enable Memoization of a method's return value.
+ * @public
+ */
 @Aspect('@aspectjs/memo')
 export class MemoAspect {
     protected _options: MemoAspectOptions;

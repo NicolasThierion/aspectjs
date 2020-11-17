@@ -4,6 +4,10 @@ import { from, Observable } from 'rxjs';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling/marshalling-context';
 import { share, shareReplay } from 'rxjs/operators';
 
+/**
+ * Supports marshalling Observables
+ * @public
+ */
 export class ObservableMarshaller extends MemoMarshaller<Observable<any>, any> {
     readonly types = 'Observable';
 

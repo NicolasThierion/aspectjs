@@ -2,6 +2,9 @@ import { MemoFrame } from './drivers';
 
 const KEY_IDENTIFIER = '@aspectjs:Memo';
 
+/**
+ * @public
+ */
 export class MemoKey {
     public readonly namespace: string;
     public readonly targetKey: string;
@@ -32,6 +35,9 @@ export class MemoKey {
     }
 }
 
+/**
+ * @public
+ */
 export interface MemoEntry<T = any> {
     readonly key: MemoKey;
     readonly frame: MemoFrame<T>;

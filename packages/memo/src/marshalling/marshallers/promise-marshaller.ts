@@ -2,6 +2,10 @@ import { MemoFrame } from '../../drivers';
 import { MarshalFn, MemoMarshaller, UnmarshalFn } from './marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
 
+/**
+ * Supports marshalling promises
+ * @public
+ */
 export class PromiseMarshaller extends MemoMarshaller<Promise<any>, any> {
     readonly types = 'Promise';
 

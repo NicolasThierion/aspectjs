@@ -1,4 +1,4 @@
-import { assert, getOrComputeMetadata } from '@aspectjs/core/utils';
+import { assert, getOrComputeMetadata, isFunction, Mutable } from '@aspectjs/core/utils';
 
 import {
     Annotation,
@@ -14,7 +14,7 @@ import { JoinPoint } from '../../types';
 import { Advice, AdviceType } from '../../advices/types';
 import { AnnotationContext } from '../context/annotation.context';
 import { MutableAdviceContext } from '../../advices';
-import { getWeaverContext, WeaverContext } from '../../weaver';
+import { _getWeaverContext, WeaverContext } from '../../weaver';
 
 let generatedId = 0;
 /**
@@ -27,15 +27,31 @@ export class AnnotationFactory {
     constructor(groupId: string) {
         this._groupId = groupId;
     }
+    create<A extends ClassAnnotationStub>(name: string, annotationStub?: A): A & AnnotationRef;
+    create<A extends MethodAnnotationStub>(name: string, annotationStub?: A): A & AnnotationRef;
+    create<A extends PropertyAnnotationStub>(name: string, annotationStub?: A): A & AnnotationRef;
+    create<A extends ParameterAnnotationStub>(name: string, annotationStub?: A): A & AnnotationRef;
+    create<A extends Decorator>(name: string, annotationStub?: A): A & AnnotationRef;
+    create<A extends Annotation>(name: string, annotationStub?: A): A & AnnotationRef;
     create<A extends ClassAnnotationStub>(annotationStub?: A): A & AnnotationRef;
     create<A extends MethodAnnotationStub>(annotationStub?: A): A & AnnotationRef;
     create<A extends PropertyAnnotationStub>(annotationStub?: A): A & AnnotationRef;
     create<A extends ParameterAnnotationStub>(annotationStub?: A): A & AnnotationRef;
     create<A extends Decorator>(annotationStub?: A): A & AnnotationRef;
     create<A extends Annotation>(annotationStub?: A): A & AnnotationRef;
-    create<A extends Annotation<AdviceType>>(annotationStub?: A): A & AnnotationRef {
+    create<A extends Annotation<AdviceType>>(name?: string | A, annotationStub?: A): A & AnnotationRef {
         const groupId = this._groupId;
 
+        if (isFunction(name)) {
+            annotationStub = name as A;
+            name = undefined;
+        }
+        if (!annotationStub) {
+            annotationStub = function () {} as any;
+        }
+        if (name) {
+            (annotationStub as any).name = name;
+        }
         // create the annotation (ie: decorator provider)
         const annotation = function (...annotationArgs: any[]): Decorator {
             const decorator = _createRegisterAnnotationDecorator(annotation as any, annotationStub, annotationArgs);
@@ -94,7 +110,7 @@ function _createRegisterAnnotationDecorator<A extends AdviceType, S extends Anno
         annotationStub(...annotationArgs)?.apply(null, targetArgs);
 
         // assert the weaver is loaded before invoking the underlying decorator
-        const weaverContext = getWeaverContext();
+        const weaverContext = _getWeaverContext();
         if (!weaverContext) {
             throw new Error(
                 `Cannot invoke annotation ${annotation.name ?? ''} before "setWeaverContext()" has been called`,

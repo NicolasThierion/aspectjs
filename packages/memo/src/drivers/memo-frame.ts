@@ -1,5 +1,9 @@
 import { isPromise } from '@aspectjs/core/utils';
 
+/**
+ * Flat dehydrated representation of an object that can be stored easily
+ * @public
+ */
 export interface MemoTypeInfoFrame {
     type?: string;
     instanceType?: string;
@@ -9,8 +13,8 @@ export interface MemoTypeInfoFrame {
 
 /**
  * A MemoEntry once marshalled
+ * @public
  */
-
 export class MemoFrame<T = unknown> implements MemoTypeInfoFrame {
     type?: string;
     instanceType?: string;

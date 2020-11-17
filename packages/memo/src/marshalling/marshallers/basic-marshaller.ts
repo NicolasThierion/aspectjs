@@ -1,6 +1,10 @@
 import { MemoFrame } from '../../drivers';
 import { MemoMarshaller } from './marshaller';
 
+/**
+ * Supports marshalling primitives
+ * @public
+ */
 export class BasicMarshaller extends MemoMarshaller<any> {
     readonly types = ['Number', 'String', 'Boolean', 'symbol', 'number', 'string', 'boolean', 'symbol', 'undefined'];
 

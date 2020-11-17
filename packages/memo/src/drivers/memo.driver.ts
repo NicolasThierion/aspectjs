@@ -2,6 +2,10 @@ import { MemoEntry, MemoKey } from '../memo.types';
 import { MemoFrame } from './memo-frame';
 import { MarshallingContext } from '../marshalling/marshalling-context';
 
+/**
+ * Connects the MemoAspect to a storage back-end
+ * @public
+ */
 export abstract class MemoDriver {
     abstract getKeys(namespace?: string): Promise<MemoKey[]>;
 
@@ -23,10 +27,15 @@ export abstract class MemoDriver {
 
     /**
      * Returns the cached value.
-     * @param key
+     * @param key - the key of storage entry to read
      */
     protected abstract read<T>(key: MemoKey): MemoFrame<T>;
 
+    /**
+     * Returns a promise that is resolved once value is saved.
+     * @param key - the key of storage entry to write
+     * @param value - the value to write to storage
+     */
     protected abstract write(key: MemoKey, value: MemoFrame): PromiseLike<void>;
 
     protected abstract doRemove(key: MemoKey): PromiseLike<void>;

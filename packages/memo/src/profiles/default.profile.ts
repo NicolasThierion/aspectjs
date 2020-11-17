@@ -4,6 +4,9 @@ import { IdbMemoDriver, LsMemoDriver, LsMemoSerializer, LzMemoSerializer, MemoDr
 import { DEFAULT_MARSHALLERS, MemoAspect, MemoAspectOptions } from '../memo.aspect';
 import { ObservableMarshaller, ObservableMemoSupportAspect } from '../observables';
 
+/**
+ * @public
+ */
 export interface MemoProfileFeatures {
     useLocalStorage?: boolean;
     useIndexedDb?: boolean;
@@ -17,6 +20,7 @@ export interface MemoProfileFeatures {
  * - LsMemoAspect (for synchronous @Memo methods)
  *     - LzMemoHandler to compress data stored in LocalStorage
  * - IndexedDbMemoAspect (for asynchronous @Memo methods)
+ * @public
  */
 export class MemoProfile extends WeaverProfile {
     protected _features: MemoProfileFeatures = {

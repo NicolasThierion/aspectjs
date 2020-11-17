@@ -1,5 +1,6 @@
 {
   "name": "@aspectjs/core-testing",
+  "version": "0.0.1",
   "private": true,
   "main": "./dist/umd/testing.umd.js",
   "unpkg": "./dist/umd/testing.umd.min.js",
@@ -8,7 +9,7 @@
   "esm2015": "./dist/esm2015/testing.js",
   "typings": "./dist/core-testing.d.ts",
   "scripts": {
-    "build": "yarn typings && rollup --config ./rollup.config.js",
+    "build": "rollup --config ./rollup.config.js",
     "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
   }
 }
