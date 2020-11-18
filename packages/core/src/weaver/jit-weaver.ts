@@ -80,8 +80,12 @@ export class JitWeaver extends WeaverProfile implements Weaver {
         const ctorName = compiledCtor.name;
 
         let ctor = plan.link(ctxt);
-        ctor = _setFunctionName(ctor, ctorName, `class ${ctorName}$$enhanced {}`);
-
+        ctor = _defineFunctionProperties(
+            ctor,
+            ctorName,
+            `class ${ctorName}$$advised {}`,
+            originalCtor.toString.bind(originalCtor),
+        );
         ctor.prototype = ctxt.target.proto;
         ctor.prototype.constructor = ctor;
         _setReferenceConstructor(ctor as any, originalCtor);
@@ -125,6 +129,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     enhanceMethod<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor {
+        const originalFn = ctxt.target.proto[ctxt.target.propertyKey];
         const plan = this._planFactory.create(ctxt.target, new MethodWeaverHooks());
 
         // invoke compile method or get default descriptor
@@ -134,10 +139,12 @@ export class JitWeaver extends WeaverProfile implements Weaver {
         const newDescriptor: PropertyDescriptor = { ...refDescriptor };
 
         newDescriptor.value = plan.link(ctxt);
-
-        Reflect.defineProperty(newDescriptor.value, 'name', {
-            value: ctxt.target.propertyKey,
-        });
+        newDescriptor.value = _defineFunctionProperties(
+            newDescriptor.value,
+            originalFn.name,
+            originalFn.toString().split('\n')[0],
+            originalFn.toString.bind(originalFn),
+        );
 
         return newDescriptor;
     }
@@ -524,12 +531,17 @@ function _isPropertySet(a: Advice) {
     return a.pointcut.ref.startsWith('property#set');
 }
 
-function _setFunctionName<T, F extends (...args: any[]) => T>(fn: F, name: string, tag?: string): F {
+function _defineFunctionProperties<T, F extends (...args: any[]) => T>(
+    fn: F,
+    name: string,
+    tag: string,
+    toString: () => string,
+): F {
     assert(typeof fn === 'function');
 
     // const newFn = fn;
     const newFn = new Function('fn', `return function ${name}(...args) { return fn.apply(this, args) };`)(fn);
-    !Object.defineProperty(newFn, 'name', {
+    Object.defineProperty(newFn, 'name', {
         value: name,
     });
     tag = tag ?? name;
@@ -540,6 +552,8 @@ function _setFunctionName<T, F extends (...args: any[]) => T>(fn: F, name: strin
         value: () => tag,
     });
 
+    newFn.prototype.toString = toString;
+    newFn.toString = toString;
     return newFn;
 }
 

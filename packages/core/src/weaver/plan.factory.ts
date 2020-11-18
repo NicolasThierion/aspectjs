@@ -10,6 +10,7 @@ import {
     AdviceType,
     CompileAdvice,
     MutableAdviceContext,
+    _getWeaverContext,
 } from '@aspectjs/core/commons';
 
 /**
@@ -55,7 +56,7 @@ export class _AdviceExecutionPlanFactory {
         },
     ): _ExecutionPlan<T, A> {
         const advicesLoader: _AdvicesLoader = (target: AdviceTarget, ...phases: PointcutPhase[]) => {
-            return this._context.aspects.registry.getAdvicesByTarget(target, filter, ...phases);
+            return _getWeaverContext().aspects.registry.getAdvicesByTarget(target, filter, ...phases);
         };
 
         return new _ExecutionPlan<T, A>(hooks, advicesLoader);

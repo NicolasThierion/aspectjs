@@ -8,10 +8,7 @@ import { AnnotationTargetFactory } from '../target/annotation-target.factory';
  * @public
  */
 export class AnnotationRegistry {
-    constructor(
-        private _targetFactory: AnnotationTargetFactory,
-        private readonly _bundleRegistry: AnnotationBundleRegistry,
-    ) {}
+    constructor(private readonly _bundleRegistry: AnnotationBundleRegistry) {}
 
     /**
      * Registers a new annotation by its AnnotationContext,

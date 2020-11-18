@@ -1,6 +1,6 @@
 import { isString, locator } from '@aspectjs/core/utils';
-import { AnnotationContext } from '../context/annotation.context';
 import { Annotation, AnnotationType } from '../annotation.types';
+import { AnnotationContext } from '../context/annotation.context';
 import {
     AnnotationLocation,
     ClassAnnotationLocation,
@@ -8,8 +8,8 @@ import {
     ParametersAnnotationLocation,
     PropertyAnnotationLocation,
 } from '../location/annotation-location';
+import { AnnotationLocationFactory } from '../location/location.factory';
 import { AnnotationTarget } from '../target/annotation-target';
-import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 
 /**
  * @public
@@ -80,14 +80,14 @@ export interface ParameterAnnotationsBundle<T = unknown> {
  * @public
  */
 export class RootAnnotationsBundle {
-    constructor(protected _registry: AnnotationBundleRegistry, protected _targetFactory: AnnotationTargetFactory) {}
+    constructor(protected _registry: AnnotationBundleRegistry) {}
     at<T>(location: MethodAnnotationLocation<T>, searchParents?: boolean): MethodAnnotationsBundle<T>;
     at<T>(location: ParametersAnnotationLocation<T>, searchParents?: boolean): ParameterAnnotationsBundle<T>;
     at<T>(location: PropertyAnnotationLocation<T>, searchParents?: boolean): PropertyAnnotationsBundle<T>;
     at<T>(location: ClassAnnotationLocation<T>, searchParents?: boolean): ClassAnnotationsBundle<T>;
     at<T>(location: AnnotationLocation<T>, searchParents?: boolean): AnnotationsBundle<T>;
     at<T>(location: AnnotationLocation<T>, searchParents = true): AnnotationsBundle<T> {
-        return new ClassAnnotationsBundle<T>(this._registry, this._targetFactory, location, searchParents);
+        return new ClassAnnotationsBundle<T>(this._registry, location, searchParents);
     }
 
     all(...annotations: (Annotation | string)[]): readonly AnnotationContext[] {
@@ -109,25 +109,25 @@ export class RootAnnotationsBundle {
 /**
  * @public
  */
-export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle
+export class ClassAnnotationsBundle<T = unknown>
+    extends RootAnnotationsBundle
     implements ParameterAnnotationsBundle<T>, PropertyAnnotationsBundle<T>, MethodAnnotationsBundle<T> {
     constructor(
         registry: AnnotationBundleRegistry,
-        targetFactory: AnnotationTargetFactory,
         private location: AnnotationLocation,
         private searchParents: boolean,
     ) {
-        super(registry, targetFactory);
+        super(registry);
     }
     all(...annotations: (Annotation | string)[]): readonly AnnotationContext<T>[] {
-        const target = this._targetFactory.getTarget(this.location);
+        const target = AnnotationLocationFactory.getTarget(this.location);
         return this._allWithFilter(target, 'all', annotations) as AnnotationContext<T>[];
     }
 
     onClass(
         ...annotations: (Annotation<AnnotationType.CLASS> | string)[]
     ): readonly AnnotationContext<T, AnnotationType.CLASS>[] {
-        const target = this._targetFactory.getTarget(this.location);
+        const target = AnnotationLocationFactory.getTarget(this.location);
 
         return this._allWithFilter(target, 'class', annotations) as AnnotationContext<T, AnnotationType.CLASS>[];
     }
@@ -135,21 +135,21 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle
     onProperty(
         ...annotations: (Annotation<AnnotationType.PROPERTY> | string)[]
     ): readonly AnnotationContext<T, AnnotationType.PROPERTY>[] {
-        const target = this._targetFactory.getTarget(this.location);
+        const target = AnnotationLocationFactory.getTarget(this.location);
 
         return this._allWithFilter(target, 'property', annotations) as AnnotationContext<T, AnnotationType.PROPERTY>[];
     }
     onMethod(
         ...annotations: (Annotation<AnnotationType.METHOD> | string)[]
     ): readonly AnnotationContext<T, AnnotationType.METHOD>[] {
-        const target = this._targetFactory.getTarget(this.location);
+        const target = AnnotationLocationFactory.getTarget(this.location);
 
         return this._allWithFilter(target, 'method', annotations) as AnnotationContext<T, AnnotationType.METHOD>[];
     }
     onParameter(
         ...annotations: (Annotation<AnnotationType.PARAMETER> | string)[]
     ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[] {
-        const target = this._targetFactory.getTarget(this.location);
+        const target = AnnotationLocationFactory.getTarget(this.location);
 
         return this._allWithFilter(target, 'parameter', annotations) as AnnotationContext<
             T,

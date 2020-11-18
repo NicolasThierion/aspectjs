@@ -14,6 +14,8 @@ import {
     PointcutPhase,
     _getWeaverContext,
     WeaverContext,
+    AnnotationTargetFactory,
+    AnnotationLocationFactory,
 } from '@aspectjs/core/commons';
 
 /**
@@ -162,9 +164,7 @@ export class AspectsRegistryImpl implements AspectsRegistry {
      * @internal
      */
     private _getTarget<T>(obj: T): AdviceTarget<T> {
-        return this._weaverContext.annotations.targetFactory.getTarget(
-            this._weaverContext.annotations.location.of(obj),
-        );
+        return AnnotationLocationFactory.getTarget(this._weaverContext.annotations.location.of(obj));
     }
 
     /**

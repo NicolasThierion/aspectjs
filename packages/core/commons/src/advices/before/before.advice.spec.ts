@@ -26,6 +26,7 @@ describe('@Before advice', () => {
                     advice.bind(this)(ctxt);
                 }
             }
+
             aspectClass = AAspect;
 
             weaver.enable(new AAspect());
@@ -64,6 +65,36 @@ describe('@Before advice', () => {
             new A();
 
             expect(thisInstance).toBeNull();
+        });
+
+        it(`should keep constructor's "toString()" method`, () => {
+            let advisedClass: any;
+            {
+                @AClass()
+                class A {
+                    constructor() {
+                        console.log('original constructor');
+                    }
+                    x() {}
+                }
+                advisedClass = A;
+            }
+            let nonAdvisedClass: any;
+            {
+                @AClass()
+                class A {
+                    constructor() {
+                        console.log('original constructor');
+                    }
+                    x() {}
+                }
+                nonAdvisedClass = A;
+            }
+
+            expect(advisedClass.prototype.constructor.toString()).toEqual(
+                nonAdvisedClass.prototype.constructor.toString(),
+            );
+            expect(advisedClass.constructor.toString()).toEqual(nonAdvisedClass.constructor.toString());
         });
     });
 
@@ -213,6 +244,32 @@ describe('@Before advice', () => {
             });
             a.addLabel();
             expect(thisInstance).toEqual(a);
+        });
+
+        it(`should keep property's "toString()" method`, () => {
+            let advisedInstance: Labeled;
+            {
+                class A implements Labeled {
+                    @AMethod()
+                    addLabel(): any {
+                        console.log('addLabels');
+                    }
+                }
+                advisedInstance = new A();
+            }
+            let nonAdvisedInstance: Labeled;
+            {
+                class A implements Labeled {
+                    addLabel(): any {
+                        console.log('addLabels');
+                    }
+                }
+                nonAdvisedInstance = new A();
+            }
+
+            expect(Object.getPrototypeOf(advisedInstance).addLabel.toString()).toEqual(
+                Object.getPrototypeOf(nonAdvisedInstance).addLabel.toString(),
+            );
         });
     });
 

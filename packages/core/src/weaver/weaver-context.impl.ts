@@ -1,36 +1,36 @@
 import {
-    AnnotationTargetFactory,
     AnnotationBundleRegistry,
-    RootAnnotationsBundle,
-    AnnotationRegistry,
-    WeaverContext,
-    AspectsRegistry,
     AnnotationLocationFactory,
+    AnnotationRegistry,
+    AnnotationTargetFactory,
+    AspectsRegistry,
+    RootAnnotationsBundle,
     Weaver,
+    WeaverContext,
 } from '@aspectjs/core/commons';
 import { AspectsRegistryImpl } from '../aspect/aspect.registry.impl';
 import { JitWeaver } from './jit-weaver';
 
-const targetFactory = new AnnotationTargetFactory();
 const bundleRegistry: AnnotationBundleRegistry = {
     byTargetClassRef: {},
     byAnnotation: {},
 };
 
-const bundle = new RootAnnotationsBundle(bundleRegistry, targetFactory);
-const annotationRegistry = new AnnotationRegistry(targetFactory, bundleRegistry);
+const bundle = new RootAnnotationsBundle(bundleRegistry);
+const annotationRegistry = new AnnotationRegistry(bundleRegistry);
 /**
  * @public
  */
 export class WeaverContextImpl implements WeaverContext {
     private readonly _weaver = new JitWeaver(this);
+    private readonly _targetFactory = new AnnotationTargetFactory();
 
     readonly aspects: { registry: AspectsRegistry };
 
     readonly annotations = {
-        location: new AnnotationLocationFactory(targetFactory),
+        location: new AnnotationLocationFactory(this._targetFactory),
         registry: annotationRegistry,
-        targetFactory,
+        targetFactory: this._targetFactory,
         bundle,
     };
 

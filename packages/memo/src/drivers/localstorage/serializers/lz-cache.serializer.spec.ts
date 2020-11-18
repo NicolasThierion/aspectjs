@@ -1,10 +1,11 @@
 import { setupTestingWeaverContext } from '@aspectjs/core/testing';
 
-import { LsMemoDriver, LsMemoSerializer } from './localstorage.driver';
+import { LsMemoDriver } from './localstorage.driver';
 import { LzMemoSerializer } from './lz-memo.serializer';
 import { Memo } from '../../memo.annotation';
 import { DefaultCacheableAspect } from '../../cacheable/cacheable.aspect';
 import { MemoAspect } from '../../memo.aspect';
+import { LsMemoSerializer } from './serializers/ls-serializer.type';
 
 const DEFAULT_ARGS = ['a', 'b', 'c', 'd'];
 

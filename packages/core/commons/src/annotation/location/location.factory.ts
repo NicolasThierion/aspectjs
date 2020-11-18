@@ -1,6 +1,6 @@
 import { AdviceType } from '../../advices/types';
-import { ClassAdviceTarget } from '../target/annotation-target';
-import { ClassAnnotationLocation } from './annotation-location';
+import { AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
+import { AnnotationLocation, ClassAnnotationLocation } from './annotation-location';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { getProto } from '@aspectjs/core/utils';
 
@@ -22,5 +22,12 @@ export class AnnotationLocationFactory {
         }).declaringClass as ClassAdviceTarget<T>;
 
         return target.location;
+    }
+
+    static getTarget<T>(location: AnnotationLocation<T>): AnnotationTarget<T> {
+        if (!location) {
+            return undefined;
+        }
+        return Object.getPrototypeOf(location).getTarget();
     }
 }
