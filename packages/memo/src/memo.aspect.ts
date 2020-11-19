@@ -1,17 +1,12 @@
 import { Around, Aspect } from '@aspectjs/core/annotations';
-import { AroundContext, AspectError, BeforeContext, JoinPoint, on } from '@aspectjs/core/commons';
+import { AroundContext, AspectError, AspectType, BeforeContext, JoinPoint, on } from '@aspectjs/core/commons';
 import { getOrComputeMetadata, getProto, isFunction, isString, isUndefined } from '@aspectjs/core/utils';
+import copy from 'fast-copy';
 
 import { stringify } from 'flatted';
-import copy from 'fast-copy';
-import { assert } from '../../core/utils/src/utils';
 
 import { MemoDriver, MemoFrame } from './drivers';
-import { MemoEntry, MemoKey } from './memo.types';
-import { Memo, MemoOptions } from './memo.annotation';
 import { VersionConflictError } from './errors';
-import { hash, Mutable, provider } from './utils';
-import { MarshallersRegistry } from './marshalling/marshallers-registry';
 import {
     ArrayMarshaller,
     BasicMarshaller,
@@ -21,6 +16,10 @@ import {
     ObjectMarshaller,
     PromiseMarshaller,
 } from './marshalling/marshallers';
+import { MarshallersRegistry } from './marshalling/marshallers-registry';
+import { Memo, MemoOptions } from './memo.annotation';
+import { MemoEntry, MemoKey } from './memo.types';
+import { hash, Mutable, provider } from './utils';
 
 /**
  * @public marshallers that gets configured with default MemoAspect
@@ -79,13 +78,14 @@ const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
  * @public
  */
 @Aspect('@aspectjs/memo')
-export class MemoAspect {
+export class MemoAspect implements AspectType {
     protected _options: MemoAspectOptions;
     private readonly _drivers: Record<string, MemoDriver> = {};
     /** maps memo keys with its unregister function for garbage collector timeouts */
     private readonly _entriesGc: Record<string, number> = {};
     private _marshallers: MarshallersRegistry;
     private _pendingResults: Record<string, any> = {};
+    private _enabled: boolean;
 
     constructor(params?: MemoAspectOptions) {
         this._options = { ...DEFAULT_MEMO_ASPECT_OPTIONS, ...params };
@@ -111,9 +111,16 @@ export class MemoAspect {
                 );
             }
             this._drivers[d.NAME] = d;
-            this._initGc(d);
+            if (this._enabled) {
+                this._initGc(d);
+            }
         });
         return this;
+    }
+
+    onEnable() {
+        this._enabled = true;
+        Object.values(this._drivers).forEach((d) => this._initGc(d));
     }
 
     addMarshaller(...marshallers: MemoMarshaller[]): void {

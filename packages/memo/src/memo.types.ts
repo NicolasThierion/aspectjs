@@ -21,7 +21,7 @@ export class MemoKey {
         this._strValue = `${KEY_IDENTIFIER}:ns=${this.namespace}&tk=${this.targetKey}&id=${this.instanceId}&ak=${this.argsKey}`;
     }
 
-    static parse(str: string, throwIfInvalid = true): MemoKey {
+    static parse(str: string, throwIfInvalid = true): MemoKey | null {
         if (!str.startsWith(KEY_IDENTIFIER)) {
             throw new TypeError(`Key ${str} is not a memo key`);
         }
@@ -29,8 +29,11 @@ export class MemoKey {
             `${KEY_IDENTIFIER}:ns=(?<namespace>.*?)&tk=(?<targetKey>.*?)&id=(?<instanceId>.*?)&ak=(?<argsKey>.*)`,
         );
         const r = rx.exec(str);
-        if (!r && throwIfInvalid) {
-            throw new MemoAspectError(`given expression is not a MemoKey: ${str}`);
+        if (!r) {
+            if (throwIfInvalid) {
+                throw new MemoAspectError(`given expression is not a MemoKey: ${str}`);
+            }
+            return null;
         }
         return new MemoKey(r.groups as any);
     }

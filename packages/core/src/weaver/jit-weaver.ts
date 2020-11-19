@@ -1,4 +1,29 @@
 import {
+    _JoinpointFactory,
+    _WeaverHooks,
+    Advice,
+    AdviceContext,
+    AdviceError,
+    AdviceTarget,
+    AdviceType,
+    AfterAdvice,
+    AfterReturnAdvice,
+    AfterThrowAdvice,
+    AfterThrowContext,
+    AroundAdvice,
+    AroundContext,
+    AspectType,
+    BeforeAdvice,
+    CompileAdvice,
+    JoinPoint,
+    MutableAdviceContext,
+    Pointcut,
+    Weaver,
+    WeaverContext,
+    WeaverProfile,
+    WeavingError,
+} from '@aspectjs/core/commons';
+import {
     _getReferenceConstructor,
     _setReferenceConstructor,
     assert,
@@ -7,29 +32,6 @@ import {
     isUndefined,
     Mutable,
 } from '@aspectjs/core/utils';
-import {
-    Advice,
-    AdviceContext,
-    AdviceType,
-    AfterAdvice,
-    AfterReturnAdvice,
-    AfterThrowAdvice,
-    AfterThrowContext,
-    AroundAdvice,
-    AroundContext,
-    BeforeAdvice,
-    CompileAdvice,
-    MutableAdviceContext,
-    WeaverProfile,
-    Weaver,
-    WeaverContext,
-    AspectType,
-    _WeaverHooks,
-    AdviceError,
-    _JoinpointFactory,
-    JoinPoint,
-    AdviceTarget,
-} from '@aspectjs/core/commons';
 import { _AdviceExecutionPlanFactory } from './plan.factory';
 
 const _defineProperty = Object.defineProperty;
@@ -41,31 +43,54 @@ type MethodPropertyDescriptor = PropertyDescriptor & { value: (...args: any[]) =
  */
 export class JitWeaver extends WeaverProfile implements Weaver {
     private _planFactory: _AdviceExecutionPlanFactory;
-    constructor(private _context: WeaverContext) {
+
+    /**
+     *
+     * @param _context - the weaver context to attach this weaver to.
+     * @param _prod - When prod mode is activated, enabling an aspect after Annotation compilation is prohibed.
+     */
+    constructor(private _context: WeaverContext, private _prod = true) {
         super();
         this._planFactory = new _AdviceExecutionPlanFactory(_context);
     }
 
     enable(...aspects: (AspectType | WeaverProfile)[]): this {
-        aspects.forEach((aspect) => {
-            if (aspect instanceof WeaverProfile) {
-                this._context.aspects.registry.register(...aspect.getAspects());
-            } else {
-                this._context.aspects.registry.register(aspect);
+        const _aspects = new WeaverProfile().enable(...aspects).getAspects();
+        try {
+            this._context.aspects.registry.register(..._aspects);
+            if (this._prod) {
+                // check annotations has not already been processed
+                const alreadyProcessedAnnotations = new Map<Pointcut, AspectType>();
+                _aspects.forEach((aspect) => {
+                    this._context.aspects.registry
+                        .getAdvicesByAspect(aspect)
+                        .forEach((a) => alreadyProcessedAnnotations.set(a.pointcut, aspect));
+                });
+
+                alreadyProcessedAnnotations.forEach((aspect: AspectType, pointcut: Pointcut) => {
+                    if (this._context.annotations.bundle.all(pointcut.annotation.ref).length) {
+                        throw new WeavingError(
+                            `Cannot enable aspect ${aspect.constructor?.name ?? aspect} because annotation ${
+                                pointcut.annotation
+                            } has already been applied`,
+                        );
+                    }
+                });
             }
-        });
-        return super.enable(...aspects);
+            _aspects.filter((a) => isFunction(a.onEnable)).forEach((a) => a.onEnable.call(a));
+
+            return super.enable(..._aspects);
+        } catch (e) {
+            this._context.aspects.registry.remove(..._aspects);
+            throw e;
+        }
     }
 
     disable(...aspects: (AspectType | WeaverProfile)[]): this {
-        aspects.forEach((aspect) => {
-            if (aspect instanceof WeaverProfile) {
-                this._context.aspects.registry.remove(...aspect.getAspects());
-            } else {
-                this._context.aspects.registry.remove(aspect);
-            }
-        });
-        return super.disable(...aspects);
+        const _aspects = new WeaverProfile().enable(...aspects).getAspects();
+        _aspects.filter((a) => isFunction(a.onDisable)).forEach((a) => a.onEnable.call(a));
+
+        return super.disable(..._aspects);
     }
 
     reset(): this {
@@ -149,13 +174,12 @@ export class JitWeaver extends WeaverProfile implements Weaver {
         return newDescriptor;
     }
 
-    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): void {
+    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor {
         const newDescriptor = this.enhanceMethod(ctxt as any);
 
         Reflect.defineProperty(ctxt.target.proto, ctxt.target.propertyKey, newDescriptor);
 
-        // To override method descriptor from parameter decorator is not allowed..
-        // Return value of parameter decorators is ignored
+        // Override method descriptor from parameter decorator is not allowed because return value of this parameter decorators is ignored
         // Moreover, Reflect.decorate will overwrite any changes made on proto[propertyKey]
         // We monkey patch Object.defineProperty to prevent this;
         Object.defineProperty = function (o: any, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>) {
@@ -467,6 +491,7 @@ class MethodWeaverHooks<T> extends GenericWeaverHooks<T, AdviceType.METHOD> {
     compile(ctxt: MutableAdviceContext<T, AdviceType.METHOD>, advices: CompileAdvice<T, AdviceType.METHOD>[]) {
         const target = ctxt.target;
 
+        // TODO remove me
         // save & restore original descriptor
         Reflect.defineProperty(
             target.proto,

@@ -1,6 +1,6 @@
-import { Advice, AdviceType } from './types';
+import { Advice, AdviceType, CompileAdvice } from './types';
 import { Pointcut, PointcutPhase } from '../types';
-import { AdviceError } from '../weaver/errors';
+import { AdviceError, WeavingError } from '../weaver/errors';
 import { assert, getProto, isFunction } from '@aspectjs/core/utils';
 import { _getWeaverContext } from '../weaver';
 import { AdviceTarget } from '../annotation/target/annotation-target';
@@ -18,10 +18,23 @@ export class _AdviceFactory {
         const [aspect, propertyKey] = [target.proto, target.propertyKey];
 
         assert(isFunction(aspect[propertyKey]));
+        let advice: Advice;
+        if (pointcut.phase === PointcutPhase.COMPILE) {
+            // prevent @Compile advices to be called twice
+            advice = function (...args: any[]) {
+                const a = advice as CompileAdvice;
+                advice = (() => {
+                    throw new WeavingError(`${a} already applied`);
+                }) as any;
 
-        const advice = function (...args: any[]) {
-            return aspect[propertyKey].apply(this, args);
-        } as Advice;
+                return aspect[propertyKey].apply(this, args);
+            } as Advice;
+        } else {
+            advice = function (...args: any[]) {
+                return aspect[propertyKey].apply(this, args);
+            } as Advice;
+        }
+
         advice.pointcut = pointcut;
         advice.aspect = aspect;
 
@@ -34,8 +47,12 @@ export class _AdviceFactory {
             value: propertyKey,
         });
 
-        if (pointcut.ref.startsWith('property#set') && pointcut.phase === PointcutPhase.COMPILE) {
-            throw new AdviceError(advice, `Advice cannot be applied on property setter`);
+        if (pointcut.phase === PointcutPhase.COMPILE) {
+            if (pointcut.ref.startsWith('property#set')) {
+                // @Compile(on.property.setter) are forbidden
+                // because PropertyDescriptor can only be setup for both setter & getter at once.
+                throw new AdviceError(advice, `Advice cannot be applied on property setter`);
+            }
         }
 
         // assert the weaver is loaded before invoking the underlying decorator

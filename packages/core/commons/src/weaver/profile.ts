@@ -12,7 +12,7 @@ export class WeaverProfile {
     } = {};
 
     constructor() {}
-    enable(...aspects: object[]): this {
+    enable(...aspects: (AspectType | WeaverProfile)[]): this {
         aspects.forEach((p) => {
             if (p instanceof WeaverProfile) {
                 Object.values(p._aspectsRegistry).forEach((p) => this.enable(p));
@@ -22,7 +22,7 @@ export class WeaverProfile {
         });
         return this;
     }
-    disable(...aspects: (object | string)[]): this {
+    disable(...aspects: (AspectType | string | WeaverProfile)[]): this {
         aspects.forEach((p) => {
             if (p instanceof WeaverProfile) {
                 // disable profile
@@ -72,5 +72,18 @@ export class WeaverProfile {
 
     getAspects<T extends AspectType>(): AspectType[] {
         return Object.values(this._aspectsRegistry);
+    }
+
+    [Symbol.iterator](): Iterator<AspectType> {
+        const aspects = this.getAspects();
+        let i = 0;
+        return {
+            next: () => {
+                if (i >= aspects.length) {
+                    return { value: undefined, done: true };
+                }
+                return { value: aspects[i++], done: false };
+            },
+        };
     }
 }

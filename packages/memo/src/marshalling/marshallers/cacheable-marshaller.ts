@@ -1,6 +1,7 @@
 import { WEAVER_CONTEXT } from '@aspectjs/core';
 import { assert, isUndefined } from '@aspectjs/core/utils';
 import { WeavingError } from '@aspectjs/core/commons';
+import { Cacheable } from '../../cacheable/cacheable.annotation';
 import { MemoFrame } from '../../drivers';
 import { VersionConflictError } from '../../errors';
 import { CacheableAspect, CacheTypeStore } from '../../cacheable/cacheable.aspect';
@@ -26,7 +27,7 @@ export class CacheableMarshaller extends MemoMarshaller {
             ((proto) => {
                 const name = proto.constructor.name;
                 throw new TypeError(
-                    `Type "${name}" is not annotated with "@Cacheable()". Please add "@Cacheable()" on class "${name}", or register a proper MemeMarshaller fot the type.`,
+                    `Type "${name}" is not annotated with "${Cacheable}". Please add "${Cacheable}" on class "${name}", or register a proper ${MemoMarshaller.name} for this type.`,
                 );
             });
     }

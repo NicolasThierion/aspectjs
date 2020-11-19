@@ -1,3 +1,4 @@
+import { AspectType } from '../aspect';
 import { WeaverProfile } from './profile';
 import { AdviceType } from '../advices/types';
 import { MutableAdviceContext } from '../advices';
@@ -11,13 +12,13 @@ export interface Weaver extends WeaverProfile {
      * Enable some aspects.
      * @param aspects - the aspects to enable
      */
-    enable(...aspects: any[]): this;
+    enable(...aspects: AspectType[]): this;
 
     /**
      * Disable some aspects.
      * @param aspects - the aspects to disable
      */
-    disable(...aspects: any[]): this;
+    disable(...aspects: (AspectType | string)[]): this;
 
     /**
      * Disable all aspects.
@@ -30,5 +31,5 @@ export interface Weaver extends WeaverProfile {
 
     enhanceMethod<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor;
 
-    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): void;
+    enhanceParameter<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor;
 }

@@ -27,7 +27,7 @@ describe('Calling a @Memo method that returns an Observable', () => {
         it('should throw an error', () => {
             expect(memoMethod).toThrow(
                 new TypeError(
-                    'Type "Observable" is not annotated with "@Cacheable()". Please add "@Cacheable()" on class "Observable", or register a proper MemeMarshaller fot the type.',
+                    'Type "Observable" is not annotated with "@Cacheable". Please add "@Cacheable" on class "Observable", or register a proper MemoMarshaller for this type.',
                 ),
             );
         });

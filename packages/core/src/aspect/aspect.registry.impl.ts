@@ -1,22 +1,21 @@
-import { locator, assert, assertIsAspect } from '@aspectjs/core/utils';
 import { After, AfterReturn, AfterThrow, Around, Before, Compile, Order } from '@aspectjs/core/annotations';
 import {
-    Advice,
-    AdviceType,
-    AdviceTarget,
-    AspectType,
     _AdviceFactory,
+    _getWeaverContext,
+    Advice,
     AdvicesFilter,
     AdvicesRegistry,
+    AdviceTarget,
+    AdviceType,
+    AnnotationLocationFactory,
     AspectsRegistry,
+    AspectType,
     Pointcut,
     PointcutExpression,
     PointcutPhase,
-    _getWeaverContext,
     WeaverContext,
-    AnnotationTargetFactory,
-    AnnotationLocationFactory,
 } from '@aspectjs/core/commons';
+import { assert, assertIsAspect, locator } from '@aspectjs/core/utils';
 
 /**
  * Stores the aspects along with their advices.
@@ -56,7 +55,6 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                 .orElseCompute(() => ({}));
 
             this._aspectsToLoad.add(aspect);
-
             [
                 [Compile, PointcutPhase.COMPILE],
                 [Before, PointcutPhase.BEFORE],

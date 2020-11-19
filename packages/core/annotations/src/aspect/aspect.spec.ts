@@ -146,7 +146,6 @@ describe('given several @Aspects', () => {
 
     describe('that do not specify @Order', () => {
         beforeEach(() => {
-            @Aspect()
             class LabelAspect {
                 constructor(public id: string) {}
 
@@ -261,7 +260,20 @@ describe('given several @Aspects', () => {
                 }
             }
 
-            weaver.enable(new LabelAspect('A'), new LabelAspect('B'));
+            @Aspect()
+            class ALabelAspect extends LabelAspect {
+                constructor() {
+                    super('A');
+                }
+            }
+
+            @Aspect()
+            class BLabelAspect extends LabelAspect {
+                constructor() {
+                    super('B');
+                }
+            }
+            weaver.enable(new ALabelAspect(), new BLabelAspect());
         });
 
         describe('constructing a class instance', () => {

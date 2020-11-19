@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
 import { AnnotationFactory, BeforeContext, on } from '@aspectjs/core/commons';
-import { Aspect, Before } from '@aspectjs/core/annotations';
+import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 import { WEAVER_CONTEXT } from '@aspectjs/core';
+import { Memo } from '@aspectjs/memo';
 
 const af = new AnnotationFactory('test');
 const Deprecated = af.create(function Deprecated(version?: string): any {
@@ -12,11 +13,19 @@ const Deprecated = af.create(function Deprecated(version?: string): any {
 @Aspect()
 class DeprecatedAspect {
     private tags: Record<string, boolean> = {};
+
     @Before(on.method.withAnnotations(Deprecated))
+    @Before(on.parameter.withAnnotations(Deprecated))
+    @Order(1)
     logWarning(context: BeforeContext) {
         if (!this.tags[context.target.ref]) {
             const args = context.annotation.args[0];
-            console.warn(`${context.target.label} is deprecated`);
+            if (
+                context.target.parameterIndex === undefined ||
+                context.args[context.target.parameterIndex] !== undefined
+            ) {
+                console.warn(`${context.target.label} is deprecated`);
+            }
             this.tags[context.target.ref] = true;
         }
     }
@@ -39,9 +48,17 @@ export class DeprecatedComponent implements OnInit {
         this.deprecatedFunction();
         this.deprecatedFunction();
         this.deprecatedFunction();
+
+        this.deprecatedFunctionParam('x');
     }
+
+    @Memo()
+    private deprecatedFunctionParam(@Deprecated() arg?: string) {
+        console.log('deprecatedFunctionParam');
+    }
+
     @Deprecated()
     private deprecatedFunction() {
-        console.log('deprecated function called');
+        console.log('deprecatedFunction');
     }
 }

@@ -103,8 +103,8 @@ export class IdbMemoDriver extends MemoDriver {
 
         return frame
             ? {
+                  ...metaEntry,
                   key,
-                  expiration: metaEntry.expiration,
                   frame,
               }
             : undefined;
@@ -121,8 +121,8 @@ export class IdbMemoDriver extends MemoDriver {
             const { value, ...metaFrame } = entry.frame;
 
             const metaEntry: MemoEntry<MemoTypeInfoFrame> = {
+                ...entry,
                 key: metaKey(entry.key),
-                expiration: entry.expiration,
                 frame: metaFrame as MemoFrame,
             };
             // store only the Memo without its value

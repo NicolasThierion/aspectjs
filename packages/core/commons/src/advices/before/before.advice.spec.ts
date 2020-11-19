@@ -326,4 +326,46 @@ describe('@Before advice', () => {
             expect(thisInstance).toEqual(a);
         });
     });
+
+    describe('applied on both a method & parameter ', () => {
+        let a: Labeled;
+        let methodSpy: jasmine.Spy;
+        let methodAdvice: jasmine.Spy;
+        let parameterAdvice: jasmine.Spy;
+        beforeEach(() => {
+            methodAdvice = jasmine.createSpy('methodAdvice');
+            parameterAdvice = jasmine.createSpy('parameterAdvice');
+
+            @Aspect()
+            class AAspect {
+                @Before(on.parameter.withAnnotations(AParameter))
+                applyBeforeParameter(ctxt: AdviceContext<any, AdviceType.PARAMETER>): void {
+                    parameterAdvice.bind(this)(ctxt);
+                }
+                @Before(on.parameter.withAnnotations(AMethod))
+                applyBeforeMethod(ctxt: AdviceContext<any, AdviceType.METHOD>): void {
+                    methodAdvice.bind(this)(ctxt);
+                }
+            }
+            methodSpy = jasmine.createSpy('methodSpy');
+            weaver.enable(new AAspect());
+
+            class A {
+                @AMethod()
+                addLabel(@AParameter() param: any): any {
+                    methodSpy();
+                }
+            }
+
+            a = new A();
+        });
+        xit('should call both aspects', () => {
+            expect(methodAdvice).not.toHaveBeenCalled();
+            expect(parameterAdvice).not.toHaveBeenCalled();
+
+            a.addLabel('x');
+            expect(methodAdvice).toHaveBeenCalled();
+            expect(parameterAdvice).toHaveBeenCalled();
+        });
+    });
 });

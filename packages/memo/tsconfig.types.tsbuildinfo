@@ -241,6 +241,16 @@
         "signature": "ad7a9eacb112febeb961db6eb16229e1169075e4cf8f72ad14a2d7ca66d9fddb",
         "affectsGlobalScope": false
       },
+      "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts": {
+        "version": "b71e6dabd46f1837829ddbdca3f288479ff57a53af87054b8687c7609de4665e",
+        "signature": "b71e6dabd46f1837829ddbdca3f288479ff57a53af87054b8687c7609de4665e",
+        "affectsGlobalScope": false
+      },
+      "../core/commons/dist/typings/commons/src/annotation/registry/annotation.registry.d.ts": {
+        "version": "9d4bbfedeecc92e9a37d785f58aca874524d988cb4821ba014ce1525fa84feed",
+        "signature": "9d4bbfedeecc92e9a37d785f58aca874524d988cb4821ba014ce1525fa84feed",
+        "affectsGlobalScope": false
+      },
       "../core/utils/dist/typings/utils/src/utils.d.ts": {
         "version": "75bf659775e3af53d1bb520e6f1c6b423d4791c04367b30776cdb38ffc3cae0a",
         "signature": "75bf659775e3af53d1bb520e6f1c6b423d4791c04367b30776cdb38ffc3cae0a",
@@ -257,23 +267,13 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts": {
-        "version": "7b8c44de12b5a7111901a15f1c8be5f02fb273654ca04fead21cba3f1953d1c8",
-        "signature": "7b8c44de12b5a7111901a15f1c8be5f02fb273654ca04fead21cba3f1953d1c8",
-        "affectsGlobalScope": false
-      },
-      "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts": {
-        "version": "84b6719313130dbbea5da40b7dea173dc4eb98f6f214c5ab64e42fb6f4de6c39",
-        "signature": "84b6719313130dbbea5da40b7dea173dc4eb98f6f214c5ab64e42fb6f4de6c39",
-        "affectsGlobalScope": false
-      },
-      "../core/commons/dist/typings/commons/src/annotation/registry/annotation.registry.d.ts": {
-        "version": "09e4f5bebba90bfb524b80e83d29d691796a52b85cfb8c8ec4f222f40d4cbebe",
-        "signature": "09e4f5bebba90bfb524b80e83d29d691796a52b85cfb8c8ec4f222f40d4cbebe",
+        "version": "aeee980cee81460816fed7132712ee6ea4353325f2827ddbd9f77a15dac5957e",
+        "signature": "aeee980cee81460816fed7132712ee6ea4353325f2827ddbd9f77a15dac5957e",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/annotation/location/location.factory.d.ts": {
-        "version": "75cfffef50d2918c81d2358010b9d5b3efe4f297f442637d8d1f419b9e5f5853",
-        "signature": "75cfffef50d2918c81d2358010b9d5b3efe4f297f442637d8d1f419b9e5f5853",
+        "version": "54d75fbc6b82b1e34e66d11e19aeec12e31b5669b331226780d18c2b939405bf",
+        "signature": "54d75fbc6b82b1e34e66d11e19aeec12e31b5669b331226780d18c2b939405bf",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/annotation/factory/annotation.factory.d.ts": {
@@ -282,8 +282,8 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/aspect/aspect.type.d.ts": {
-        "version": "4e1b4a5764403258f565febafc752af1e1f1455d9863c6283343f60544775019",
-        "signature": "4e1b4a5764403258f565febafc752af1e1f1455d9863c6283343f60544775019",
+        "version": "d0d16e8ebf9bc07e502a03e9e04dfddd6d9f594e97a5ef126d4458dab1fdaef7",
+        "signature": "d0d16e8ebf9bc07e502a03e9e04dfddd6d9f594e97a5ef126d4458dab1fdaef7",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/aspect/aspect.registry.type.d.ts": {
@@ -302,13 +302,13 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/profile.d.ts": {
-        "version": "1b31c856ee00a4a5fc921eec2b2a71b94a4b136193acd8646d505ec76d24fc81",
-        "signature": "1b31c856ee00a4a5fc921eec2b2a71b94a4b136193acd8646d505ec76d24fc81",
+        "version": "1be23ce90829d366ebb5e75b5374ae97cdcdbcd588f9a76070de0f60dc03d76c",
+        "signature": "1be23ce90829d366ebb5e75b5374ae97cdcdbcd588f9a76070de0f60dc03d76c",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts": {
-        "version": "752c5985dcc380f1960565514c209f861b309fdf5a83342b3a9f48b7a4e7b9e9",
-        "signature": "752c5985dcc380f1960565514c209f861b309fdf5a83342b3a9f48b7a4e7b9e9",
+        "version": "24b120fd218a249198075d762c09cca03d653538682aa6f51d9a356a71cf0a2a",
+        "signature": "24b120fd218a249198075d762c09cca03d653538682aa6f51d9a356a71cf0a2a",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/weaver-context.d.ts": {
@@ -362,8 +362,8 @@
         "affectsGlobalScope": false
       },
       "../core/dist/typings/src/weaver/weaver-context.impl.d.ts": {
-        "version": "e16f0fe8f72a8ffaa97ffd83edc3e4cb22bd65a3e9796952a67a6427bb75ab36",
-        "signature": "e16f0fe8f72a8ffaa97ffd83edc3e4cb22bd65a3e9796952a67a6427bb75ab36",
+        "version": "712aca991411cbf42f416d02f59631cfa29b99690fa9813187543a8906f3cea1",
+        "signature": "712aca991411cbf42f416d02f59631cfa29b99690fa9813187543a8906f3cea1",
         "affectsGlobalScope": false
       },
       "../core/dist/typings/src/weaver/plan.factory.d.ts": {
@@ -372,8 +372,8 @@
         "affectsGlobalScope": false
       },
       "../core/dist/typings/src/weaver/jit-weaver.d.ts": {
-        "version": "89c7f0d483e9fb2a304575e34af3b6c707a7d7f686ef7abfc867ccfe2959adbf",
-        "signature": "89c7f0d483e9fb2a304575e34af3b6c707a7d7f686ef7abfc867ccfe2959adbf",
+        "version": "f3e5dc83170bcd0e8f7038ed08785487bff24aebbf480b5360290a7b1aeb52ab",
+        "signature": "f3e5dc83170bcd0e8f7038ed08785487bff24aebbf480b5360290a7b1aeb52ab",
         "affectsGlobalScope": false
       },
       "../core/dist/typings/public_api.d.ts": {
@@ -382,18 +382,18 @@
         "affectsGlobalScope": false
       },
       "./src/memo.types.ts": {
-        "version": "ca2aa51c8149f8ddcd845a5583bfb681db2a0cf4992f4512ba6f65cb5fb61a86",
-        "signature": "a1ac3834c09c71600cf99e3ef4c692be24a97fa0bc41db8a2f7cd1dbfe7b27e8",
-        "affectsGlobalScope": false
-      },
-      "./src/drivers/memo-frame.ts": {
-        "version": "5c9628a8b42f685f0aeac8ca53df72dbc8be8b7a0155c4234d8a7f42d25d5f11",
-        "signature": "7de5092d4542164af51dc4a0d5e04dc5a838efe0816af75f091445db3f215306",
+        "version": "1deaac403b2638619fd824fdddf8fac985bf3b7b37c80fc59bebbfd452abf20b",
+        "signature": "40e0287a0b32a3f4561fc46ce403e80f425d999038ef007316ba5c6ea54b22f9",
         "affectsGlobalScope": false
       },
       "./src/drivers/memo.driver.ts": {
-        "version": "712244c2f7ac339890998e15af4729e02ac3e74781d38e0b4cc19fb0cdb5e668",
-        "signature": "88a617599ea25ba00f76aeef9ed3e834ccc37c753c8c71c73b7b9a0d716bb2f4",
+        "version": "8899a06f2e4a97c830a35b53bbfe1f524c3e3556f2cfb3e06d9a0c9be98ac398",
+        "signature": "5b87ab5da819ee5846b861d289abae115eba6ba487872edab27e6290666520d6",
+        "affectsGlobalScope": false
+      },
+      "./src/drivers/memo-frame.ts": {
+        "version": "9b3c64951d78cc48ca148d24326b3cd88e9e06e37304fcbcbacde16931e09650",
+        "signature": "da5ab2458011156b38093b279d441837d51c8004a260396a0a266bb46fe29d05",
         "affectsGlobalScope": false
       },
       "../core/annotations/dist/typings/annotations/src/aspect/aspect.annotation.d.ts": {
@@ -446,44 +446,14 @@
         "signature": "34a9673d24a2dc1fc0e9b27153684d848ae86485437bfa4cf1724fc80ee5429c",
         "affectsGlobalScope": false
       },
-      "../../node_modules/flatted/types.d.ts": {
-        "version": "a6d70368f2f26c10c9d0ac68cdca131f9126d6e485e1488167f64a00ec4b6a24",
-        "signature": "a6d70368f2f26c10c9d0ac68cdca131f9126d6e485e1488167f64a00ec4b6a24",
-        "affectsGlobalScope": false
-      },
       "../../node_modules/fast-copy/index.d.ts": {
         "version": "d0bfb425ebabea762a078d98445c40e078ca80698e4a4423ed7118ef99d8dbbf",
         "signature": "d0bfb425ebabea762a078d98445c40e078ca80698e4a4423ed7118ef99d8dbbf",
         "affectsGlobalScope": false
       },
-      "./src/memo.annotation.ts": {
-        "version": "7e415c37b2197d97b14453359cd986ce43549092d0eb64cad94509557b5995d1",
-        "signature": "47fae2a44fdbf865758927d6b8741c3e43afa8c87d5b6905474136dbca260bb9",
-        "affectsGlobalScope": false
-      },
-      "./src/utils/murmurhash.ts": {
-        "version": "3bfccbc18698367bff9f802a82075be7f171862803cc198e47b8196e66f1a60d",
-        "signature": "e3cb4850fefd982b459633c7a1cff71cfdb3863de023eb052144efefa22acbdb",
-        "affectsGlobalScope": false
-      },
-      "./src/utils/instant-promise.ts": {
-        "version": "c743842f82f42fc1729f15f72fc9bb647be9432ed6e815206d2a8af60c5b2072",
-        "signature": "ae08ec5eb7552b2a789858a208e37b7a0bc0f045bca83e7349e068c7a2860fa7",
-        "affectsGlobalScope": false
-      },
-      "./src/utils/mutable.ts": {
-        "version": "e662ab80c05a0bfa6be00a4e4ac963edfc58abaeb448f9f7968057d091da5251",
-        "signature": "91ebc6ed24b0153bf6703c93f654a845fc2b0a28b4efe88135ac598ae507d6f2",
-        "affectsGlobalScope": false
-      },
-      "./src/utils/provider.ts": {
-        "version": "01629fceaad98852f5d0f9d289f9d79aa1d1ea95e674a5808756837834dae326",
-        "signature": "c065960a2af04577e8e78ed0c5cab2efa9432eff3a49c6fef3ef79d69b382d66",
-        "affectsGlobalScope": false
-      },
-      "./src/utils/index.ts": {
-        "version": "6d52ca4c15338b9fa432bfc45d2da8ae0b6789bc7e35656639a5d8c59880f4be",
-        "signature": "8d6d8c7f687678f954cb07d744e5066a40817218892d5d8f26679a2516ee389f",
+      "../../node_modules/flatted/types.d.ts": {
+        "version": "a6d70368f2f26c10c9d0ac68cdca131f9126d6e485e1488167f64a00ec4b6a24",
+        "signature": "a6d70368f2f26c10c9d0ac68cdca131f9126d6e485e1488167f64a00ec4b6a24",
         "affectsGlobalScope": false
       },
       "./src/cacheable/cacheable.annotation.ts": {
@@ -506,8 +476,33 @@
         "signature": "3e322eed0cdc8634b5da7f4bd25a3c87f4791a605fbc3fe4e2ad46beee1f61df",
         "affectsGlobalScope": false
       },
+      "./src/utils/hash.ts": {
+        "version": "265affebb83948eab2e628d0c3f09b6f9a36eb99eacf074d069d48c79be5c14f",
+        "signature": "b0fbe3aceabb225e79da27993d015cd8d7a98fff6e9577dfb81418c0df64798b",
+        "affectsGlobalScope": false
+      },
+      "./src/utils/instant-promise.ts": {
+        "version": "c743842f82f42fc1729f15f72fc9bb647be9432ed6e815206d2a8af60c5b2072",
+        "signature": "ae08ec5eb7552b2a789858a208e37b7a0bc0f045bca83e7349e068c7a2860fa7",
+        "affectsGlobalScope": false
+      },
+      "./src/utils/mutable.ts": {
+        "version": "e662ab80c05a0bfa6be00a4e4ac963edfc58abaeb448f9f7968057d091da5251",
+        "signature": "91ebc6ed24b0153bf6703c93f654a845fc2b0a28b4efe88135ac598ae507d6f2",
+        "affectsGlobalScope": false
+      },
+      "./src/utils/provider.ts": {
+        "version": "01629fceaad98852f5d0f9d289f9d79aa1d1ea95e674a5808756837834dae326",
+        "signature": "c065960a2af04577e8e78ed0c5cab2efa9432eff3a49c6fef3ef79d69b382d66",
+        "affectsGlobalScope": false
+      },
+      "./src/utils/index.ts": {
+        "version": "50007515965db49d391cc48b6f820853e21afe99c962a5611e4db9388ba54c1c",
+        "signature": "5b7b1907063af2a2a691cafe5a1d7a722b594916a8f27d6bfd883fd55aa96652",
+        "affectsGlobalScope": false
+      },
       "./src/marshalling/marshallers/cacheable-marshaller.ts": {
-        "version": "2dab43a7419513e391dbf8b8eed3b767b8b1ed1d5a928fe5c6de7ddcef76eedf",
+        "version": "30ac8551441d59ec547120bec99807938761bc843819d47fa99f6c09263258f8",
         "signature": "746c470a12541ff5325967fb6f5c0645804994204f511b94b273863a7997b63b",
         "affectsGlobalScope": false
       },
@@ -542,13 +537,18 @@
         "affectsGlobalScope": false
       },
       "./src/marshalling/marshallers-registry.ts": {
-        "version": "46a88e1865c770dd1368a543332d3994aa199c2b8c8444d183191a058141827f",
-        "signature": "ed71e5533100e0286353c991521239980d54244bba29c774b50c61133b230e02",
+        "version": "f44e2d9beb5f1f8eb9c5850dded35c63425be03d476878f395de32f3086dbe4c",
+        "signature": "f92d421a4c94f91909d2d859b1c29324df12ea2f93b7f47c635f030793c283b7",
+        "affectsGlobalScope": false
+      },
+      "./src/memo.annotation.ts": {
+        "version": "7e415c37b2197d97b14453359cd986ce43549092d0eb64cad94509557b5995d1",
+        "signature": "47fae2a44fdbf865758927d6b8741c3e43afa8c87d5b6905474136dbca260bb9",
         "affectsGlobalScope": false
       },
       "./src/memo.aspect.ts": {
-        "version": "a942403f379e7d66c59ad7c3b900a9d2519fad2cf75cf5f3a2388ae6c7d6083f",
-        "signature": "7efc2d41582e49201eb8ddebc2fe85c10c1e9f8511d15502430a4cd3c365c0d3",
+        "version": "15d1cc4d2a5b5d8418bb1d4928a25330b46800928ddd00b38465e6ef5689790e",
+        "signature": "8cc2b545f91a29efd2ade020c9d3fc87584a14326f92fdfb50affe55f07f58c6",
         "affectsGlobalScope": false
       },
       "./src/drivers/scheduler.ts": {
@@ -557,33 +557,43 @@
         "affectsGlobalScope": false
       },
       "./src/drivers/indexed-db/idb-memo.driver.ts": {
-        "version": "575e3fd0115cbe2b44f7c110361c62fd0f89d7779b49307b31157d758366b02c",
-        "signature": "a7e8f8611b2dd17e95a8c5ea8ba4d855d33b9563a00e2b5f45853f5e3e79b054",
+        "version": "41ef2cd02117438b4666fcc47f6ed6d1988031412bcb5aa00c531121a3550abe",
+        "signature": "ea34756e6b496e6be0765c33b526e7a00f8cfd24babb4289329598e4fd39b319",
+        "affectsGlobalScope": false
+      },
+      "./src/drivers/localstorage/serializers/ls-serializer.type.ts": {
+        "version": "1af6ad00ac066d9cc0c0c438ea3b3550617952597fc6c3c5d6f7664de16d050b",
+        "signature": "b89afdeeb8d58f6dded0e2de384be751c5cbdd1716f6c96e9e02367fde3cd2de",
+        "affectsGlobalScope": false
+      },
+      "./src/drivers/localstorage/serializers/ls-serializer.ts": {
+        "version": "eb5aa2c52f433b8a2bd450bbcb8c2ff87afa4cfa23f6399dfa310caf06aa313f",
+        "signature": "9d491683f366a85709ac178c0732b4fdc2da304146a43b12eace1baf1aacf1d3",
         "affectsGlobalScope": false
       },
       "./src/drivers/localstorage/localstorage.driver.ts": {
-        "version": "1c2cc68b1ed3e03e5a2e6986fcf92a18d04d01d8ec777ffce07d6d558fca34ee",
-        "signature": "2759e64f67d26ac36e4460ad4b10e8d36f7ac213b64e7eb18af7cc80874994d3",
+        "version": "9f2e45fa0d525438d79d5588bba7b144d23d52157aceac9b56197669d42e19d7",
+        "signature": "227327d7886b98730d07d4b3ab1547acf81e88b8c7573263392bbaea0d69171f",
         "affectsGlobalScope": false
       },
-      "../../node_modules/@types/lz-string/index.d.ts": {
-        "version": "a72d313bb91d97bca7fba7da3681cb8ee00cd2bf98d9a545727f91f0345330c9",
-        "signature": "a72d313bb91d97bca7fba7da3681cb8ee00cd2bf98d9a545727f91f0345330c9",
+      "./src/utils/lz-string.ts": {
+        "version": "6b1a245e7caac07d1e87592a236bafab424059e9b2ad72c26df804264176b49d",
+        "signature": "1cd6f2f688cf17100f4ef993a452a92cf38a54f6af7ff57243660a99d875433c",
         "affectsGlobalScope": false
       },
-      "./src/drivers/localstorage/lz-memo.serializer.ts": {
-        "version": "aff6d070a00eea8a71b2ab20ca708aa849c9edc25e601de3cef0536cbacff147",
-        "signature": "c19e69788a511ed21648de2989184d3991704cff5e7a1e28e4f91ee82f092157",
+      "./src/drivers/localstorage/serializers/lz-memo.serializer.ts": {
+        "version": "e9458fbfee49fb72a5b6dcb3847573ad12daebb4cdf614c06c2af084dcd945bf",
+        "signature": "14fc59b73a0510d95b7454b519201f5e02f462f3729f6fa23f19396ddf099d93",
         "affectsGlobalScope": false
       },
       "./src/drivers/index.ts": {
-        "version": "bd75c055f51cf93c1d21d5358a67a657e850198b0adcbe7eef5cf0c4e32a4736",
-        "signature": "6840f2504a0d23c9e5ad666c1f9f343c8a6a0849438494a7d19d439786526e7e",
+        "version": "03c73b61a64611109f12e8a74a104aaa3b1b536293ecfe2fb3e562a7fe9f7f49",
+        "signature": "9f0ba03a187b014f33fb8154b88c0b319f9cbd10f7499f2c1a8405456108b09d",
         "affectsGlobalScope": false
       },
       "./src/marshalling/marshalling-context.ts": {
-        "version": "e5a432266c39e54daacb6b035bfea295ee376c02b6a1acffc7aac507b6acae69",
-        "signature": "61bc6bf567a08f6158509d268a6a99757cde61c66d9bfdce4fb8e316f4e0ec39",
+        "version": "afe42598412dcd674e19f088c31acf66e5c40019b89c5b5dcbc324f66d57d6de",
+        "signature": "f7333a752c0d939a9745dd9727174ed3a8c7257f83ba6175d4dc000ac2952f7b",
         "affectsGlobalScope": false
       },
       "./src/errors.ts": {
@@ -592,8 +602,8 @@
         "affectsGlobalScope": false
       },
       "../core/testing/dist/core-testing.d.ts": {
-        "version": "567b01aba339bc0c9be0dd1af310a1ab7859cf06251ed40daee11b70361dbe7b",
-        "signature": "567b01aba339bc0c9be0dd1af310a1ab7859cf06251ed40daee11b70361dbe7b",
+        "version": "63c7c24e9f32a9a883bb905e13b67714b294119adaa3065be1162c96bda4dfc6",
+        "signature": "63c7c24e9f32a9a883bb905e13b67714b294119adaa3065be1162c96bda4dfc6",
         "affectsGlobalScope": false
       },
       "./src/utils/spec-helpers.ts": {
@@ -602,7 +612,7 @@
         "affectsGlobalScope": false
       },
       "./src/memo.aspect.spec.ts": {
-        "version": "aa18776ab72b3ada627f6dc22aba10c03c4edcc00fe4653a5977aca5bef29ae5",
+        "version": "156de3af967c71296218dcf76537e49f6462ceaf38fdd1b3b1a38dd90d649837",
         "signature": "080a2b8d0c63ce31fe37fb698dc0b65daffa04dbd38b489e834c63b5de3ebc40",
         "affectsGlobalScope": false
       },
@@ -1477,7 +1487,7 @@
         "affectsGlobalScope": false
       },
       "./src/drivers/indexed-db/indexed-db.driver.spec.ts": {
-        "version": "4009734dcf6204ac361dccf2a8480e16f677e0711cc769ba7034b87efedf0310",
+        "version": "371045c461f43517187382985d6550550b1119ccd516c1ea82e9b31df7797990",
         "signature": "515c4ebcbdfe35ef041e5344d0dcb58aac7d5b2d93fb234e3ea327dc88581eec",
         "affectsGlobalScope": false
       },
@@ -1486,8 +1496,8 @@
         "signature": "3a2aeb841cb113ca89b1c225e6868188ad29b215c6e9b9b7d81f304c682d2dbd",
         "affectsGlobalScope": false
       },
-      "./src/drivers/localstorage/lz-cache.serializer.spec.ts": {
-        "version": "dd5357f05b029331c4781179001024b51015f5530c9c7053391fc6aca54612a9",
+      "./src/drivers/localstorage/serializers/lz-cache.serializer.spec.ts": {
+        "version": "de0487b7dfd341d7fd7f766b9cdd484124eb523f472b971cd3bab1f9770ede59",
         "signature": "f3359b201283a41f6cb5ce2e140430346cbdd5b3f178f07b51738e036fa14573",
         "affectsGlobalScope": false
       },
@@ -1497,12 +1507,12 @@
         "affectsGlobalScope": false
       },
       "./src/marshalling/marshallers/basic-marshaller.spec.ts": {
-        "version": "9cacf9464cf46effaec71657781c2344fd3d980a6793a74a0d863786e5650078",
+        "version": "69d3c922394b5472b9fc9dfe96a232f9d6d8ade440afcc0063b6117c012f052f",
         "signature": "2926380ff54bd3ef3d9fccba9d5c087747ee6f441efcfddc8c1e4a267ab2b8c5",
         "affectsGlobalScope": false
       },
       "./src/marshalling/marshallers/cacheable-marshaller.spec.ts": {
-        "version": "87b69690dd29dcc49a7173777733de81c10027cf13955a9edb4bfb019867fd12",
+        "version": "204ed6f13f324d541cd578e24af803fb2b0cb85a51647a5fedfc3d8434726340",
         "signature": "79a66ff2a630eeb6b375ab284a72919bc7175ca1d88faaab5fe3999f3c808306",
         "affectsGlobalScope": false
       },
@@ -1522,7 +1532,7 @@
         "affectsGlobalScope": false
       },
       "./src/observables/observable-marshaller.spec.ts": {
-        "version": "525be4aabda3b3a9c72278de085b5f4d574a288946005156a87c4c46bc9cae51",
+        "version": "186898d1714d4fb3fc1588b92d9ae780936a4f0aa8b60a654a632409af6a0e9e",
         "signature": "f454ae3ce39c5d7a7543553db7366996585aadc068cd9bfaac30945e77dd721c",
         "affectsGlobalScope": false
       },
@@ -2882,8 +2892,7 @@
       "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts": [
         "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts"
+        "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts": [
         "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
@@ -2897,13 +2906,13 @@
       ],
       "../core/commons/dist/typings/commons/src/annotation/location/location.factory.d.ts": [
         "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/registry/annotation.registry.d.ts": [
         "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts"
+        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts": [
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
@@ -2911,7 +2920,6 @@
       ],
       "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts": [
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/utils/dist/typings/utils/public_api.d.ts"
       ],
@@ -2979,6 +2987,7 @@
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts": [
         "../core/commons/dist/typings/commons/src/advices/index.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
+        "../core/commons/dist/typings/commons/src/aspect/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/profile.d.ts"
       ],
       "../core/dist/typings/public_api.d.ts": [
@@ -3032,7 +3041,9 @@
       "./src/drivers/index.ts": [
         "./src/drivers/indexed-db/idb-memo.driver.ts",
         "./src/drivers/localstorage/localstorage.driver.ts",
-        "./src/drivers/localstorage/lz-memo.serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
+        "./src/drivers/localstorage/serializers/lz-memo.serializer.ts",
         "./src/drivers/memo-frame.ts",
         "./src/drivers/memo.driver.ts"
       ],
@@ -3063,32 +3074,41 @@
         "./src/utils/spec-helpers.ts"
       ],
       "./src/drivers/localstorage/localstorage.driver.ts": [
-        "../../node_modules/flatted/types.d.ts",
-        "../core/utils/dist/typings/utils/public_api.d.ts",
-        "./src/drivers/memo-frame.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
         "./src/drivers/memo.driver.ts",
         "./src/marshalling/marshalling-context.ts",
         "./src/memo.types.ts",
         "./src/utils/index.ts"
       ],
-      "./src/drivers/localstorage/lz-cache.serializer.spec.ts": [
+      "./src/drivers/localstorage/serializers/ls-serializer.ts": [
+        "../../node_modules/flatted/types.d.ts",
+        "../core/utils/dist/typings/utils/public_api.d.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
+        "./src/drivers/memo-frame.ts",
+        "./src/memo.types.ts"
+      ],
+      "./src/drivers/localstorage/serializers/ls-serializer.type.ts": [
+        "./src/memo.types.ts"
+      ],
+      "./src/drivers/localstorage/serializers/lz-cache.serializer.spec.ts": [
         "../core/testing/dist/core-testing.d.ts",
         "./src/cacheable/cacheable.aspect.ts",
         "./src/drivers/localstorage/localstorage.driver.ts",
-        "./src/drivers/localstorage/lz-memo.serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
+        "./src/drivers/localstorage/serializers/lz-memo.serializer.ts",
         "./src/memo.annotation.ts",
         "./src/memo.aspect.ts"
       ],
-      "./src/drivers/localstorage/lz-memo.serializer.ts": [
-        "../../node_modules/@types/lz-string/index.d.ts",
-        "../../node_modules/flatted/types.d.ts",
-        "./src/drivers/localstorage/localstorage.driver.ts"
+      "./src/drivers/localstorage/serializers/lz-memo.serializer.ts": [
+        "./src/drivers/localstorage/serializers/ls-serializer.ts",
+        "./src/memo.types.ts",
+        "./src/utils/lz-string.ts"
       ],
       "./src/drivers/memo-frame.ts": [
         "../core/utils/dist/typings/utils/public_api.d.ts"
       ],
       "./src/drivers/memo.driver.ts": [
-        "./src/drivers/memo-frame.ts",
         "./src/marshalling/marshalling-context.ts",
         "./src/memo.types.ts"
       ],
@@ -3127,6 +3147,7 @@
         "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/dist/typings/public_api.d.ts",
         "../core/utils/dist/typings/utils/public_api.d.ts",
+        "./src/cacheable/cacheable.annotation.ts",
         "./src/cacheable/cacheable.aspect.ts",
         "./src/drivers/index.ts",
         "./src/errors.ts",
@@ -3215,7 +3236,8 @@
         "./src/profiles/default.profile.ts"
       ],
       "./src/memo.types.ts": [
-        "./src/drivers/index.ts"
+        "./src/drivers/index.ts",
+        "./src/errors.ts"
       ],
       "./src/observables/index.ts": [
         "./src/observables/observable-marshaller.ts",
@@ -3251,8 +3273,8 @@
         "./src/observables/index.ts"
       ],
       "./src/utils/index.ts": [
+        "./src/utils/hash.ts",
         "./src/utils/instant-promise.ts",
-        "./src/utils/murmurhash.ts",
         "./src/utils/mutable.ts",
         "./src/utils/provider.ts"
       ],
@@ -3272,14 +3294,6 @@
       ]
     },
     "exportedModulesMap": {
-      "../../node_modules/@types/lz-string/index.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts"
-      ],
       "../../node_modules/@types/node/base.d.ts": [
         "../../node_modules/@types/node/assert.d.ts",
         "../../node_modules/@types/node/ts3.6/base.d.ts"
@@ -5830,16 +5844,9 @@
         "../../node_modules/@types/node/util.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts"
+        "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts": [
         "../../node_modules/@types/node/fs.d.ts",
@@ -5864,26 +5871,14 @@
         "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/location/location.factory.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/registry/annotation.registry.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts"
+        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts": [
         "../../node_modules/@types/node/fs.d.ts",
@@ -5896,14 +5891,7 @@
         "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.factory.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/location/annotation-location.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/utils/dist/typings/utils/public_api.d.ts"
       ],
@@ -5912,14 +5900,6 @@
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/aspect/aspect.type.d.ts",
         "../core/commons/dist/typings/commons/src/types/index.d.ts"
-      ],
-      "../core/commons/dist/typings/commons/src/aspect/aspect.type.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/aspect/index.d.ts": [
         "../../node_modules/@types/node/fs.d.ts",
@@ -6020,12 +6000,6 @@
         "../core/utils/dist/typings/utils/public_api.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/weaver/profile.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/aspect/index.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/weaver/weaver-context.d.ts": [
@@ -6041,14 +6015,9 @@
         "../core/commons/dist/typings/commons/src/types/index.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/advices/index.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
+        "../core/commons/dist/typings/commons/src/aspect/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/profile.d.ts"
       ],
       "../core/dist/typings/public_api.d.ts": [
@@ -6073,24 +6042,12 @@
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/dist/typings/src/weaver/jit-weaver.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/dist/typings/src/weaver/plan.factory.d.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/dist/typings/src/weaver/weaver-context.impl.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/testing/dist/core-testing.d.ts": [
@@ -6137,28 +6094,37 @@
       "./src/drivers/index.ts": [
         "./src/drivers/indexed-db/idb-memo.driver.ts",
         "./src/drivers/localstorage/localstorage.driver.ts",
-        "./src/drivers/localstorage/lz-memo.serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
+        "./src/drivers/localstorage/serializers/lz-memo.serializer.ts",
         "./src/drivers/memo-frame.ts",
         "./src/drivers/memo.driver.ts"
       ],
       "./src/drivers/indexed-db/idb-memo.driver.ts": [
         "./src/drivers/index.ts",
-        "./src/drivers/memo-frame.ts",
         "./src/drivers/memo.driver.ts",
         "./src/marshalling/marshalling-context.ts",
         "./src/memo.types.ts"
       ],
       "./src/drivers/localstorage/localstorage.driver.ts": [
-        "./src/drivers/memo-frame.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.ts",
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
         "./src/drivers/memo.driver.ts",
         "./src/marshalling/marshalling-context.ts",
         "./src/memo.types.ts"
       ],
-      "./src/drivers/localstorage/lz-memo.serializer.ts": [
-        "./src/drivers/localstorage/localstorage.driver.ts"
+      "./src/drivers/localstorage/serializers/ls-serializer.ts": [
+        "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
+        "./src/memo.types.ts"
+      ],
+      "./src/drivers/localstorage/serializers/ls-serializer.type.ts": [
+        "./src/memo.types.ts"
+      ],
+      "./src/drivers/localstorage/serializers/lz-memo.serializer.ts": [
+        "./src/drivers/localstorage/serializers/ls-serializer.ts",
+        "./src/memo.types.ts"
       ],
       "./src/drivers/memo.driver.ts": [
-        "./src/drivers/memo-frame.ts",
         "./src/marshalling/marshalling-context.ts",
         "./src/memo.types.ts"
       ],
@@ -6168,8 +6134,7 @@
       "./src/marshalling/marshallers-registry.ts": [
         "./src/drivers/index.ts",
         "./src/marshalling/marshallers/index.ts",
-        "./src/marshalling/marshalling-context.ts",
-        "./src/memo.types.ts"
+        "./src/marshalling/marshalling-context.ts"
       ],
       "./src/marshalling/marshallers/array-marshaller.ts": [
         "./src/drivers/index.ts",
@@ -6219,8 +6184,7 @@
         "./src/marshalling/marshalling-context.ts"
       ],
       "./src/marshalling/marshalling-context.ts": [
-        "./src/drivers/index.ts",
-        "./src/memo.types.ts"
+        "./src/drivers/index.ts"
       ],
       "./src/memo.annotation.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts",
@@ -6257,8 +6221,8 @@
         "./src/memo.aspect.ts"
       ],
       "./src/utils/index.ts": [
+        "./src/utils/hash.ts",
         "./src/utils/instant-promise.ts",
-        "./src/utils/murmurhash.ts",
         "./src/utils/mutable.ts",
         "./src/utils/provider.ts"
       ],
@@ -6270,7 +6234,6 @@
     },
     "semanticDiagnosticsPerFile": [
       "../../node_modules/@types/jasmine/index.d.ts",
-      "../../node_modules/@types/lz-string/index.d.ts",
       "../../node_modules/@types/node/assert.d.ts",
       "../../node_modules/@types/node/async_hooks.d.ts",
       "../../node_modules/@types/node/base.d.ts",
@@ -6585,8 +6548,10 @@
       "./src/drivers/indexed-db/indexed-db.driver.spec.ts",
       "./src/drivers/localstorage/localstorage.driver.spec.ts",
       "./src/drivers/localstorage/localstorage.driver.ts",
-      "./src/drivers/localstorage/lz-cache.serializer.spec.ts",
-      "./src/drivers/localstorage/lz-memo.serializer.ts",
+      "./src/drivers/localstorage/serializers/ls-serializer.ts",
+      "./src/drivers/localstorage/serializers/ls-serializer.type.ts",
+      "./src/drivers/localstorage/serializers/lz-cache.serializer.spec.ts",
+      "./src/drivers/localstorage/serializers/lz-memo.serializer.ts",
       "./src/drivers/memo-frame.ts",
       "./src/drivers/memo.driver.ts",
       "./src/drivers/scheduler.ts",
@@ -6618,9 +6583,10 @@
       "./src/observables/observable-marshaller.ts",
       "./src/observables/observables-support.aspect.ts",
       "./src/profiles/default.profile.ts",
+      "./src/utils/hash.ts",
       "./src/utils/index.ts",
       "./src/utils/instant-promise.ts",
-      "./src/utils/murmurhash.ts",
+      "./src/utils/lz-string.ts",
       "./src/utils/mutable.ts",
       "./src/utils/provider.ts",
       "./src/utils/spec-helpers.ts"

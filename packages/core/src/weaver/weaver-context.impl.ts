@@ -22,7 +22,7 @@ const annotationRegistry = new AnnotationRegistry(bundleRegistry);
  * @public
  */
 export class WeaverContextImpl implements WeaverContext {
-    private readonly _weaver = new JitWeaver(this);
+    readonly weaver: Weaver;
     private readonly _targetFactory = new AnnotationTargetFactory();
 
     readonly aspects: { registry: AspectsRegistry };
@@ -38,11 +38,17 @@ export class WeaverContextImpl implements WeaverContext {
         this.aspects = {
             registry: new AspectsRegistryImpl(this),
         };
+
+        this.weaver = this._createWeaver();
+    }
+
+    protected _createWeaver(): Weaver {
+        return new JitWeaver(this);
     }
     /**
      * Get the global weaver
      */
     getWeaver(): Weaver {
-        return this._weaver;
+        return this.weaver;
     }
 }

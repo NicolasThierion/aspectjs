@@ -28,6 +28,7 @@ export class MemoComponent implements OnInit {
                     const u = new User();
                     Object.assign(u, r);
                     return u;
+                    // return r;
                 });
             }),
         );
@@ -42,6 +43,7 @@ export class MemoComponent implements OnInit {
 
     ngOnInit(): void {
         this.i = 0;
+        this.fetchUsers().subscribe((r) => ((window as any).users = r));
         this.repeat(() => this.incrementI());
         this.repeat(() => this.fetchUsers().subscribe((u) => (this.users = u as any)));
     }

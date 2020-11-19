@@ -1,4 +1,8 @@
-import { assert, getOrComputeMetadata, isFunction, Mutable } from '@aspectjs/core/utils';
+import { assert, getOrComputeMetadata, isFunction } from '@aspectjs/core/utils';
+import { MutableAdviceContext } from '../../advices';
+import { Advice, AdviceType } from '../../advices/types';
+import { JoinPoint } from '../../types';
+import { _getWeaverContext, WeaverContext } from '../../weaver';
 
 import {
     Annotation,
@@ -9,12 +13,8 @@ import {
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { AdviceTarget, AnnotationTarget } from '../target/annotation-target';
-import { JoinPoint } from '../../types';
-import { Advice, AdviceType } from '../../advices/types';
 import { AnnotationContext } from '../context/annotation.context';
-import { MutableAdviceContext } from '../../advices';
-import { _getWeaverContext, WeaverContext } from '../../weaver';
+import { AdviceTarget, AnnotationTarget } from '../target/annotation-target';
 
 let generatedId = 0;
 /**
@@ -119,7 +119,6 @@ function _createRegisterAnnotationDecorator<A extends AdviceType, S extends Anno
 
         const target = weaverContext.annotations.targetFactory.of(targetArgs) as AnnotationTarget<any, A>;
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
-
         weaverContext.annotations.registry.register(annotationContext);
 
         const ctxt = new AdviceContextImpl(annotationContext);
@@ -183,6 +182,6 @@ function _createMethodDecoration(
 function _createParameterDecoration(
     weaverContext: WeaverContext,
     ctxt: AdviceContextImpl<any, AdviceType.METHOD>,
-): void {
+): PropertyDescriptor {
     return weaverContext.getWeaver().enhanceParameter(ctxt);
 }

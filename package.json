@@ -86,7 +86,7 @@
   },
   "husky": {
     "hooks": {
-      "prepare-commit-msg": "commitlint -eq > /dev/null 2>&1 || exec < /dev/tty && git cz --hook || true",
+      "prepare-commit-msg": "commitlint -eq > /dev/null 2>&1 || (exec < /dev/tty && git cz --hook || true)",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },

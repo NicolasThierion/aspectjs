@@ -21,6 +21,7 @@ import {
     AnnotationContext,
     AnnotationRef,
 } from '@aspectjs/core/commons';
+import { WEAVER_CONTEXT } from '../../../../src/core';
 
 let advice = jasmine.createSpy('compileAspectA');
 let compileAdviceB = jasmine.createSpy('compileAspectB');

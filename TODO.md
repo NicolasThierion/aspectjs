@@ -22,7 +22,7 @@
 ## Refactor
 - Do not nest decorators when multiple annotations on the same symbol
 - test `on.X.withAnnotations(\<empty\>)` should return all advices
-
+- replace objects by Maps. Get rid of `target.ref` + `annotation.ref` ?
 
 ## Chore
 - test lerna publish & lerna version

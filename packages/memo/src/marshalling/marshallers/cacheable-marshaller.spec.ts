@@ -59,7 +59,7 @@ describe('Given a @Memo method that returns a class instance', () => {
                 it('should throw an error', () => {
                     expect(() => memoMethod()).toThrow(
                         new TypeError(
-                            `Type "X" is not annotated with "@Cacheable()". Please add "@Cacheable()" on class "X", or register a proper MemeMarshaller fot the type.`,
+                            `Type "X" is not annotated with "@Cacheable". Please add "@Cacheable" on class "X", or register a proper MemoMarshaller for this type.`,
                         ),
                     );
                 });
@@ -175,7 +175,7 @@ describe('Given a @Memo method that returns a class instance', () => {
         it('should throw an error', () => {
             expect(() => memoMethod()).toThrow(
                 new TypeError(
-                    `Type "X" is not annotated with "@Cacheable()". Please add "@Cacheable()" on class "X", or register a proper MemeMarshaller fot the type.`,
+                    `Type "X" is not annotated with "@Cacheable". Please add "@Cacheable" on class "X", or register a proper MemoMarshaller for this type.`,
                 ),
             );
         });
