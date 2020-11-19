@@ -1,8 +1,5 @@
-remove rollup-copy-plugin & rollup-plugin-cleaner
-
 ## Ideas
 - use webworkers & cache
-- prohibits body in annotationStub 
 
 ## Features
 ### Annotations
@@ -21,22 +18,22 @@ remove rollup-copy-plugin & rollup-plugin-cleaner
 ### Aspects
  - DuplicateAspectHandler
  - advise static methods?
- - add `ObservableMemoMarshaller`
  
 ## Refactor
-- fork murmurhash3js
-- add LICENSE.md
-- use AnnotationRef = {module, name} in bundles & contexts
-- add `@Order` on advices
-- do not nest decorators when multiple annotations on the same symbol
-- test `on.X.annotations(\<empty\>)` should return all advices
+- Do not nest decorators when multiple annotations on the same symbol
+- test `on.X.withAnnotations(\<empty\>)` should return all advices
 
 
 ## Chore
 - test lerna publish & lerna version
 
+## Memo
+- fix `@Compile(on.class.withAnnotations(Cacheable)) registerCacheKey` not working 
+- create `MemoryDriver` that has higher priority for short expiration times
+
+## Fix
+- fix `@Before` method not working when coupled with `@Before` parameter  
 
 ### tests
- - test @Memo with HttpClient observables
  - test multiple `@Before` on the same apsect method
   

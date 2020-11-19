@@ -18,11 +18,11 @@ export interface MemoTypeInfoFrame {
 export class MemoFrame<T = unknown> implements MemoTypeInfoFrame {
     type?: string;
     instanceType?: string;
-    expiration?: Date;
     version?: string;
     value: T;
+    hash?: string;
+    async: Promise<T>;
     private _resolved: boolean;
-    public async: Promise<T>;
     constructor(frame: Partial<MemoFrame<T>>) {
         Object.assign(this, frame);
     }

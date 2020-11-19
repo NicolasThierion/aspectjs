@@ -4,12 +4,13 @@ import { getOrComputeMetadata, getProto, isFunction, isString, isUndefined } fro
 
 import { stringify } from 'flatted';
 import copy from 'fast-copy';
+import { assert } from '../../core/utils/src/utils';
 
 import { MemoDriver, MemoFrame } from './drivers';
 import { MemoEntry, MemoKey } from './memo.types';
 import { Memo, MemoOptions } from './memo.annotation';
 import { VersionConflictError } from './errors';
-import { murmurhash, Mutable, provider } from './utils';
+import { hash, Mutable, provider } from './utils';
 import { MarshallersRegistry } from './marshalling/marshallers-registry';
 import {
     ArrayMarshaller,
@@ -45,13 +46,13 @@ export interface MemoAspectOptions {
     namespace?: string | (() => string);
     expiration?: Date | number | (() => Date | number);
     id?: string | number | ((ctxt: BeforeContext<any, any>) => string | number);
-    contextKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
+    createMemoKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
     marshallers?: MemoMarshaller[];
     drivers?: MemoDriver[];
 }
 
 const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
-    id: (ctxt: BeforeContext<any, any>) => {
+    id: (ctxt: BeforeContext<any>) => {
         const { id, _id, hashcode, _hashcode } = ctxt.instance;
         const result = id ?? _id ?? hashcode ?? _hashcode;
         if (isUndefined(result)) {
@@ -60,12 +61,12 @@ const DEFAULT_MEMO_ASPECT_OPTIONS: Required<MemoAspectOptions> = {
         return result;
     },
     namespace: '',
-    contextKey: (ctxt: BeforeContext<any, any>) => {
+    createMemoKey: (ctxt: BeforeContext<any>) => {
         return new MemoKey({
             namespace: ctxt.data.namespace,
             instanceId: ctxt.data.instanceId,
-            argsKey: murmurhash(stringify(ctxt.args)),
-            targetKey: ctxt.target.ref,
+            argsKey: hash(stringify(ctxt.args)),
+            targetKey: hash(`${ctxt.target.ref}`),
         });
     },
     expiration: undefined,
@@ -127,10 +128,10 @@ export class MemoAspect {
         const memoParams = ctxt.annotation.args[0] as MemoOptions;
         ctxt.data.namespace = provider(memoParams?.namespace)() ?? provider(this._options?.namespace)();
         ctxt.data.instanceId = `${provider(memoParams?.id)(ctxt) ?? provider(this._options?.id)(ctxt)}`;
-        const key = this._options.contextKey(ctxt) as MemoKey;
+        const key = this._options.createMemoKey(ctxt) as MemoKey;
 
         if (!key) {
-            throw new Error('memo key is not defined');
+            throw new Error(`${this._options.createMemoKey.name} function did not return a valid MemoKey`);
         }
 
         const options = ctxt.annotation.args[0] as MemoOptions;
@@ -142,7 +143,7 @@ export class MemoAspect {
             const value = (this._pendingResults[key.toString()] = jp());
 
             // marshall the value into a frame
-            const marshallingContext = this._marshallers.marshal(key, value);
+            const marshallingContext = this._marshallers.marshal(value);
 
             const driver = drivers
                 .filter((d) => d.accepts(marshallingContext))
@@ -169,11 +170,11 @@ export class MemoAspect {
                 const entry = {
                     key,
                     expiration,
-                    frame: undefined as MemoFrame,
+                    frame,
+                    signature: __createContextSignature(ctxt),
                 } as Mutable<MemoEntry>;
 
-                entry.frame = frame;
-                driver.setValue(entry).then(() => {
+                driver.write(entry).then(() => {
                     if (this._pendingResults[key.toString()] === value) {
                         delete this._pendingResults[key.toString()];
                     }
@@ -187,19 +188,23 @@ export class MemoAspect {
         }
         for (const d of drivers) {
             try {
-                const entry = d.getValue(key);
+                const entry = d.read(key);
                 if (entry) {
                     if (entry.expiration && entry.expiration < new Date()) {
                         // remove data if expired
                         this._removeValue(d, key);
+                    } else if (entry.signature && entry.signature !== __createContextSignature(ctxt)) {
+                        // remove data if signature mismatch
+                        console.debug(`${ctxt.target.label} hash mismatch. Removing memoized data...`);
+                        this._removeValue(d, key);
                     } else {
-                        return this._marshallers.unmarshal(key, entry.frame);
+                        return this._marshallers.unmarshal(entry.frame);
                     }
                 }
             } catch (e) {
                 // mute errors in ase of version mismatch, & just remove old version
                 if (e instanceof VersionConflictError) {
-                    this._removeValue(d, e.context.key);
+                    this._removeValue(d, key);
                 } else {
                     throw e;
                 }
@@ -237,8 +242,10 @@ export class MemoAspect {
     private _initGc(driver: MemoDriver): void {
         driver.getKeys().then((keys) => {
             keys.forEach((k) => {
-                Promise.resolve(driver.getValue(k)).then((memo) => {
-                    this._scheduleCleaner(driver, k, memo.expiration);
+                Promise.resolve(driver.read(k)).then((memo) => {
+                    if (memo?.expiration) {
+                        this._scheduleCleaner(driver, k, memo.expiration);
+                    }
                 });
             });
         });
@@ -292,4 +299,17 @@ function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: Arou
             );
         }
     }
+}
+
+function __createContextSignature(ctxt: AroundContext<unknown>) {
+    const s: string[] = [];
+    let proto = ctxt.target.proto as any;
+    let property = proto[ctxt.target.propertyKey];
+    while (proto !== Object.prototype && property) {
+        s.push(ctxt.target.proto[ctxt.target.propertyKey].toString());
+        proto = Reflect.getPrototypeOf(proto);
+        property = proto[ctxt.target.propertyKey];
+    }
+
+    return hash(s.join());
 }

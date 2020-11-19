@@ -136,7 +136,7 @@ export interface MemoOptions extends MemoAspectOptions {
     namespace?: string | (() => string);
     expiration?: Date | number | (() => Date | number);
     id?: string | number | ((ctxt: BeforeContext<any, any>) => string | number);
-    contextKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
+    createMemoKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
 }
 ```
 
@@ -234,9 +234,9 @@ In these case, you may want to specify the `id` parameter to provide your own fu
  ```
 :::
 
-:::details contextKey
+:::details createMemoKey
 ```typescript
-type contextKey = (ctxt: BeforeContext<any, any>) => MemoKey;
+type createMemoKey = (ctxt: BeforeContext<any, any>) => MemoKey;
 ```
 
 `MemoAspect` will keep track of methods calls and their respective returned value. 
@@ -245,11 +245,11 @@ By default, a specific key is computed for each call, using a hash-sum of the fo
  - the method name 
  - the arguments
 This way, any subsequent identical method call can retrieve the memoized value.
-You can override the default key formula with the `contextKey` parameter:
+You can override the default key formula with the `createMemoKey` parameter:
 ```typescript
  class MyMemoizedClass {
       @Memo({
-        contextKey: (ctxt: BeforeContext<any, any>) => {
+        createMemoKey: (ctxt: BeforeContext<any, any>) => {
             return new MemoKey({
                 namespace: ctxt.data.namespace,
                 instanceId: ctxt.data.instanceId,

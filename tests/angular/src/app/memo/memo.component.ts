@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Memo } from '@aspectjs/memo';
+import { Cacheable, Memo } from '@aspectjs/memo';
+import { map } from 'rxjs/operators';
 
+@Cacheable()
+class User {}
 @Component({
     selector: 'app-memo',
     templateUrl: './memo.component.html',
@@ -19,7 +22,15 @@ export class MemoComponent implements OnInit {
 
     @Memo()
     fetchUsers() {
-        return this.httpClient.get('https://jsonplaceholder.typicode.com/users');
+        return this.httpClient.get('https://jsonplaceholder.typicode.com/users').pipe(
+            map((response: any[]) => {
+                return response.map((r) => {
+                    const u = new User();
+                    Object.assign(u, r);
+                    return u;
+                });
+            }),
+        );
     }
 
     repeat(fn: () => void) {

@@ -28,12 +28,12 @@ export class MarshallersRegistry {
         return marshaller;
     }
 
-    marshal<T>(key: MemoKey, value: T): MarshallingContext<T> {
-        return new MarshallingContextImpl(this, key, value);
+    marshal<T>(value: T): MarshallingContext<T> {
+        return new MarshallingContextImpl(this, value);
     }
 
-    unmarshal(key: MemoKey, frame: MemoFrame<any>): UnmarshallingContext<any> {
-        return new UnmarshallingContextImpl(this, key, frame).frame.value;
+    unmarshal(frame: MemoFrame<any>): UnmarshallingContext<any> {
+        return new UnmarshallingContextImpl(this, frame).frame.value;
     }
 }
 
@@ -42,11 +42,7 @@ class MarshallingContextImpl<T> implements MarshallingContext<T> {
     private readonly _promises: Promise<any>[] = [];
     readonly frame: MemoFrame<T>;
 
-    constructor(
-        private readonly _marshallersRegistry: MarshallersRegistry,
-        public readonly key: MemoKey,
-        public readonly value: T,
-    ) {
+    constructor(private readonly _marshallersRegistry: MarshallersRegistry, public readonly value: T) {
         this.frame = this._defaultMarshal(this.value);
     }
 
@@ -83,11 +79,7 @@ class MarshallingContextImpl<T> implements MarshallingContext<T> {
 class UnmarshallingContextImpl<T = unknown> implements UnmarshallingContext<T> {
     readonly blacklist?: Map<MemoFrame, any> = new Map<MemoFrame, any>();
 
-    constructor(
-        private readonly _marshallersRegistry: MarshallersRegistry,
-        public readonly key: MemoKey,
-        public readonly frame: MemoFrame<T>,
-    ) {
+    constructor(private readonly _marshallersRegistry: MarshallersRegistry, public readonly frame: MemoFrame<T>) {
         this._defaultUnmarshal(this.frame);
     }
 

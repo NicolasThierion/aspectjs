@@ -23,6 +23,7 @@ describe(`IdbMemoDriver`, () => {
         const defaultArgs = ['a', 'b', 'c', 'd'];
 
         function setupIdbMemoAspect() {
+            localStorage.clear();
             setupMemoAspect();
         }
         beforeEach(() => {
@@ -35,8 +36,6 @@ describe(`IdbMemoDriver`, () => {
                 expiration: () => memoOptions.expiration,
                 driver: 'indexedDb',
             });
-
-            localStorage.clear();
         });
 
         describe('once', () => {

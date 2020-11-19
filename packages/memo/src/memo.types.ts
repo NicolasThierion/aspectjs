@@ -1,4 +1,5 @@
 import { MemoFrame } from './drivers';
+import { MemoAspectError } from './errors';
 
 const KEY_IDENTIFIER = '@aspectjs:Memo';
 
@@ -17,16 +18,20 @@ export class MemoKey {
         this.targetKey = key.targetKey;
         this.instanceId = key.instanceId;
         this.argsKey = key.argsKey;
-        // TODO murmurhash this key after namespace
-        this._strValue = `${KEY_IDENTIFIER}:${this.namespace}/{${this.targetKey}#${this.instanceId}}(${this.argsKey})`;
+        this._strValue = `${KEY_IDENTIFIER}:ns=${this.namespace}&tk=${this.targetKey}&id=${this.instanceId}&ak=${this.argsKey}`;
     }
 
-    static parse(str: string): MemoKey {
+    static parse(str: string, throwIfInvalid = true): MemoKey {
         if (!str.startsWith(KEY_IDENTIFIER)) {
             throw new TypeError(`Key ${str} is not a memo key`);
         }
-        const rx = new RegExp('.*?:(namespace)/\\{(targetKey)\\#(instanceId)}\\((argsKey)\\)');
+        const rx = new RegExp(
+            `${KEY_IDENTIFIER}:ns=(?<namespace>.*?)&tk=(?<targetKey>.*?)&id=(?<instanceId>.*?)&ak=(?<argsKey>.*)`,
+        );
         const r = rx.exec(str);
+        if (!r && throwIfInvalid) {
+            throw new MemoAspectError(`given expression is not a MemoKey: ${str}`);
+        }
         return new MemoKey(r.groups as any);
     }
 
@@ -41,5 +46,6 @@ export class MemoKey {
 export interface MemoEntry<T = any> {
     readonly key: MemoKey;
     readonly frame: MemoFrame<T>;
+    readonly signature?: string;
     readonly expiration?: Date;
 }

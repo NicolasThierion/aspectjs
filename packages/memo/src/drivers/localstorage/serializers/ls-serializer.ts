@@ -1,8 +1,8 @@
-import {isUndefined} from "@aspectjs/core/utils";
-import {parse, stringify} from "flatted";
-import {MemoEntry} from "../../../memo.types";
-import {MemoFrame} from "../../memo-frame";
-import {LsMemoSerializer} from "./ls-serializer.type";
+import { isUndefined } from '@aspectjs/core/utils';
+import { parse, stringify } from 'flatted';
+import { MemoEntry } from '../../../memo.types';
+import { MemoFrame } from '../../memo-frame';
+import { LsMemoSerializer } from './ls-serializer.type';
 
 enum RawMemoField {
     VALUE,
@@ -10,6 +10,8 @@ enum RawMemoField {
     INSTANCE_TYPE,
     EXPIRATION,
     VERSION,
+    SIGNATURE,
+    HASH,
 }
 
 const F = RawMemoField;
@@ -27,27 +29,35 @@ export class SimpleLsSerializer implements LsMemoSerializer {
                 type: raw[F.TYPE],
                 instanceType: raw[F.INSTANCE_TYPE],
                 version: raw[F.VERSION],
+                hash: raw[F.HASH],
             }),
+            signature: raw[F.SIGNATURE],
         };
     }
 
-    serialize(obj: Omit<MemoEntry, 'key'>): string {
+    serialize(entry: Omit<MemoEntry, 'key'>): string {
         const raw = {} as any;
 
-        if (!isUndefined(obj.frame.value)) {
-            raw[F.VALUE] = obj.frame.value;
+        if (!isUndefined(entry.frame.value)) {
+            raw[F.VALUE] = entry.frame.value;
         }
-        if (!isUndefined(obj.frame.type)) {
-            raw[F.TYPE] = obj.frame.type;
+        if (!isUndefined(entry.frame.type)) {
+            raw[F.TYPE] = entry.frame.type;
         }
-        if (!isUndefined(obj.frame.instanceType)) {
-            raw[F.INSTANCE_TYPE] = obj.frame.instanceType;
+        if (!isUndefined(entry.frame.instanceType)) {
+            raw[F.INSTANCE_TYPE] = entry.frame.instanceType;
         }
-        if (!isUndefined(obj.frame.version)) {
-            raw[F.VERSION] = obj.frame.version;
+        if (!isUndefined(entry.frame.version)) {
+            raw[F.VERSION] = entry.frame.version;
         }
-        if (!isUndefined(obj.frame.version)) {
-            raw[F.EXPIRATION] = obj.expiration;
+        if (!isUndefined(entry.frame.hash)) {
+            raw[F.HASH] = entry.frame.hash;
+        }
+        if (!isUndefined(entry.expiration)) {
+            raw[F.EXPIRATION] = entry.expiration;
+        }
+        if (!isUndefined(entry.signature)) {
+            raw[F.SIGNATURE] = entry.signature;
         }
         return stringify(raw);
     }

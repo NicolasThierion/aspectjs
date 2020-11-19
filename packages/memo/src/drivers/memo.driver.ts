@@ -1,6 +1,5 @@
-import { MemoEntry, MemoKey } from '../memo.types';
-import { MemoFrame } from './memo-frame';
 import { MarshallingContext } from '../marshalling/marshalling-context';
+import { MemoEntry, MemoKey } from '../memo.types';
 
 /**
  * Connects the MemoAspect to a storage back-end
@@ -29,37 +28,12 @@ export abstract class MemoDriver {
      * Returns the cached value.
      * @param key - the key of storage entry to read
      */
-    protected abstract read<T>(key: MemoKey): MemoFrame<T>;
+    abstract read(key: MemoKey): MemoEntry;
 
     /**
      * Returns a promise that is resolved once value is saved.
-     * @param key - the key of storage entry to write
-     * @param value - the value to write to storage
      */
-    protected abstract write(key: MemoKey, value: MemoFrame): PromiseLike<void>;
+    abstract write(entry: MemoEntry): PromiseLike<void>;
 
-    protected abstract doRemove(key: MemoKey): PromiseLike<void>;
-
-    getValue(key: MemoKey): MemoEntry {
-        const frame = this.read(key);
-        return frame
-            ? {
-                  key,
-                  frame,
-              }
-            : undefined;
-    }
-
-    setValue<T>(entry: MemoEntry<T>): PromiseLike<void> {
-        const key = entry.key;
-        // const context = this.marshallersRegistry.createMarshallingContext(key);
-
-        // const frame = context.marshal(entry.value);
-        // frame.expiration = entry.expiration;
-        return this.write(key, entry.frame);
-    }
-
-    remove(key: MemoKey): PromiseLike<void> {
-        return this.doRemove(key);
-    }
+    abstract remove(key: MemoKey): PromiseLike<void>;
 }

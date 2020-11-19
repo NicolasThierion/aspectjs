@@ -131,6 +131,42 @@ describe('Given a @Memo method that returns a class instance', () => {
                 });
             });
         });
+
+        describe('and the @Cacheable hash mismatch', () => {
+            beforeEach(() => {
+                @Cacheable({
+                    version: 1,
+                })
+                class CachedClass {}
+                joinpoint = jasmine.createSpy('process').and.callFake(() => new CachedClass());
+                expect(joinpoint).toHaveBeenCalledTimes(0);
+                memoMethod();
+                expect(joinpoint).toHaveBeenCalledTimes(1);
+                CachedClass.toString = () => 'class CachedClass { /* new implementation */}';
+            });
+            it('should not invalidate the cache', () => {
+                memoMethod();
+                expect(joinpoint).toHaveBeenCalledTimes(1);
+            });
+        });
+    });
+
+    describe('that do not specify a version', () => {
+        describe('and the @Cacheable hash mismatch', () => {
+            beforeEach(() => {
+                @Cacheable()
+                class CachedClass {}
+                joinpoint = jasmine.createSpy('process').and.callFake(() => new CachedClass());
+                expect(joinpoint).toHaveBeenCalledTimes(0);
+                memoMethod();
+                expect(joinpoint).toHaveBeenCalledTimes(1);
+                CachedClass.toString = () => 'class CachedClass { /* new implementation */}';
+            });
+            it('should invalidate the cache', () => {
+                memoMethod();
+                expect(joinpoint).toHaveBeenCalledTimes(2);
+            });
+        });
     });
     describe('not annotated with @Cacheable', () => {
         beforeEach(() => {

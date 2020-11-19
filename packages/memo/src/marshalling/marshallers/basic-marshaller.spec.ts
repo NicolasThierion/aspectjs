@@ -26,7 +26,7 @@ describe('Given a @Memo method', () => {
         beforeEach(() => {
             joinpoint = jasmine.createSpy('process').and.callFake(() => false);
         });
-        xit('should return the boolean,', () => {
+        it('should return the boolean,', () => {
             expect(memoMethod()).toEqual(memoMethod());
             expect(joinpoint).toHaveBeenCalledTimes(1);
             expect(memoMethod()).toEqual(false);
@@ -37,7 +37,7 @@ describe('Given a @Memo method', () => {
         beforeEach(() => {
             joinpoint = jasmine.createSpy('process').and.callFake(() => 0);
         });
-        xit('should return the number,', () => {
+        it('should return the number,', () => {
             expect(memoMethod()).toEqual(memoMethod());
             expect(joinpoint).toHaveBeenCalledTimes(1);
             expect(memoMethod()).toEqual(0);

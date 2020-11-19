@@ -1,6 +1,6 @@
-import * as LZString from 'lz-string';
-import { MemoEntry } from '../../memo.types';
-import { SimpleLsSerializer } from './serializers/ls-serializer';
+import { MemoEntry } from '../../../memo.types';
+import { compressToUTF16, decompressFromUTF16 } from '../../../utils/lz-string';
+import { SimpleLsSerializer } from './ls-serializer';
 
 /**
  * Uses lz-string to compress serialized values in order to save-up some LocalStorage space.
@@ -11,12 +11,12 @@ export class LzMemoSerializer<T = unknown> extends SimpleLsSerializer {
         if (!str) {
             return null;
         }
-        return super.deserialize(LZString.decompressFromUTF16(str));
+        return super.deserialize(decompressFromUTF16(str));
     }
     serialize(obj: MemoEntry): string {
         if (!obj) {
             return null;
         }
-        return LZString.compressToUTF16(super.serialize(obj));
+        return compressToUTF16(super.serialize(obj));
     }
 }

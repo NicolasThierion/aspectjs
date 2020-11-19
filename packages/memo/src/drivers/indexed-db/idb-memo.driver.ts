@@ -56,8 +56,8 @@ export class IdbMemoDriver extends MemoDriver {
         return this._runTransactional((store) => store.getAllKeys(), TransactionMode.READONLY).then((result) => {
             return result
                 .map((id) => id.toString())
-                .filter((id) => id.startsWith(namespace))
-                .map(MemoKey.parse);
+                .map((str) => MemoKey.parse(str, false))
+                .filter((k) => !!k);
         });
     }
 
@@ -85,49 +85,52 @@ export class IdbMemoDriver extends MemoDriver {
         return context.frame.isAsync();
     }
 
-    read<T>(key: MemoKey): MemoFrame<T> {
-        const meta = this._ls.getValue(metaKey(key));
+    read<T>(key: MemoKey): MemoEntry<T> {
+        const metaEntry = this._ls.read(metaKey(key));
 
-        if (!meta) {
+        if (!metaEntry) {
             return null;
         }
 
-        assert(!!meta.frame.type);
+        assert(!!metaEntry.frame?.type);
+        assert(!!metaEntry.key);
         const frame = new MemoFrame<T>({
-            ...meta,
-            ...meta.frame,
+            ...metaEntry,
+            ...metaEntry.frame,
         }).setAsyncValue(this._runTransactional((tx) => tx.get(key.toString())).then((frame) => frame.value));
 
-        this._scheduler.add(meta.key.toString(), () => frame.async);
+        this._scheduler.add(key.toString(), () => frame.async);
 
-        return frame;
-    }
-
-    setValue<T>(entry: MemoEntry<T>): PromiseLike<void> {
-        return this._scheduler.add(entry.key.toString(), () => super.setValue(entry));
+        return frame
+            ? {
+                  key,
+                  expiration: metaEntry.expiration,
+                  frame,
+              }
+            : undefined;
     }
 
     remove(key: MemoKey): PromiseLike<void> {
-        return this._scheduler.add(key.toString(), () => super.remove(key)).then(() => {});
+        return this._scheduler
+            .add(key.toString(), () => this._deleteIdbEntry(key).then(() => this._deleteLsEntry(key)))
+            .then(() => {});
     }
 
-    doRemove(key: MemoKey): Promise<void> {
-        return this._deleteIdbEntry(key).then(() => this._deleteLsEntry(key));
-    }
+    write(entry: MemoEntry): PromiseLike<any> {
+        return this._scheduler.add(entry.key.toString(), () => {
+            const { value, ...metaFrame } = entry.frame;
 
-    write(key: MemoKey, frame: MemoFrame): Promise<any> {
-        const { value, expiration, ...metaFrame } = frame;
+            const metaEntry: MemoEntry<MemoTypeInfoFrame> = {
+                key: metaKey(entry.key),
+                expiration: entry.expiration,
+                frame: metaFrame as MemoFrame,
+            };
+            // store only the Memo without its value
+            this._ls.write(metaEntry);
 
-        const metaEntry: MemoEntry<MemoTypeInfoFrame> = {
-            key: metaKey(key),
-            expiration: expiration,
-            frame: metaFrame as MemoFrame,
-        };
-        // store only the Memo without its value
-        this._ls.setValue(metaEntry);
-
-        const valueFrame = { ref: key.toString(), value };
-        return this._runTransactional((s) => s.put(valueFrame));
+            const valueFrame = { ref: entry.key.toString(), value };
+            return this._runTransactional((s) => s.put(valueFrame));
+        });
     }
 
     private _deleteIdbEntry(key: MemoKey) {

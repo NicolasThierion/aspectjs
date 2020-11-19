@@ -1,14 +1,13 @@
 import { WEAVER_CONTEXT } from '@aspectjs/core';
-import { assert } from '@aspectjs/core/utils';
+import { assert, isUndefined } from '@aspectjs/core/utils';
 import { WeavingError } from '@aspectjs/core/commons';
-
 import { MemoFrame } from '../../drivers';
 import { VersionConflictError } from '../../errors';
 import { CacheableAspect, CacheTypeStore } from '../../cacheable/cacheable.aspect';
 import { MarshalFn, MemoMarshaller } from './marshaller';
 import { ObjectMarshaller } from './object-marshaller';
 import { MarshallingContext, UnmarshallingContext } from '../marshalling-context';
-import { provider } from '../../utils';
+import { provider, hash } from '../../utils';
 
 /**
  * Supports marshalling instances of classes annotated with @Cacheable
@@ -44,6 +43,7 @@ export class CacheableMarshaller extends MemoMarshaller {
 
         const newFrame = this._objectMarshaller.marshal(frame, context, defaultMarshal);
 
+        newFrame.hash = __createHash(proto);
         newFrame.instanceType = instanceType;
         newFrame.version = provider(ts.getVersion(instanceType))();
 
@@ -64,7 +64,12 @@ export class CacheableMarshaller extends MemoMarshaller {
                 );
             }
         }
-
+        if (isUndefined(frame.version) && frame.hash !== __createHash(proto)) {
+            throw new VersionConflictError(
+                `Object for key ${frame.instanceType} is of version ${version}, but incompatible version ${frame.version} was already cached`,
+                context,
+            );
+        }
         Reflect.setPrototypeOf(frame.value, proto);
 
         return frame.value;
@@ -87,4 +92,14 @@ function typeStore(): CacheTypeStore {
     }
 
     return cacheableAspect.cacheTypeStore;
+}
+
+function __createHash(proto: object): string {
+    const s: string[] = [];
+    let p = proto;
+    while (p !== Object.prototype) {
+        s.push(p.constructor.toString());
+        p = Reflect.getPrototypeOf(p);
+    }
+    return hash(s.join());
 }

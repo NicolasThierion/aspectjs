@@ -1,19 +1,9 @@
-import { isUndefined } from '@aspectjs/core/utils';
-import { MemoDriver } from '../memo.driver';
-import { MemoKey } from '../../memo.types';
-import { parse, stringify } from 'flatted';
-import { MemoFrame } from '../memo-frame';
-import { InstantPromise } from '../../utils';
 import { MarshallingContext } from '../../marshalling/marshalling-context';
-
-/**
- * Serialize & deserialize an object to/from a string so it can be stored into LocalStorage.
- * @public
- */
-export interface LsMemoSerializer<T = unknown, U = unknown> {
-    deserialize(obj: string): MemoFrame<T>;
-    serialize(obj: MemoFrame<T>): string;
-}
+import { MemoEntry, MemoKey } from '../../memo.types';
+import { InstantPromise } from '../../utils';
+import { MemoDriver } from '../memo.driver';
+import { SimpleLsSerializer } from './serializers/ls-serializer';
+import { LsMemoSerializer } from './serializers/ls-serializer.type';
 
 /**
  * Options supported by the LsMemoDriver
@@ -24,54 +14,11 @@ export interface LsMemoDriverOptions {
     serializer?: LsMemoSerializer;
 }
 
-enum RawMemoField {
-    VALUE,
-    TYPE,
-    INSTANCE_TYPE,
-    EXPIRATION,
-    VERSION,
-}
-const F = RawMemoField;
-
 /**
  * @public
  */
 export const DEFAULT_LS_DRIVER_OPTIONS = {
-    serializer: {
-        deserialize(serialized: string): MemoFrame {
-            if (!serialized) {
-                return null;
-            }
-            const raw = parse(serialized);
-            return new MemoFrame({
-                value: raw[F.VALUE],
-                type: raw[F.TYPE],
-                instanceType: raw[F.INSTANCE_TYPE],
-                expiration: raw[F.EXPIRATION] ? new Date(raw[F.EXPIRATION]) : undefined,
-                version: raw[F.VERSION],
-            });
-        },
-        serialize(obj: MemoFrame): string {
-            const raw = {} as any;
-
-            if (!isUndefined(obj.value)) {
-                raw[F.VALUE] = obj.value;
-            }
-            if (!isUndefined(obj.type)) {
-                raw[F.TYPE] = obj.type;
-            }
-            if (!isUndefined(obj.instanceType)) {
-                raw[F.INSTANCE_TYPE] = obj.instanceType;
-            }
-            if (!isUndefined(obj.expiration)) {
-                raw[F.EXPIRATION] = obj.expiration;
-            }
-            if (!isUndefined(obj.version)) {
-                raw[F.VERSION] = obj.version;
-            }
-            return stringify(raw);
-        },
-    } as LsMemoSerializer,
+    serializer: new SimpleLsSerializer(),
 };
 
 /**
@@ -95,15 +42,16 @@ export class LsMemoDriver extends MemoDriver {
     }
 
     getKeys(namespace: string): Promise<MemoKey[]> {
-        const res: string[] = [];
+        const res: MemoKey[] = [];
         for (let i = 0; i < this._ls.length; ++i) {
-            const k = this._ls.key(i);
-            if (k.startsWith(namespace)) {
-                res.push();
+            const kStr = this._ls.key(i);
+            const key = MemoKey.parse(kStr, false);
+            if (key?.namespace === namespace) {
+                res.push(key);
             }
         }
 
-        return Promise.resolve(res.map(MemoKey.parse));
+        return Promise.resolve(res);
     }
 
     /**
@@ -114,18 +62,24 @@ export class LsMemoDriver extends MemoDriver {
         return 10;
     }
 
-    read<T>(key: MemoKey): MemoFrame<T> {
+    read<T>(key: MemoKey): MemoEntry<T> {
         const serializer = this.options?.serializer ?? DEFAULT_LS_DRIVER_OPTIONS.serializer;
-        return serializer.deserialize(this._ls.getItem(key.toString())) as MemoFrame<T>;
+        const frame = serializer.deserialize(this._ls.getItem(key.toString())) as MemoEntry<T>;
+        return frame
+            ? {
+                  key,
+                  ...frame,
+              }
+            : undefined;
     }
 
-    write(key: MemoKey, value: MemoFrame): PromiseLike<void> {
+    write(entry: MemoEntry): PromiseLike<void> {
         const serializer = this.options?.serializer ?? DEFAULT_LS_DRIVER_OPTIONS.serializer;
-        this._ls.setItem(key.toString(), serializer.serialize(value));
+        this._ls.setItem(entry.key.toString(), serializer.serialize(entry));
         return InstantPromise.resolve();
     }
 
-    doRemove(key: MemoKey): PromiseLike<void> {
+    remove(key: MemoKey): PromiseLike<void> {
         this._ls.removeItem(key.toString());
         return InstantPromise.resolve();
     }
