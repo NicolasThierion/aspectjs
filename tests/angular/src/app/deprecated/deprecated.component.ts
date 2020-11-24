@@ -19,20 +19,21 @@ class DeprecatedAspect {
     @Order(1)
     logWarning(context: BeforeContext) {
         if (!this.tags[context.target.ref]) {
-            const args = context.annotation.args[0];
+            const args = context.annotations.onSelf(Deprecated)[0].args[0];
             if (
                 context.target.parameterIndex === undefined ||
                 context.args[context.target.parameterIndex] !== undefined
             ) {
                 console.warn(`${context.target.label} is deprecated`);
+                this.tags[context.target.ref] = true;
             }
-            this.tags[context.target.ref] = true;
         }
     }
 }
 
 WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
 
+@Deprecated()
 @Component({
     selector: 'app-deprecated',
     templateUrl: './deprecated.component.html',
@@ -46,10 +47,10 @@ export class DeprecatedComponent implements OnInit {
         this.deprecatedFunction();
         this.deprecatedFunction();
         this.deprecatedFunction();
-        this.deprecatedFunction();
+        this.deprecatedFunction('');
         this.deprecatedFunction();
 
-        this.deprecatedFunctionParam('x');
+        // this.deprecatedFunctionParam('x');
     }
 
     @Memo()
@@ -58,7 +59,9 @@ export class DeprecatedComponent implements OnInit {
     }
 
     @Deprecated()
-    private deprecatedFunction() {
+    private deprecatedFunction(@Deprecated() arg?: string) {
         console.log('deprecatedFunction');
     }
 }
+
+debugger;

@@ -279,7 +279,7 @@ The driver itself is not tight to any storage API, and it requires a concrete im
 - ### `LsMemoDriver`
 
 Stores data into the [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). Accepts a custom `localStorage` implementation (eg: polyfills for NodeJS), as well as a serializer.
-By default, it is configured to use `LzMemoSerializer` that compresses data with [lz-string](https://www.npmjs.com/package/lz-string) before storage.
+By default, it is configured to use `LzMemoSerializer` that compresses data with a compression algorithm based on [lz-string](https://www.npmjs.com/package/lz-string) before storage.
 
 - ### `IdbMemoDriver`
 

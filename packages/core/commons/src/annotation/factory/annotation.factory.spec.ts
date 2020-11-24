@@ -13,7 +13,7 @@ const APropertyStub = function AProperty(x?: string, y?: number): PropertyDecora
     return;
 };
 
-describe('Annotation Factory', () => {
+describe('AnnotationFactory', () => {
     let AClass: typeof AClassStub;
     let AProperty: typeof APropertyStub;
 
@@ -48,7 +48,7 @@ describe('Annotation Factory', () => {
                 expect(ctor.name).toEqual('A');
             });
 
-            it('should not alter the class', () => {
+            it('should keep the class instance type', () => {
                 AClass = factory.create(AClassStub);
 
                 @AClass('', 0)
@@ -57,6 +57,20 @@ describe('Annotation Factory', () => {
                 }
 
                 expect(new A()).toEqual(jasmine.any(A));
+            });
+
+            it(`should keep the class static properties`, () => {
+                AClass = factory.create(AClassStub);
+
+                class A {
+                    someProp: any;
+                    static someStaticProp = 'someStaticProp';
+                }
+
+                const enhancedA = (AClass('', 0)(A) as any) as typeof A;
+
+                expect(A.someStaticProp).toBeTruthy();
+                expect(enhancedA.someStaticProp).toEqual(A.someStaticProp);
             });
         });
 

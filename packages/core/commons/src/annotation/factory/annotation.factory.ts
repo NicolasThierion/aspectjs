@@ -1,19 +1,17 @@
 import { assert, getOrComputeMetadata, isFunction } from '@aspectjs/core/utils';
-import { MutableAdviceContext } from '../../advices';
-import { Advice, AdviceType } from '../../advices/types';
-import { JoinPoint } from '../../types';
-import { _getWeaverContext, WeaverContext } from '../../weaver';
+import { AdviceType } from '../../advices/types';
+import { _getWeaverContext } from '../../weaver';
 
 import {
     Annotation,
     AnnotationRef,
+    AnnotationType,
     ClassAnnotationStub,
     Decorator,
     MethodAnnotationStub,
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { AnnotationsBundle } from '../bundle/bundle';
 import { AnnotationContext } from '../context/annotation.context';
 import { AdviceTarget, AnnotationTarget } from '../target/annotation-target';
 
@@ -103,6 +101,7 @@ function _createBootstrapDecorator<A extends AdviceType, S extends Annotation<Ad
     annotationArgs: any[],
 ): Decorator {
     return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
+        // eslint-disable-next-line prefer-spread
         annotationStub(...annotationArgs)?.apply(null, targetArgs);
 
         // assert the weaver is loaded before invoking the underlying decorator
@@ -117,7 +116,11 @@ function _createBootstrapDecorator<A extends AdviceType, S extends Annotation<Ad
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         weaverContext.annotations.registry.register(annotationContext);
 
-        return weaverContext.getWeaver().enhance(target);
+        const enhanced = weaverContext.getWeaver().enhance(target);
+        if (target.type === AnnotationType.CLASS) {
+            Object.defineProperties(enhanced, Object.getOwnPropertyDescriptors(targetArgs[0]));
+        }
+        return enhanced;
     };
 }
 
