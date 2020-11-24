@@ -10,16 +10,9 @@ import {
     BProperty,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
-import {
-    on,
-    JoinPoint,
-    AdviceType,
-    AdviceContext,
-    AroundContext,
-    BeforeContext,
-    CompileContext,
-    Weaver,
-} from '@aspectjs/core/commons';
+import { JoinPoint, on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AroundContext, BeforeContext } from '../types';
 
 describe('BeforeContext', () => {
     let weaver: Weaver;
@@ -37,6 +30,7 @@ describe('BeforeContext', () => {
     });
 
     describe('on a class', () => {
+        let classAspectA: any;
         let classAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -67,6 +61,7 @@ describe('BeforeContext', () => {
                     aroundBAdvice(ctxt, jp);
                 }
             }
+            classAspectA = ClassAspectA;
             classAspectB = ClassAspectB;
             weaver.enable(new ClassAspectA(), new ClassAspectB());
         });
@@ -123,8 +118,24 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
+        describe('attribute "ctxt.advice"', () => {
+            it('should be the current before advice', () => {
+                aroundAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(classAspectA);
+                });
+                aroundBAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
+                });
+
+                @AClass()
+                @BClass()
+                class Test {}
+                new Test();
+            });
+        });
     });
     describe('on a property', () => {
+        let propertyAspectA: any;
         let propertyAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -137,7 +148,7 @@ describe('BeforeContext', () => {
 
                 @Order(1)
                 @Around(on.property.withAnnotations(AProperty))
-                aroundA(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
@@ -151,10 +162,11 @@ describe('BeforeContext', () => {
 
                 @Order(2)
                 @Around(on.property.withAnnotations(BProperty))
-                aroundB(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
             }
+            propertyAspectA = PropertyAspectA;
             propertyAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -231,8 +243,27 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
+        it('should be the current before advice', () => {
+            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+            });
+            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+            });
+
+            class Test {
+                @AProperty()
+                @BProperty()
+                prop: any;
+            }
+
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().prop;
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
     describe('on a property setter', () => {
+        let propertyAspectA: any;
         let propertyAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -245,7 +276,7 @@ describe('BeforeContext', () => {
 
                 @Order(1)
                 @Around(on.property.setter.withAnnotations(AProperty))
-                aroundA(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
@@ -259,10 +290,11 @@ describe('BeforeContext', () => {
 
                 @Order(2)
                 @Around(on.property.setter.withAnnotations(BProperty))
-                aroundB(ctxt: CompileContext<any, AdviceType.CLASS>, jp: JoinPoint): void {
+                aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
             }
+            propertyAspectA = PropertyAspectA;
             propertyAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -337,8 +369,28 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
+
+        it('should be the current before advice', () => {
+            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+            });
+            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+            });
+
+            class Test {
+                @AProperty()
+                @BProperty()
+                prop: any;
+            }
+
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().prop = '';
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
     describe('on a method', () => {
+        let methodAspectA: any;
         let methodAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -351,7 +403,7 @@ describe('BeforeContext', () => {
 
                 @Order(1)
                 @Around(on.method.withAnnotations(AMethod))
-                aroundA(ctxt: CompileContext<any, AdviceType.METHOD>, jp: JoinPoint): void {
+                aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
@@ -365,10 +417,11 @@ describe('BeforeContext', () => {
 
                 @Order(2)
                 @Around(on.method.withAnnotations(BMethod))
-                aroundB(ctxt: CompileContext<any, AdviceType.METHOD>, jp: JoinPoint): void {
+                aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
             }
+            methodAspectA = PropertyAspectA;
             methodAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -440,8 +493,28 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
+
+        it('should be the current before advice', () => {
+            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectA);
+            });
+            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectB);
+            });
+
+            class Test {
+                @AMethod()
+                @BMethod()
+                method(): any {}
+            }
+
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().method();
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
     describe('on a parameter', () => {
+        let parameterAspectA: any;
         let parameterAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -454,7 +527,7 @@ describe('BeforeContext', () => {
 
                 @Order(1)
                 @Around(on.parameter.withAnnotations(AParameter))
-                aroundA(ctxt: CompileContext<any, AdviceType.PARAMETER>, jp: JoinPoint): void {
+                aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
             }
@@ -468,10 +541,11 @@ describe('BeforeContext', () => {
 
                 @Order(2)
                 @Around(on.parameter.withAnnotations(BParameter))
-                aroundB(ctxt: CompileContext<any, AdviceType.PARAMETER>, jp: JoinPoint): void {
+                aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
             }
+            parameterAspectA = ParameterAspectA;
             parameterAspectB = ParameterAspectB;
             weaver.enable(new ParameterAspectA(), new ParameterAspectB());
         });
@@ -500,7 +574,7 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['beforeA', 'beforeB']);
             });
 
-            fit('should not be shared across two @Before advices on different parameters', () => {
+            it('should not be shared across two @Before advices on different parameters', () => {
                 class Test {
                     someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {}
                 }
@@ -526,6 +600,22 @@ describe('BeforeContext', () => {
                 new Test().someMethod('');
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
+        });
+        it('should be the current before advice', () => {
+            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectA);
+            });
+            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectB);
+            });
+
+            class Test {
+                someMethod(@AParameter() @BParameter() param: any): any {}
+            }
+
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().someMethod('');
+            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
         });
     });
 });

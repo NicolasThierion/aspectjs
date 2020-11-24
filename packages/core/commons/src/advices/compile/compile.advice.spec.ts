@@ -10,18 +10,11 @@ import {
     Labeled,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
-import {
-    on,
-    AdviceContext,
-    CompileContext,
-    AdviceType,
-    Weaver,
-    WeavingError,
-    AdviceTarget,
-    AnnotationContext,
-    AnnotationRef,
-} from '@aspectjs/core/commons';
-import { WEAVER_CONTEXT } from '../../../../src/core';
+import { AnnotationContext } from '../../annotation/context/annotation.context';
+import { AdviceTarget } from '../../annotation/target/annotation-target';
+import { on } from '../../types';
+import { Weaver, WeavingError } from '../../weaver';
+import { AdviceContext, AdviceType, CompileContext } from '../types';
 
 let advice = jasmine.createSpy('compileAspectA');
 let compileAdviceB = jasmine.createSpy('compileAspectB');
@@ -223,13 +216,9 @@ describe('@Compile advice', () => {
         describe('when the advice returns a new property descriptor', () => {
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
-                    advice = jasmine
-                        .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
-                            return ({
-                                get: '',
-                            } as any) as PropertyDescriptor;
-                        });
+                    advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
+                        get: '',
+                    }));
                 });
 
                 it('should throw an error', () => {
@@ -245,13 +234,9 @@ describe('@Compile advice', () => {
             describe('that sets "value = any"', () => {
                 let a: Labeled;
                 beforeEach(() => {
-                    advice = jasmine
-                        .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
-                            return {
-                                value: ['propAspect'],
-                            };
-                        });
+                    advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
+                        value: ['propAspect'],
+                    }));
                     class A implements Labeled {
                         @AProperty()
                         labels?: string[];
@@ -273,13 +258,9 @@ describe('@Compile advice', () => {
                 let a: Labeled;
 
                 beforeEach(() => {
-                    advice = jasmine
-                        .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
-                            return {
-                                get: () => ['propAspect'],
-                            };
-                        });
+                    advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
+                        get: () => ['propAspect'],
+                    }));
 
                     class A implements Labeled {
                         @AProperty()
@@ -304,14 +285,10 @@ describe('@Compile advice', () => {
                 beforeEach(() => {
                     val = ['propAspect'];
 
-                    advice = jasmine
-                        .createSpy('compileAdvice')
-                        .and.callFake(function (ctxt: AdviceContext<any, AdviceType.PROPERTY>) {
-                            return {
-                                get: () => val,
-                                set: (_val: any) => (val = _val),
-                            };
-                        });
+                    advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
+                        get: () => val,
+                        set: (_val: any) => (val = _val),
+                    }));
 
                     class A implements Labeled {
                         @AProperty()
@@ -376,7 +353,6 @@ describe('@Compile advice', () => {
     });
 
     describe('applied on a method', () => {
-        let annotation: AnnotationRef;
         let target: AdviceTarget<unknown, AdviceType.METHOD>;
 
         beforeEach(() => {
@@ -401,7 +377,6 @@ describe('@Compile advice', () => {
                 .and.callFake(function (ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
-                    annotation = ctxt.annotation;
                 });
 
             weaver.enable(new CompileAspectA(), new CompileAspectB());
@@ -467,12 +442,10 @@ describe('@Compile advice', () => {
 
             describe('and the descriptor is invalid', () => {
                 beforeEach(() => {
-                    advice = jasmine.createSpy('compileAdvice').and.callFake(function () {
-                        return {
-                            value: () => {},
-                            get: () => {},
-                        };
-                    });
+                    advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
+                        value: () => {},
+                        get: () => {},
+                    }));
                 });
 
                 it('should throw an error', () => {
@@ -491,9 +464,7 @@ describe('@Compile advice', () => {
 
             describe('and the descriptor is not a method descriptor', () => {
                 beforeEach(() => {
-                    advice = jasmine.createSpy('compileAdvice').and.callFake(function () {
-                        return {};
-                    });
+                    advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({}));
                 });
 
                 it('should throw an error', () => {
@@ -515,7 +486,7 @@ describe('@Compile advice', () => {
                 class AB {
                     @BMethod()
                     @AMethod()
-                    private someMethod(ctxt: CompileContext<any, any>): any {
+                    private someMethod(ctxt: CompileContext): any {
                         return ctxt.target.descriptor;
                     }
                 }
@@ -544,7 +515,7 @@ describe('@Compile advice', () => {
                 .and.callFake(function (ctxt: CompileContext<Labeled, AdviceType.PARAMETER>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
-                    annotation = ctxt.annotation;
+                    annotation = ctxt.annotations.all(AParameter)[0];
                 });
 
             weaver.enable(new CompileAspect());

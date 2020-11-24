@@ -1,6 +1,7 @@
 import { Aspect, Compile } from '@aspectjs/core/annotations';
 import { AdviceType, CompileContext, on } from '@aspectjs/core/commons';
 import { assert, getOrComputeMetadata, isObject } from '@aspectjs/core/utils';
+import { Memo } from '../memo.annotation';
 
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
 
@@ -43,7 +44,7 @@ export class DefaultCacheableAspect implements CacheableAspect {
     constructor(public readonly cacheTypeStore: CacheTypeStore = new _CacheTypeStoreImpl()) {}
     @Compile(on.class.withAnnotations(Cacheable))
     registerCacheKey(ctxt: CompileContext<any, AdviceType.CLASS>) {
-        let options = ctxt.annotation.args[0] as CacheableOptions;
+        let options = ctxt.annotations.onSelf(Cacheable)[0].args[0] as CacheableOptions;
         if (!isObject(options)) {
             options = {
                 typeId: options,

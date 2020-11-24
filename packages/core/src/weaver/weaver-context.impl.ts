@@ -9,7 +9,7 @@ import {
     WeaverContext,
 } from '@aspectjs/core/commons';
 import { AspectsRegistryImpl } from '../aspect/aspect.registry.impl';
-import { JitWeaver } from './jit-weaver';
+import { JitWeaver } from './jit/jit-weaver';
 
 const bundleRegistry: AnnotationBundleRegistry = {
     byTargetClassRef: {},

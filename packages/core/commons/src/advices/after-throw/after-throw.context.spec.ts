@@ -1,3 +1,4 @@
+import { After, AfterThrow, Aspect, Order } from '@aspectjs/core/annotations';
 import {
     AClass,
     AMethod,
@@ -9,8 +10,10 @@ import {
     BProperty,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
-import { After, AfterThrow, Aspect, Order } from '@aspectjs/core/annotations';
-import { on, Weaver, AdviceType, AdviceContext, AfterContext, AfterThrowContext } from '@aspectjs/core/commons';
+
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AfterContext, AfterThrowContext, AroundContext } from '../types';
 
 describe('AfterThrowContext', () => {
     let weaver: Weaver;
@@ -28,6 +31,7 @@ describe('AfterThrowContext', () => {
     });
 
     describe('on a class', () => {
+        let classAspectA: any;
         let classAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -58,6 +62,7 @@ describe('AfterThrowContext', () => {
                     afterBAdvice(ctxt);
                 }
             }
+            classAspectA = ClassAspectA;
             classAspectB = ClassAspectB;
             weaver.enable(new ClassAspectA(), new ClassAspectB());
         });
@@ -125,9 +130,30 @@ describe('AfterThrowContext', () => {
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
             });
         });
+
+        it('should be the current AfterThrow advice', () => {
+            afterThrowAAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(classAspectA);
+            });
+            afterThrowBAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
+            });
+
+            @AClass()
+            @BClass()
+            class Test {
+                constructor() {
+                    throw new Error();
+                }
+            }
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test();
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
 
     describe('on a property', () => {
+        let propertyAspectA: any;
         let propertyAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -158,6 +184,7 @@ describe('AfterThrowContext', () => {
                     afterBAdvice(ctxt);
                 }
             }
+            propertyAspectA = PropertyAspectA;
             propertyAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -239,9 +266,30 @@ describe('AfterThrowContext', () => {
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
             });
         });
+        it('should be the current AfterThrow advice', () => {
+            afterThrowAAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+            });
+            afterThrowBAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+            });
+
+            class Test {
+                @AProperty()
+                @BProperty()
+                get prop() {
+                    throw new Error();
+                }
+            }
+
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().prop;
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
 
     describe('on a property setter', () => {
+        let propertyAspectA: any;
         let propertyAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -272,6 +320,7 @@ describe('AfterThrowContext', () => {
                     afterBAdvice(ctxt);
                 }
             }
+            propertyAspectA = PropertyAspectA;
             propertyAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -352,9 +401,52 @@ describe('AfterThrowContext', () => {
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
             });
         });
+
+        it('should be the current AfterThrow advice', () => {
+            afterThrowAAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+            });
+            afterThrowBAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+            });
+
+            class Test {
+                @AProperty()
+                @BProperty()
+                set prop(x: any) {
+                    throw new Error();
+                }
+            }
+
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().prop = '';
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
+
+        it('should be the current AfterThrow advice', () => {
+            afterThrowAAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+            });
+            afterThrowBAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+            });
+
+            class Test {
+                @AProperty()
+                @BProperty()
+                set prop(x: any) {
+                    throw new Error();
+                }
+            }
+
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().prop = '';
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
 
     describe('on a method', () => {
+        let methodAspectA: any;
         let methodAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -385,6 +477,7 @@ describe('AfterThrowContext', () => {
                     afterBAdvice(ctxt);
                 }
             }
+            methodAspectA = PropertyAspectA;
             methodAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -458,9 +551,31 @@ describe('AfterThrowContext', () => {
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
             });
         });
+
+        it('should be the current AfterThrow advice', () => {
+            afterThrowAAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectA);
+            });
+            afterThrowBAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectB);
+            });
+
+            class Test {
+                @AMethod()
+                @BMethod()
+                method(): any {
+                    throw new Error();
+                }
+            }
+
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().method();
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
 
     describe('on a parameter', () => {
+        let parameterAspectA: any;
         let parameterAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -491,6 +606,7 @@ describe('AfterThrowContext', () => {
                     afterBAdvice(ctxt);
                 }
             }
+            parameterAspectA = ParameterAspectA;
             parameterAspectB = ParameterAspectB;
             weaver.enable(new ParameterAspectA(), new ParameterAspectB());
         });
@@ -545,6 +661,24 @@ describe('AfterThrowContext', () => {
                 new Test().someMethod('');
                 expect(data.advices).toEqual(['afterThrowA', 'afterThrowB', 'afterA', 'afterB']);
             });
+        });
+        it('should be the current AfterThrow advice', () => {
+            afterThrowAAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectA);
+            });
+            afterThrowBAdvice.and.callFake((ctxt: AfterThrowContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectB);
+            });
+
+            class Test {
+                someMethod(@AParameter() @BParameter() param: any): any {
+                    throw new Error();
+                }
+            }
+
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().someMethod('');
+            [afterThrowAAdvice, afterThrowBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
         });
     });
 });

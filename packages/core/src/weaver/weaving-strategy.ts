@@ -7,13 +7,13 @@ import {
     BeforeAdvice,
     CompileAdvice,
     MutableAdviceContext,
-} from '../advices';
-import { JoinPoint } from '../types';
+    JoinPoint,
+} from '@aspectjs/core/commons';
 
 /**
  * @internal
  */
-export interface _WeaverHooks<T, A extends AdviceType> {
+export interface _WeavingStrategy<T, A extends AdviceType> {
     compile(
         ctxt: MutableAdviceContext<T, A>,
         advice: CompileAdvice<T, A>[],
@@ -42,4 +42,8 @@ export interface _WeaverHooks<T, A extends AdviceType> {
         aroundAdvices: AroundAdvice<T, A>[],
         jp: (args?: any[]) => T,
     ): JoinPoint<T>;
+    finalize(
+        ctxt: MutableAdviceContext<T, A>,
+        joinpoint: (...args: any[]) => T,
+    ): A extends AdviceType.CLASS ? { new (...args: any[]): T } : PropertyDescriptor;
 }

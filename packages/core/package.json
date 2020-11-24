@@ -20,7 +20,8 @@
   "sideEffects": false,
   "typings": "dist/core.d.ts",
   "scripts": {
-    "build": "rm -rf dist && yarn typings && rollup --config ./rollup.config.js",
+    "build": "rollup --config ./rollup.config.js",
+    "clean": "rimraf dist",
     "typings": "tsc --build tsconfig.types.json && api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",

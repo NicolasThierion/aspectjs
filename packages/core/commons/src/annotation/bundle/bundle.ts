@@ -1,5 +1,5 @@
 import { isString, locator } from '@aspectjs/core/utils';
-import { Annotation, AnnotationType } from '../annotation.types';
+import { Annotation, AnnotationRef, AnnotationType } from '../annotation.types';
 import { AnnotationContext } from '../context/annotation.context';
 import {
     AnnotationLocation,
@@ -42,11 +42,15 @@ export type AnnotationsBundle<T = unknown> =
  */
 export interface PropertyAnnotationsBundle<T = unknown> {
     all(
-        annotation?: Annotation<AnnotationType.PROPERTY>,
+        ...annotation: (Annotation<AnnotationType.PROPERTY> | string | AnnotationRef)[]
     ): readonly AnnotationContext<unknown, AnnotationType.PROPERTY>[];
 
     onProperty(
-        annotation?: Annotation<AnnotationType.PROPERTY> | string,
+        ...annotation: (Annotation<AnnotationType.PROPERTY> | string | AnnotationRef)[]
+    ): readonly AnnotationContext<T, AnnotationType.PROPERTY>[];
+
+    onSelf(
+        ...annotation: (Annotation<AnnotationType.PROPERTY> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PROPERTY>[];
 }
 
@@ -55,24 +59,34 @@ export interface PropertyAnnotationsBundle<T = unknown> {
  */
 export interface MethodAnnotationsBundle<T = unknown> {
     all(
-        annotation?: Annotation<AnnotationType.METHOD | AnnotationType.PARAMETER>,
+        ...annotation: (Annotation<AnnotationType.METHOD | AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.METHOD | AnnotationType.PARAMETER>[];
     onParameter(
-        annotation?: Annotation<AnnotationType.PARAMETER>,
+        ...annotation: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[];
 
     onMethod(
-        annotation?: Annotation<AnnotationType.METHOD> | string,
+        ...annotation: (Annotation<AnnotationType.METHOD> | string | AnnotationRef)[]
+    ): readonly AnnotationContext<T, AnnotationType.METHOD | AnnotationType.PARAMETER>[];
+
+    onSelf(
+        ...annotation: (Annotation<AnnotationType.METHOD> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.METHOD | AnnotationType.PARAMETER>[];
 }
 /**
  * @public
  */
 export interface ParameterAnnotationsBundle<T = unknown> {
-    all(annotation?: Annotation<AnnotationType.PARAMETER>): readonly AnnotationContext<T, AnnotationType.PARAMETER>[];
+    all(
+        ...annotation: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
+    ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[];
+
+    onSelf(
+        ...annotation: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
+    ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[];
 
     onParameter(
-        annotation?: Annotation<AnnotationType.PARAMETER>,
+        ...annotation: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[];
 }
 
@@ -90,7 +104,7 @@ export class RootAnnotationsBundle {
         return new ClassAnnotationsBundle<T>(this._registry, location, searchParents);
     }
 
-    all(...annotations: (Annotation | string)[]): readonly AnnotationContext[] {
+    all(...annotations: (Annotation | string | AnnotationRef)[]): readonly AnnotationContext[] {
         if (annotations && annotations.length === 1) {
             return locator(this._registry.byAnnotation)
                 .at(getAnnotationRef(annotations[0]))
@@ -109,49 +123,54 @@ export class RootAnnotationsBundle {
 /**
  * @public
  */
-export class ClassAnnotationsBundle<T = unknown>
-    extends RootAnnotationsBundle
-    implements ParameterAnnotationsBundle<T>, PropertyAnnotationsBundle<T>, MethodAnnotationsBundle<T> {
-    constructor(
-        registry: AnnotationBundleRegistry,
-        private location: AnnotationLocation,
-        private searchParents: boolean,
-    ) {
+export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
+    private _target: AnnotationTarget;
+    constructor(registry: AnnotationBundleRegistry, location: AnnotationLocation, private searchParents: boolean) {
         super(registry);
+        this._target = AnnotationLocationFactory.getTarget(location);
     }
-    all(...annotations: (Annotation | string)[]): readonly AnnotationContext<T>[] {
-        const target = AnnotationLocationFactory.getTarget(this.location);
-        return this._allWithFilter(target, 'all', annotations) as AnnotationContext<T>[];
+    all(...annotations: (Annotation | string | AnnotationRef)[]): readonly AnnotationContext<T>[] {
+        return this._allWithFilter(this._target, 'all', annotations) as AnnotationContext<T>[];
     }
 
     onClass(
-        ...annotations: (Annotation<AnnotationType.CLASS> | string)[]
+        ...annotations: (Annotation<AnnotationType.CLASS> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.CLASS>[] {
-        const target = AnnotationLocationFactory.getTarget(this.location);
+        return this._allWithFilter(this._target, AnnotationType.CLASS, annotations) as AnnotationContext<
+            T,
+            AnnotationType.CLASS
+        >[];
+    }
 
-        return this._allWithFilter(target, 'class', annotations) as AnnotationContext<T, AnnotationType.CLASS>[];
+    onSelf(
+        ...annotations: (Annotation<AnnotationType.CLASS> | string | AnnotationRef)[]
+    ): readonly AnnotationContext<T, AnnotationType.CLASS>[] {
+        return this._allWithFilter(this._target, this._target.type, annotations) as AnnotationContext<
+            T,
+            AnnotationType.CLASS
+        >[];
     }
 
     onProperty(
-        ...annotations: (Annotation<AnnotationType.PROPERTY> | string)[]
+        ...annotations: (Annotation<AnnotationType.PROPERTY> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PROPERTY>[] {
-        const target = AnnotationLocationFactory.getTarget(this.location);
-
-        return this._allWithFilter(target, 'property', annotations) as AnnotationContext<T, AnnotationType.PROPERTY>[];
+        return this._allWithFilter(this._target, AnnotationType.PROPERTY, annotations) as AnnotationContext<
+            T,
+            AnnotationType.PROPERTY
+        >[];
     }
     onMethod(
-        ...annotations: (Annotation<AnnotationType.METHOD> | string)[]
+        ...annotations: (Annotation<AnnotationType.METHOD> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.METHOD>[] {
-        const target = AnnotationLocationFactory.getTarget(this.location);
-
-        return this._allWithFilter(target, 'method', annotations) as AnnotationContext<T, AnnotationType.METHOD>[];
+        return this._allWithFilter(this._target, AnnotationType.METHOD, annotations) as AnnotationContext<
+            T,
+            AnnotationType.METHOD
+        >[];
     }
     onParameter(
-        ...annotations: (Annotation<AnnotationType.PARAMETER> | string)[]
+        ...annotations: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[] {
-        const target = AnnotationLocationFactory.getTarget(this.location);
-
-        return this._allWithFilter(target, 'parameter', annotations) as AnnotationContext<
+        return this._allWithFilter(this._target, AnnotationType.PARAMETER, annotations) as AnnotationContext<
             T,
             AnnotationType.PARAMETER
         >[];
@@ -160,7 +179,7 @@ export class ClassAnnotationsBundle<T = unknown>
     private _allWithFilter(
         target: AnnotationTarget,
         filter: keyof Filters[AnnotationType],
-        annotations: (Annotation | string)[],
+        annotations: (Annotation | string | AnnotationRef)[],
     ): AnnotationContext<T>[] {
         if (!target) {
             return [];
@@ -217,10 +236,10 @@ export class ClassAnnotationsBundle<T = unknown>
 type Filters = {
     [atLocation in AnnotationType]: {
         all(target: AnnotationTarget, a: AnnotationContext): boolean;
-        class(target: AnnotationTarget, a: AnnotationContext): boolean;
-        property(target: AnnotationTarget, a: AnnotationContext): boolean;
-        method(target: AnnotationTarget, a: AnnotationContext): boolean;
-        parameter(target: AnnotationTarget, a: AnnotationContext): boolean;
+        [AnnotationType.CLASS](target: AnnotationTarget, a: AnnotationContext): boolean;
+        [AnnotationType.PROPERTY](target: AnnotationTarget, a: AnnotationContext): boolean;
+        [AnnotationType.METHOD](target: AnnotationTarget, a: AnnotationContext): boolean;
+        [AnnotationType.PARAMETER](target: AnnotationTarget, a: AnnotationContext): boolean;
     };
 };
 const falseFilter = () => false;
@@ -231,21 +250,21 @@ const FILTERS: Filters = {
             // keep all if location is the class
             return true;
         },
-        class(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.CLASS](target: AnnotationTarget, a: AnnotationContext) {
             // keep only annotations on classes
             return a.target.type === AnnotationType.CLASS;
         },
-        property(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.PROPERTY](target: AnnotationTarget, a: AnnotationContext) {
             // keep only annotations on properties
             return a.target.type === AnnotationType.PROPERTY;
         },
 
-        method(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.METHOD](target: AnnotationTarget, a: AnnotationContext) {
             // keep only annotations on properties
             return a.target.type === AnnotationType.METHOD;
         },
 
-        parameter(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.PARAMETER](target: AnnotationTarget, a: AnnotationContext) {
             // keep only annotations on properties
             return a.target.type === AnnotationType.PARAMETER;
         },
@@ -255,12 +274,12 @@ const FILTERS: Filters = {
             // keep if same propertyKey
             return target.propertyKey === a.target.propertyKey;
         },
-        class: falseFilter,
-        property(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.CLASS]: falseFilter,
+        [AnnotationType.PROPERTY](target: AnnotationTarget, a: AnnotationContext) {
             return FILTERS[target.type].all(target, a);
         },
-        method: falseFilter,
-        parameter: falseFilter,
+        [AnnotationType.METHOD]: falseFilter,
+        [AnnotationType.PARAMETER]: falseFilter,
     },
     [AnnotationType.METHOD]: {
         all(target: AnnotationTarget, a: AnnotationContext) {
@@ -272,9 +291,9 @@ const FILTERS: Filters = {
                 (aTarget.type === AnnotationType.PARAMETER || aTarget.type === AnnotationType.METHOD)
             );
         },
-        class: falseFilter,
-        property: falseFilter,
-        method(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.CLASS]: falseFilter,
+        [AnnotationType.PROPERTY]: falseFilter,
+        [AnnotationType.METHOD](target: AnnotationTarget, a: AnnotationContext) {
             return (
                 // keep only annotations on properties
                 a.target.type === AnnotationType.METHOD &&
@@ -283,7 +302,7 @@ const FILTERS: Filters = {
             );
         },
 
-        parameter(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.PARAMETER](target: AnnotationTarget, a: AnnotationContext) {
             return (
                 // keep only annotations on properties
                 a.target.type === AnnotationType.PARAMETER &&
@@ -304,15 +323,15 @@ const FILTERS: Filters = {
                 (isNaN(target.parameterIndex) || target.parameterIndex === aTarget.parameterIndex)
             );
         },
-        class: falseFilter,
-        property: falseFilter,
-        method: falseFilter,
-        parameter(target: AnnotationTarget, a: AnnotationContext) {
+        [AnnotationType.CLASS]: falseFilter,
+        [AnnotationType.PROPERTY]: falseFilter,
+        [AnnotationType.METHOD]: falseFilter,
+        [AnnotationType.PARAMETER](target: AnnotationTarget, a: AnnotationContext) {
             return FILTERS[target.type].all(target, a);
         },
     },
 };
 
-function getAnnotationRef(annotation: string | Annotation): string {
+function getAnnotationRef(annotation: Annotation | string | AnnotationRef): string {
     return isString(annotation) ? (annotation as string) : annotation?.ref;
 }

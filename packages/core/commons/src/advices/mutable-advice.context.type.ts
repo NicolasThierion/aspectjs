@@ -1,13 +1,14 @@
-import { AdviceType } from './types';
-import { AnnotationContext } from '../annotation/context/annotation.context';
-import { JoinPoint } from '../types';
+import { AnnotationsBundle } from '../annotation/bundle/bundle';
 import { AdviceTarget } from '../annotation/target/annotation-target';
+import { JoinPoint } from '../types';
+import { Advice, AdviceType } from './types';
 
 /**
  * @public
  */
 export interface MutableAdviceContext<T = unknown, A extends AdviceType = any> {
-    annotation: AnnotationContext<T, A>;
+    advice: Advice<T, A>;
+    annotations: AnnotationsBundle<T>;
     instance: T;
     value: unknown;
     args: unknown[];

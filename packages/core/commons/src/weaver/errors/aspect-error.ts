@@ -5,7 +5,7 @@ import { AdviceContext } from '../../advices';
  * @public
  */
 export class AspectError extends Error {
-    constructor(ctxt: AdviceContext, message: string) {
-        super(`@${ctxt.annotation.name} on ${ctxt.target.label}: ${message}`);
+    constructor(ctxt: AdviceContext, message?: string) {
+        super(`Error applying advice ${ctxt.advice} on ${ctxt.target.label}: ${message}`);
     }
 }

@@ -7,7 +7,7 @@ import { AdviceError } from './errors';
 /**
  * @internal
  */
-export class _JoinpointFactory<T> {
+export class _JoinpointFactory {
     static create<T>(
         advice: AroundAdvice<T>,
         ctxt: Mutable<AroundContext<T>>,

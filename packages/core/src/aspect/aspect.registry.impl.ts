@@ -7,6 +7,7 @@ import {
     AdvicesRegistry,
     AdviceTarget,
     AdviceType,
+    AnnotationContext,
     AnnotationLocationFactory,
     AspectsRegistry,
     AspectType,
@@ -32,13 +33,12 @@ export class AspectsRegistryImpl implements AspectsRegistry {
     private readonly _aspectsToLoad: Set<AspectType> = new Set<AspectType>();
     private readonly _loadedAspects: Set<AspectType> = new Set<AspectType>();
 
-    // private readonly _advicesByPointcuts: Record<string, Advice[]> = {};
     constructor(private _weaverContext: WeaverContext) {
         this._advicesRegistryKey = `aspectjs.adviceRegistry.byAspects`; // TODO increment key with AspectsRegistry instance ?
     }
 
     /**
-     * Register a new advice, with the aspect is belongs to.
+     * Register a new advice, with the aspect it belongs to.
      * @param aspects - The aspects to register
      */
     register(...aspects: AspectType[]): void {
@@ -126,11 +126,11 @@ export class AspectsRegistryImpl implements AspectsRegistry {
 
         // get all advices that correspond to all the annotations of this context
         const bundle = this._weaverContext.annotations.bundle.at(target.location);
-        const annotationContexts = bundle.all();
+        const annotationContexts: readonly AnnotationContext[] = bundle.onSelf();
 
         (phases ?? []).forEach((phase) => {
             if (!targetRegistry[phase]) {
-                let annotations = annotationContexts
+                let advices = annotationContexts
                     .map((annotationContext) =>
                         locator(this._advicesRegistry)
                             .at('byPointcut')
@@ -151,9 +151,9 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                     });
 
                 if (filter) {
-                    annotations = annotations.filter(filter.fn);
+                    advices = advices.filter(filter.fn);
                 }
-                (targetRegistry as any)[phase] = annotations;
+                (targetRegistry as any)[phase] = advices;
             }
         });
         return targetRegistry;

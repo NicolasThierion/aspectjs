@@ -12,6 +12,7 @@
   "typings": "dist/memo.d.ts",
   "scripts": {
     "build": "rollup --config rollup.config.js",
+    "clean": "rimraf dist",
     "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  -w src --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",

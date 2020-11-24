@@ -1,3 +1,4 @@
+import { AfterReturn, Around, Aspect, Order } from '@aspectjs/core/annotations';
 import {
     AClass,
     AMethod,
@@ -9,16 +10,9 @@ import {
     BProperty,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
-import { AfterReturn, Around, Aspect, Order } from '@aspectjs/core/annotations';
-import {
-    on,
-    AdviceType,
-    JoinPoint,
-    AdviceContext,
-    AfterReturnContext,
-    AroundContext,
-    Weaver,
-} from '@aspectjs/core/commons';
+import { JoinPoint, on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AfterReturnContext, AroundContext } from '../types';
 
 describe('AroundContext', () => {
     let weaver: Weaver;
@@ -36,6 +30,7 @@ describe('AroundContext', () => {
     });
 
     describe('for a class', () => {
+        let classAspectA: any;
         let classAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -66,6 +61,7 @@ describe('AroundContext', () => {
                     afterReturnBAdvice(ctxt, jp);
                 }
             }
+            classAspectA = ClassAspectA;
             classAspectB = ClassAspectB;
             weaver.enable(new ClassAspectA(), new ClassAspectB());
         });
@@ -149,9 +145,29 @@ describe('AroundContext', () => {
                 });
             });
         });
+
+        it('should be the current around advice', () => {
+            aroundAAdvice.and.callFake((ctxt: AroundContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(classAspectA);
+                ctxt.joinpoint();
+            });
+            aroundBAdvice.and.callFake((ctxt: AroundContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
+                ctxt.joinpoint();
+            });
+
+            @AClass()
+            @BClass()
+            class A {}
+
+            [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new A();
+            [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
 
     describe('on a property', () => {
+        let propertyAspectA: any;
         let propertyAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -182,6 +198,7 @@ describe('AroundContext', () => {
                     afterReturnBAdvice(ctxt);
                 }
             }
+            propertyAspectA = PropertyAspectA;
             propertyAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -257,10 +274,32 @@ describe('AroundContext', () => {
                 );
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
             });
+
+            it('should be the current around advice', () => {
+                aroundAAdvice.and.callFake((ctxt: AroundContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+                    ctxt.joinpoint();
+                });
+                aroundBAdvice.and.callFake((ctxt: AroundContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+                    ctxt.joinpoint();
+                });
+
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any;
+                }
+
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+                new Test().prop;
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+            });
         });
     });
 
     describe('on a property setter', () => {
+        let propertyAspectA: any;
         let propertyAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -291,6 +330,7 @@ describe('AroundContext', () => {
                     afterReturnBAdvice(ctxt);
                 }
             }
+            propertyAspectA = PropertyAspectA;
             propertyAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -364,9 +404,31 @@ describe('AroundContext', () => {
                 );
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
             });
+
+            it('should be the current around advice', () => {
+                aroundAAdvice.and.callFake((ctxt: AroundContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+                    ctxt.joinpoint();
+                });
+                aroundBAdvice.and.callFake((ctxt: AroundContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+                    ctxt.joinpoint();
+                });
+
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any;
+                }
+
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+                new Test().prop = '';
+                [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+            });
         });
     });
     describe('on a method', () => {
+        let methodAspectA: any;
         let methodAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -397,6 +459,7 @@ describe('AroundContext', () => {
                     afterReturnBAdvice(ctxt);
                 }
             }
+            methodAspectA = PropertyAspectA;
             methodAspectB = PropertyAspectB;
             weaver.enable(new PropertyAspectA(), new PropertyAspectB());
         });
@@ -468,8 +531,30 @@ describe('AroundContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
             });
         });
+
+        it('should be the current around advice', () => {
+            aroundAAdvice.and.callFake((ctxt: AroundContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectA);
+                ctxt.joinpoint();
+            });
+            aroundBAdvice.and.callFake((ctxt: AroundContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectB);
+                ctxt.joinpoint();
+            });
+
+            class Test {
+                @AMethod()
+                @BMethod()
+                method(): any {}
+            }
+
+            [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().method();
+            [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+        });
     });
     describe('on a parameter', () => {
+        let parameterAspectA: any;
         let parameterAspectB: any;
         beforeEach(() => {
             @Aspect()
@@ -500,6 +585,7 @@ describe('AroundContext', () => {
                     afterReturnBAdvice(ctxt);
                 }
             }
+            parameterAspectA = ParameterAspectA;
             parameterAspectB = ParameterAspectB;
             weaver.enable(new ParameterAspectA(), new ParameterAspectB());
         });
@@ -554,6 +640,24 @@ describe('AroundContext', () => {
                 new Test().someMethod('');
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
             });
+        });
+        it('should be the current around advice', () => {
+            aroundAAdvice.and.callFake((ctxt: AroundContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectA);
+                ctxt.joinpoint();
+            });
+            aroundBAdvice.and.callFake((ctxt: AroundContext) => {
+                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectB);
+                ctxt.joinpoint();
+            });
+
+            class Test {
+                someMethod(@AParameter() @BParameter() param: any): any {}
+            }
+
+            [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+            new Test().someMethod('');
+            [aroundAAdvice, aroundBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
         });
     });
 });

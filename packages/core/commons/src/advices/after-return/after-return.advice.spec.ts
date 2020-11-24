@@ -1,6 +1,9 @@
-import { Aspect, AfterReturn, Compile } from '@aspectjs/core/annotations';
+import { AfterReturn, Aspect, Compile } from '@aspectjs/core/annotations';
 import { AClass, AMethod, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
-import { on, Weaver, AdviceType, AdviceContext, AfterReturnContext } from '@aspectjs/core/commons';
+
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AfterReturnContext } from '../types';
 import Spy = jasmine.Spy;
 
 describe('@AfterReturn advice', () => {

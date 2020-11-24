@@ -1,7 +1,7 @@
 import { Aspect, Compile } from '@aspectjs/core/annotations';
 import { on, AnnotationFactory } from '@aspectjs/core/commons';
-import { _setWeaverContext, Weaver, WeaverContext, WeavingError } from '../../commons/src/weaver';
-import { WeaverContextImpl } from './weaver-context.impl';
+import { _setWeaverContext, Weaver, WeaverContext, WeavingError } from '../../../commons/src/weaver';
+import { WeaverContextImpl } from '../weaver-context.impl';
 
 let weaver: Weaver;
 

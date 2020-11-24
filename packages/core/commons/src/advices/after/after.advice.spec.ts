@@ -1,6 +1,9 @@
-import { Aspect, After } from '@aspectjs/core/annotations';
+import { After, Aspect } from '@aspectjs/core/annotations';
 import { AClass, AMethod, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
-import { on, AdviceType, Weaver, AdviceContext, AfterContext } from '@aspectjs/core/commons';
+
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AfterContext } from '../types';
 import Spy = jasmine.Spy;
 
 let advice: Spy;

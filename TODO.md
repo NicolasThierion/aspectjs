@@ -36,4 +36,5 @@
 
 ### tests
  - test multiple `@Before` on the same apsect method
-  
+ - `AdviceContext.annotations`  
+ - `AdviceContext.advice`  

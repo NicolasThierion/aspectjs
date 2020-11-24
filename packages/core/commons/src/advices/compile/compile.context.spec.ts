@@ -10,7 +10,10 @@ import {
     BProperty,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
-import { on, Weaver, AdviceType, AdviceContext, CompileContext } from '@aspectjs/core/commons';
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType } from '../types';
+import { CompileContext } from './compile.context';
 
 describe('CompileContext', () => {
     let weaver: Weaver;
@@ -109,6 +112,20 @@ describe('CompileContext', () => {
                 expect(data.advices).toEqual(['compileA', 'compileB', 'beforeA', 'beforeB']);
             });
         });
+        describe('attribute "ctxt.advice"', () => {
+            it('should be the current compile advice', () => {
+                compileAAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(classAspectA);
+                });
+                compileBAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
+                });
+
+                @AClass()
+                @BClass()
+                class Test {}
+            });
+        });
     });
     describe('on a property', () => {
         let propertyAspectA: any;
@@ -196,6 +213,25 @@ describe('CompileContext', () => {
                 expect(data.advices).toEqual(['compileA', 'compileB']);
                 new Test().prop;
                 expect(data.advices).toEqual(['compileA', 'compileB', 'beforeA', 'beforeB']);
+            });
+        });
+
+        describe('attribute "ctxt.advice"', () => {
+            it('should be the current compile advice', () => {
+                compileAAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+                });
+                compileBAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+                });
+
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any;
+                }
+                expect(compileAAdvice).toHaveBeenCalled();
+                expect(compileBAdvice).toHaveBeenCalled();
             });
         });
     });
@@ -287,6 +323,24 @@ describe('CompileContext', () => {
                 expect(data.advices).toEqual(['compileA', 'compileB', 'beforeA', 'beforeB']);
             });
         });
+        describe('attribute "ctxt.advice"', () => {
+            it('should be the current compile advice', () => {
+                compileAAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(methodAspectA);
+                });
+                compileBAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(methodAspectB);
+                });
+
+                class Test {
+                    @AMethod()
+                    @BMethod()
+                    method(): any {}
+                }
+                expect(compileAAdvice).toHaveBeenCalled();
+                expect(compileBAdvice).toHaveBeenCalled();
+            });
+        });
     });
     describe('on a parameter', () => {
         let parameterAspectA: any;
@@ -365,6 +419,23 @@ describe('CompileContext', () => {
                 expect(data.advices).toEqual(['compileA', 'compileB']);
                 new Test().someMethod('');
                 expect(data.advices).toEqual(['compileA', 'compileB', 'beforeA', 'beforeB']);
+            });
+        });
+
+        describe('attribute "ctxt.advice"', () => {
+            it('should be the current compile advice', () => {
+                compileAAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectA);
+                });
+                compileBAdvice.and.callFake((ctxt: CompileContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectB);
+                });
+
+                class Test {
+                    someMethod(@AParameter() @BParameter() param: any): any {}
+                }
+                expect(compileAAdvice).toHaveBeenCalled();
+                expect(compileBAdvice).toHaveBeenCalled();
             });
         });
     });

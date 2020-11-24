@@ -1,3 +1,4 @@
+import { After, Aspect, Order } from '@aspectjs/core/annotations';
 import {
     AClass,
     AMethod,
@@ -9,8 +10,10 @@ import {
     BProperty,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
-import { After, Aspect, Order } from '@aspectjs/core/annotations';
-import { on, Weaver, AdviceType, AdviceContext, AfterContext, AfterReturnContext } from '@aspectjs/core/commons';
+
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AfterContext, AfterReturnContext } from '../types';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;
@@ -301,7 +304,6 @@ describe('AfterReturnContext', () => {
     });
 
     describe('on a parameter', () => {
-        let parameterAspectB: any;
         beforeEach(() => {
             @Aspect()
             class ParameterAspectA {
@@ -319,7 +321,6 @@ describe('AfterReturnContext', () => {
                     afterBAdvice(ctxt);
                 }
             }
-            parameterAspectB = ParameterAspectB;
             weaver.enable(new ParameterAspectA(), new ParameterAspectB());
         });
         describe('attribute "ctxt.data"', () => {

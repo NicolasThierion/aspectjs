@@ -25,13 +25,9 @@ export function _getReferenceConstructor(proto: object & { constructor: { new (.
 /**
  * @public
  */
-export function _setReferenceConstructor<T>(
-    ctor: { new (...args: any[]): T },
-    originalCtor: { new (...args: any[]): T },
-) {
+export function _setReferenceConstructor<T>(proto: object, originalCtor: { new (...args: any[]): T }) {
     assert(isFunction(originalCtor));
-    assert(isFunction(ctor));
-    Reflect.defineMetadata(ASPECT_ORIGINAL_CTOR_KEY, originalCtor, getProto(ctor));
+    Reflect.defineMetadata(ASPECT_ORIGINAL_CTOR_KEY, originalCtor, proto);
 }
 
 /**

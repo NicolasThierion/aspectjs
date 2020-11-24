@@ -1,12 +1,16 @@
 import { Aspect, Before } from '@aspectjs/core/annotations';
 import { AClass, AMethod, AParameter, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
-import { on, AdviceType, Weaver, AdviceContext, BeforeContext } from '@aspectjs/core/commons';
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType } from '../types';
+import { BeforeContext } from './before.context';
 import Spy = jasmine.Spy;
 
 describe('@Before advice', () => {
     let advice: Spy;
     let aspectClass: any;
     let weaver: Weaver;
+
     beforeEach(() => {
         advice = jasmine.createSpy('advice');
         weaver = setupTestingWeaverContext().getWeaver();
@@ -168,7 +172,7 @@ describe('@Before advice', () => {
             }
 
             a = new A();
-            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {});
+            advice = jasmine.createSpy('beforeAdvice').and.callFake(() => {});
         });
 
         it('should bind this to the aspect instance', () => {
@@ -188,7 +192,7 @@ describe('@Before advice', () => {
 
         it('should have a non null context.instance', () => {
             let thisInstance: any;
-            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext<any, any>) => {
+            advice = jasmine.createSpy('beforeAdvice').and.callFake((ctxt: BeforeContext) => {
                 thisInstance = ctxt.instance;
             });
             a.labels = [];
@@ -342,7 +346,7 @@ describe('@Before advice', () => {
                 applyBeforeParameter(ctxt: AdviceContext<any, AdviceType.PARAMETER>): void {
                     parameterAdvice.bind(this)(ctxt);
                 }
-                @Before(on.parameter.withAnnotations(AMethod))
+                @Before(on.method.withAnnotations(AMethod))
                 applyBeforeMethod(ctxt: AdviceContext<any, AdviceType.METHOD>): void {
                     methodAdvice.bind(this)(ctxt);
                 }
@@ -359,7 +363,7 @@ describe('@Before advice', () => {
 
             a = new A();
         });
-        xit('should call both aspects', () => {
+        it('should call both aspects', () => {
             expect(methodAdvice).not.toHaveBeenCalled();
             expect(parameterAdvice).not.toHaveBeenCalled();
 

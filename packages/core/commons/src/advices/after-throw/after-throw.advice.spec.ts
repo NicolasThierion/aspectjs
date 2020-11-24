@@ -1,6 +1,9 @@
-import { Aspect, Compile, AfterThrow } from '@aspectjs/core/annotations';
+import { AfterThrow, Aspect, Compile } from '@aspectjs/core/annotations';
 import { AClass, AMethod, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
-import { AdviceContext, AfterThrowContext, CompileContext, on, AdviceType, Weaver } from '@aspectjs/core/commons';
+
+import { on } from '../../types';
+import { Weaver } from '../../weaver';
+import { AdviceContext, AdviceType, AfterThrowContext, CompileContext } from '../types';
 import Spy = jasmine.Spy;
 
 const thrownError = new Error('expected');

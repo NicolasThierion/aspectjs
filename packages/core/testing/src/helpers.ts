@@ -1,5 +1,4 @@
-import { AnnotationRef, AspectType, AnnotationFactory, _setWeaverContext } from '@aspectjs/core/commons';
-import { WeaverContextImpl } from '@aspectjs/core';
+import { _setWeaverContext, AnnotationFactory, AnnotationRef, AspectType, WeaverContext } from '@aspectjs/core/commons';
 import { TestingWeaverContext } from './testing-weaver-context.impl';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
@@ -18,7 +17,7 @@ export interface Labeled {
  * Setup a brand new WEAVER_CONTEXT for test purposes
  * @public
  */
-export function setupTestingWeaverContext(...aspects: AspectType[]) {
+export function setupTestingWeaverContext(...aspects: AspectType[]): WeaverContext {
     const context = new TestingWeaverContext();
     _setWeaverContext(context);
     const weaver = context.getWeaver();

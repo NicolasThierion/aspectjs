@@ -354,7 +354,7 @@ describe(`IdbMemoDriver`, () => {
                         memoMethod();
                     }).toThrow(
                         new Error(
-                            `@Memo on method "MemoClassImpl.memoMethod": Driver indexedDb does not accept value of type ${type} returned by method "MemoClassImpl.memoMethod"`,
+                            `Error applying advice @Around(@Memo) MemoAspect.applyMemo() on method "MemoClassImpl.memoMethod": Driver indexedDb does not accept value of type ${type} returned by method "MemoClassImpl.memoMethod"`,
                         ),
                     );
                 });

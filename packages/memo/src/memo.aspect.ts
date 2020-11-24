@@ -131,8 +131,8 @@ export class MemoAspect implements AspectType {
      * Apply the memo pattern. That is, get the result from cache if any, or call the original method and store the result otherwise.
      */
     @Around(on.method.withAnnotations(Memo))
-    applyMemo(ctxt: AroundContext<any, any>, jp: JoinPoint): any {
-        const memoParams = ctxt.annotation.args[0] as MemoOptions;
+    applyMemo(ctxt: AroundContext<any>, jp: JoinPoint): any {
+        const memoParams = ctxt.annotations.onSelf(Memo)[0].args[0] as MemoOptions;
         ctxt.data.namespace = provider(memoParams?.namespace)() ?? provider(this._options?.namespace)();
         ctxt.data.instanceId = `${provider(memoParams?.id)(ctxt) ?? provider(this._options?.id)(ctxt)}`;
         const key = this._options.createMemoKey(ctxt) as MemoKey;
@@ -141,9 +141,9 @@ export class MemoAspect implements AspectType {
             throw new Error(`${this._options.createMemoKey.name} function did not return a valid MemoKey`);
         }
 
-        const options = ctxt.annotation.args[0] as MemoOptions;
+        const options = ctxt.annotations.onSelf(Memo)[0].args[0] as MemoOptions;
         const expiration = this.getExpiration(ctxt, options);
-        const drivers = _selectCandidateDrivers(this._drivers, ctxt);
+        const drivers = _selectCandidateDrivers(this._drivers, ctxt, this.applyMemo);
 
         const proceedJoinpoint = () => {
             // value not cached. Call the original method
@@ -258,7 +258,7 @@ export class MemoAspect implements AspectType {
         });
     }
 
-    private getExpiration(ctxt: AroundContext<any, any>, options: MemoOptions): Date | undefined {
+    private getExpiration(ctxt: AroundContext<any>, options: MemoOptions): Date | undefined {
         const exp = provider(options?.expiration)();
         if (exp) {
             if (exp instanceof Date) {
@@ -274,8 +274,12 @@ export class MemoAspect implements AspectType {
     }
 }
 
-function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: AroundContext<any, any>): MemoDriver[] {
-    const annotationOptions = (ctxt.annotation.args[0] ?? {}) as MemoOptions;
+function _selectCandidateDrivers(
+    drivers: Record<string, MemoDriver>,
+    ctxt: AroundContext<any, any>,
+    applyMemo: Function,
+): MemoDriver[] {
+    const annotationOptions = (ctxt.annotations.onSelf(Memo)[0].args[0] ?? {}) as MemoOptions;
     if (!annotationOptions.driver) {
         // return all drivers
         return Object.values(drivers);

@@ -152,7 +152,7 @@ describe('MemoAspect', () => {
                 it('should throw an error', () => {
                     expect(() => r.process()).toThrow(
                         new Error(
-                            '@Memo on method "RunnerImpl.process": No candidate driver available for driver name "invalidDriverName"',
+                            'Error applying advice @Around(@Memo) MemoAspect.applyMemo() on method "RunnerImpl.process": No candidate driver available for driver name "invalidDriverName"',
                         ),
                     );
                 });
@@ -169,7 +169,7 @@ describe('MemoAspect', () => {
                 it('should throw an error', () => {
                     expect(() => r.process()).toThrow(
                         new Error(
-                            '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value of type String returned by method "RunnerImpl.process"',
+                            'Error applying advice @Around(@Memo) MemoAspect.applyMemo() on method "RunnerImpl.process": Driver driver1 does not accept value of type String returned by method "RunnerImpl.process"',
                         ),
                     );
                 });
@@ -193,7 +193,9 @@ describe('MemoAspect', () => {
 
                 it('should throw an error', () => {
                     expect(() => r.process()).toThrow(
-                        new Error('@Memo on method "RunnerImpl.process": No candidate driver available for driver "X"'),
+                        new Error(
+                            'Error applying advice @Around(@Memo) MemoAspect.applyMemo() on method "RunnerImpl.process": No candidate driver available for driver "X"',
+                        ),
                     );
                 });
             });
@@ -209,7 +211,7 @@ describe('MemoAspect', () => {
                 it('should throw an error', () => {
                     expect(() => r.process()).toThrow(
                         new Error(
-                            '@Memo on method "RunnerImpl.process": Driver driver1 does not accept value of type String returned by method "RunnerImpl.process"',
+                            `Error applying advice @Around(@Memo) MemoAspect.applyMemo() on method "RunnerImpl.process": Driver driver1 does not accept value of type String returned by method "RunnerImpl.process"`,
                         ),
                     );
                 });
