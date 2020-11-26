@@ -1,0 +1,106 @@
+
+.theme-default-content { // take precedence over default theme
+
+  .custom-block.info {
+    background-color: #edf8f5;
+    border-color: #138d75;
+    color: #4d0000;
+
+    padding: 0.1rem 1.5rem;
+    border-left-width: 0.5rem;
+    border-left-style: solid;
+    margin: 1rem 0;
+  }
+
+  .custom-block.info, .custom-block.tip, .custom-block.warning, .custom-block.danger, .custom-block.error, .custom-block.boom {
+    p {
+      position: relative;
+      padding-left: 42px;
+      img:first-of-type {
+        height: 42px;
+        top: calc(50% - 42px / 2);
+        left: calc(-1rem / 2);
+        position: absolute;
+      }
+    }
+  }
+
+  .custom-block.details figure:last-child, .custom-block.details p:last-child {
+    padding: 0.1rem 1.5rem;
+    margin: 1rem 0;
+    padding-left: 42px;
+  }
+
+
+  .custom-block {
+    .custom-block-title {
+      font-weight: 600;
+      margin-bottom: -0.4rem;
+    }
+  }
+  .custom-block.tip {
+    padding: 0.1rem 1.5rem;
+    border-left-width: 0.5rem;
+    border-left-style: solid;
+    margin: 1rem 0;
+    background-color: #ecf8f1;
+    border-color: #369660;
+  }
+  .custom-block.warning {
+    padding: 0.1rem 1.5rem;
+    border-left-width: 0.5rem;
+    border-left-style: solid;
+    margin: 1rem 0;
+    background-color: #fef9e7;
+    border-color: #e7c000;
+    color: #6b5900;
+    .custom-block-title {
+      color: #b29400;
+    }
+    a {
+      color: $textColor;
+    }
+  }
+  .custom-block.danger {
+    padding: 0.1rem 1.5rem;
+    border-left-width: 0.5rem;
+    border-left-style: solid;
+    margin: 1rem 0;
+    background-color: #ffe6e6;
+    border-color: #c00;
+    color: #4d0000;
+    .custom-block-title {
+      color: #900;
+    }
+    a {
+      color: $textColor;
+    }
+  }
+  .custom-block.details {
+    display: block;
+    position: relative;
+    border-radius: 2px;
+    margin: 1.6em 0;
+    padding: 1.6em;
+    background-color: #eee;
+    h4 {
+      margin-top: 0;
+    }
+    figure {
+      &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+    }
+    p {
+      &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+    }
+    summary {
+      outline: none;
+      cursor: pointer;
+    }
+  }
+}

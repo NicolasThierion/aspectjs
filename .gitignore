@@ -3,6 +3,7 @@
 yarn-error.log
 node_modules
 .cache
-docs
 **/dist
 **/*.tgz
+*.tsbuildinfo
+

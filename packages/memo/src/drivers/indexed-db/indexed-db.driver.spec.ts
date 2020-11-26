@@ -87,7 +87,7 @@ describe(`IdbMemoDriver`, () => {
 
             it('should use data cached from previous context', async () => {
                 let res: any;
-                await new Promise((resolve) => {
+                await new Promise<void>((resolve) => {
                     setTimeout(async () => {
                         res = await memoMethod(...defaultArgs);
                         resolve();

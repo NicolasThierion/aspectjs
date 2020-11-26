@@ -120,7 +120,7 @@ describe('Given a @Memo method that returns an Array', () => {
                 expect(joinpoint).toHaveBeenCalledTimes(1);
                 expect([await res2[0], await res2[1]]).toEqual(['a', 'b']);
 
-                return new Promise<any>((resolve) => {
+                return new Promise<void>((resolve) => {
                     setTimeout(async () => {
                         const res2 = memoMethod();
                         expect(joinpoint).toHaveBeenCalledTimes(1);

@@ -1,66 +1,117 @@
-image: node:14-alpine
+image: node:14.15.1-alpine
 
 stages:
   - prepare
   - build
   - test
-  - publish
+  - typings
+  - deploy
 
+## install node dependencies
 install:
   stage: prepare
   script:
     - yarn install
+    - yarn add -DW puppeteer --only=dev
 
+###
+# Build
+###
+
+# bundle the application
 bundle:
   stage: build
+  before_script:
+    - apk add git
   script:
-    - apk add git && yarn build
+    - yarn build
   artifacts:
     paths:
-      - dist/
+      - "packages/*/dist"
+      - "packages/*/*/dist"
 
+# lint the code
 lint:
   stage: build
   script:
     - yarn lint
 
-
+# build the doc
 docs:build:
   stage: build
   script:
     - yarn docs:build
+  artifacts:
+    paths:
+      - docs/.vuepress/dist
+
+###
+# Tests
+###
+
+# unit tests
+test:
+  stage: test
+  script:
+    - apk add git
+    - yarn test
+
+## TODO does not work on CI atm: https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-is-downloaded-but-fails-to-launch-on-nodejs-14; https://github.com/puppeteer/puppeteer/issues/5992
+# cap maximum bundle size
+#test:size:
+#  stage: test
+#  before_script:
+#    - apk add git
+#  script:
+#    - yarn size
+#  dependencies:
+#    - bundle
+###
+# Typings
+###
+# rollup the typings
+typings:build:
+  dependencies:
+    - bundle
+  stage: typings
+  before_script:
+    - apk add git
+  script:
+    - yarn typings
+
+###
+# Deploy
+###
+publish:
+  stage: deploy
+  rules:
+  - if: '$CI_COMMIT_TAG =~ /^v(\d+\.)?(\d+\.)?(\*|\d+)$/'
+  before_script:
+    - apk add git
+    - yarn global add lerna
+  script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}">.npmrc
+    - npm whoami
+    - lerna publish -y from-git
+
+docs:publish:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v(\d+\.)?(\d+\.)?(\*|\d+)$/'
+  before_script:
+    - apk add git openssh-client
+    - mkdir -p ~/.ssh
+    - cp $GITHUB_SSH_PRIVATE_KEY ~/.ssh/id_rsa
+    - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - chmod -R 600 ~/.ssh
+    - git config --global user.email "nicolas.thierion+ci@outlook.com"
+    - git config --global user.name "Gitlab Runner"
+  script:
     - cd docs/.vuepress/dist
     - git init
     - git add . -A
     - git commit -m"deploy doc"
-    - git push -f git@github.com:NicolasThierion/aspectj.git master:gh-pages
-
-test:
-  stage: test
-  script:
-    - yarn test
-
-#test:integration: ## will take up too much space when run over and over again.
-#  stage: test
-#  script:
-#    - yarn test:integration
-#  dependencies:
-#    - bundle
-
-test:size:
-  stage: test
-  script:
-    - yarn size
-  dependencies:
-    - bundle
-
-
-publish:
-  rules:
-  - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/ && $CI_COMMIT_BRANCH == "master"'
-    when: manual
-  - when: never
-  script: "echo 'publishing to NPM comming soon :)'; cd dist && yarn publish"
+    - git push -f git@github.com:NicolasThierion/aspectjs.git master:gh-pages
 
 cache:
   paths:

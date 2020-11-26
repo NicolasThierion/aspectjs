@@ -3,8 +3,9 @@
 
 ![logo](.README/aspectjs-256.png)
 
-![ci-status]
+[![ci-status]](https://gitlab.com/Pryum/aspectjs)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+
 
 ## Abstract 
 
@@ -96,3 +97,5 @@ WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
 })();
 ```
 
+
+[ci-status]: https://gitlab.com/Pryum/aspectjs/badges/master/pipeline.svg

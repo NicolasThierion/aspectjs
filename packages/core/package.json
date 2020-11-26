@@ -58,5 +58,8 @@
         "annotations/dist/bundles/umd/annotations.umd.min.js"
       ]
     }
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

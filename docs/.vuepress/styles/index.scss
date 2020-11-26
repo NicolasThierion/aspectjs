@@ -1,0 +1,38 @@
+@import "./palette";
+@import "./custom-blocks";
+//@import "./github-corner";
+
+
+h1, h2, h3 {
+  color: darken($accentColor, 0.2)
+}
+
+body .github-corner > svg {
+  fill: $accentColor;
+  right: 0;
+  top: $navbarHeight;
+  position: fixed;
+}
+
+
+body pre.code-copy-added {
+  position: relative;
+  .code-copy {
+
+    position: absolute;
+    top: 1em;
+    right: 2em;
+
+    svg {
+      transition: opacity ease 0.2s;
+      path:nth-of-type(2) {
+        fill: $accentColor;
+      }
+    }
+  }
+}
+
+.theme-code-group__nav-tab-active {
+  outline: 0;
+  border-bottom: 1px solid $accentColor;
+}
