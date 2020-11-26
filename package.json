@@ -63,7 +63,6 @@
     "nodemon": "^2.0.2",
     "npm-run": "^5.0.1",
     "nyc": "^15.0.0",
-    "postscribe": "^2.0.8",
     "prettier": "^2.0.5",
     "reflect-metadata": "^0.1.13",
     "rollup": "^2.21.0",

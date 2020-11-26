@@ -24,6 +24,17 @@ lint:
   script:
     - yarn lint
 
+
+docs:build:
+  stage: build
+  script:
+    - yarn docs:build
+    - cd docs/.vuepress/dist
+    - git init
+    - git add . -A
+    - git commit -m"deploy doc"
+    - git push -f git@github.com:NicolasThierion/aspectj.git master:gh-pages
+
 test:
   stage: test
   script:
@@ -42,6 +53,7 @@ test:size:
     - yarn size
   dependencies:
     - bundle
+
 
 publish:
   rules:
