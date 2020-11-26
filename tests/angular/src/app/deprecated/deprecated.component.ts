@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AnnotationFactory, BeforeContext, on } from '@aspectjs/core/commons';
+import { AnnotationFactory, AnnotationType, BeforeContext, on } from '@aspectjs/core/commons';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 import { WEAVER_CONTEXT } from '@aspectjs/core';
 import { Memo } from '@aspectjs/memo';
@@ -9,19 +9,20 @@ const af = new AnnotationFactory('test');
 const Deprecated = af.create(function Deprecated(version?: string): any {
     return;
 });
-
+console.log(Deprecated.ref);
 @Aspect()
 class DeprecatedAspect {
     private tags: Record<string, boolean> = {};
 
     @Before(on.method.withAnnotations(Deprecated))
     @Before(on.parameter.withAnnotations(Deprecated))
+    @Before(on.class.withAnnotations(Deprecated))
     @Order(1)
     logWarning(context: BeforeContext) {
         if (!this.tags[context.target.ref]) {
             const args = context.annotations.onSelf(Deprecated)[0].args[0];
             if (
-                context.target.parameterIndex === undefined ||
+                context.target.type !== AnnotationType.PARAMETER ||
                 context.args[context.target.parameterIndex] !== undefined
             ) {
                 console.warn(`${context.target.label} is deprecated`);
@@ -41,6 +42,7 @@ WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
 })
 export class DeprecatedComponent implements OnInit {
     name: string;
+
     constructor() {}
 
     ngOnInit(): void {
@@ -54,14 +56,18 @@ export class DeprecatedComponent implements OnInit {
     }
 
     @Memo()
-    private deprecatedFunctionParam(@Deprecated() arg?: string) {
+    private deprecatedFunctionParam(
+        @Deprecated()
+        arg?: string,
+    ) {
         console.log('deprecatedFunctionParam');
     }
 
     @Deprecated()
-    private deprecatedFunction(@Deprecated() arg?: string) {
+    private deprecatedFunction(
+        @Deprecated()
+        arg?: string,
+    ) {
         console.log('deprecatedFunction');
     }
 }
-
-debugger;

@@ -1,4 +1,4 @@
-image: node:13-alpine
+image: node:14-alpine
 
 stages:
   - prepare
@@ -10,7 +10,6 @@ install:
   stage: prepare
   script:
     - yarn install
-    - yarn add -DW puppeteer --only=dev
 
 bundle:
   stage: build

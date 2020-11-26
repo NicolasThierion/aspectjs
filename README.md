@@ -1,134 +1,98 @@
----
-home: true
-heroText: '@AspectJS'
-tagline: The AOP framework for javascript
-actionText: Get Started →
-actionLink: docs/01.guide/
-features:
-- title: Modern
-  details: Leverages <a href="https://github.com/tc39/proposal-decorators"><b>ES8 decorators stage 1</b></a> to bring aspect-oriented programming to your Javascript and Typescript code.
-- title: Easy to use
-  details: Creating and invoking aspects just requires a few decorators 
-- title: Based on standards
-  details: AspectJS offers an API that mimics <a href="https://www.eclipse.org/aspectj/">AspectJ</a>, the king of java-based AOP frameworks.
-footer: MIT Licensed
----
+# AspectJS
+ > The AOP framework for Javascript and Typescript
 
- 
+![logo](.README/aspectjs-256.png)
+
 ![ci-status]
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
+## Abstract 
+
+Inspired by the [AspectJ](https://www.eclipse.org/aspectj/) java framework,
+AspectJS Leverages [ES Decorators](https://github.com/tc39/proposal-decorators) to bring
+aspect-oriented programming to Javascript and Typescript.
+
+For more details & usage, please [read the documentation](https://nicolasthierion.github.io/aspectjs/)
+
+MIT Licensed
+
+
 ### Installation:
-:::: tabs
-::: tab with npm
-```
-npm install @aspectjs/core
-```
-:::
-::: tab with yarn
-```
+
+```bash
 yarn add @aspectjs/core
 ```
-:::
-::::
 
-### Custom aspect example
+Or with npm:
 
-:::: tabs
-::: tab javascript
-```js
-import { 
-    on,
-    AnnotationFactory, 
-    getWeaver,
-    Aspect 
-} from '@aspectjs/core';
-
-// Define the annotation
-const Monitored = new AnnotationFactory('myNamespace')
-    .create(function Monitored(maxTime) { });
-
-// Define the aspect to trigger with this annotation
-@Aspect()
-class MonitoredAspect {
-    @Around(on.method.withAnnotations(Monitored))
-    aroundMonitoredAdvice(ctxt, jp) {
-        const t = new Date().getTime();
-
-        const result = jp();
-        const elapsed = new Date().getTime() - t;
-
-        const timeout = ctxt.annotation.args[0];
-        if (timeout && timeout < elapsed) {
-            throw new Error(`${ctxt.target.label} exceeded ${timeout} ms`);
-        }
-        console.log(`${ctxt.target} executed in ${elapsed} ms`);
-        return result;
-    }
-}
-
-// Enable the @Monitored aspect
-getWeaver().enable(new MonitoredAspect());
-
-// Use the aspect
-class Processor {
-    @Monitored(10)
-    process() {
-        console.log('processing...');
-        for (let i = 0; i < 10000000; ++i) {}
-    }
-}
-
-new Processor().process();
+```bash
+npm install @aspectjs/core
 ```
-:::
-::: tab typescript
+
+### Example
+
 ```typescript
-import { 
-    on,
-    AnnotationFactory, 
-    getWeaver,
-    JoinPoint,
-    Aspect 
-} from '@aspectjs/core';
+import { AnnotationFactory, BeforeContext, on, AnnotationType } from '@aspectjs/core/commons';
+import { Aspect, Before, Order } from '@aspectjs/core/annotations';
+import { WEAVER_CONTEXT } from '@aspectjs/core';
 
 // Define the annotation
-const Monitored = new AnnotationFactory('test')
-    .create(function Monitored(maxTime: number): MethodDecorator { return; });
+const Deprecated =  new AnnotationFactory('my-lib')
+    .create(function Deprecated(message?: string): any { 
+    // Annotation stub returns any, so typescript accepts the annotation
+    // above both classes, properties, methods & parameters
+    return;
+ });
 
-// Define the aspect to trigger with this annotation
+// Create an aspect to enhance the @Deprecated annotation
 @Aspect()
-class MonitoredAspect {
-    @Around(on.method.withAnnotations(Monitored))
-    aroundMonitoredAdvice(
-                    ctxt: AroundContext,
-                    jp: JoinPoint) {
-        const t = new Date().getTime();
+class DeprecatedAspect {
+    private tags: Record<string, boolean> = {};
 
-        const result = jp();
-        const elapsed = new Date().getTime() - t;
-
-        const timeout = ctxt.annotation.args[0];
-        if (timeout && timeout < elapsed) {
-            throw new Error(`${ctxt.target.label} exceeded ${timeout} ms`);
+    @Before(on.method.withAnnotations(Deprecated))     // before @Deprecated methods
+    @Before(on.parameter.withAnnotations(Deprecated))  // before methods with @Deprecated parameters
+    @Order(1)                                          // optional: give the execution order
+    logWarning(context: BeforeContext) {         // context gets injected with some data relative to the current advice
+        // get the unique target reference (ie: where the annotation is)
+        const targetRef = context.target.ref;
+        // if log warning not already raised for this target        
+        if (!this.tags[targetRef]) {
+            if (
+                // log any deprecated method call
+                context.target.type === AnnotationType.METHOD ||
+                // log any method call with a non-undefined deprecated parameter.
+                context.args[context.target.parameterIndex] !== undefined
+            ) {
+                // get the message provided to @Deprecated, if any                
+                const message = context.annotations.onSelf(Deprecated)[0].args[0]; 
+                // log a warning with either the provided message or a default one                
+                console.warn(message ?? `${context.target.label} is deprecated`);
+                // warning raised, don't produce further warnings for this target                
+                this.tags[context.target.ref] = true;  
+            }
         }
-        console.log(`${ctxt.target} executed in ${elapsed} ms`);
-        return result;
     }
 }
 
-// Enable the @Monitored aspect
-getWeaver().enable(new MonitoredAspect());
+// Enable DeprecatedAspect
+WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
 
 // Use the aspect
-class Processor {
-    @Monitored(10)
-    process() {
-        console.log('processing...');
-        for (let i = 0; i < 10000000; ++i) {}
-    }
-}
+(function main() {
+    class Greetings {
+        
+        sayHello(@Deprecarted('parameter name is deprecated') name: string) {
+                    console.log('Hello world')
+        }
+        @Deprecated()   
+        sayGoodbye() {
+            console.log('Goodbye world')
+        }
+    } 
 
-new Processor().process();
+    const g = new Greetings();
+    g.sayHello('WORLD');    // will raise one warning
+    g.sayGoodbye();         // will raise one warning
+})();
 ```
-::::
+

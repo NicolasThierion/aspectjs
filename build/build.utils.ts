@@ -9,7 +9,9 @@ import { terser } from 'rollup-plugin-terser';
 import _typescript from 'rollup-plugin-typescript2';
 import babelrc from '../.babelrc.json';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const visualizer = require('rollup-plugin-visualizer');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const babel = require('rollup-plugin-babel');
 
 const typescript = _typescript as any;

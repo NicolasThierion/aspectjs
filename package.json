@@ -16,11 +16,11 @@
     "clean": "lerna run clean --since --stream",
     "dev": "yarn docs:dev && nodemon  --ignore **/dist/  **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "size": "lerna run size --since",
-    "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
-    "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet",
+    "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{ts,tsx}' --quiet --fix",
+    "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{ts,tsx}' --quiet",
     "release": "lerna version",
-    "docs:dev": "vuepress dev .",
-    "docs:build": "vuepress build ."
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "workspaces": [
     "packages/**"
@@ -36,6 +36,7 @@
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@size-limit/preset-big-lib": "^4.5.4",
     "@types/jasmine": "^3.4.0",
+    "@types/jsdom": "^16.2.5",
     "@types/lodash": "^4.14.149",
     "@types/markdown-it": "^10.0.1",
     "@types/node": "^14.0.22",
@@ -53,11 +54,12 @@
     "husky": "^4.2.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
-    "jsdom": "^16.3.0",
+    "jsdom": "^16.4.0",
     "lerna": "^3.20.2",
     "lodash": "^4.17.19",
     "markdown-it-container": "^3.0.0",
     "mv": "^2.1.1",
+    "node-sass": "^5.0.0",
     "nodemon": "^2.0.2",
     "npm-run": "^5.0.1",
     "nyc": "^15.0.0",
@@ -72,6 +74,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.29.0",
     "rollup-plugin-visualizer": "^4.0.4",
+    "sass-loader": "^10.1.0",
     "size-limit": "^4.5.4",
     "source-map-support": "^0.5.16",
     "ts-loader": "^8.0.11",
@@ -82,7 +85,6 @@
     "vuepress": "^1.5.2",
     "vuepress-bar": "^0.3.1",
     "vuepress-plugin-code-copy": "^1.0.6",
-    "vuepress-plugin-element-tabs": "^0.2.8",
     "vuepress-plugin-reading-progress": "^1.0.8"
   },
   "husky": {

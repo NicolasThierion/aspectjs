@@ -166,29 +166,24 @@
         "signature": "887f0f12a24ab3c2ac1eb71c3e9024d01600f01e8150085af85b63625eff04d8",
         "affectsGlobalScope": false
       },
-      "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts": {
-        "version": "9169477eb8972922ead2cdd8bea362ee5e9b1606a1c534c012c871ad69c375c5",
-        "signature": "9169477eb8972922ead2cdd8bea362ee5e9b1606a1c534c012c871ad69c375c5",
-        "affectsGlobalScope": false
-      },
       "../core/commons/dist/typings/commons/src/advices/after/after.context.d.ts": {
-        "version": "b98104835b6b4e4147da8d3650cedd4e2d0ee339387f819d59450b1b846c591d",
-        "signature": "b98104835b6b4e4147da8d3650cedd4e2d0ee339387f819d59450b1b846c591d",
+        "version": "bb7e1f3d8f4bb3e7bff7d9b099b0c4cb5f603db8cc2c471d07345958fe6dff08",
+        "signature": "bb7e1f3d8f4bb3e7bff7d9b099b0c4cb5f603db8cc2c471d07345958fe6dff08",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/before/before.context.d.ts": {
-        "version": "3880a2fda5b8966895588a9b6957fea6c551e41792fb5cd51c1f2a293599fd29",
-        "signature": "3880a2fda5b8966895588a9b6957fea6c551e41792fb5cd51c1f2a293599fd29",
+        "version": "0cc8fa19a49ea096385ea12fa2e037e4eaf26e9aeb9d8e1d58565796f01c77f3",
+        "signature": "0cc8fa19a49ea096385ea12fa2e037e4eaf26e9aeb9d8e1d58565796f01c77f3",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/after-return/after-return.context.d.ts": {
-        "version": "66edfb98e7a94bde477b6225205218df95204ba97a43bade83daf9807e185b5c",
-        "signature": "66edfb98e7a94bde477b6225205218df95204ba97a43bade83daf9807e185b5c",
+        "version": "c9e4a40cea4fa730d4cf168c4d201564913e39b837526ba157ada6b4b8df00aa",
+        "signature": "c9e4a40cea4fa730d4cf168c4d201564913e39b837526ba157ada6b4b8df00aa",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/after-throw/after-throw.context.d.ts": {
-        "version": "322cebbcb7313fde0d0d2923500dc8ffad6b13e34a400e2c762bded498256c81",
-        "signature": "322cebbcb7313fde0d0d2923500dc8ffad6b13e34a400e2c762bded498256c81",
+        "version": "177e6eaa6509ef18eff621125938890f288cc825a2093e4435b90a93faa9811f",
+        "signature": "177e6eaa6509ef18eff621125938890f288cc825a2093e4435b90a93faa9811f",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/types/types.d.ts": {
@@ -197,13 +192,13 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/around/around.context.d.ts": {
-        "version": "93ec9feb07533b2e77cf3d275e08db2ea21a99aff738fe4ae46cb449aee076b4",
-        "signature": "93ec9feb07533b2e77cf3d275e08db2ea21a99aff738fe4ae46cb449aee076b4",
+        "version": "c3b36269cc8d213dd0194d62fbdfff582e74699cc389c357e8fc39fa4afb0ff9",
+        "signature": "c3b36269cc8d213dd0194d62fbdfff582e74699cc389c357e8fc39fa4afb0ff9",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/compile/compile.context.d.ts": {
-        "version": "55d4a16300db50e5aa2e076a3499b899733a8157760c7fc01d253b389572c127",
-        "signature": "55d4a16300db50e5aa2e076a3499b899733a8157760c7fc01d253b389572c127",
+        "version": "60ac8400e94b64742072ebd0438a89cad420e03d5f60ef181e1ddd9a8b18f695",
+        "signature": "60ac8400e94b64742072ebd0438a89cad420e03d5f60ef181e1ddd9a8b18f695",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/advice.context.type.d.ts": {
@@ -231,19 +226,24 @@
         "signature": "7338d766a1ab1850920c51982801f065235b869df0f5541cd5382b51d1dec9b6",
         "affectsGlobalScope": false
       },
+      "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts": {
+        "version": "9169477eb8972922ead2cdd8bea362ee5e9b1606a1c534c012c871ad69c375c5",
+        "signature": "9169477eb8972922ead2cdd8bea362ee5e9b1606a1c534c012c871ad69c375c5",
+        "affectsGlobalScope": false
+      },
+      "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts": {
+        "version": "ee0d89e9150ca5e7a424535db0f498f4b7bb9b1b6a39d92cc2fc98d0cfa972c8",
+        "signature": "ee0d89e9150ca5e7a424535db0f498f4b7bb9b1b6a39d92cc2fc98d0cfa972c8",
+        "affectsGlobalScope": false
+      },
       "../core/commons/dist/typings/commons/src/advices/mutable-advice.context.type.d.ts": {
-        "version": "17b494ed0bb2adb8a5a2654b472b2cc69f09ab9b851cf3cb6d7b8284b43e5711",
-        "signature": "17b494ed0bb2adb8a5a2654b472b2cc69f09ab9b851cf3cb6d7b8284b43e5711",
+        "version": "f10a56cf9c2f60c5f36c46a48fcc32274282ee033d7d74ea1b22af352411afe2",
+        "signature": "f10a56cf9c2f60c5f36c46a48fcc32274282ee033d7d74ea1b22af352411afe2",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/advices/index.d.ts": {
         "version": "ad7a9eacb112febeb961db6eb16229e1169075e4cf8f72ad14a2d7ca66d9fddb",
         "signature": "ad7a9eacb112febeb961db6eb16229e1169075e4cf8f72ad14a2d7ca66d9fddb",
-        "affectsGlobalScope": false
-      },
-      "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts": {
-        "version": "b71e6dabd46f1837829ddbdca3f288479ff57a53af87054b8687c7609de4665e",
-        "signature": "b71e6dabd46f1837829ddbdca3f288479ff57a53af87054b8687c7609de4665e",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/annotation/registry/annotation.registry.d.ts": {
@@ -252,8 +252,8 @@
         "affectsGlobalScope": false
       },
       "../core/utils/dist/typings/utils/src/utils.d.ts": {
-        "version": "75bf659775e3af53d1bb520e6f1c6b423d4791c04367b30776cdb38ffc3cae0a",
-        "signature": "75bf659775e3af53d1bb520e6f1c6b423d4791c04367b30776cdb38ffc3cae0a",
+        "version": "c5dc4a48386979df94757a98c5a6d482f43d91ec06933bbfcd041fdc5fb93009",
+        "signature": "c5dc4a48386979df94757a98c5a6d482f43d91ec06933bbfcd041fdc5fb93009",
         "affectsGlobalScope": false
       },
       "../core/utils/dist/typings/utils/src/locator.d.ts": {
@@ -277,8 +277,8 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/annotation/factory/annotation.factory.d.ts": {
-        "version": "309e665f5904e1722951438e7ae5682e48001a6aeb45950ff4016827e343ed45",
-        "signature": "309e665f5904e1722951438e7ae5682e48001a6aeb45950ff4016827e343ed45",
+        "version": "c6173f3f45b1e485641ed02022080ff6c7c4d01874ad61462b1cb0c2b2e04dfd",
+        "signature": "c6173f3f45b1e485641ed02022080ff6c7c4d01874ad61462b1cb0c2b2e04dfd",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/aspect/aspect.type.d.ts": {
@@ -297,8 +297,8 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/joinpoint-factory.d.ts": {
-        "version": "d90f00005ac6f1d7ea382b0aa816604d2227c1785cb52524258fcb8096728f90",
-        "signature": "d90f00005ac6f1d7ea382b0aa816604d2227c1785cb52524258fcb8096728f90",
+        "version": "7df65b966a536216550f0e33c1ffb067b5086a1cc259a6eb0bfff6cd38556dc0",
+        "signature": "7df65b966a536216550f0e33c1ffb067b5086a1cc259a6eb0bfff6cd38556dc0",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/profile.d.ts": {
@@ -307,8 +307,8 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts": {
-        "version": "24b120fd218a249198075d762c09cca03d653538682aa6f51d9a356a71cf0a2a",
-        "signature": "24b120fd218a249198075d762c09cca03d653538682aa6f51d9a356a71cf0a2a",
+        "version": "8f4f01c01f011b6cf11a347a5df8d0646be39b5b878668dc5bb41429a010c245",
+        "signature": "8f4f01c01f011b6cf11a347a5df8d0646be39b5b878668dc5bb41429a010c245",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/weaver-context.d.ts": {
@@ -316,14 +316,9 @@
         "signature": "ba68651eed5b8f97b75fc9daad0583c07c21a4b72e7be2dd2e5b922b5700abe3",
         "affectsGlobalScope": false
       },
-      "../core/commons/dist/typings/commons/src/weaver/weaver-hooks.d.ts": {
-        "version": "af03c4418cba77e76b9eddc12a16a20dad7a9dd4f902835e90da64d442edcf38",
-        "signature": "af03c4418cba77e76b9eddc12a16a20dad7a9dd4f902835e90da64d442edcf38",
-        "affectsGlobalScope": false
-      },
       "../core/commons/dist/typings/commons/src/weaver/errors/aspect-error.d.ts": {
-        "version": "70afed2e150e9ac9e7a35e154a40cd7591806a2a3cbde83dc1ceaf91dffdd0e9",
-        "signature": "70afed2e150e9ac9e7a35e154a40cd7591806a2a3cbde83dc1ceaf91dffdd0e9",
+        "version": "34017f81220d3883c20755f90f8ae68f2396eefb9f72f2e0ca2daa5e9d3b19d4",
+        "signature": "34017f81220d3883c20755f90f8ae68f2396eefb9f72f2e0ca2daa5e9d3b19d4",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/errors/weaving-error.d.ts": {
@@ -342,8 +337,8 @@
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/weaver/index.d.ts": {
-        "version": "8dc6217f1146a74cba33af54efb30a685a75f1d42d6258f683f6e60451124db8",
-        "signature": "8dc6217f1146a74cba33af54efb30a685a75f1d42d6258f683f6e60451124db8",
+        "version": "a6a4631db9c11e3b0698503ca38f2c6fafdc660ec0aa1ff4b484df70a96471f5",
+        "signature": "a6a4631db9c11e3b0698503ca38f2c6fafdc660ec0aa1ff4b484df70a96471f5",
         "affectsGlobalScope": false
       },
       "../core/commons/dist/typings/commons/src/aspectjs.annotation.factory.d.ts": {
@@ -366,19 +361,24 @@
         "signature": "712aca991411cbf42f416d02f59631cfa29b99690fa9813187543a8906f3cea1",
         "affectsGlobalScope": false
       },
-      "../core/dist/typings/src/weaver/plan.factory.d.ts": {
-        "version": "774039af3002cf58d5fcdf721b0853d715ad34f4f62921173355b3f70208bca3",
-        "signature": "774039af3002cf58d5fcdf721b0853d715ad34f4f62921173355b3f70208bca3",
+      "../core/dist/typings/src/weaver/weaving-strategy.d.ts": {
+        "version": "b9b1a38985bd45404c93bd88a3485f07a7af92fa3a9aae1ad9bffd343c93a256",
+        "signature": "b9b1a38985bd45404c93bd88a3485f07a7af92fa3a9aae1ad9bffd343c93a256",
         "affectsGlobalScope": false
       },
-      "../core/dist/typings/src/weaver/jit-weaver.d.ts": {
-        "version": "f3e5dc83170bcd0e8f7038ed08785487bff24aebbf480b5360290a7b1aeb52ab",
-        "signature": "f3e5dc83170bcd0e8f7038ed08785487bff24aebbf480b5360290a7b1aeb52ab",
+      "../core/dist/typings/src/weaver/plan.factory.d.ts": {
+        "version": "31cd13fe1457611fe0cce7968da7770bac1cda723a093b8494f59bdb4c74056b",
+        "signature": "31cd13fe1457611fe0cce7968da7770bac1cda723a093b8494f59bdb4c74056b",
+        "affectsGlobalScope": false
+      },
+      "../core/dist/typings/src/weaver/jit/jit-weaver.d.ts": {
+        "version": "8b16b76de2e428fc5905d78ac0201b1e691ab2fbc5478ad30501da8d6b9d41ba",
+        "signature": "8b16b76de2e428fc5905d78ac0201b1e691ab2fbc5478ad30501da8d6b9d41ba",
         "affectsGlobalScope": false
       },
       "../core/dist/typings/public_api.d.ts": {
-        "version": "f3ef38ad633761c9775eeeff39b13e4db0f53fe7bae0311dccc3c3048aa6e1b0",
-        "signature": "f3ef38ad633761c9775eeeff39b13e4db0f53fe7bae0311dccc3c3048aa6e1b0",
+        "version": "ee97b8ea2a0bddfce41aca2cd499a8fdf2d56e57fbd09751eefe6c7571e087af",
+        "signature": "ee97b8ea2a0bddfce41aca2cd499a8fdf2d56e57fbd09751eefe6c7571e087af",
         "affectsGlobalScope": false
       },
       "./src/memo.types.ts": {
@@ -461,8 +461,13 @@
         "signature": "9350584d9e9e6677c99cc177da249c4c76438ca202493589049aff7e8c754862",
         "affectsGlobalScope": false
       },
+      "./src/memo.annotation.ts": {
+        "version": "7e415c37b2197d97b14453359cd986ce43549092d0eb64cad94509557b5995d1",
+        "signature": "47fae2a44fdbf865758927d6b8741c3e43afa8c87d5b6905474136dbca260bb9",
+        "affectsGlobalScope": false
+      },
       "./src/cacheable/cacheable.aspect.ts": {
-        "version": "533dcb10895c5a732dd93978545ce25fc8198c23c6dc1bb43073895454d64c8d",
+        "version": "1b91296d5765b75f0334f0f89b45fb5a2c51f664596ab4d5f4c6a809211ab317",
         "signature": "5f423932e5acfe90950ace11bd4c1dc9c541b57d7f636991589e04e9b98dc704",
         "affectsGlobalScope": false
       },
@@ -541,14 +546,9 @@
         "signature": "f92d421a4c94f91909d2d859b1c29324df12ea2f93b7f47c635f030793c283b7",
         "affectsGlobalScope": false
       },
-      "./src/memo.annotation.ts": {
-        "version": "7e415c37b2197d97b14453359cd986ce43549092d0eb64cad94509557b5995d1",
-        "signature": "47fae2a44fdbf865758927d6b8741c3e43afa8c87d5b6905474136dbca260bb9",
-        "affectsGlobalScope": false
-      },
       "./src/memo.aspect.ts": {
-        "version": "15d1cc4d2a5b5d8418bb1d4928a25330b46800928ddd00b38465e6ef5689790e",
-        "signature": "8cc2b545f91a29efd2ade020c9d3fc87584a14326f92fdfb50affe55f07f58c6",
+        "version": "2d8d23b8aef28d8a203fed48e3d5eca4df924cffeeae07898843ebd642e4c375",
+        "signature": "a5670859eb77adac86d71d9e9e594b062a719afce1bd90a98a65c251c86a4882",
         "affectsGlobalScope": false
       },
       "./src/drivers/scheduler.ts": {
@@ -602,8 +602,8 @@
         "affectsGlobalScope": false
       },
       "../core/testing/dist/core-testing.d.ts": {
-        "version": "63c7c24e9f32a9a883bb905e13b67714b294119adaa3065be1162c96bda4dfc6",
-        "signature": "63c7c24e9f32a9a883bb905e13b67714b294119adaa3065be1162c96bda4dfc6",
+        "version": "f197516935b59a9f530797ad1c5fa92344ab8d74ea265df752645c2b32221376",
+        "signature": "f197516935b59a9f530797ad1c5fa92344ab8d74ea265df752645c2b32221376",
         "affectsGlobalScope": false
       },
       "./src/utils/spec-helpers.ts": {
@@ -612,7 +612,7 @@
         "affectsGlobalScope": false
       },
       "./src/memo.aspect.spec.ts": {
-        "version": "156de3af967c71296218dcf76537e49f6462ceaf38fdd1b3b1a38dd90d649837",
+        "version": "0998ddd9ac6aa39f603365982056b628e16c7c55a50bdf4c83d53a3f7ff05f51",
         "signature": "080a2b8d0c63ce31fe37fb698dc0b65daffa04dbd38b489e834c63b5de3ebc40",
         "affectsGlobalScope": false
       },
@@ -1487,7 +1487,7 @@
         "affectsGlobalScope": false
       },
       "./src/drivers/indexed-db/indexed-db.driver.spec.ts": {
-        "version": "371045c461f43517187382985d6550550b1119ccd516c1ea82e9b31df7797990",
+        "version": "4fcdfbe5e39ef9077dcdac9849420edc241e20c4445fbd79bd624ffb14bfe23a",
         "signature": "515c4ebcbdfe35ef041e5344d0dcb58aac7d5b2d93fb234e3ea327dc88581eec",
         "affectsGlobalScope": false
       },
@@ -2842,34 +2842,32 @@
         "../core/commons/dist/typings/commons/src/types/index.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/after-return/after-return.context.d.ts": [
-        "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts",
+        "../core/commons/dist/typings/commons/src/advices/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/after-throw/after-throw.context.d.ts": [
-        "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts",
+        "../core/commons/dist/typings/commons/src/advices/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/after/after.context.d.ts": [
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/around/around.context.d.ts": [
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/types/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/before/before.context.d.ts": [
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/compile/compile.context.d.ts": [
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/index.d.ts": [
@@ -2880,7 +2878,7 @@
       ],
       "../core/commons/dist/typings/commons/src/advices/mutable-advice.context.type.d.ts": [
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/types/index.d.ts"
       ],
@@ -2961,7 +2959,6 @@
         "../core/commons/dist/typings/commons/src/weaver/joinpoint-factory.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/profile.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/weaver-context.d.ts",
-        "../core/commons/dist/typings/commons/src/weaver/weaver-hooks.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/weaver/joinpoint-factory.d.ts": [
@@ -2980,37 +2977,36 @@
         "../core/commons/dist/typings/commons/src/aspect/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts"
       ],
-      "../core/commons/dist/typings/commons/src/weaver/weaver-hooks.d.ts": [
-        "../core/commons/dist/typings/commons/src/advices/index.d.ts",
-        "../core/commons/dist/typings/commons/src/types/index.d.ts"
-      ],
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts": [
-        "../core/commons/dist/typings/commons/src/advices/index.d.ts",
-        "../core/commons/dist/typings/commons/src/advices/types.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/aspect/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/profile.d.ts"
       ],
       "../core/dist/typings/public_api.d.ts": [
         "../core/dist/typings/src/core.d.ts",
-        "../core/dist/typings/src/weaver/jit-weaver.d.ts",
+        "../core/dist/typings/src/weaver/jit/jit-weaver.d.ts",
         "../core/dist/typings/src/weaver/plan.factory.d.ts",
         "../core/dist/typings/src/weaver/weaver-context.impl.d.ts"
       ],
       "../core/dist/typings/src/core.d.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
-      "../core/dist/typings/src/weaver/jit-weaver.d.ts": [
+      "../core/dist/typings/src/weaver/jit/jit-weaver.d.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/dist/typings/src/weaver/plan.factory.d.ts": [
-        "../core/commons/dist/typings/commons/public_api.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts",
+        "../core/dist/typings/src/weaver/weaving-strategy.d.ts"
       ],
       "../core/dist/typings/src/weaver/weaver-context.impl.d.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
+      "../core/dist/typings/src/weaver/weaving-strategy.d.ts": [
+        "../core/commons/dist/typings/commons/public_api.d.ts"
+      ],
       "../core/testing/dist/core-testing.d.ts": [
-        "../core/commons/dist/typings/commons/public_api.d.ts",
-        "../core/dist/typings/public_api.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/utils/dist/typings/utils/public_api.d.ts": [
         "../core/utils/dist/typings/utils/src/locator.d.ts",
@@ -3036,7 +3032,8 @@
         "../core/annotations/dist/typings/annotations/public_api.d.ts",
         "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/utils/dist/typings/utils/public_api.d.ts",
-        "./src/cacheable/cacheable.annotation.ts"
+        "./src/cacheable/cacheable.annotation.ts",
+        "./src/memo.annotation.ts"
       ],
       "./src/drivers/index.ts": [
         "./src/drivers/indexed-db/idb-memo.driver.ts",
@@ -5734,70 +5731,32 @@
         "../core/commons/dist/typings/commons/src/types/index.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/after-return/after-return.context.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
-        "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts",
+        "../core/commons/dist/typings/commons/src/advices/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/after-throw/after-throw.context.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
-        "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts",
+        "../core/commons/dist/typings/commons/src/advices/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/after/after.context.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/around/around.context.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/types/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/before/before.context.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/compile/compile.context.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
+        "../core/commons/dist/typings/commons/public_api.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/index.d.ts": [
@@ -5813,14 +5772,8 @@
         "../core/commons/dist/typings/commons/src/advices/types.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/advices/mutable-advice.context.type.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/advices/types.d.ts",
-        "../core/commons/dist/typings/commons/src/annotation/context/annotation.context.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/bundle/bundle.d.ts",
         "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/types/index.d.ts"
       ],
@@ -5981,17 +5934,10 @@
         "../../node_modules/@types/node/util.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/weaver/index.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/errors/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/joinpoint-factory.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/profile.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/weaver-context.d.ts",
-        "../core/commons/dist/typings/commons/src/weaver/weaver-hooks.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts"
       ],
       "../core/commons/dist/typings/commons/src/weaver/joinpoint-factory.d.ts": [
@@ -6010,25 +5956,15 @@
         "../core/commons/dist/typings/commons/src/aspect/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts"
       ],
-      "../core/commons/dist/typings/commons/src/weaver/weaver-hooks.d.ts": [
-        "../core/commons/dist/typings/commons/src/advices/index.d.ts",
-        "../core/commons/dist/typings/commons/src/types/index.d.ts"
-      ],
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts": [
-        "../core/commons/dist/typings/commons/src/advices/index.d.ts",
-        "../core/commons/dist/typings/commons/src/advices/types.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/annotation.types.d.ts",
+        "../core/commons/dist/typings/commons/src/annotation/target/annotation-target.d.ts",
         "../core/commons/dist/typings/commons/src/aspect/index.d.ts",
         "../core/commons/dist/typings/commons/src/weaver/profile.d.ts"
       ],
       "../core/dist/typings/public_api.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts",
         "../core/dist/typings/src/core.d.ts",
-        "../core/dist/typings/src/weaver/jit-weaver.d.ts",
+        "../core/dist/typings/src/weaver/jit/jit-weaver.d.ts",
         "../core/dist/typings/src/weaver/plan.factory.d.ts",
         "../core/dist/typings/src/weaver/weaver-context.impl.d.ts"
       ],
@@ -6041,18 +5977,21 @@
         "../../node_modules/@types/node/util.d.ts",
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
-      "../core/dist/typings/src/weaver/jit-weaver.d.ts": [
+      "../core/dist/typings/src/weaver/jit/jit-weaver.d.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/dist/typings/src/weaver/plan.factory.d.ts": [
-        "../core/commons/dist/typings/commons/public_api.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts",
+        "../core/dist/typings/src/weaver/weaving-strategy.d.ts"
       ],
       "../core/dist/typings/src/weaver/weaver-context.impl.d.ts": [
         "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
+      "../core/dist/typings/src/weaver/weaving-strategy.d.ts": [
+        "../core/commons/dist/typings/commons/public_api.d.ts"
+      ],
       "../core/testing/dist/core-testing.d.ts": [
-        "../core/commons/dist/typings/commons/public_api.d.ts",
-        "../core/dist/typings/public_api.d.ts"
+        "../core/commons/dist/typings/commons/public_api.d.ts"
       ],
       "../core/utils/dist/typings/utils/public_api.d.ts": [
         "../../node_modules/@types/node/fs.d.ts",
@@ -6063,14 +6002,6 @@
         "../../node_modules/@types/node/util.d.ts",
         "../core/utils/dist/typings/utils/src/locator.d.ts",
         "../core/utils/dist/typings/utils/src/utils.d.ts"
-      ],
-      "../core/utils/dist/typings/utils/src/utils.d.ts": [
-        "../../node_modules/@types/node/fs.d.ts",
-        "../../node_modules/@types/node/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/fs.d.ts",
-        "../../node_modules/@types/node/ts3.2/process.d.ts",
-        "../../node_modules/@types/node/ts3.2/util.d.ts",
-        "../../node_modules/@types/node/util.d.ts"
       ],
       "./public_api.ts": [
         "./src/cacheable/cacheable.annotation.ts",
@@ -6529,13 +6460,13 @@
       "../core/commons/dist/typings/commons/src/weaver/joinpoint-factory.d.ts",
       "../core/commons/dist/typings/commons/src/weaver/profile.d.ts",
       "../core/commons/dist/typings/commons/src/weaver/weaver-context.d.ts",
-      "../core/commons/dist/typings/commons/src/weaver/weaver-hooks.d.ts",
       "../core/commons/dist/typings/commons/src/weaver/weaver.d.ts",
       "../core/dist/typings/public_api.d.ts",
       "../core/dist/typings/src/core.d.ts",
-      "../core/dist/typings/src/weaver/jit-weaver.d.ts",
+      "../core/dist/typings/src/weaver/jit/jit-weaver.d.ts",
       "../core/dist/typings/src/weaver/plan.factory.d.ts",
       "../core/dist/typings/src/weaver/weaver-context.impl.d.ts",
+      "../core/dist/typings/src/weaver/weaving-strategy.d.ts",
       "../core/testing/dist/core-testing.d.ts",
       "../core/utils/dist/typings/utils/public_api.d.ts",
       "../core/utils/dist/typings/utils/src/locator.d.ts",
