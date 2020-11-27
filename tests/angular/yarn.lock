@@ -227,19 +227,21 @@
   dependencies:
     tslib "^2.0.0"
 
-"@aspectjs/core@latest":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@aspectjs/core/-/core-0.1.0.tgz#453da667db157baade8dc921c8b45c776ac9fc3b"
-  integrity sha512-TOXuCHVpN/wWqCrHJLmp51y0RIsQBWFAV4iJ+E31raIyvT+XwYr2Zniis6RlNOmV2rUUauZ498/SAJibvdlKoA==
+"@aspectjs/core@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@aspectjs/core/-/core-0.1.1.tgz#d43c6d957c2493bb663280493906ad109d1a9202"
+  integrity sha512-2qeUxish7aAyL5vyO2FK0VV3+OTNChGLG0E/paoFU6PIJrOSk7evagYAR3TG2pOWsLS9czSpsk8zNDK+IAgWvA==
 
-"@aspectjs/memo@latest":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@aspectjs/memo/-/memo-0.1.0.tgz#c2b377168076818ff01a0733b8c686358544eb9f"
-  integrity sha512-nikDnhir9ylfJy7UwsZ0iyFgj1l/ejHcbSg6259A6EP1AhIEW5lm/L7eb5JnJn4itInmTUkhWbCTHRhCY0MRfQ==
+"@aspectjs/memo@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@aspectjs/memo/-/memo-0.1.1.tgz#adeb92cfb1ff00adfc39f562fc231000dacd9d5a"
+  integrity sha512-ekU8Q4lo7FjfeyJK9j+4kgen0CfWJ8qGY3vHr1BmWB/bUXv40UqmtwhZQkwT3x/bFvmjaFU+CW3UPTNRc8g8mw==
   dependencies:
     "@emotion/hash" "^0.8.0"
     fast-copy "^2.1.0"
     flatted "^3.1.0"
+  optionalDependencies:
+    rxjs "^6.6.3"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4":
   version "7.10.4"
@@ -7453,7 +7455,7 @@ rxjs@6.6.2:
   dependencies:
     tslib "^1.9.0"
 
-rxjs@^6.6.0, rxjs@~6.6.3:
+rxjs@^6.6.0, rxjs@^6.6.3, rxjs@~6.6.3:
   version "6.6.3"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.3.tgz#8ca84635c4daa900c0d3967a6ee7ac60271ee552"
   integrity sha512-trsQc+xYYXZ3urjOiJOuCOa5N3jAZ3eiSpQB5hIT8zGlL2QfnHLJ2r7GMkBGuIausdJN1OneaI6gQlsqNHHmZQ==

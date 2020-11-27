@@ -30,7 +30,9 @@
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
   "files": [
-    "**/dist/*"
+    "dist",
+    "*/dist",
+    "*/package.json"
   ],
   "directories": {
     "lib": "src",

@@ -12,5 +12,8 @@
     "build": "rollup --config ./rollup.config.js",
     "clean": "rimraf dist",
     "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
