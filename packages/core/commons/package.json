@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core-commons",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "main": "./dist/bundles/umd/commons.umd.js",
   "unpkg": "./dist/bundles/umd/commons.umd.min.js",
