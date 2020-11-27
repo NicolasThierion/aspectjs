@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.2](https://github.com/NicolasThierion/aspectjs/compare/v0.1.1...v0.1.2) (2020-11-27)
+
+
+### Bug Fixes
+
+* **core:** fixed (again) dist folders missing from artifact ([654adad](https://github.com/NicolasThierion/aspectjs/commit/654adadfa35f17509c5108476273cebe5df8f3f4))
+
+
+
+
+
 # 0.1.0 (2020-11-27)
 
 

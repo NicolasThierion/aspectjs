@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core-testing",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "main": "./dist/umd/testing.umd.js",
   "unpkg": "./dist/umd/testing.umd.min.js",

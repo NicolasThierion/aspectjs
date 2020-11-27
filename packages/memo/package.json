@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/memo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Add memoize pattern with a simple annotation",
   "license": "MIT",
   "main": "dist/bundles/umd/memo.umd.js",
@@ -27,7 +27,7 @@
     "rxjs": "^6.6.3"
   },
   "devDependencies": {
-    "@aspectjs/core": "^0.1.1",
+    "@aspectjs/core": "^0.1.2",
     "@emotion/hash": "^0.8.0",
     "@size-limit/preset-big-lib": "^4.5.4",
     "fake-indexeddb": "^3.0.0",
