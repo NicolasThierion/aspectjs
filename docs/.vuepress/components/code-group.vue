@@ -66,7 +66,6 @@
                 if (this.activeCodeTabIndex === -1 && this.codeTabs.length > 0) {
                     this.activeCodeTabIndex = 0
                 }
-                debugger
             })
 
         },

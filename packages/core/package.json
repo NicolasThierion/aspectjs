@@ -9,7 +9,7 @@
     "aspect",
     "AOP"
   ],
-  "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "license": "MIT",
   "main": "dist/bundles/umd/core.umd.js",

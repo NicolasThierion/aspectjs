@@ -41,12 +41,19 @@ let internalId = 0;
  * Options accepted by MemoAspect
  * @public
  */
+
 export interface MemoAspectOptions {
+    /** use a namespace to avoid collision of data between eg: 2 different users */
     namespace?: string | (() => string);
+    /** configure cache expiration in milliseconds or at a given specific date */
     expiration?: Date | number | (() => Date | number);
+    /** get the identity of the class whose methods generates memoized data */
     id?: string | number | ((ctxt: BeforeContext<any, any>) => string | number);
+    /** function that based on the execution context, generates the key to store cached data  */
     createMemoKey?: (ctxt: BeforeContext<any, any>) => MemoKey | string;
+    /** marshallers to transform objects from / to storable structure */
     marshallers?: MemoMarshaller[];
+    /** drivers that do the actual storage **/
     drivers?: MemoDriver[];
 }
 

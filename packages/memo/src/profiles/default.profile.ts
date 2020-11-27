@@ -65,6 +65,7 @@ export class MemoProfile extends WeaverProfile {
         }
 
         const memoAspect = new MemoAspect({
+            ...this._features.options,
             marshallers,
             drivers,
         });
