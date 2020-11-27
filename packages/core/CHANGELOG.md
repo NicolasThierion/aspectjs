@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/NicolasThierion/aspectjs/compare/v0.1.0...v0.1.1) (2020-11-27)
+
+
+### Bug Fixes
+
+* fixed core/* packages not being bundled within the artifact ([6adf98c](https://github.com/NicolasThierion/aspectjs/commit/6adf98c37454ddc45b3b484060aa8db88c18b50e))
+
+
+
+
+
 # 0.1.0 (2020-11-27)
 
 
