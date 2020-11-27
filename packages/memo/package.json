@@ -52,6 +52,7 @@
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "files": [
+    ".README",
     "dist",
     "*/dist",
     "*/package.json"

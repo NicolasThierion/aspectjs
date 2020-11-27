@@ -30,6 +30,7 @@
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
   "files": [
+    ".README",
     "dist",
     "*/dist",
     "*/package.json"
