@@ -21,7 +21,9 @@
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
   "peerDependencies": {
-    "@aspectjs/core": "1.1.0",
+    "@aspectjs/core": "0.1.0"
+  },
+  "optionalDependencies": {
     "rxjs": "^6.6.3"
   },
   "devDependencies": {
@@ -50,8 +52,7 @@
   "author": "Nicolas Thierion <thierion.nicolas@gmail.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "files": [
-    "dist/*",
-    "register"
+    "**/dist/*"
   ],
   "directories": {
     "lib": "src",
