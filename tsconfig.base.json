@@ -13,20 +13,22 @@
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "importHelpers": true,
-    "module": "commonjs",
+    "module": "ES6",
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "lib": [
       "es2019.array"
     ],
     "types": ["reflect-metadata", "jasmine", "node"],
-    "target": "es6",
+    "target": "es2015",
     "baseUrl": "packages",
     "paths": {
       "@aspectjs/core": ["core/public_api.ts"],
       "@aspectjs/core/annotations": ["core/annotations/public_api.ts"],
       "@aspectjs/core/commons": ["core/commons/public_api.ts"],
-      "@aspectjs/core/utils": ["core/utils/public_api.ts"]
+      "@aspectjs/core/utils": ["core/utils/public_api.ts"],
+      "@aspectjs/memo": ["memo/public_api.ts"],
+      "@aspectjs/memo/support/observables": ["memo/support/observables/public_api.ts"],
     }
   },
    "files": [],

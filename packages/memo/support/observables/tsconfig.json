@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "index.ts",
+    "public_api.ts"
+  ],
+  "exclude": [
+    "dist",
+    "rollup.config.ts",
+    "**/*.spec.ts"
+  ],
+  "references": [
+    { "path": "../../../core" },
+    { "path": "../../../core/commons" },
+    { "path": "../../../core/annotations" },
+    { "path": "../../../core/testing" },
+    { "path": "../../../core/utils" },
+    { "path": "../../" }
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../../dist/support/observables/",
+    "skipLibCheck": true
+  }
+}

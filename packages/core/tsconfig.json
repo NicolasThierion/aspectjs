@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "include": [
     "src/**/*.ts",
     "public_api.ts",
@@ -13,12 +13,11 @@
 
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "dist",
-    "composite": true
+    "outDir": "dist"
   },
   "references": [
-    { "path": "commons" },
-    { "path": "annotations" },
-    { "path": "utils" }
+    { "path": "./commons" },
+    { "path": "./annotations" },
+    { "path": "./utils" }
   ]
 }

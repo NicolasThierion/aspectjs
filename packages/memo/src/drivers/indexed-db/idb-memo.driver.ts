@@ -86,7 +86,8 @@ export class IdbMemoDriver extends MemoDriver {
     }
 
     read<T>(key: MemoKey): MemoEntry<T> {
-        const metaEntry = this._ls.read(metaKey(key));
+        const metaKey = createMetaKey(key);
+        const metaEntry = this._ls.read(metaKey);
 
         if (!metaEntry) {
             return null;
@@ -94,10 +95,19 @@ export class IdbMemoDriver extends MemoDriver {
 
         assert(!!metaEntry.frame?.type);
         assert(!!metaEntry.key);
+
+        const asyncValue = this._runTransactional((tx) => tx.get(key.toString())).then((frame) => {
+            if (!frame) {
+                this._ls.remove(metaKey);
+                throw new MemoAspectError(`No data found for key ${key}`);
+            }
+            return frame.value;
+        });
+
         const frame = new MemoFrame<T>({
             ...metaEntry,
             ...metaEntry.frame,
-        }).setAsyncValue(this._runTransactional((tx) => tx.get(key.toString())).then((frame) => frame.value));
+        }).setAsyncValue(asyncValue);
 
         this._scheduler.add(key.toString(), () => frame.async);
 
@@ -122,7 +132,7 @@ export class IdbMemoDriver extends MemoDriver {
 
             const metaEntry: MemoEntry<MemoTypeInfoFrame> = {
                 ...entry,
-                key: metaKey(entry.key),
+                key: createMetaKey(entry.key),
                 frame: metaFrame as MemoFrame,
             };
             // store only the Memo without its value
@@ -183,6 +193,6 @@ export class IdbMemoDriver extends MemoDriver {
     }
 }
 
-function metaKey(key: MemoKey) {
+function createMetaKey(key: MemoKey) {
     return new MemoKey(key, `${key.namespace}[idb_meta]`);
 }

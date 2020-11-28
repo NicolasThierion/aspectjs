@@ -1,9 +1,8 @@
-import { MemoMarshaller } from './marshallers';
-import { MemoKey } from '../memo.types';
-import { MarshallingContext, UnmarshallingContext } from './marshalling-context';
-import { MemoFrame } from '../drivers';
 import { assert, isArray, isObject } from '@aspectjs/core/utils';
+import { MemoFrame } from '../drivers';
 import { InstantPromise } from '../utils';
+import { MemoMarshaller } from './marshallers';
+import { MarshallingContext, UnmarshallingContext } from './marshalling-context';
 
 export class MarshallersRegistry {
     private _marshallers: Record<string, MemoMarshaller> = {};
@@ -12,6 +11,16 @@ export class MarshallersRegistry {
         (marshallers ?? []).forEach((marshaller) => {
             [marshaller.types].flat().forEach((type: string) => {
                 this._marshallers[type] = marshaller;
+            });
+        });
+
+        return this;
+    }
+
+    removeMarshaller(...marshallers: MemoMarshaller[]): this {
+        (marshallers ?? []).forEach((marshaller) => {
+            [marshaller.types].flat().forEach((type: string) => {
+                delete this._marshallers[type];
             });
         });
 

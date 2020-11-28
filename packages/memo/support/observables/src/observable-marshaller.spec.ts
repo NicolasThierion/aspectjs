@@ -1,7 +1,7 @@
-import { createMemoMethod, setupMemoAspect } from '../utils/spec-helpers';
-import { IdbMemoDriver, LsMemoDriver } from '../drivers';
+import { createMemoMethod, setupMemoAspect } from '../../../src/utils/spec-helpers';
+import { IdbMemoDriver, LsMemoDriver } from '../../../src/drivers';
 import { Observable, of } from 'rxjs';
-import { DEFAULT_MARSHALLERS } from '../memo.aspect';
+import { DEFAULT_MARSHALLERS } from '../../../src/memo.aspect';
 import { ObservableMarshaller } from './observable-marshaller';
 import { delay } from 'rxjs/operators';
 

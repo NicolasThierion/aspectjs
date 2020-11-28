@@ -12,7 +12,7 @@ import {
 import { WeaverContextImpl } from './weaver/weaver-context.impl';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
-let AspectsRegistry: AspectsRegistry;
+let _AspectsRegistry: AspectsRegistry;
 AnnotationLocationFactory;
 AnnotationRegistry;
 AnnotationTargetFactory;

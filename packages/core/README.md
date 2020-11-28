@@ -19,12 +19,16 @@ For more details & usage, please [read the documentation](https://nicolasthierio
 
 ```bash
 yarn add @aspectjs/core
+## install polyfills if needed
+yarn add reflect-metadata
 ```
 
 Or with npm:
 
 ```bash
-npm install @aspectjs/core
+npm install --save @aspectjs/core
+## install polyfills if needed
+npm install --save reflect-metadata
 ```
 
 ### Example

@@ -1,8 +1,6 @@
-import { Memo } from '../../memo.annotation';
 import moment from 'moment';
+import { Memo } from '../../memo.annotation';
 import { createMemoMethod, setupMemoAspect } from '../../utils/spec-helpers';
-import { IdbMemoDriver } from './idb-memo.driver';
-import { LsMemoDriver } from '..';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 

@@ -67,9 +67,11 @@ export class JitWeaver extends WeaverProfile implements Weaver {
                     }
                 });
             }
-            _aspects.filter((a) => isFunction(a.onEnable)).forEach((a) => a.onEnable.call(a));
 
-            return super.enable(..._aspects);
+            const r = super.enable(..._aspects);
+            _aspects.filter((a) => isFunction(a.onEnable)).forEach((a) => a.onEnable.call(a, this));
+
+            return r;
         } catch (e) {
             this._context.aspects.registry.remove(..._aspects);
             throw e;
@@ -78,7 +80,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
 
     disable(...aspects: (AspectType | WeaverProfile)[]): this {
         const _aspects = new WeaverProfile().enable(...aspects).getAspects();
-        _aspects.filter((a) => isFunction(a.onDisable)).forEach((a) => a.onEnable.call(a));
+        _aspects.filter((a) => isFunction(a.onDisable)).forEach((a) => a.onEnable.call(a, this));
 
         return super.disable(..._aspects);
     }

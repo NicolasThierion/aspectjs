@@ -1,5 +1,4 @@
 import { MEMO_PROFILE } from '@aspectjs/memo';
+import { ObservableMemoSupportAspect } from '@aspectjs/memo/support/observables';
 
-MEMO_PROFILE.configure({
-    supportsObservables: true,
-}).register();
+MEMO_PROFILE.register();
