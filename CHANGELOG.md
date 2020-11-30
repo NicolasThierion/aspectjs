@@ -43,6 +43,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **core:** fixed parameter advices entraving method advices ([e05bc45](https://github.com/NicolasThierion/aspectjs/commit/e05bc45a61d960b05e6a05059b9018184236b509))
 * **memo:** dedupe memoized observables ([1450ebd](https://github.com/NicolasThierion/aspectjs/commit/1450ebd3f3c8873e02955cca70fb516f0a142863))
 * @Memo works with observables ([f2d9b86](https://github.com/NicolasThierion/aspectjs/commit/f2d9b86e22b64442909e8e308ef1d1754126377e))
+* **aspect:** advice functions are now bound to their respective aspects ([022e156](https://github.com/NicolasThierion/aspectjs/commit/022e156a150839c776f14b2dacd2730b68d36731))
+* **aspect:** fixed @After property:set ([9f0cfa3](https://github.com/NicolasThierion/aspectjs/commit/9f0cfa3d72a711eb369b1f642d7ea4445ea28d0e))
+* **aspect:** fixed @Around advices called in reverse order ([bb8d67b](https://github.com/NicolasThierion/aspectjs/commit/bb8d67b2bc72228f3bf9ba0dc5d017f6a12ea5b9))
 
 
 ### Features
@@ -83,28 +86,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **memo:** initial support for localStoraage based memo ([75ed4bc](https://github.com/NicolasThierion/aspectjs/commit/75ed4bc01996c426143c24e4d215a5a5d0ac5d03))
 * **memo:** initial support for localstorage memo ([58f50a4](https://github.com/NicolasThierion/aspectjs/commit/58f50a4b5234528c3d15bf1834d8b664a7ee75f0))
 * added memo aspect ([93319d3](https://github.com/NicolasThierion/aspectjs/commit/93319d364adfcd6e676ee5cb129c001731f83dd5))
-
-
-### Reverts
-
-* Revert "chore: replaced jasmine with jest" ([d6b5ffe](https://github.com/NicolasThierion/aspectjs/commit/d6b5ffe89c719a8697bf6d8e4562d86f82b874fe))
-
-
-
-
-
-# 1.0.0 (2020-02-12)
-
-
-### Bug Fixes
-
-* **aspect:** advice functions are now bound to their respective aspects ([022e156](https://github.com/NicolasThierion/aspectjs/commit/022e156a150839c776f14b2dacd2730b68d36731))
-* **aspect:** fixed @After property:set ([9f0cfa3](https://github.com/NicolasThierion/aspectjs/commit/9f0cfa3d72a711eb369b1f642d7ea4445ea28d0e))
-* **aspect:** fixed @Around advices called in reverse order ([bb8d67b](https://github.com/NicolasThierion/aspectjs/commit/bb8d67b2bc72228f3bf9ba0dc5d017f6a12ea5b9))
-
-
-### Features
-
 * **aspect:** added support for aspect priority & advice priority ([a4746d6](https://github.com/NicolasThierion/aspectjs/commit/a4746d63960c29ff979fa02567e4ae8f8cbd2f6b))
 * **aspect:** added support for property.afterThrow advices ([23cd558](https://github.com/NicolasThierion/aspectjs/commit/23cd558cda826178c754d276c4c975684e465e0c))
 * **aspect:** initial support for @Around, @Compile, @AfterThrow &@Before methods ([fb937ff](https://github.com/NicolasThierion/aspectjs/commit/fb937ffa75c594146cb2690affb2cd8b6cbff6cd))

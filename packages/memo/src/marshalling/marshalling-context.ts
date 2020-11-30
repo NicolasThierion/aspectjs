@@ -1,5 +1,4 @@
 import { MemoFrame } from '../drivers';
-import { MemoKey } from '../memo.types';
 
 /**
  * @public

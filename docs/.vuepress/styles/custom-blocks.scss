@@ -61,7 +61,7 @@
       color: $textColor;
     }
   }
-  .custom-block.danger {
+  .custom-block.danger, .custom-block.error {
     padding: 0.1rem 1.5rem;
     border-left-width: 0.5rem;
     border-left-style: solid;
