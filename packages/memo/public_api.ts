@@ -8,5 +8,3 @@ export * from './src/cacheable/cacheable.aspect';
 export * from './src/drivers';
 export * from './src/marshalling/marshallers';
 export * from './src/marshalling/marshalling-context';
-
-export * from './src/observables';

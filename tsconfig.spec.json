@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["reflect-metadata", "jasmine", "node"],
+    "module": "commonjs"
+  },
+  "include": [
+    "node_modules/@types/node/globals.d.ts"
+  ]
+}

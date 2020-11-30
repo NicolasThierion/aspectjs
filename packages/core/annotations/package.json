@@ -2,16 +2,16 @@
   "name": "@aspectjs/core-annotations",
   "version": "0.1.2",
   "private": true,
-  "main": "./dist/bundles/umd/annotations.umd.js",
-  "unpkg": "./dist/bundles/umd/annotations.umd.min.js",
-  "module": "./dist/bundles/fesm2015/annotations.js",
-  "fesm2015": "./dist/bundles/fesm2015/annotations.js",
-  "esm2015": "./dist/bundles/esm2015/annotations.js",
-  "typings": "./dist/core-annotations.d.ts",
+  "main": "../dist/bundles/annotations.umd.js",
+  "unpkg": "../dist/bundles/annotations.umd.min.js",
+  "module": "../dist/fesm2015/annotations.js",
+  "fesm2015": "../dist/fesm2015/annotations.js",
+  "esm2015": "../dist/esm2015/annotations/public_api.js",
+  "typings": "../dist/core-annotations.d.ts",
   "scripts": {
-    "build": "yarn typings && rollup --config ./rollup.config.js",
-    "clean": "rimraf dist",
-    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
+    "build": "tsc -b -v",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local --verbose"
   },
   "files": [
     "dist"

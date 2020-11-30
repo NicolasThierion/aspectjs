@@ -1,7 +1,7 @@
 {
   "name": "@aspectjs/core",
   "version": "0.1.2",
-  "description": "AOP made simple for javascript & typescript, based on decorators",
+  "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "keywords": [
     "decorator",
     "annotation",
@@ -12,17 +12,17 @@
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "license": "MIT",
-  "main": "dist/bundles/umd/core.umd.js",
-  "unpkg": "dist/bundles/umd/core.umd.min.js",
-  "module": "dist/bundles/fesm2015/core.js",
-  "fesm2015": "dist/bundles/fesm2015/core.js",
-  "esm2015": "dist/bundles/esm2015/public_api.js",
+  "main": "dist/bundles/core.umd.js",
+  "unpkg": "dist/bundles/core.umd.min.js",
+  "module": "dist/fesm2015/core.js",
+  "fesm2015": "dist/fesm2015/core.js",
+  "esm2015": "dist/esm2015/public_api.js",
   "sideEffects": false,
   "typings": "dist/core.d.ts",
   "scripts": {
-    "build": "rollup --config ./rollup.config.js",
-    "clean": "rimraf dist",
-    "typings": "tsc --build tsconfig.types.json && api-extractor run --local --verbose",
+    "build": "tsc -b -v && tsc -b -v testing && rollup --config ./rollup.config.js",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "size": "size-limit",
@@ -30,9 +30,16 @@
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
   "files": [
-    "dist",
-    "*/dist",
-    "*/package.json"
+    ".README",
+    "dist/bundles",
+    "dist/esm2015",
+    "dist/fesm2015",
+    "*/package.json",
+    "core.d.ts",
+    "core-testing.d.ts",
+    "core-utils.d.ts",
+    "core-annotations.d.ts",
+    "core-commons.d.ts"
   ],
   "directories": {
     "lib": "src",
@@ -54,10 +61,10 @@
     {
       "limit": "400 ms",
       "path": [
-        "dist/bundles/umd/core.umd.min.js",
-        "commons/dist/bundles/umd/commons.umd.min.js",
-        "utils/dist/bundles/umd/utils.umd.min.js",
-        "annotations/dist/bundles/umd/annotations.umd.min.js"
+        "dist/bundles/core.umd.min.js",
+        "commons/dist/bundles/commons.umd.min.js",
+        "utils/dist/bundles/utils.umd.min.js",
+        "annotations/dist/bundles/annotations.umd.min.js"
       ]
     }
   ],

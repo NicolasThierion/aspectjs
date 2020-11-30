@@ -1,0 +1,18 @@
+{
+  "name": "@aspectjs/memo-observable-support",
+  "version": "0.1.2",
+  "private": true,
+  "main": "../../dist/bundles/observable-support.umd.js",
+  "unpkg": "../../dist/bundles/observable-support.umd.min.js",
+  "module": "../../dist/fesm2015/observable-support.js",
+  "fesm2015": "../../dist/fesm2015/observable-support.js",
+  "esm2015": "../../dist/esm2015/observable-support/public_api.js",
+  "typings": "../../dist/memo-observable-support.d.ts",
+  "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local"
+  },
+  "files": [
+    "register.js"
+  ]
+}

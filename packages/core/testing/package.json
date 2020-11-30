@@ -2,16 +2,16 @@
   "name": "@aspectjs/core-testing",
   "version": "0.1.2",
   "private": true,
-  "main": "./dist/umd/testing.umd.js",
-  "unpkg": "./dist/umd/testing.umd.min.js",
-  "module": "./dist/fesm2015/testing.js",
-  "fesm2015": "./dist/fesm2015/testing.js",
-  "esm2015": "./dist/esm2015/testing.js",
-  "typings": "./dist/core-testing.d.ts",
+  "main": "../dist/bundles/testing.umd.js",
+  "unpkg": "../dist/bundles/testing.umd.min.js",
+  "module": "../dist/fesm2015/testing.js",
+  "fesm2015": "../dist/fesm2015/testing.js",
+  "esm2015": "../dist/esm2015/testing/public_api.js",
+  "typings": "../dist/core-testing.d.ts",
   "scripts": {
-    "build": "rollup --config ./rollup.config.js",
-    "clean": "rimraf dist",
-    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose"
+    "build": "tsc -b -v",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local --verbose"
   },
   "files": [
     "dist"

@@ -27,10 +27,10 @@
               "src/styles.css"
             ],
             "scripts": [
-              "./node_modules/@aspectjs/core/utils/dist/bundles/umd/utils.umd.js",
-              "./node_modules/@aspectjs/core/commons/dist/bundles/umd/commons.umd.js",
-              "./node_modules/@aspectjs/core/dist/bundles/umd/core.umd.js",
-              "./node_modules/@aspectjs/core/annotations/dist/bundles/umd/annotations.umd.js"
+//              "./node_modules/@aspectjs/core/dist/bundles/utils.umd.js",
+//              "./node_modules/@aspectjs/core/dist/bundles/commons.umd.js",
+//              "./node_modules/@aspectjs/core/dist/bundles/core.umd.js",
+//              "./node_modules/@aspectjs/core/dist/bundles/annotations.umd.js"
             ]
           },
           "configurations": {

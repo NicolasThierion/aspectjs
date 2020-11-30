@@ -19,12 +19,16 @@ For more details & usage, please [read the documentation](https://nicolasthierio
 
 ```bash
 yarn add @aspectjs/core
+## install polyfills if needed
+yarn add reflect-metadata
 ```
 
 Or with npm:
 
 ```bash
-npm install @aspectjs/core
+npm install --save @aspectjs/core
+## install polyfills if needed
+npm install --save reflect-metadata
 ```
 
 ### Example
@@ -95,12 +99,12 @@ WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
 ```
 
 ## Projects of the AspectJS family: 
- - [`@aspectjs/memo`](../memo/README.md)
+ - [`@aspectjs/memo`](https://www.npmjs.com/package/@aspectjs/memo)
 
 
 MIT Licensed
 
 [ci-status]: https://gitlab.com/Pryum/aspectjs/badges/master/pipeline.svg
-[logo]: ../../.README/aspectjs-256.png
+[logo]: .README/aspectjs-256.png
 
 

@@ -6,15 +6,12 @@ import path from 'path';
 import { RollupOptions } from 'rollup';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import { terser } from 'rollup-plugin-terser';
-import _typescript from 'rollup-plugin-typescript2';
 import babelrc from '../.babelrc.json';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const visualizer = require('rollup-plugin-visualizer');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const babel = require('rollup-plugin-babel');
-
-const typescript = _typescript as any;
 
 interface PackageJson {
     module?: string;
@@ -162,38 +159,11 @@ function unpkg(packagePath: string, pkg: PackageJson, override: RollupOptions = 
     );
 }
 
-function _baseConfig(
-    packagePath: string,
-    pkg: PackageJson,
-    rollupOptions: RollupOptions,
-    tsconfigOverride = {},
-): RollupOptions {
+function _baseConfig(packagePath: string, pkg: PackageJson, rollupOptions: RollupOptions): RollupOptions {
     const config: RollupOptions = {
-        input: path.resolve(path.dirname(packagePath), 'public_api.ts'),
+        input: path.resolve(path.join(path.dirname(packagePath), 'dist'), 'public_api.js'),
         external: ['@aspectjs/core', /@aspectjs\/.*/],
-        plugins: [
-            sourcemaps(),
-            resolve(),
-            commonjs(),
-            typescript({
-                clean: true,
-                tsconfigOverride: mergeWith(
-                    {
-                        compilerOptions: {
-                            // rootDir: path.join(__dirname, '..'),
-                            module: 'esnext',
-                            sourceMap: true,
-                            inlineSourceMap: false,
-                            declaration: false,
-                            declarationMap: false,
-                            composite: false,
-                        },
-                    },
-                    tsconfigOverride,
-                    customizer,
-                ),
-            }),
-        ],
+        plugins: [sourcemaps(), resolve(), commonjs()],
     };
 
     return mergeWith(config, rollupOptions, customizer);
@@ -231,17 +201,13 @@ function _baseEsm2015(
         {
             output,
         } as RollupOptions,
-        _baseConfig(packagePath, pkg, options, {
-            compilerOptions: {
-                target: 'es2015',
-            },
-        }),
+        _baseConfig(packagePath, pkg, options),
         customizer,
     );
 }
 
 function _createGlobalUmdName(name: string) {
-    return name.replace('@aspectjs/', 'aspectjs.').replace('-', '_').replace('/', '_');
+    return name.replace('@aspectjs/', 'aspectjs.').replace('-', '_').replace('/', '_').replace(/\?.*$/, '');
 }
 
 function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, options: RollupOptions) {
@@ -261,20 +227,15 @@ function _baseUmd(packagePath: string, pkg: PackageJson, distFile: string, optio
                 format: 'umd',
                 sourcemap: true,
                 esModule: false,
-                globals: [
-                    '@aspectjs/core',
-                    '@aspectjs/core/types',
-                    '@aspectjs/core/commons',
-                    '@aspectjs/core/annotations',
-                    '@aspectjs/core/utils',
-                ].reduce((globals, name) => {
-                    globals[name] = _createGlobalUmdName(name);
-                    return globals;
-                }, {} as Record<string, string>),
+                globals: {
+                    '@aspectjs/core/commons': 'aspectjs.core_commons',
+                    '@aspectjs/core/annotations': 'aspectjs.core_annotations',
+                    '@aspectjs/core/utils': 'aspectjs.core_utils',
+                },
             },
             plugins: [
                 babel({
-                    extensions: ['.js', 'ts'],
+                    extensions: ['.js'],
                     ...babelrc,
                 }),
                 visualizer({

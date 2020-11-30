@@ -3,17 +3,17 @@
   "version": "0.1.2",
   "description": "Add memoize pattern with a simple annotation",
   "license": "MIT",
-  "main": "dist/bundles/umd/memo.umd.js",
-  "unpkg": "dist/bundles/umd/memo.umd.min.js",
-  "module": "dist/bundles/fesm2015/memo.js",
-  "esm2015": "dist/bundles/esm2015/memo.js",
-  "fesm2015": "dist/bundles/fesm2015/memo.js",
+  "main": "dist/bundles/memo.umd.js",
+  "unpkg": "dist/bundles/memo.umd.min.js",
+  "module": "dist/fesm2015/memo.js",
+  "fesm2015": "dist/fesm2015/memo.js",
+  "esm2015": "dist/esm2015/memo/public_api.js",
   "sideEffects": false,
   "typings": "dist/memo.d.ts",
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "clean": "rimraf dist",
-    "typings": "tsc -b tsconfig.types.json && api-extractor run --local --verbose",
+    "build": "tsc -b -v support/observables && tsc -b -v && rollup --config rollup.config.js",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
     "dev": "nodemon  -w src --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
     "size": "size-limit",
@@ -38,23 +38,27 @@
   "size-limit": [
     {
       "limit": "400 ms",
-      "path": "dist/bundles/umd/memo.umd.min.js"
+      "path": "dist/bundles/memo.umd.min.js"
     }
   ],
   "keywords": [
-    "memo",
+    "memoize",
     "aspect",
     "cache",
     "localstorage",
-    "websql",
+    "indexeddb",
     "AOP"
   ],
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
   "files": [
-    "dist",
-    "*/dist",
-    "*/package.json"
+    ".README",
+    "dist/bundles",
+    "dist/esm2015",
+    "dist/fesm2015",
+    "**/package.json",
+    "./memo.d.ts",
+    "./memo-observable-support.d.ts"
   ],
   "directories": {
     "lib": "src",

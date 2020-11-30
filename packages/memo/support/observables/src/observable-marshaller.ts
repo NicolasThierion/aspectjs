@@ -1,7 +1,12 @@
-import { MemoFrame } from '../drivers';
-import { MarshalFn, MemoMarshaller, UnmarshalFn } from '../marshalling/marshallers';
+import {
+    MarshallingContext,
+    UnmarshallingContext,
+    MemoFrame,
+    MarshalFn,
+    MemoMarshaller,
+    UnmarshalFn,
+} from '@aspectjs/memo';
 import { from, Observable } from 'rxjs';
-import { MarshallingContext, UnmarshallingContext } from '../marshalling/marshalling-context';
 import { share, shareReplay } from 'rxjs/operators';
 
 /**

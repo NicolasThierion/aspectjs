@@ -1,3 +1,6 @@
+const path = require('path');
+process.env.TS_NODE_PROJECT = path.join(process.cwd(), 'tsconfig.spec.json');
+console.log(`Using file ${process.env.TS_NODE_PROJECT}`);
 require('reflect-metadata');
 require('tsconfig-paths/register');
 require('ts-node/register');

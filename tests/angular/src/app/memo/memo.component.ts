@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Cacheable, Memo } from '@aspectjs/memo';
 import { map } from 'rxjs/operators';
+import { Cacheable, Memo } from '@aspectjs/memo';
 
 @Cacheable()
 class User {}
@@ -17,7 +17,7 @@ export class MemoComponent implements OnInit {
 
     @Memo()
     incrementI(args?: any) {
-        return this.i++;
+        return ++this.i;
     }
 
     @Memo()

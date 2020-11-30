@@ -4,7 +4,7 @@ const { extendMarkdown } = require('./custom-md');
 const getConfig = require('vuepress-bar');
 
 const { nav, sidebar } = getConfig(`${__dirname}/..`, {
-    maxLevel: 4
+    maxLevel: 4,
 });
 
 module.exports = {

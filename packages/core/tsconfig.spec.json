@@ -2,9 +2,12 @@
   "extends": "./tsconfig.json",
   "include": [
     "src/**/*.ts",
+    "commons/**/*.ts",
+    "utils/**/*.ts",
+    "annotations/**/*.ts",
+    "testing/**/*.ts",
     "public_api.ts",
-    "**/*.spec.ts",
-    "commons/**/*.ts"
+    "**/*.spec.ts"
   ],
   "exclude": [
     "dist",
@@ -12,14 +15,6 @@
   ],
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "dist",
-    "paths": {
-      "@aspectjs/core/annotations": [
-        "annotations/public_api.ts"
-      ],
-      "@aspectjs/core/commons": [
-        "commons/public_api.ts"
-      ]
-    }
+    "module": "commonjs"
   }
 }

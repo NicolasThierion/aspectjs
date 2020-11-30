@@ -6,7 +6,7 @@ import copy from 'fast-copy';
 import { stringify } from 'flatted';
 
 import { MemoDriver, MemoFrame } from './drivers';
-import { VersionConflictError } from './errors';
+import { MemoAspectError, VersionConflictError } from './errors';
 import {
     ArrayMarshaller,
     BasicMarshaller,
@@ -125,13 +125,17 @@ export class MemoAspect implements AspectType {
         return this;
     }
 
-    onEnable() {
+    onEnable(): void {
         this._enabled = true;
         Object.values(this._drivers).forEach((d) => this._initGc(d));
     }
 
     addMarshaller(...marshallers: MemoMarshaller[]): void {
         this._marshallers.addMarshaller(...marshallers);
+    }
+
+    removeMarshaller(...marshallers: MemoMarshaller[]): void {
+        this._marshallers.removeMarshaller(...marshallers);
     }
 
     /**
@@ -219,6 +223,8 @@ export class MemoAspect implements AspectType {
                 // mute errors in ase of version mismatch, & just remove old version
                 if (e instanceof VersionConflictError) {
                     this._removeValue(d, key);
+                } else if (e instanceof MemoAspectError) {
+                    console.error(e);
                 } else {
                     throw e;
                 }

@@ -1,9 +1,9 @@
 import './weaver-config';
+import '@aspectjs/memo/support/observables/register';
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
-import { Cacheable, MEMO_PROFILE } from '@aspectjs/memo';
 
 if (environment.production) {
     enableProdMode();

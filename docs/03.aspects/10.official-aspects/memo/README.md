@@ -86,5 +86,5 @@ c.heavyCompute("hello", "world");   // returns cached 'HELLO, WORLD'
 [info]: ../../../../.README/picto/12px/info.png
 [tip]: ../../../../.README/picto/12px/success.png
 [danger]: ../../../../.README/picto/12px/danger.png
-[pipeline]: ../../../../packages/memo/.README/memo-pipeline.png
+[pipeline]: .README/memo-pipeline.png
 

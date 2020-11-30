@@ -2,7 +2,6 @@ import { WeaverProfile } from '@aspectjs/core/commons';
 import { DefaultCacheableAspect } from '../cacheable/cacheable.aspect';
 import { IdbMemoDriver, LsMemoDriver, LsMemoSerializer, LzMemoSerializer, MemoDriver } from '../drivers';
 import { DEFAULT_MARSHALLERS, MemoAspect, MemoAspectOptions } from '../memo.aspect';
-import { ObservableMarshaller, ObservableMemoSupportAspect } from '../observables';
 
 /**
  * @public
@@ -11,7 +10,6 @@ export interface MemoProfileFeatures {
     useLocalStorage?: boolean;
     useIndexedDb?: boolean;
     useLzString?: boolean;
-    supportsObservables?: boolean;
     options?: MemoAspectOptions;
 }
 
@@ -27,7 +25,6 @@ export class MemoProfile extends WeaverProfile {
         useLocalStorage: true,
         useIndexedDb: true,
         useLzString: true,
-        supportsObservables: false,
         options: {},
     };
     constructor(memoProfileFeatures?: MemoProfileFeatures) {
@@ -35,18 +32,12 @@ export class MemoProfile extends WeaverProfile {
 
         this.enable(new DefaultCacheableAspect());
         this._features.options = memoProfileFeatures?.options ?? this._features.options;
-        this._features.supportsObservables =
-            memoProfileFeatures?.supportsObservables ?? this._features.supportsObservables;
         this._features.useIndexedDb = memoProfileFeatures?.useIndexedDb ?? this._features.useIndexedDb;
         this._features.useLzString = memoProfileFeatures?.useLzString ?? this._features.useLzString;
         this._features.useLocalStorage = memoProfileFeatures?.useLocalStorage ?? this._features.useLocalStorage;
 
         const marshallers = [...DEFAULT_MARSHALLERS];
         const drivers: MemoDriver[] = [];
-        if (this._features.supportsObservables) {
-            marshallers.push(new ObservableMarshaller());
-            this.enable(new ObservableMemoSupportAspect());
-        }
 
         if (this._features.useIndexedDb) {
             drivers.push(new IdbMemoDriver());
