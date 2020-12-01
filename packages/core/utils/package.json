@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core-utils",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "main": "../dist/bundles/utils.umd.js",
   "unpkg": "../dist/bundles/utils.umd.min.js",
