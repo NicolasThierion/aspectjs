@@ -3,7 +3,11 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "types": ["reflect-metadata", "jasmine", "node"],
-    "module": "commonjs"
+    "module": "commonjs",
+    "lib": [
+      "dom",
+      "ES2019.Array"
+    ]
   },
   "include": [
     "node_modules/@types/node/globals.d.ts"

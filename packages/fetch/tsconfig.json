@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "src/**/*.ts",
+    "node_modules/@types/node/globals.d.ts",
+    "./index.ts",
+    "./public_api.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "es2019.array"
+    ],
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "references": [
+    { "path": "../core" },
+    { "path": "../core/commons" },
+    { "path": "../core/annotations" },
+    { "path": "../core/testing" },
+    { "path": "../core/utils" }
+  ]
+}
