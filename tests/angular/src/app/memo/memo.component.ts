@@ -2,15 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Cacheable, Memo } from '@aspectjs/memo';
+import { AnnotationFactory } from '@aspectjs/core/commons';
 
 @Cacheable()
 class User {}
+
+const AProp = new AnnotationFactory('test').create(function AProp(): PropertyDecorator {
+    return;
+});
+
 @Component({
     selector: 'app-memo',
     templateUrl: './memo.component.html',
     styleUrls: ['./memo.component.css'],
 })
 export class MemoComponent implements OnInit {
+    @AProp()
     public i: number;
     public users: any[];
     constructor(private httpClient: HttpClient) {}

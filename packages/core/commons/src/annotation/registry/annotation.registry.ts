@@ -1,5 +1,5 @@
 import { locator } from '@aspectjs/core/utils';
-import { AnnotationRef, AnnotationType } from '../annotation.types';
+import { AnnotationType } from '../annotation.types';
 import { AnnotationBundleRegistry } from '../bundle/bundle';
 import { AnnotationContext } from '../context/annotation.context';
 

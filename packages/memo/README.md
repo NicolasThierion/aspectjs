@@ -3,6 +3,7 @@
 > Straightforward memoization
 
 [![ci-status]](https://gitlab.com/Pryum/aspectjs)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 ## Abstract
 
@@ -66,3 +67,5 @@ c.heavyComputePeople('John', 'Doe'); // returns cached People {'John DOE'}
 ```
 
 MIT Licensed
+
+[ci-status]: https://gitlab.com/Pryum/aspectjs/badges/master/pipeline.svg
