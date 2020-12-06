@@ -2,4 +2,5 @@
     "folders": [],
     "settings": {},
     "editor.formatOnSave": true,
+    "javascript.implicitProjectConfig.experimentalDecorators": true
 }

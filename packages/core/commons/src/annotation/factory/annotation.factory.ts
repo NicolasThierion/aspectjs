@@ -1,7 +1,6 @@
-import { assert, getOrComputeMetadata, isFunction } from '@aspectjs/core/utils';
+import { assert, isFunction } from '@aspectjs/core/utils';
 import { AdviceType } from '../../advices/types';
 import { _getWeaverContext } from '../../weaver';
-
 import {
     Annotation,
     AnnotationRef,
@@ -100,52 +99,44 @@ export class AnnotationFactory {
 
         if (isFunction(name)) {
             annotationStub = name as A;
-            name = undefined;
+            name = annotationStub.name;
         }
         if (!annotationStub) {
             annotationStub = function () {} as any;
         }
-        if (name) {
-            (annotationStub as any).name = name;
+        if (!name) {
+            name = `anonymousAnnotation#${generatedId++}`;
         }
         // create the annotation (ie: decorator provider)
-        const annotation = function (...annotationArgs: any[]): Decorator {
-            const decorator = _createBootstrapDecorator(annotation as any, annotationStub, annotationArgs);
-            _createAnnotation(decorator, annotationStub, groupId);
+        const annotation = _createAnnotation(
+            name as string,
+            groupId,
+            annotationStub,
+            function (...annotationArgs: any[]): Decorator {
+                return _createBootstrapDecorator(annotation as any, annotationStub, annotationArgs);
+            },
+        );
 
-            return decorator;
-        };
-
-        // turn the stub into an annotation
-        return _createAnnotation(annotation, annotationStub, groupId);
+        return annotation;
     }
 }
 
 function _createAnnotation<A extends Annotation<AdviceType>, D extends Decorator>(
-    fn: Function & D,
-    annotationStub: A,
+    name: string,
     groupId: string,
+    annotationStub: A,
+    fn: Function & D,
 ): A {
     assert(typeof fn === 'function');
 
     // ensure annotation has a name.
     annotationStub = annotationStub ?? (function () {} as A);
-    if (!annotationStub.name) {
-        Reflect.defineProperty(annotationStub, 'name', {
-            value: `anonymousAnnotation#${generatedId++}`,
-        });
-    }
 
-    const annotationRef = new AnnotationRef(groupId, annotationStub.name);
-    const annotation = Object.defineProperties(fn, Object.getOwnPropertyDescriptors(annotationRef)) as AnnotationRef &
-        A;
+    const annotationRef = new AnnotationRef(groupId, name);
+    const annotation = (fn as any) as AnnotationRef & A;
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationStub));
+    Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(annotationRef));
     assert(Object.getOwnPropertySymbols(annotation).indexOf(Symbol.toPrimitive) >= 0);
-
-    getOrComputeMetadata('aspectjs.referenceAnnotation', annotationStub, () => {
-        Reflect.defineMetadata('aspectjs.referenceAnnotation', annotationStub, fn);
-        return annotationStub;
-    });
 
     return annotation;
 }
@@ -167,7 +158,7 @@ function _createBootstrapDecorator<A extends AdviceType, S extends Annotation<Ad
             );
         }
 
-        const target = weaverContext.annotations.targetFactory.of(targetArgs) as AnnotationTarget<any, A>;
+        const target = _getWeaverContext().annotations.targetFactory.of(targetArgs) as AnnotationTarget<any, A>;
         const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
         weaverContext.annotations.registry.register(annotationContext);
 

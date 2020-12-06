@@ -1,8 +1,6 @@
 import { Aspect, Compile } from '@aspectjs/core/annotations';
 import { AdviceType, CompileContext, on } from '@aspectjs/core/commons';
 import { assert, getOrComputeMetadata, isObject } from '@aspectjs/core/utils';
-import { Memo } from '../memo.annotation';
-
 import { Cacheable, CacheableOptions } from './cacheable.annotation';
 
 /**
@@ -61,35 +59,34 @@ export class DefaultCacheableAspect implements CacheableAspect {
  * @internal
  */
 export class _CacheTypeStoreImpl implements CacheTypeStore {
-    private readonly _prototypes: Record<string, Prototype> = {};
-    private readonly _versions: Record<string, string> = {};
+    private readonly _prototypes: Map<string, { version?: string; proto: Prototype }> = new Map();
 
     getPrototype(key: string): Prototype {
         assert(!!key, 'key must be defined');
-        const proto = this._prototypes[key];
-        if (!proto) {
+        const entry = this._prototypes.get(key);
+        if (!entry) {
             throw new Error(`no prototype found for key ${key}`);
         }
-        return proto;
+        return entry.proto;
     }
 
     getTypeKey<T extends Prototype>(prototype: T): string {
         return Reflect.getOwnMetadata('@aspectjs/cacheable:typekey', prototype);
     }
 
-    addPrototype<T extends Prototype>(proto: Prototype, typeId: string, version?: string): void {
-        if (this._prototypes[typeId] && this._prototypes[typeId] !== proto) {
+    addPrototype(proto: Prototype, typeId: string, version?: string): void {
+        const existingProto = this._prototypes.get(typeId);
+        if (existingProto && existingProto !== proto) {
             throw new Error(
-                `Cannot call @Cacheable({typeId = ${typeId}}) on ${proto?.constructor?.name}: typeId is already assigned to ${this._prototypes[typeId]?.constructor?.name}`,
+                `Cannot call @Cacheable({typeId = ${typeId}}) on ${proto?.constructor?.name}: typeId is already assigned to ${existingProto?.constructor?.name}`,
             );
         }
 
-        this._versions[typeId] = version;
-        this._prototypes[typeId] = proto;
+        this._prototypes.set(typeId, { proto, version });
     }
 
-    getVersion<T extends Prototype>(key: string): string {
-        return this._versions[key];
+    getVersion(key: string): string {
+        return this._prototypes.get(key)?.version ?? undefined;
     }
 }
 

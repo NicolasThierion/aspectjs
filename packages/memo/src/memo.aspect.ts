@@ -89,9 +89,9 @@ export class MemoAspect implements AspectType {
     protected _options: MemoAspectOptions;
     private readonly _drivers: Record<string, MemoDriver> = {};
     /** maps memo keys with its unregister function for garbage collector timeouts */
-    private readonly _entriesGc: Record<string, number> = {};
+    private readonly _entriesGc: Map<string, number> = new Map();
     private _marshallers: MarshallersRegistry;
-    private _pendingResults: Record<string, any> = {};
+    private _pendingResults: Map<string, any> = new Map();
     private _enabled: boolean;
 
     constructor(params?: MemoAspectOptions) {
@@ -107,14 +107,13 @@ export class MemoAspect implements AspectType {
 
     public addDriver(...drivers: MemoDriver[]): this {
         (drivers ?? []).forEach((d) => {
-            if (this._drivers[d.NAME] === d) {
+            const existingDriver = this._drivers[d.NAME];
+            if (existingDriver === d) {
                 return;
             }
-            if (this._drivers[d.NAME]) {
+            if (existingDriver) {
                 throw new Error(
-                    `both ${d.constructor?.name} & ${this._drivers[d.NAME].constructor?.name} configured for name ${
-                        d.NAME
-                    }`,
+                    `both ${d.constructor?.name} & ${existingDriver.constructor?.name} configured for name ${d.NAME}`,
                 );
             }
             this._drivers[d.NAME] = d;
@@ -154,11 +153,12 @@ export class MemoAspect implements AspectType {
 
         const options = ctxt.annotations.onSelf(Memo)[0].args[0] as MemoOptions;
         const expiration = this.getExpiration(ctxt, options);
-        const drivers = _selectCandidateDrivers(this._drivers, ctxt, this.applyMemo);
+        const drivers = _selectCandidateDrivers(this._drivers, ctxt);
 
         const proceedJoinpoint = () => {
             // value not cached. Call the original method
-            const value = (this._pendingResults[key.toString()] = jp());
+            const value = jp();
+            this._pendingResults.set(key.toString(), value);
 
             // marshall the value into a frame
             const marshallingContext = this._marshallers.marshal(value);
@@ -193,16 +193,18 @@ export class MemoAspect implements AspectType {
                 } as Mutable<MemoEntry>;
 
                 driver.write(entry).then(() => {
-                    if (this._pendingResults[key.toString()] === value) {
-                        delete this._pendingResults[key.toString()];
+                    const pendingResults = this._pendingResults.get(key.toString());
+
+                    if (pendingResults === value) {
+                        this._pendingResults.delete(key.toString());
                     }
                 });
             });
             return value;
         };
-
-        if (this._pendingResults[key.toString()]) {
-            return copy(this._pendingResults[key.toString()]);
+        const pendingResults = this._pendingResults.get(key.toString());
+        if (pendingResults) {
+            return copy(pendingResults);
         }
         for (const d of drivers) {
             try {
@@ -221,10 +223,9 @@ export class MemoAspect implements AspectType {
                 }
             } catch (e) {
                 // mute errors in ase of version mismatch, & just remove old version
-                if (e instanceof VersionConflictError) {
-                    this._removeValue(d, key);
-                } else if (e instanceof MemoAspectError) {
+                if (e instanceof VersionConflictError || e instanceof MemoAspectError) {
                     console.error(e);
+                    this._removeValue(d, key);
                 } else {
                     throw e;
                 }
@@ -238,12 +239,12 @@ export class MemoAspect implements AspectType {
     private _removeValue(driver: MemoDriver, key: MemoKey): void {
         driver.remove(key);
         // get gc timeout handle
-        const t = this._entriesGc[key.toString()];
-        delete this._pendingResults[key.toString()];
+        const t = this._entriesGc.get(key.toString());
+        this._pendingResults.delete(key.toString());
 
         if (t !== undefined) {
             // this entry is not eligible for gc
-            delete this._entriesGc[key.toString()];
+            this._entriesGc.delete(key.toString());
 
             // remove gc timeout
             clearTimeout(t as number);
@@ -255,7 +256,7 @@ export class MemoAspect implements AspectType {
         if (ttl <= 0) {
             this._removeValue(driver, key);
         } else {
-            this._entriesGc[key.toString()] = setTimeout(() => this._removeValue(driver, key), ttl) as any;
+            this._entriesGc.set(key.toString(), setTimeout(() => this._removeValue(driver, key), ttl) as any);
         }
     }
 
@@ -287,11 +288,7 @@ export class MemoAspect implements AspectType {
     }
 }
 
-function _selectCandidateDrivers(
-    drivers: Record<string, MemoDriver>,
-    ctxt: AroundContext<any, any>,
-    applyMemo: Function,
-): MemoDriver[] {
+function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: AroundContext<any, any>): MemoDriver[] {
     const annotationOptions = (ctxt.annotations.onSelf(Memo)[0].args[0] ?? {}) as MemoOptions;
     if (!annotationOptions.driver) {
         // return all drivers

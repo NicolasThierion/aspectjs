@@ -21,7 +21,7 @@
     "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
   },
   "peerDependencies": {
-    "@aspectjs/core": "0.1.1"
+    "@aspectjs/core": "^0.1.3"
   },
   "optionalDependencies": {
     "rxjs": "^6.6.3"

@@ -28,7 +28,7 @@
       "@aspectjs/core/commons": ["core/commons/public_api.ts"],
       "@aspectjs/core/utils": ["core/utils/public_api.ts"],
       "@aspectjs/memo": ["memo/public_api.ts"],
-      "@aspectjs/memo/support/observables": ["memo/support/observables/public_api.ts"],
+      "@aspectjs/memo/support/observables": ["memo/support/observables/public_api.ts"]
     }
   },
    "files": [],

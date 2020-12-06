@@ -6,6 +6,10 @@ require('tsconfig-paths/register');
 require('ts-node/register');
 require('./packages/core/utils/src/utils').__setDebug(true);
 
+// needed for memo
+localStorage = require('localstorage-ponyfill').createLocalStorage();
+indexedDB = require('fake-indexeddb');
+
 // configure reporters
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const JasmineConsoleReporter = require('jasmine-console-reporter');
