@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.4](https://github.com/NicolasThierion/aspectjs/compare/v0.1.3...v0.1.4) (2020-12-06)
+
+
+### Bug Fixes
+
+* **core:** fixes [#18](https://github.com/NicolasThierion/aspectjs/issues/18) ([df13f04](https://github.com/NicolasThierion/aspectjs/commit/df13f0473e352ef7ecf1795c6c73566a717bb786))
+* **core:** fixes [#19](https://github.com/NicolasThierion/aspectjs/issues/19) ([a7bff95](https://github.com/NicolasThierion/aspectjs/commit/a7bff9594e7a92f73a69dc4c17ac000d9726ead4))
+
+
+
+
+
 ## [0.1.3](https://github.com/NicolasThierion/aspectjs/compare/v0.1.2...v0.1.3) (2020-12-01)
 
 **Note:** Version bump only for package @aspectjs/parent

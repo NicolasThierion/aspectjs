@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "keywords": [
     "decorator",
