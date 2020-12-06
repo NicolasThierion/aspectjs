@@ -65,7 +65,7 @@ export class CacheableMarshaller extends MemoMarshaller {
                 );
             }
         }
-        if (frame.hash !== __createHash(proto)) {
+        if (version === undefined && frame.hash !== __createHash(proto)) {
             throw new VersionConflictError(`Hash changed for type ${frame.instanceType} `, context);
         }
         Reflect.setPrototypeOf(frame.value, proto);
