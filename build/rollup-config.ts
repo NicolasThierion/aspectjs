@@ -75,11 +75,13 @@ export class RollupConfig {
             const pkg = project.package;
             this._configs[pkg.name] = this._configs[pkg.name] ?? {};
             const baseConfig = this._configs[pkg.name][configName] ?? configFn(project);
-            if (customizer) {
-                this._configs[pkg.name][configName] = (customizer(baseConfig, pkg, pkg.name) ??
-                    baseConfig) as RollupOptions;
-            } else {
-                this._configs[pkg.name][configName] = baseConfig;
+            if (baseConfig) {
+                if (customizer) {
+                    this._configs[pkg.name][configName] = (customizer(baseConfig, pkg, pkg.name) ??
+                        baseConfig) as RollupOptions;
+                } else {
+                    this._configs[pkg.name][configName] = baseConfig;
+                }
             }
         });
     }
@@ -117,41 +119,41 @@ export class RollupConfig {
 }
 
 function fesm2015(project: Project, override: RollupOptions = {}) {
-    const output = path.resolve(path.dirname(project.packagePath), project.package.fesm2015);
-    if (!output) {
+    if (!project.package.fesm2015) {
         console.warn(`${project.package.name}: missing "fesm2015" output definition. Skipping fesm2015 build`);
         return;
     }
+    const output = path.resolve(path.dirname(project.packagePath), project.package.fesm2015);
 
     return _baseEsm2015(project, output, override, false);
 }
 
 function esm2015(project: Project, override: RollupOptions = {}) {
-    const output = path.resolve(path.dirname(project.packagePath), project.package.esm2015);
-    if (!output) {
+    if (!project.package.esm2015) {
         console.warn(`${project.package.name}: missing "esm2015" output definition. Skipping esm2015 build`);
         return;
     }
+    const output = path.resolve(path.dirname(project.packagePath), project.package.esm2015);
 
     return _baseEsm2015(project, output, override, true);
 }
 
 function main(project: Project, override: RollupOptions = {}) {
-    const output = path.resolve(path.dirname(project.packagePath), project.package.main);
-    if (!output) {
+    if (!project.package.main) {
         console.warn(`${project.package.name}: missing "main" output definition. Skipping umd build`);
         return;
     }
+    const output = path.resolve(path.dirname(project.packagePath), project.package.main);
 
     return _baseUmd(project, output, override);
 }
 
 function unpkg(project: Project, override: RollupOptions = {}) {
-    const output = path.resolve(path.dirname(project.packagePath), project.package.unpkg);
-    if (!output) {
+    if (!project.package.unpkg) {
         console.warn(`${project.package.name}: missing "unpkg" output definition. Skipping unpkg build`);
         return;
     }
+    const output = path.resolve(path.dirname(project.packagePath), project.package.unpkg);
 
     return _baseUmd(
         project,
@@ -165,12 +167,7 @@ function unpkg(project: Project, override: RollupOptions = {}) {
                         ie8: false,
                         keep_classnames: false,
                         keep_fnames: false,
-                        mangle: {
-                            eval: true,
-                            keep_classnames: false,
-                            keep_fnames: false,
-                            properties: true,
-                        },
+                        mangle: false,
                         module: false,
                     }),
                 ],

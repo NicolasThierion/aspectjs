@@ -17,8 +17,6 @@ import { _WeavingStrategy } from './weaving-strategy';
  * @internal
  */
 export class _AdviceExecutionPlanFactory {
-    constructor(private _context: WeaverContext) {}
-
     create<T, A extends AdviceType = any>(
         target: AdviceTarget<T, A>,
         hooks: _WeavingStrategy<T, A>,

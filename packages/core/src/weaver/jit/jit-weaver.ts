@@ -14,13 +14,13 @@ import {
     WeaverProfile,
     WeavingError,
 } from '@aspectjs/core/commons';
-import { assert, isFunction } from '@aspectjs/core/utils';
+import { isFunction } from '@aspectjs/core/utils';
 import { _AdviceExecutionPlanFactory } from '../plan.factory';
-import { _ParameterWeavingStrategy } from './strategies/parameter-weaving-strategy';
-import { _PropertySetWeavingStrategy } from './strategies/property-set-weaving-strategy';
 import { _ClassWeavingStrategy } from './strategies/class-weaving-strategy';
 import { _MethodWeavingStrategy } from './strategies/method-weaving-strategy';
+import { _ParameterWeavingStrategy } from './strategies/parameter-weaving-strategy';
 import { _PropertyGetWeavingStrategy } from './strategies/property-get-weaving-strategy';
+import { _PropertySetWeavingStrategy } from './strategies/property-set-weaving-strategy';
 
 /**
  * The JitWeaver wires up advices to the corresponding annotations as soon as the annotation gets processed by JS interpreter.
@@ -41,7 +41,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
      */
     constructor(private _context: WeaverContext, private _prod = true) {
         super();
-        this._planFactory = new _AdviceExecutionPlanFactory(_context);
+        this._planFactory = new _AdviceExecutionPlanFactory();
     }
 
     enable(...aspects: (AspectType | WeaverProfile)[]): this {
@@ -86,7 +86,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     reset(): this {
-        this._planFactory = new _AdviceExecutionPlanFactory(this._context);
+        this._planFactory = new _AdviceExecutionPlanFactory();
         return super.reset();
     }
 
@@ -150,30 +150,6 @@ function _isPropertySet(a: Advice) {
 function _isDescriptorWritable(propDescriptor: PropertyDescriptor) {
     const desc = propDescriptor as Record<string, any>;
     return !desc || (desc.hasOwnProperty('writable') && desc.writable) || isFunction(desc.set);
-}
-
-function _compileParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
-    assert(false, 'not implemented');
-}
-
-function _beforeParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
-    assert(false, 'not implemented');
-}
-
-function _aroundParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
-    assert(false, 'not implemented');
-}
-
-function _afterReturnParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
-    assert(false, 'not implemented');
-}
-
-function _afterThrowParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
-    assert(false, 'not implemented');
-}
-
-function _afterParameter(ctxt: MutableAdviceContext<AdviceType.PARAMETER>): void {
-    assert(false, 'not implemented');
 }
 
 class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext<unknown, A> {

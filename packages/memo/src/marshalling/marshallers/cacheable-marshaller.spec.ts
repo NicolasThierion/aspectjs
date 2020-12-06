@@ -4,7 +4,7 @@ import { Cacheable } from '../../cacheable/cacheable.annotation';
 let CacheableA: any;
 let CacheableB: any;
 
-describe('Given a @Memo method that returns a class instance', () => {
+describe('@Memo() on a method', () => {
     let joinpoint: jasmine.Spy;
     let memoMethod: () => any;
     beforeEach(() => {
@@ -22,17 +22,17 @@ describe('Given a @Memo method that returns a class instance', () => {
         joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => undefined);
         memoMethod = createMemoMethod((...args: any[]) => joinpoint(args));
     });
-    describe('annotated with @Cacheable', () => {
+    describe('that returns a @Cacheable() instance', () => {
         beforeEach(() => {
             joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => new CacheableA());
         });
 
-        it('should return an object of the correct type', () => {
+        it('should return an instance of the correct type', () => {
             expect(memoMethod()).toEqual(memoMethod());
             expect(joinpoint).toHaveBeenCalledTimes(1);
         });
-        describe('that contains class instances attributes', () => {
-            describe('annotated themselves with @Cacheable', () => {
+        describe('that itself own a clas-instance property', () => {
+            describe('annotated with @Cacheable', () => {
                 beforeEach(() => {
                     joinpoint = jasmine.createSpy('joinpoint').and.callFake(() => {
                         const a = new CacheableA();
