@@ -1,0 +1,37 @@
+{
+  "name": "@aspectjs/core",
+  "version": "0.2.0",
+  "description": "Aspect Oriented Programming based on decorators, for browser & node",
+  "scripts": {
+    "test": "npm run test:lint && npm run test:unit",
+    "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
+    "test:unit": "jest",
+    "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
+    "doc": "typedoc src/index.ts",
+    "build": "rimraf dist && rollup --config ./rollup.config.js"
+  },
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  },
+  "homepage": "https://github.com/NicolasThierion/aspectjs#readme",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./dist/core.d.ts",
+      "esm2020": "./dist/esm2020/core.mjs",
+      "es2020": "./dist/fesm2020/core.mjs",
+      "es2015": "./dist/fesm2015/core.mjs",
+      "node": "./dist/fesm2015/core.mjs",
+      "require": "./dist/core.cjs",
+      "default": "./dist/core.cjs",
+      "unpkg": "./dist/bundles/core.umd.min.js"
+    }
+  },
+  "main": "./dist/bundles/core.umd.js"
+}

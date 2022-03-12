@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Transpilation settings.
+    "module": "ES2020",
+    "target": "ES5",
+
+    // Output settings.
+    "charset": "utf-8",
+    "newLine": "LF",
+    "sourceMap": true,
+
+    // Type declaration settings.
+    "declaration": true,
+    "declarationDir": "types/",
+    "declarationMap": true
+  }
+}
