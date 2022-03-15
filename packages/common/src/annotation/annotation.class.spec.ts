@@ -17,7 +17,7 @@ describe(`Class Annotations`, () => {
     jest.clearAllMocks();
   });
 
-  it('should return a class decorator', () => {
+  it('returns a class decorator', () => {
     const decorator = AClass('0', 0);
     expect(typeof decorator).toBe('function');
     const A = class A {};
@@ -42,12 +42,12 @@ describe(`Class Annotations`, () => {
 
       A = AImpl;
     });
-    it('should keep the class instance type', () => {
+    it('keeps the class instance type', () => {
       const a = new A();
       expect(a).toBeInstanceOf(A);
     });
 
-    it('should call through the annotation stub', () => {
+    it('calls through the annotation stub', () => {
       expect(AClassStub).toBeCalledTimes(1);
     });
     it(`should keep the class attributes`, () => {

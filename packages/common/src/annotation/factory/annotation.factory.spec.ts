@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import type {
-  AnnotationRef,
-  Annotation,
-  AnnotationType,
-} from './../annotation.types';
+import type { AnnotationRef } from '../annotation-ref';
+import type { Annotation, AnnotationType } from '../annotation.types';
 import { AnnotationFactory } from './annotation.factory';
 
 let factory: AnnotationFactory;
@@ -19,14 +16,14 @@ describe('AnnotationFactory(groupId)', () => {
   });
 
   describe('.create(<AnnotationStub>)', () => {
-    it('should return a function', () => {
+    it('returns a function', () => {
       AClass = factory.create(AClassStub);
       expect(typeof AClass).toBe('function');
     });
 
-    it('should return an annotation', () => {
+    it('returns an annotation', () => {
       AClass = factory.create(AClassStub);
-      const properties: (keyof AnnotationRef)[] = ['groupId', 'name', 'ref'];
+      const properties: (keyof AnnotationRef)[] = ['groupId', 'name', 'value'];
       properties.forEach((p) => expect(AClass).toHaveProperty(p));
       properties.forEach((p) => expect(AClass[p]).toBeDefined());
     });
@@ -36,7 +33,7 @@ describe('AnnotationFactory(groupId)', () => {
         AClass = factory.create(AClassStub);
       });
       describe('.name', () => {
-        it('should match stub name', () => {
+        it('matchs stub name', () => {
           expect(AClass.name).toEqual(AClassStub.name);
         });
       });
@@ -45,9 +42,9 @@ describe('AnnotationFactory(groupId)', () => {
           expect(AClass.groupId).toEqual(factory.groupId);
         });
       });
-      describe('.ref', () => {
+      describe('.value', () => {
         it(`should match name:groupId`, () => {
-          expect(AClass.ref).toEqual(`${AClass.groupId}:${AClass.name}`);
+          expect(AClass.value).toEqual(`${AClass.groupId}:${AClass.name}`);
         });
       });
     });
@@ -69,13 +66,13 @@ describe('AnnotationFactory(groupId)', () => {
 
 //     labeled = new A();
 //   });
-//   it('should not alter the property', () => {
+//   it('nots alter the property', () => {
 //     expect(labeled.label).toEqual(undefined);
 //     labeled.label = 'somePropValue';
 //     expect(labeled.label).toEqual('somePropValue');
 //   });
 
-//   it('should call the original annotation stub', () => {
+//   it('calls the original annotation stub', () => {
 //     labeled.label = 'somePropValue';
 //     expect(stubSpy).toHaveBeenCalled();
 //   });

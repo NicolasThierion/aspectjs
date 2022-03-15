@@ -1,2 +1,23 @@
 {
+  "cSpell.words": ["aspectjs"],
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#184630",
+    "activityBar.activeBorder": "#9259c6",
+    "activityBar.background": "#184630",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#9259c6",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "sash.hoverBorder": "#184630",
+    "statusBar.background": "#0b2016",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#184630",
+    "statusBarItem.remoteBackground": "#0b2016",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#0b2016",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#0b201699",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#0b2016"
 }

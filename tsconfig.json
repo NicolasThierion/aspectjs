@@ -1,6 +1,8 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES6",
     "experimentalDecorators": true,
     "downlevelIteration": true,
     // Module settings.
@@ -27,6 +29,15 @@
     // Type-checking settings.
     "lib": ["ES2020"],
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@aspectjs/common": ["./packages/common/public_api.ts"],
+      "@aspectjs/common/annotation": [
+        "./packages/common/annotation/public_api.ts"
+      ],
+      "@aspectjs/common/testing": ["./packages/common/testing/public_api.ts"],
+      "@aspectjs/common/utils": ["./packages/common/utils/public_api.ts"],
+      "@aspectjs/common/reflect": ["./packages/common/reflect/public_api.ts"]
+    }
   }
 }

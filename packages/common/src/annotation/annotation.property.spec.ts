@@ -20,7 +20,7 @@ describe(`Property Annotations`, () => {
     jest.clearAllMocks();
   });
 
-  it('should return a property decorator', () => {
+  it('returns a property decorator', () => {
     const decorator = AProperty('0', 0);
     expect(typeof decorator).toBe('function');
     class A {
@@ -44,17 +44,17 @@ describe(`Property Annotations`, () => {
       }
       A = AImpl;
     });
-    it('should keep the class instance type', () => {
+    it('keeps the class instance type', () => {
       const a = new A();
       expect(a).toBeInstanceOf(A);
     });
-    it('should call through the annotation stub', () => {
+    it('calls through the annotation stub', () => {
       expect(APropertyStub).toBeCalledTimes(1);
     });
-    it(`should keep the class attributes`, () => {
+    it(`keeps the class attributes`, () => {
       expect(new A().someProp).toEqual('someProp');
     });
-    it(`should keep the static class attributes`, () => {
+    it(`keeps the static class attributes`, () => {
       expect(A.someStaticProp).toEqual('someStaticProp');
     });
   });

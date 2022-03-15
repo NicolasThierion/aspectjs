@@ -28,6 +28,17 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "test reflect",
+      "runtimeExecutable": "npm",
+      "runtimeVersion": "16",
+      "outputCapture": "std",
+      "cwd": "${workspaceFolder}/packages/core/reflect",
+      "console": "integratedTerminal",
+      "runtimeArgs": ["run", "test:unit"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "rollup",
       "runtimeExecutable": "npm",
       "runtimeVersion": "16",

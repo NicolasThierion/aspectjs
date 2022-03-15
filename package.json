@@ -34,6 +34,7 @@
     "jest": "^27.5.1",
     "lerna": "^4.0.0",
     "prettier": "^2.5.1",
+    "require-json5": "^1.2.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.67.2",
     "rollup-plugin-delete": "^2.0.0",

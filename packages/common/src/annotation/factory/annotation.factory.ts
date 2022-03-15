@@ -1,34 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { assert, isFunction } from '../../utils';
-import {
+
+import { assert, isFunction } from '@aspectjs/common/utils';
+import type {
   Annotation,
-  AnnotationRef,
   AnnotationType,
   AnyDecorator,
   Decorator,
 } from '../annotation.types';
-import type { AnnotationStub } from './../annotation.types';
+import type { AnnotationStub } from '../annotation.types';
+import { AnnotationRef } from '../annotation-ref';
+import { reflectContext } from '../../reflect/context';
 
 let anonymousAnnotationId = 0;
 
-/**
- * An AnnotationHook is a configuration to link annotations to a typescript decorator.
- */
-export type AnnotationsHook<
-  T extends AnnotationType = AnnotationType,
-  S extends AnnotationStub<T> = AnnotationStub<T>
-> = {
-  decorator: (
-    annotation: Annotation<T>,
-    annotationArgs: any[],
-    annotationStub: S
-  ) => Decorator | void;
-  order: number;
-  name: string;
-};
-
+interface AnnotationCreateOptions<T extends AnnotationType, S> {
+  name?: string;
+  annotationStub?: S;
+  type?: T;
+}
 /**
  * Factory to create an {@link Annotation}.
  * @public
@@ -36,46 +27,51 @@ export type AnnotationsHook<
 export class AnnotationFactory {
   readonly groupId: string;
 
-  private static readonly _hooks: Map<string, AnnotationsHook> = new Map([
-    [
-      '@aspectjs::hook:annotationStub',
-      {
-        name: '@aspectjs::hook:annotationStub',
-        order: 0,
-        decorator: (_annotation, annotationArgs, annotationStub) => {
-          return annotationStub(...annotationArgs);
-        },
-      },
-    ],
-  ]);
-
-  static addAnnotationsHook(annotationsHook: AnnotationsHook) {
-    assert(!!annotationsHook.name);
-    AnnotationFactory._hooks.set(annotationsHook.name, annotationsHook);
-  }
   constructor(groupId: string) {
     this.groupId = groupId;
   }
-
-  create<T extends AnnotationType, S extends AnnotationStub<T>>(
-    name?: string | S,
+  create<
+    T extends AnnotationType = AnnotationType.ANY,
+    S extends AnnotationStub<T> = () => void
+  >(name?: string, annotationStub?: S): Annotation<T, S>;
+  create<
+    T extends AnnotationType = AnnotationType.ANY,
+    S extends AnnotationStub<T> = () => void
+  >(annotationStub?: S): Annotation<T, S>;
+  create<
+    T extends AnnotationType = AnnotationType.ANY,
+    S extends AnnotationStub<T> = () => void
+  >(opts: AnnotationCreateOptions<T, S>): Annotation<T, S>;
+  create<
+    T extends AnnotationType = AnnotationType.ANY,
+    S extends AnnotationStub<T> = () => void
+  >(
+    opts?: string | S | AnnotationCreateOptions<T, S>,
     annotationStub?: S
   ): Annotation<T, S> {
+    const _opts = typeof opts === 'object' ? opts : {};
+
+    if (typeof annotationStub === 'function') {
+      _opts.name = annotationStub.name;
+    }
+    if (typeof opts === 'string') {
+      _opts.name = opts;
+      _opts.annotationStub = annotationStub;
+    } else if (typeof opts === 'function') {
+      _opts.name = opts.name;
+      _opts.annotationStub = opts;
+    }
+
     const groupId = this.groupId;
-
-    if (isFunction(name)) {
-      annotationStub = name as S;
-      name = annotationStub.name;
-    }
-    if (!annotationStub) {
-      annotationStub = function () {} as S;
-    }
-    if (!name) {
-      name = `anonymousAnnotation#${anonymousAnnotationId++}`;
+    if (!_opts.name) {
+      _opts.name = `anonymousAnnotation#${anonymousAnnotationId++}`;
     }
 
+    if (!_opts.annotationStub) {
+      _opts.annotationStub = function () {} as S;
+    }
     // create the annotation (ie: decorator factory)
-    return this._createAnnotation(groupId, name, annotationStub);
+    return this._createAnnotation(groupId, _opts.name, _opts.annotationStub);
   }
 
   // Turn an annotation into an ES decorator
@@ -88,7 +84,7 @@ export class AnnotationFactory {
       this: any,
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
-      return [...AnnotationFactory._hooks.values()]
+      return [...reflectContext().get('annotationsHooksRegistry').values()]
         .sort((c1, c2) => c1.order - c2.order)
         .reduce((decoree, { name, decorator }) => {
           try {
@@ -99,9 +95,7 @@ export class AnnotationFactory {
             return decoree;
           } catch (e) {
             console.error(
-              `Error applying bootstrap decorator ${name}: ${
-                (e as Error).message
-              }`
+              `Error applying annotation hook ${name}: ${(e as Error).message}`
             );
             throw e;
           }

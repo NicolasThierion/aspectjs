@@ -5,7 +5,7 @@
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "jest",
+    "test:unit": "jest --runInBand",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
     "doc": "typedoc src/index.ts",
     "build": "rimraf dist && rollup --config ./rollup.config.js"
