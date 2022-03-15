@@ -1,6 +1,8 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
     // Module settings.
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -10,7 +12,7 @@
 
     // Strictness and quality settings.
     "alwaysStrict": true,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
     "noFallthroughCasesInSwitch": true,

@@ -1,7 +1,7 @@
 import { hello } from './hello';
 
-describe('hello', () => {
-  it('should print "hello world"', () => {
+xdescribe('core', () => {
+  it('not implemented', () => {
     hello();
   });
 });
