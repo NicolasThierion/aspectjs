@@ -131,17 +131,16 @@ export class AnnotationSelector {
   }
 }
 
-export class _AnnotationRegistryModule
-  implements ReflectContextModule<AnnotationRegistry>
-{
+export class _AnnotationRegistryModule implements ReflectContextModule {
   order = 100;
-  bootstrap(context: ReflectContext): AnnotationRegistry {
+  bootstrap(context: ReflectContext): void {
     const targetFactory = context.get('annotationTargetFactory');
     const annotationRegistry = new AnnotationRegistry(targetFactory);
     context
       .get('annotationFactoryHooksRegistry')
       .add(REGISTER_ANNOTATION_HOOK(targetFactory, annotationRegistry));
-    return annotationRegistry;
+
+    context.set('annotationRegistry', annotationRegistry);
   }
 }
 

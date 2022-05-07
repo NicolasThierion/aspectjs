@@ -2,6 +2,7 @@
  * Returns an object to store global values across the framework
  */
 
+import { assert } from '@aspectjs/common/utils';
 import { _AnnotationsFactoryHooksRegistryModule } from '../annotation/factory/annotation-factory.module';
 import type { _AnnotationFactoryHooksRegistry } from '../annotation/factory/annotations-hooks.registry';
 import {
@@ -12,84 +13,94 @@ import { AnnotationTargetFactoryModule } from '../annotation/target/annotation-t
 import type { AnnotationTargetFactory } from '../annotation/target/annotation-target.factory';
 import type { ReflectContextModule } from './reflect-context-module.type';
 
-type KnownReflectContextDependencies = {
+interface KnownReflectContextProviders {
   annotationFactoryHooksRegistry: _AnnotationFactoryHooksRegistry;
   annotationRegistry: AnnotationRegistry;
   annotationTargetFactory: AnnotationTargetFactory;
-};
-export type ReflectContextModules = {
-  [name: string]: ReflectContextModule<any>;
-};
+}
+
+export interface ReflectContextProviders extends KnownReflectContextProviders {
+  [k: string]: any;
+}
+
 export class ReflectContext {
   protected bootstrapped = false;
-  protected modules: ReflectContextModules = {
-    annotationRegistry: new _AnnotationRegistryModule(),
-    annotationFactoryHooksRegistry:
-      new _AnnotationsFactoryHooksRegistryModule(),
-    annotationTargetFactory: new AnnotationTargetFactoryModule(),
-  };
-  protected deps: {
-    [T: keyof ReflectContextModules]: any;
-  } = {};
+  protected modules: ReflectContextModule[] = [
+    new _AnnotationRegistryModule(),
+    new _AnnotationsFactoryHooksRegistryModule(),
+    new AnnotationTargetFactoryModule(),
+  ];
+  protected providers: ReflectContextProviders = {} as ReflectContextProviders;
 
-  constructor(modules: Partial<ReflectContextModules> = {}) {
-    Object.assign(this.modules, modules);
+  constructor(modules: ReflectContextModule[] = []) {
+    this.modules.push(...modules);
   }
 
-  bootstrap(reflectContextModules?: Partial<ReflectContextModules>) {
+  bootstrap() {
     if (this.bootstrapped) {
       throw new Error(`ReflectContext already bootstrapped`);
     }
-    Object.assign(this.modules, reflectContextModules);
 
     this.bootstrapped = true;
 
-    this.deps = Object.entries(
-      this.modules as Record<string, ReflectContextModule<any>>,
-    )
-      .filter(([_name, m]) => typeof m.bootstrap === 'function')
+    this.modules
       .sort(
-        ([_n1, m1], [_n2, m2]) =>
+        (m1, m2) =>
           (m1.order ?? Number.MAX_SAFE_INTEGER) -
           (m2.order ?? Number.MAX_SAFE_INTEGER),
       )
-      .reduce((deps, [name, m]) => {
-        deps[name] = m.bootstrap?.(this);
-        return deps;
-      }, this.deps);
+      .forEach((m) => m.bootstrap(this));
 
     return this;
   }
-  get<
-    T extends KnownReflectContextDependencies[N],
-    N extends keyof KnownReflectContextDependencies = keyof KnownReflectContextDependencies,
-  >(name: N): T;
+
+  addModules(...modules: ReflectContextModule[]) {
+    assert(!this.bootstrapped);
+    this.modules.push(...modules);
+  }
+
+  set<
+    T extends KnownReflectContextProviders[N],
+    N extends keyof KnownReflectContextProviders = keyof KnownReflectContextProviders,
+  >(name: N, provider: T): void {
+    if (this.providers[name]) {
+      console.warn(
+        `Provider ${
+          Object.getPrototypeOf(this.get(name)).constructor.name
+        } already registered for name "${name}"`,
+      );
+    }
+
+    this.providers[name] = provider;
+  }
 
   get<
-    T extends KnownReflectContextDependencies[N],
-    N extends keyof KnownReflectContextDependencies = keyof KnownReflectContextDependencies,
-  >(name: N): T;
-  get<
-    T extends KnownReflectContextDependencies[N],
-    N extends keyof KnownReflectContextDependencies = keyof KnownReflectContextDependencies,
-  >(name: N, defaultValue: () => T): T;
-  get<
-    T extends KnownReflectContextDependencies[N],
-    N extends keyof KnownReflectContextDependencies = keyof KnownReflectContextDependencies,
-  >(name: N, defaultValue?: () => T): T {
+    T extends KnownReflectContextProviders[N],
+    N extends keyof KnownReflectContextProviders = keyof KnownReflectContextProviders,
+  >(name: N): T {
     if (!this.bootstrapped) {
       this.bootstrap();
     }
-    const dep = this.deps[name] ?? (this.deps[name] = defaultValue?.());
-    if (!dep) {
-      throw new Error(`no dependency with name ${name}`);
+    const provider = this.providers[name];
+    if (!provider) {
+      throw new Error(`No ReflectContext provider with name ${name}`);
     }
 
-    return dep as any;
+    return provider as any;
+  }
+
+  has<
+    N extends keyof KnownReflectContextProviders = keyof KnownReflectContextProviders,
+  >(name: N): boolean {
+    if (!this.bootstrapped) {
+      this.bootstrap();
+    }
+    const provider = this.providers[name];
+    return !!provider;
   }
 
   static configureTesting(
-    reflectContextModules?: Partial<ReflectContextModules>,
+    reflectContextModules?: ReflectContextModule[],
   ): TestingContext {
     return (_context = new TestingContext(reflectContextModules));
   }
@@ -97,21 +108,15 @@ export class ReflectContext {
 
 export class TestingContext extends ReflectContext {
   readonly defaultModules = this.modules;
-  readonly defaultDeps = this.deps;
+  readonly defaultProviders = this.providers;
 
   reset() {
-    this.modules = { ...this.defaultModules };
-    this.deps = { ...this.defaultDeps };
+    this.modules = [...this.defaultModules];
+    this.providers = { ...this.defaultProviders };
     this.bootstrapped = false;
     return this;
   }
 }
+
 let _context: ReflectContext = new ReflectContext();
-
-export const bootstrapReflectContext = (
-  reflectContextModules?: Partial<ReflectContextModules>,
-): ReflectContext => {
-  return _context.bootstrap(reflectContextModules);
-};
-
 export const reflectContext = () => _context;

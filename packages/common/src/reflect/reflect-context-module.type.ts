@@ -1,6 +1,6 @@
 import type { ReflectContext } from './context';
 
-export interface ReflectContextModule<T> {
+export interface ReflectContextModule {
   order?: number;
-  bootstrap(context: ReflectContext): T;
+  bootstrap(context: ReflectContext): void;
 }

@@ -1,10 +1,8 @@
-import { ReflectContext, ReflectContextModules } from '@aspectjs/common';
+import { ReflectContext, ReflectContextModule } from '@aspectjs/common';
 import { setDebug } from '@aspectjs/common/utils';
 
-export const configureTestingContext = (
-  deps?: Partial<ReflectContextModules>
-) => {
+export const configureTestingContext = (providers?: ReflectContextModule[]) => {
   setDebug(true);
 
-  return ReflectContext.configureTesting(deps).bootstrap();
+  return ReflectContext.configureTesting(providers).bootstrap();
 };
