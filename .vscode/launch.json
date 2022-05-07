@@ -28,11 +28,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "test reflect",
+      "name": "test core",
       "runtimeExecutable": "npm",
       "runtimeVersion": "16",
       "outputCapture": "std",
-      "cwd": "${workspaceFolder}/packages/core/reflect",
+      "cwd": "${workspaceFolder}/packages/core",
       "console": "integratedTerminal",
       "runtimeArgs": ["run", "test:unit"]
     },

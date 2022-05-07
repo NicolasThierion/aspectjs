@@ -1,5 +1,5 @@
 import { _AnnotationContextImpl } from '../../annotation-context';
-import type { AnnotationsHook } from '../../factory/annotations-hook';
+import type { AnnotationFactoryHook } from '../../factory/annotation-factory-hook.type';
 import type { AnnotationTargetFactory } from '../../target/annotation-target.factory';
 import { DecoratorTargetArgs } from '../../target/target-args';
 import type { AnnotationRegistry } from '../annotation.registry';
@@ -11,8 +11,8 @@ import type { AnnotationRegistry } from '../annotation.registry';
  */
 export const REGISTER_ANNOTATION_HOOK = (
   targetFactory: AnnotationTargetFactory,
-  annotationRegistry: AnnotationRegistry
-): AnnotationsHook => ({
+  annotationRegistry: AnnotationRegistry,
+): AnnotationFactoryHook => ({
   name: '@aspectjs::hook:registerAnnotation',
   decorator: (annotation, annotationArgs) => {
     return (...targetArgs: any[]) => {
@@ -20,7 +20,7 @@ export const REGISTER_ANNOTATION_HOOK = (
       const annotationContext = new _AnnotationContextImpl(
         annotation,
         annotationArgs,
-        target
+        target,
       );
       annotationRegistry.register(annotationContext);
     };

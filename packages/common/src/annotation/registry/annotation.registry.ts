@@ -139,7 +139,7 @@ export class _AnnotationRegistryModule
     const targetFactory = context.get('annotationTargetFactory');
     const annotationRegistry = new AnnotationRegistry(targetFactory);
     context
-      .get('annotationsHooksRegistry')
+      .get('annotationFactoryHooksRegistry')
       .add(REGISTER_ANNOTATION_HOOK(targetFactory, annotationRegistry));
     return annotationRegistry;
   }

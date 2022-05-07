@@ -32,22 +32,22 @@ export class AnnotationFactory {
   }
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void
+    S extends AnnotationStub<T> = () => void,
   >(name?: string, annotationStub?: S): Annotation<T, S>;
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void
+    S extends AnnotationStub<T> = () => void,
   >(annotationStub?: S): Annotation<T, S>;
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void
+    S extends AnnotationStub<T> = () => void,
   >(opts: AnnotationCreateOptions<T, S>): Annotation<T, S>;
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void
+    S extends AnnotationStub<T> = () => void,
   >(
     opts?: string | S | AnnotationCreateOptions<T, S>,
-    annotationStub?: S
+    annotationStub?: S,
   ): Annotation<T, S> {
     const _opts = typeof opts === 'object' ? opts : {};
 
@@ -78,13 +78,15 @@ export class AnnotationFactory {
   _createDecorator<T extends AnnotationType, S extends AnnotationStub<T>>(
     annotation: Annotation<T, S>,
     annotationStub: S,
-    annotationArgs: any[]
+    annotationArgs: any[],
   ): Decorator {
     return function (
       this: any,
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
-      return [...reflectContext().get('annotationsHooksRegistry').values()]
+      return [
+        ...reflectContext().get('annotationFactoryHooksRegistry').values(),
+      ]
         .sort((c1, c2) => c1.order - c2.order)
         .reduce((decoree, { name, decorator }) => {
           try {
@@ -95,7 +97,7 @@ export class AnnotationFactory {
             return decoree;
           } catch (e) {
             console.error(
-              `Error applying annotation hook ${name}: ${(e as Error).message}`
+              `Error applying annotation hook ${name}: ${(e as Error).message}`,
             );
             throw e;
           }
@@ -106,7 +108,7 @@ export class AnnotationFactory {
   _createAnnotation<T extends AnnotationType, S extends AnnotationStub<T>>(
     groupId: string,
     name: string,
-    stub: S
+    stub: S,
   ): Annotation<T, S> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _factory = this;
@@ -118,10 +120,10 @@ export class AnnotationFactory {
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(stub));
     Object.defineProperties(
       annotation,
-      Object.getOwnPropertyDescriptors(annotationRef)
+      Object.getOwnPropertyDescriptors(annotationRef),
     );
     assert(
-      Object.getOwnPropertySymbols(annotation).indexOf(Symbol.toPrimitive) >= 0
+      Object.getOwnPropertySymbols(annotation).indexOf(Symbol.toPrimitive) >= 0,
     );
 
     return annotation;
@@ -131,7 +133,7 @@ export class AnnotationFactory {
 const noopDecorator: AnyDecorator = (<TFunction extends Function>(
   target: TFunction,
   propertyKey: string | symbol,
-  _parameterIndex: number
+  _parameterIndex: number,
 ): any => {
   if (propertyKey !== undefined) {
     if (isFunction(target) && target.prototype) {

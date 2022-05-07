@@ -20,20 +20,22 @@ export function assert(condition: boolean, errorProvider?: () => Error): void;
  */
 export function assert(
   condition: () => boolean,
-  errorProvider?: () => Error
+  errorProvider?: () => Error,
 ): void;
 
 /**
  * @public
  */
 export function assert(condition: boolean, msg?: string): void;
+export function assert(condition: true, msg?: string): void;
+export function assert(condition: false, msg?: string): never;
 
 /**
  * @public
  */
 export function assert(
   condition: boolean | (() => boolean),
-  msg?: string | (() => Error)
+  msg?: string | (() => Error),
 ) {
   if (__debug) {
     const conditionValue =

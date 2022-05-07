@@ -36,8 +36,7 @@
         "./packages/common/annotation/public_api.ts"
       ],
       "@aspectjs/common/testing": ["./packages/common/testing/public_api.ts"],
-      "@aspectjs/common/utils": ["./packages/common/utils/public_api.ts"],
-      "@aspectjs/common/reflect": ["./packages/common/reflect/public_api.ts"]
+      "@aspectjs/common/utils": ["./packages/common/utils/public_api.ts"]
     }
   }
 }

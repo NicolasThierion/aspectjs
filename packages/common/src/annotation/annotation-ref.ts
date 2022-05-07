@@ -11,7 +11,7 @@ export class AnnotationRef {
     let _groupId: string | undefined;
     let _name: string | undefined;
     if (!name) {
-      this.value = groupIdOrRef;
+      this.value = groupIdOrRef.replace(/^@/, '');
       const ANNOTATION_REF_REGEX = /(?<groupId>\S+):(?<name>\S+)/;
       const match = ANNOTATION_REF_REGEX.exec(this.value);
       _groupId = match?.groups?.['groupId'];
