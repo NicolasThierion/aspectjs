@@ -1,5 +1,6 @@
 import { AnnotationFactory, type Annotation } from '@aspectjs/common';
 import { configureTestingContext } from '@aspectjs/common/testing';
+import { ReflectContext } from '../../reflect/reflect.context';
 import { AnnotationRegistry, AnnotationSelector } from './annotation.registry';
 import { annotations } from './annotations';
 
@@ -50,7 +51,9 @@ function setup() {
   B = class B {};
   X = class X {};
   annotationRegistry =
-    configureTestingContext().get<AnnotationRegistry>('annotationRegistry');
+    ReflectContext.configureTesting().get<AnnotationRegistry>(
+      'annotationRegistry',
+    );
 
   const af = new AnnotationFactory('test');
   A1Annotation = af.create('A1Annotation');

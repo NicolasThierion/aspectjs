@@ -1,5 +1,5 @@
-export function getProto(
-  target: Record<string, any> | Function
+export function getPrototype(
+  target: Record<string, any> | Function,
 ): Record<string, any> & { constructor?: new (...args: any[]) => any } {
   if (isFunction(target)) {
     return target.prototype;
@@ -12,7 +12,7 @@ export function getProto(
 }
 
 export function isFunction(
-  value: unknown
+  value: unknown,
 ): value is (...args: unknown[]) => unknown {
   return typeof value === 'function';
 }

@@ -2,22 +2,12 @@
  * Returns an object to store global values across the framework
  */
 
-import { assert } from '@aspectjs/common/utils';
+import { assert, setDebug } from '@aspectjs/common/utils';
 import { _AnnotationsFactoryHooksRegistryModule } from '../annotation/factory/annotation-factory.module';
-import type { _AnnotationFactoryHooksRegistry } from '../annotation/factory/annotations-hooks.registry';
-import {
-  type AnnotationRegistry,
-  _AnnotationRegistryModule,
-} from '../annotation/registry/annotation.registry';
-import { AnnotationTargetFactoryModule } from '../annotation/target/annotation-target-factory.module';
-import type { AnnotationTargetFactory } from '../annotation/target/annotation-target.factory';
+import { _AnnotationRegistryModule } from '../annotation/registry/annotation-registry.module';
+import { _AnnotationTargetFactoryModule } from '../annotation/target/annotation-target-factory.module';
 import type { ReflectContextModule } from './reflect-context-module.type';
-
-interface KnownReflectContextProviders {
-  annotationFactoryHooksRegistry: _AnnotationFactoryHooksRegistry;
-  annotationRegistry: AnnotationRegistry;
-  annotationTargetFactory: AnnotationTargetFactory;
-}
+import type { KnownReflectContextProviders } from './reflect-known-providers';
 
 export interface ReflectContextProviders extends KnownReflectContextProviders {
   [k: string]: any;
@@ -28,13 +18,9 @@ export class ReflectContext {
   protected modules: ReflectContextModule[] = [
     new _AnnotationRegistryModule(),
     new _AnnotationsFactoryHooksRegistryModule(),
-    new AnnotationTargetFactoryModule(),
+    new _AnnotationTargetFactoryModule(),
   ];
   protected providers: ReflectContextProviders = {} as ReflectContextProviders;
-
-  constructor(modules: ReflectContextModule[] = []) {
-    this.modules.push(...modules);
-  }
 
   bootstrap() {
     if (this.bootstrapped) {
@@ -57,12 +43,15 @@ export class ReflectContext {
   addModules(...modules: ReflectContextModule[]) {
     assert(!this.bootstrapped);
     this.modules.push(...modules);
+    return this;
   }
 
   set<
     T extends KnownReflectContextProviders[N],
     N extends keyof KnownReflectContextProviders = keyof KnownReflectContextProviders,
-  >(name: N, provider: T): void {
+  >(name: N, provider: T): void;
+  set<T = unknown, N extends string = string>(name: N, provider: T): void;
+  set<T, N extends string>(name: N, provider: T): void {
     if (this.providers[name]) {
       console.warn(
         `Provider ${
@@ -77,7 +66,9 @@ export class ReflectContext {
   get<
     T extends KnownReflectContextProviders[N],
     N extends keyof KnownReflectContextProviders = keyof KnownReflectContextProviders,
-  >(name: N): T {
+  >(name: N): T;
+  get<T = unknown, N extends string = string>(name: N): T;
+  get<T, N extends string>(name: N): T {
     if (!this.bootstrapped) {
       this.bootstrap();
     }
@@ -100,13 +91,17 @@ export class ReflectContext {
   }
 
   static configureTesting(
-    reflectContextModules?: ReflectContextModule[],
-  ): TestingContext {
-    return (_context = new TestingContext(reflectContextModules));
+    reflectContextModules: ReflectContextModule[] = [],
+  ): TestingReflectContext {
+    setDebug(true);
+
+    return (_context = new TestingReflectContext().addModules(
+      ...reflectContextModules,
+    ));
   }
 }
 
-export class TestingContext extends ReflectContext {
+export class TestingReflectContext extends ReflectContext {
   readonly defaultModules = this.modules;
   readonly defaultProviders = this.providers;
 

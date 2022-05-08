@@ -1,7 +1,7 @@
 import type { DecoratorType } from '../annotation.types';
 
-export type Prototype<X = unknown> = Record<string, unknown> & {
-  constructor: new (...args: any[]) => X;
+export type Prototype<X extends object = object> = Record<string, unknown> & {
+  constructor: new (...args: unknown[]) => X;
 };
 
 export class AnnotationTargetRef {
@@ -12,7 +12,7 @@ export class AnnotationTargetRef {
 }
 interface _BaseAnnotationTarget<
   T extends DecoratorType = DecoratorType,
-  X = unknown
+  X = unknown,
 > {
   readonly type: T;
   readonly proto: Prototype;
@@ -52,7 +52,7 @@ export interface ParameterAnnotationTarget<X = unknown>
 
 export type AnnotationTarget<
   T extends DecoratorType = DecoratorType,
-  X = unknown
+  X = unknown,
 > = T extends DecoratorType.CLASS
   ? ClassAnnotationTarget<X>
   : T extends DecoratorType.PARAMETER

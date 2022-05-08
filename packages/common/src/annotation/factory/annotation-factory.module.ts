@@ -1,4 +1,4 @@
-import type { ReflectContext } from '../../reflect/context';
+import type { ReflectContext } from '../../reflect/reflect.context';
 import type { ReflectContextModule } from '../../reflect/reflect-context-module.type';
 import { _AnnotationFactoryHooksRegistry } from './annotations-hooks.registry';
 import { CALL_ANNOTATION_STUB } from './hooks/call-annotation-stub.hook';

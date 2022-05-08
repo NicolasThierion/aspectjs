@@ -1,1 +1,1 @@
-export type ConstryctorType<T = unknown> = new (...args: any[]) => T;
+export type ConstructorType<T = unknown> = new (...args: any[]) => T;

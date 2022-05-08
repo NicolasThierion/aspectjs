@@ -1,14 +1,11 @@
 import { assert } from '@aspectjs/common/utils';
-import type { ConstryctorType } from '../../constructor.type';
-import type { ReflectContext } from '../../reflect/context';
-import type { ReflectContextModule } from '../../reflect/reflect-context-module.type';
+import type { ConstructorType } from '../../constructor.type';
 import type { AnnotationContext } from '../annotation-context';
 import type { AnnotationRef } from '../annotation-ref';
 import { Annotation, DecoratorType } from '../annotation.types';
 import type { AnnotationTargetRef } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { DecoratorTargetArgs } from '../target/target-args';
-import { REGISTER_ANNOTATION_HOOK } from './hooks/register-annotation.hook';
 
 type ByAnnotationSet = {
   byClassTargetRef: Map<AnnotationTargetRef, AnnotationContext>;
@@ -74,7 +71,7 @@ export class AnnotationSelector {
   onClass(type?: any): AnnotationContext<DecoratorType.CLASS>[] {
     throw new Error('not implemented');
   }
-  all<T = unknown>(type?: T | ConstryctorType<T>): AnnotationContext[] {
+  all<T = unknown>(type?: T | ConstructorType<T>): AnnotationContext[] {
     return this._find(
       [
         DecoratorType.CLASS,
@@ -106,7 +103,7 @@ export class AnnotationSelector {
 
   private _find<T>(
     decoratorTypes: DecoratorType[],
-    type?: T | ConstryctorType<T>,
+    type?: T | ConstructorType<T>,
     propertyKey?: keyof T,
   ): AnnotationContext[] {
     let classTargetRef: AnnotationTargetRef | undefined = undefined;
@@ -128,19 +125,6 @@ export class AnnotationSelector {
       classTargetRef,
       propertyKey,
     );
-  }
-}
-
-export class _AnnotationRegistryModule implements ReflectContextModule {
-  order = 100;
-  bootstrap(context: ReflectContext): void {
-    const targetFactory = context.get('annotationTargetFactory');
-    const annotationRegistry = new AnnotationRegistry(targetFactory);
-    context
-      .get('annotationFactoryHooksRegistry')
-      .add(REGISTER_ANNOTATION_HOOK(targetFactory, annotationRegistry));
-
-    context.set('annotationRegistry', annotationRegistry);
   }
 }
 

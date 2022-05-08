@@ -1,4 +1,4 @@
-import type { ReflectContext } from './context';
+import type { ReflectContext } from './reflect.context';
 
 export interface ReflectContextModule {
   order?: number;

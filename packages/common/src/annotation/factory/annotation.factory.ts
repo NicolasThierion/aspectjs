@@ -11,7 +11,7 @@ import type {
 } from '../annotation.types';
 import type { AnnotationStub } from '../annotation.types';
 import { AnnotationRef } from '../annotation-ref';
-import { reflectContext } from '../../reflect/context';
+import { reflectContext } from '../../reflect/reflect.context';
 
 let anonymousAnnotationId = 0;
 
@@ -32,34 +32,34 @@ export class AnnotationFactory {
   }
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void,
+    S extends AnnotationStub<T> = (...args: any[]) => void,
   >(name?: string, annotationStub?: S): Annotation<T, S>;
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void,
+    S extends AnnotationStub<T> = (...args: any[]) => void,
   >(annotationStub?: S): Annotation<T, S>;
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void,
-  >(opts: AnnotationCreateOptions<T, S>): Annotation<T, S>;
+    S extends AnnotationStub<T> = (...args: any[]) => void,
+  >(init: AnnotationCreateOptions<T, S>): Annotation<T, S>;
   create<
     T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = () => void,
+    S extends AnnotationStub<T> = (...args: any[]) => void,
   >(
-    opts?: string | S | AnnotationCreateOptions<T, S>,
+    init?: string | S | AnnotationCreateOptions<T, S>,
     annotationStub?: S,
   ): Annotation<T, S> {
-    const _opts = typeof opts === 'object' ? opts : {};
+    const _opts = typeof init === 'object' ? init : {};
 
     if (typeof annotationStub === 'function') {
       _opts.name = annotationStub.name;
     }
-    if (typeof opts === 'string') {
-      _opts.name = opts;
+    if (typeof init === 'string') {
+      _opts.name = init;
       _opts.annotationStub = annotationStub;
-    } else if (typeof opts === 'function') {
-      _opts.name = opts.name;
-      _opts.annotationStub = opts;
+    } else if (typeof init === 'function') {
+      _opts.name = init.name;
+      _opts.annotationStub = init;
     }
 
     const groupId = this.groupId;
@@ -87,7 +87,11 @@ export class AnnotationFactory {
       return [
         ...reflectContext().get('annotationFactoryHooksRegistry').values(),
       ]
-        .sort((c1, c2) => c1.order - c2.order)
+        .sort(
+          (c1, c2) =>
+            (c1.order ?? Number.MAX_SAFE_INTEGER) -
+            (c2.order ?? Number.MAX_SAFE_INTEGER - 1),
+        )
         .reduce((decoree, { name, decorator }) => {
           try {
             decoree =

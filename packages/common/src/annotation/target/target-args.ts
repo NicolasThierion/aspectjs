@@ -1,5 +1,5 @@
 import {
-  getProto,
+  getPrototype,
   isFunction,
   isNumber,
   isObject,
@@ -15,7 +15,7 @@ export interface DecoratorLocation {
 }
 
 export abstract class DecoratorTargetArgs<
-  T extends DecoratorType = DecoratorType
+  T extends DecoratorType = DecoratorType,
 > implements DecoratorLocation
 {
   readonly proto!: Prototype;
@@ -25,7 +25,7 @@ export abstract class DecoratorTargetArgs<
   readonly descriptor?: PropertyDescriptor;
 
   static of<T extends DecoratorType = DecoratorType>(
-    decoratorArgs: any[]
+    decoratorArgs: any[],
   ): DecoratorTargetArgs<T> {
     // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
     // PropertyAnnotation = (target: Object, propertyKey: string | symbol) => void;
@@ -40,9 +40,9 @@ export abstract class DecoratorTargetArgs<
     const parameterIndex: number | undefined = isNumber(decoratorArgs[2])
       ? decoratorArgs[2]
       : undefined;
-    const proto = getProto(target);
+    const proto = getPrototype(target);
     const descriptor: PropertyDescriptor | undefined = isObject(
-      decoratorArgs[2]
+      decoratorArgs[2],
     )
       ? decoratorArgs[2]
       : undefined;
@@ -50,7 +50,7 @@ export abstract class DecoratorTargetArgs<
     const type = inferTypeFromArgs(
       propertyKey,
       parameterIndex,
-      descriptor
+      descriptor,
     ) as T;
 
     return {
@@ -66,7 +66,7 @@ export abstract class DecoratorTargetArgs<
 function inferTypeFromArgs(
   propertyKey?: string,
   parameterIndex?: number,
-  descriptor?: PropertyDescriptor
+  descriptor?: PropertyDescriptor,
 ): DecoratorType {
   let type: DecoratorType;
   if (isNumber(parameterIndex)) {

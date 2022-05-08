@@ -17,7 +17,7 @@ export type AnnotationFactoryHook<
     annotation: Annotation<T>,
     annotationArgs: unknown[],
     annotationStub: S,
-  ) => Decorator | void;
-  order: number;
+  ) => Decorator<T> | void;
+  order?: number;
   name: string;
 };
