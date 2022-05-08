@@ -1,5 +1,5 @@
 import { AnnotationFactory, TestingReflectContext } from '@aspectjs/common';
-import { configureTestingContext } from '@aspectjs/common/testing';
+import { configureReflectTestingContext } from '@aspectjs/common/testing';
 import type { ConstructorType } from 'packages/common/src/constructor.type';
 import { Aspect } from './aspect.annotation';
 import { AspectModule } from './aspect.module';
@@ -10,7 +10,7 @@ describe('AspectModule', () => {
   let context!: TestingReflectContext;
   beforeEach(() => {
     context?.reset();
-    context = configureTestingContext(new AspectModule());
+    context = configureReflectTestingContext(new AspectModule());
   });
   it('adds a new AspectRegistry provider to the ReflectContext', () => {
     expect(context.has('aspectRegistry'));
@@ -24,7 +24,7 @@ describe('AspectRegistry', () => {
 
   beforeEach(() => {
     context?.reset();
-    context = configureTestingContext(new AspectModule());
+    context = configureReflectTestingContext(new AspectModule());
     aspectRegistry = context.get('aspectRegistry');
   });
 

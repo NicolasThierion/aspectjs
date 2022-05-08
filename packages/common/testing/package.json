@@ -1,0 +1,7 @@
+{
+  "name": "@aspectjs/common-testing",
+  "version": "0.3.0",
+  "description": "Aspectjs - testing utils for common features",
+  "license": "MIT",
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>"
+}

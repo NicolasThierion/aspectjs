@@ -4,12 +4,12 @@ require('require-json5').replace();
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig.json');
 const { resolve } = require('path');
-const pathsConfig = Object.entries(compilerOptions.paths).reduce(
+const pathsConfig = Object.entries(compilerOptions.paths ?? {}).reduce(
   (pathsConfig, [alias, paths]) => {
     pathsConfig[alias] = [].concat(paths).map((p) => resolve(__dirname, p));
     return pathsConfig;
   },
-  {}
+  {},
 );
 /**
  * An object with Jest options.

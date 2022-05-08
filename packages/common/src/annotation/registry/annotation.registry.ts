@@ -68,9 +68,6 @@ export class AnnotationSelector {
     private readonly annotationsRefs: AnnotationRef[],
   ) {}
 
-  onClass(type?: any): AnnotationContext<DecoratorType.CLASS>[] {
-    throw new Error('not implemented');
-  }
   all<T = unknown>(type?: T | ConstructorType<T>): AnnotationContext[] {
     return this._find(
       [
@@ -81,6 +78,11 @@ export class AnnotationSelector {
       ],
       type,
     );
+  }
+  onClass<T = unknown>(
+    type?: T | ConstructorType<T>,
+  ): AnnotationContext<DecoratorType.CLASS>[] {
+    return this._find([DecoratorType.CLASS], type);
   }
   onMethod<T = any>(
     type?: T,

@@ -44,6 +44,26 @@
       "runtimeVersion": "16",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "rollup common",
+      "runtimeExecutable": "npm",
+      "cwd": "${workspaceFolder}/packages/common",
+      "runtimeVersion": "16",
+      "runtimeArgs": ["run", "build"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "rollup common:testing",
+      "runtimeExecutable": "npm",
+      "cwd": "${workspaceFolder}/packages/common",
+      "runtimeVersion": "16",
+      "runtimeArgs": ["run", "build:testing"],
+      "console": "integratedTerminal"
     }
   ]
 }

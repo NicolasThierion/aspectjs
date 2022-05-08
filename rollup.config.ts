@@ -4,7 +4,9 @@ import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
 
 import type { OutputOptions, RollupOptions } from 'rollup';
-import { resolve } from 'path';
+import { resolve, relative, join } from 'path';
+import { cwd } from 'process';
+// This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
 interface PackageJson {
   name: string;
   version: string;
@@ -12,7 +14,37 @@ interface PackageJson {
   license: string;
 }
 
-export const createConfig = (name: string, pkg: PackageJson) => {
+export const createConfig = (
+  name: string,
+  options: {
+    pkg: PackageJson;
+    tsconfig: string;
+
+    input?: string;
+    typesInput?: string;
+  },
+) => {
+  options.input = options.input ?? './index.ts';
+
+  options.typesInput =
+    options.typesInput ??
+    join(
+      './dist/types/',
+      relative(cwd(), options.input).replace(/\.ts$/, '.d.ts'),
+    );
+
+  const pkg = options.pkg;
+
+  const external = [
+    '@aspectjs/common',
+    '@aspectjs/common/testing',
+    '@aspectjs/common/utils',
+    '@aspectjs/core',
+  ];
+
+  // const external = (moduleId: string) => {
+  //   return !moduleId.startsWith('.') && !moduleId.startsWith('');
+  // };
   /**
    * Comment with library information to be appended in the generated bundles.
    */
@@ -31,10 +63,16 @@ export const createConfig = (name: string, pkg: PackageJson) => {
   function createOutputOptions(options: Partial<OutputOptions>): OutputOptions {
     return {
       banner,
-      name,
+      name: `${pkg.name.replace('@', '').replace('/', '-')}`,
       exports: 'named',
       sourcemap: true,
       ...options,
+      globals: {
+        '@aspectjs/common': 'aspectjs-common',
+        '@aspectjs/common/testing': 'aspectjs-common-testing',
+        '@aspectjs/common/utils': 'aspectjs-common-utils',
+        '@aspectjs/core': 'aspectjs-core',
+      },
     };
   }
 
@@ -42,7 +80,7 @@ export const createConfig = (name: string, pkg: PackageJson) => {
    * @type {import('rollup').RollupOptions}
    */
   const bundleOptions: RollupOptions = {
-    input: './src/index.ts',
+    input: options.input,
     output: [
       // CommonJS
       createOutputOptions({
@@ -66,7 +104,7 @@ export const createConfig = (name: string, pkg: PackageJson) => {
         file: `./dist/bundles/${name}.umd.js`,
         format: 'umd',
       }),
-      // UMD
+      // UMD min
       createOutputOptions({
         file: `./dist/bundles/${name}.umd.min.js`,
         format: 'umd',
@@ -82,38 +120,46 @@ export const createConfig = (name: string, pkg: PackageJson) => {
     // ],
     plugins: [
       typescript({
-        tsconfig: resolve(__dirname, './tsconfig.bundle.json'),
-        // explicitely disable declarations, as a rollup config is dedicated for them
+        // cacheDir: '.rollup.tscache',
+        tsconfig:
+          options.tsconfig ?? resolve(__dirname, './tsconfig.bundle.json'),
+        // explicitly disable declarations, as a rollup config is dedicated for them
         declaration: false,
         declarationDir: undefined,
         declarationMap: undefined,
+        module: 'esnext',
       }),
     ],
+    external,
   };
 
   const dtsOptions: RollupOptions = {
-    input: './src/index.ts',
+    input: options.input,
 
     // .d.ts
     output: [
-      {
-        file: `./dist/${name}.mjs`,
-        format: 'es',
+      createOutputOptions({
+        file: `./dist/${name}.cjs`,
+        format: 'cjs',
         sourcemap: true,
-      },
+      }),
     ],
     // types
     plugins: [
       typescript({
-        tsconfig: resolve(__dirname, './tsconfig.bundle.json'),
+        tsconfig: /*
+          options.tsconfig ?? */ resolve(__dirname, './tsconfig.bundle.json'),
         declaration: true,
         emitDeclarationOnly: true,
+        skipLibCheck: true,
+        // paths: {},
       }),
     ],
+    external,
   };
 
   const dtsBundleOptions: RollupOptions = {
-    input: './dist/types/index.d.ts',
+    input: options.typesInput,
     // .d.ts bundle
     output: [{ file: `dist/${name}.d.ts`, format: 'es' }],
     plugins: [
@@ -123,7 +169,9 @@ export const createConfig = (name: string, pkg: PackageJson) => {
         hook: 'buildEnd',
       }),
     ],
+    external,
   };
+  console.debug();
 
   return [bundleOptions, dtsOptions, dtsBundleOptions];
 };

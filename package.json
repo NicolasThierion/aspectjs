@@ -1,7 +1,7 @@
 {
   "name": "@aspectjs/parent",
-  "version": "0.2.0",
-  "description": "Aspectjs parent project",
+  "version": "0.3.0",
+  "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "private": true,
   "scripts": {
     "test": "lerna run test --stream",
@@ -46,5 +46,8 @@
     "typedoc": "^0.22.11",
     "typedoc-plugin-markdown": "^3.11.13",
     "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "tslib": "^2.4.0"
   }
 }

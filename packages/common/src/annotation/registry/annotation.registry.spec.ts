@@ -1,5 +1,4 @@
 import { AnnotationFactory, type Annotation } from '@aspectjs/common';
-import { configureTestingContext } from '@aspectjs/common/testing';
 import { ReflectContext } from '../../reflect/reflect.context';
 import { AnnotationRegistry, AnnotationSelector } from './annotation.registry';
 import { annotations } from './annotations';
@@ -96,7 +95,7 @@ function setup() {
     fn1(
       @A1Annotation()
       @A1ParameterAnnotation()
-      arg: string,
+      _arg: string,
     ) {}
 
     @A2Annotation()
@@ -104,7 +103,7 @@ function setup() {
     fn2(
       @A2Annotation()
       @A2ParameterAnnotation()
-      arg: string,
+      _arg: string,
     ) {}
 
     fnX() {}
@@ -159,7 +158,7 @@ function setup() {
     fn1(
       @B1Annotation()
       @B1ParameterAnnotation()
-      arg: string,
+      _arg: string,
     ) {}
 
     @B2Annotation()
@@ -167,7 +166,7 @@ function setup() {
     fn2(
       @B2Annotation()
       @B2ParameterAnnotation()
-      arg: string,
+      _arg: string,
     ) {}
 
     fnX() {}
@@ -207,7 +206,7 @@ function setup() {
   class _X extends X {
     prop!: string;
 
-    fn(arg: string) {}
+    fn(_arg: string) {}
   }
   X = _X;
   annotationRegistry.find = jest.fn(annotationRegistry.find);
@@ -245,7 +244,7 @@ describe('AnnotationRegistry', () => {
     describe('.all()', () => {
       it('returns all annotations found all over the code', () => {
         expect(s.all().map((a) => a.annotation)).toEqual(
-          expect.arrayContaining(A_ANNOTATIONS),
+          expect.arrayContaining([...A_ANNOTATIONS, ...B_ANNOTATIONS]),
         );
       });
     });
@@ -277,6 +276,25 @@ describe('AnnotationRegistry', () => {
         it('returns empty array', () => {
           expect(s.all(new X())).toEqual([]);
         });
+      });
+    });
+
+    describe(`.onClass()`, () => {
+      it('returns all annotations found on all classes', () => {
+        expect(s.onClass().map((a) => a.annotation)).toEqual(
+          expect.arrayContaining([
+            ...A_CLASS_ANNOTATIONS,
+            ...B_CLASS_ANNOTATIONS,
+          ]),
+        );
+      });
+    });
+
+    describe(`.onClass(A)`, () => {
+      it('returns all annotations found on class A', () => {
+        expect(s.onClass().map((a) => a.annotation)).toEqual(
+          expect.arrayContaining(A_CLASS_ANNOTATIONS),
+        );
       });
     });
     describe(`.onMethod()`, () => {

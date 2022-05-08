@@ -15,5 +15,6 @@
     "declaration": true,
     "declarationDir": "types/",
     "declarationMap": true
-  }
+  },
+  "exclude": ["**/*.spec.ts"]
 }
