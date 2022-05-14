@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { assert, isFunction } from '@aspectjs/common/utils';
-import type {
+import {
   Annotation,
   AnnotationType,
   AnyDecorator,
@@ -15,7 +15,10 @@ import { reflectContext } from '../../reflect/reflect.context';
 
 let anonymousAnnotationId = 0;
 
-interface AnnotationCreateOptions<T extends AnnotationType, S> {
+interface AnnotationCreateOptions<
+  T extends AnnotationType,
+  S extends AnnotationStub<T>,
+> {
   name?: string;
   annotationStub?: S;
   type?: T;
@@ -30,36 +33,50 @@ export class AnnotationFactory {
   constructor(groupId: string) {
     this.groupId = groupId;
   }
-  create<
-    T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = (...args: any[]) => void,
-  >(name?: string, annotationStub?: S): Annotation<T, S>;
-  create<
-    T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = (...args: any[]) => void,
-  >(annotationStub?: S): Annotation<T, S>;
-  create<
-    T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = (...args: any[]) => void,
-  >(init: AnnotationCreateOptions<T, S>): Annotation<T, S>;
-  create<
-    T extends AnnotationType = AnnotationType.ANY,
-    S extends AnnotationStub<T> = (...args: any[]) => void,
-  >(
-    init?: string | S | AnnotationCreateOptions<T, S>,
+  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+    type?: T,
+    name?: string,
+  ): Annotation<T, S>;
+
+  create<S extends AnnotationStub<AnnotationType.ANY>>(
+    name?: string,
+  ): Annotation<AnnotationType.ANY, S>;
+
+  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+    type?: T,
     annotationStub?: S,
+  ): Annotation<T, S>;
+
+  create<S extends AnnotationStub<AnnotationType.ANY>>(
+    annotationStub?: S,
+  ): Annotation<AnnotationType.ANY, S>;
+
+  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+    init?: AnnotationCreateOptions<T, S>,
+  ): Annotation<T, S>;
+  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+    init?: string | S | AnnotationCreateOptions<T, S> | AnnotationType,
+    annotationStub?: S | string,
   ): Annotation<T, S> {
     const _opts = typeof init === 'object' ? init : {};
 
     if (typeof annotationStub === 'function') {
-      _opts.name = annotationStub.name;
+      _opts.annotationStub = annotationStub;
+    } else if (typeof annotationStub === 'string') {
+      _opts.name = annotationStub;
     }
+
+    if (typeof _opts.annotationStub === 'function') {
+      _opts.name = _opts.annotationStub.name;
+    }
+
     if (typeof init === 'string') {
       _opts.name = init;
-      _opts.annotationStub = annotationStub;
     } else if (typeof init === 'function') {
       _opts.name = init.name;
       _opts.annotationStub = init;
+    } else if (typeof init === typeof AnnotationType) {
+      _opts.type = init as T;
     }
 
     const groupId = this.groupId;
@@ -97,6 +114,7 @@ export class AnnotationFactory {
             decoree =
               (decorator as any)
                 .apply(this, [annotation, annotationArgs, annotationStub])
+                // TODO pass annotationTarget instead of targetArgs
                 ?.apply(this, targetArgs) ?? decoree;
             return decoree;
           } catch (e) {

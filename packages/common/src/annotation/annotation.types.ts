@@ -26,7 +26,6 @@ type MethodDecorator = <X>(
 ) => TypedPropertyDescriptor<X>;
 
 export type AnnotationStub<T extends AnnotationType = AnnotationType> = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any[]
 ) => Decorator<T> | void;
 
@@ -39,7 +38,7 @@ export type DecoratorFactory<
  * An Annotation is an EcmaScript decorator with no behavior.
  */
 export type Annotation<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationType = AnnotationType.ANY,
   S extends AnnotationStub<T> = AnnotationStub<T>,
 > = AnnotationRef & ((...args: Parameters<S & AnnotationRef>) => Decorator<T>);
 

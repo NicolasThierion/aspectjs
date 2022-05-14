@@ -9,7 +9,8 @@ import { CALL_ANNOTATION_STUB } from './hooks/call-annotation-stub.hook';
 export class _AnnotationsFactoryHooksRegistryModule
   implements ReflectContextModule
 {
-  order = 0;
+  readonly name = 'aspectjs:annotationsFactoryHooksRegistryModule';
+  readonly order = 0;
   bootstrap(context: ReflectContext): void {
     context.set(
       'annotationFactoryHooksRegistry',

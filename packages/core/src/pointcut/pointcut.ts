@@ -46,7 +46,7 @@ export interface BeforePointcut<
 
 export interface AfterReturnPointcut<
   T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.AFTERRETURN, T> {}
+> extends Pointcut<PointcutPhase.AFTER_RETURN, T> {}
 
 export interface AfterPointcut<
   T extends PointcutTargetType = PointcutTargetType,
@@ -54,4 +54,4 @@ export interface AfterPointcut<
 
 export interface AfterThrowPointcut<
   T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.AFTERTHROW, T> {}
+> extends Pointcut<PointcutPhase.AFTER_THROW, T> {}

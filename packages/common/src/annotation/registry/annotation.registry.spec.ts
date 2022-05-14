@@ -264,20 +264,20 @@ describe('AnnotationRegistry', () => {
       });
     });
 
-    describe(`.all(someClassInstance);`, () => {
-      describe(`if "SomeClass" has annotations`, () => {
-        it('returns all annotations found within class SomeClass', () => {
-          expect(s.all(new A()).map((a) => a.annotation)).toEqual(
-            expect.arrayContaining(A_ANNOTATIONS),
-          );
-        });
-      });
-      describe(`if "SomeClass" has no annotation`, () => {
-        it('returns empty array', () => {
-          expect(s.all(new X())).toEqual([]);
-        });
-      });
-    });
+    // describe(`.all(someClassInstance);`, () => {
+    //   describe(`if "SomeClass" has annotations`, () => {
+    //     it('returns all annotations found within class SomeClass', () => {
+    //       expect(s.all(new A()).map((a) => a.annotation)).toEqual(
+    //         expect.arrayContaining(A_ANNOTATIONS),
+    //       );
+    //     });
+    //   });
+    //   describe(`if "SomeClass" has no annotation`, () => {
+    //     it('returns empty array', () => {
+    //       expect(s.all(new X())).toEqual([]);
+    //     });
+    //   });
+    // });
 
     describe(`.onClass()`, () => {
       it('returns all annotations found on all classes', () => {
@@ -461,22 +461,22 @@ describe('AnnotationRegistry', () => {
         });
       });
 
-      describe(`.all(someClassInstance);`, () => {
-        describe(`if "SomeClass" has "AAnnotation" annotations`, () => {
-          it('returns all annotations found within class SomeClass', () => {
-            expect(s.all(new A()).map((a) => a.annotation)).toEqual(
-              expect.arrayContaining(
-                A_ANNOTATIONS.filter((a) => a === A1Annotation),
-              ),
-            );
-          });
-        });
-        describe(`if "SomeClass" has no "AAnnotation" annotation`, () => {
-          it('returns empty array', () => {
-            expect(s.all(new B())).toEqual([]);
-          });
-        });
-      });
+      // describe(`.all(someClassInstance);`, () => {
+      //   describe(`if "SomeClass" has "AAnnotation" annotations`, () => {
+      //     it('returns all annotations found within class SomeClass', () => {
+      //       expect(s.all(new A()).map((a) => a.annotation)).toEqual(
+      //         expect.arrayContaining(
+      //           A_ANNOTATIONS.filter((a) => a === A1Annotation),
+      //         ),
+      //       );
+      //     });
+      //   });
+      //   describe(`if "SomeClass" has no "AAnnotation" annotation`, () => {
+      //     it('returns empty array', () => {
+      //       expect(s.all(new B())).toEqual([]);
+      //     });
+      //   });
+      // });
       describe(`.onMethod()`, () => {
         it('returns all "AAnnotation" annotations found on all methods', () => {
           expect(s.onMethod().map((a) => a.annotation)).toEqual(

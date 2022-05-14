@@ -23,7 +23,7 @@ class _AnnotationsSet {
   getAnnotations(
     decoratorTypes: DecoratorType[],
     annotationRefs: AnnotationRef[],
-    classTargerRef?: AnnotationTargetRef | undefined,
+    classTargetRef?: AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
   ): AnnotationContext[] {
     const annotationsInClass = decoratorTypes
@@ -36,7 +36,7 @@ class _AnnotationsSet {
       .filter((set) => !!set)
       .map((set) => set!.byClassTargetRef)
       .flatMap((map) =>
-        classTargerRef ? map?.get(classTargerRef) ?? [] : [...map.values()],
+        classTargetRef ? map?.get(classTargetRef) ?? [] : [...map.values()],
       );
 
     if (propertyKey === undefined) {
@@ -68,7 +68,7 @@ export class AnnotationSelector {
     private readonly annotationsRefs: AnnotationRef[],
   ) {}
 
-  all<T = unknown>(type?: T | ConstructorType<T>): AnnotationContext[] {
+  all<T = unknown>(type?: ConstructorType<T>): AnnotationContext[] {
     return this._find(
       [
         DecoratorType.CLASS,
@@ -80,24 +80,24 @@ export class AnnotationSelector {
     );
   }
   onClass<T = unknown>(
-    type?: T | ConstructorType<T>,
+    type?: ConstructorType<T>,
   ): AnnotationContext<DecoratorType.CLASS>[] {
     return this._find([DecoratorType.CLASS], type);
   }
   onMethod<T = any>(
-    type?: T,
+    type?: ConstructorType<T>,
     propertyKey?: keyof T,
   ): AnnotationContext<DecoratorType.METHOD>[] {
     return this._find([DecoratorType.METHOD], type, propertyKey);
   }
   onProperty<T>(
-    type?: T,
+    type?: ConstructorType<T>,
     propertyKey?: keyof T,
   ): AnnotationContext<DecoratorType.PROPERTY>[] {
     return this._find([DecoratorType.PROPERTY], type, propertyKey);
   }
   onArgs<T>(
-    type?: T,
+    type?: ConstructorType<T>,
     propertyKey?: keyof T,
   ): AnnotationContext<DecoratorType.PARAMETER>[] {
     return this._find([DecoratorType.PARAMETER], type, propertyKey);
@@ -105,7 +105,7 @@ export class AnnotationSelector {
 
   private _find<T>(
     decoratorTypes: DecoratorType[],
-    type?: T | ConstructorType<T>,
+    type?: ConstructorType<T>,
     propertyKey?: keyof T,
   ): AnnotationContext[] {
     let classTargetRef: AnnotationTargetRef | undefined = undefined;

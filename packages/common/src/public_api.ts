@@ -1,3 +1,4 @@
+export * from './annotation/target/annotation-target';
 export * from './annotation/target/target-args';
 export * from './annotation/annotation.types';
 export * from './annotation/annotation-ref';

@@ -25,7 +25,7 @@ interface _BaseAnnotationTarget<
 
 export interface ClassAnnotationTarget<X = unknown>
   extends _BaseAnnotationTarget<DecoratorType.CLASS, X> {
-  readonly parent?: ClassAnnotationTarget<any>;
+  readonly parent?: ClassAnnotationTarget<unknown>;
 }
 
 export interface PropertyAnnotationTarget<X = unknown>

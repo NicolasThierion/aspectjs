@@ -1,4 +1,5 @@
 import { assert, getMetadata, isUndefined } from '@aspectjs/common/utils';
+import type { ConstructorType } from '../../constructor.type';
 import { DecoratorType } from '../annotation.types';
 import {
   AnnotationTarget,
@@ -70,11 +71,19 @@ export class AnnotationTargetFactory {
     );
   }
 
+  find<T extends DecoratorType = DecoratorType, X = unknown>(
+    decoratorArgs: DecoratorTargetArgs<T>,
+  ): AnnotationTarget<T, X> {
+    const type = decoratorArgs.type;
+    const ref = this._REF_GENERATORS[type](decoratorArgs);
+
+    return this._findOrCreate(ref, decoratorArgs, false);
+  }
   private _findOrCreate<T extends DecoratorType = DecoratorType, X = unknown>(
     ref: AnnotationTargetRef,
     decoratorArgs: DecoratorTargetArgs<T>,
     save: boolean,
-  ) {
+  ): AnnotationTarget<T, X> {
     return getMetadata(
       ref.value,
       decoratorArgs.proto,
@@ -85,6 +94,9 @@ export class AnnotationTargetFactory {
     ) as AnnotationTarget<T, X>;
   }
 
+  get<T extends DecoratorType = DecoratorType, X = unknown>(
+    decoratorArgs: DecoratorTargetArgs<T>,
+  ): AnnotationTarget<T, X>;
   get<T extends DecoratorType = DecoratorType, X = unknown>(
     decoratorArgs: DecoratorTargetArgs<T>,
   ): AnnotationTarget<T, X> {
@@ -100,13 +112,36 @@ export class AnnotationTargetFactory {
     return target;
   }
 
-  find<T extends DecoratorType = DecoratorType, X = unknown>(
-    decoratorArgs: DecoratorTargetArgs<T>,
-  ): AnnotationTarget<T, X> | undefined {
-    const type = decoratorArgs.type;
-    const ref = this._REF_GENERATORS[type](decoratorArgs);
+  of<T extends DecoratorType = DecoratorType, X = unknown>(
+    target: ConstructorType<X>,
+  ): AnnotationTarget<T, X>;
 
-    return this._findOrCreate(ref, decoratorArgs, false);
+  of<T extends DecoratorType = DecoratorType, X = unknown>(
+    target: X,
+    propertyKey: string | symbol,
+  ): AnnotationTarget<T, X>;
+
+  of<T extends DecoratorType = DecoratorType, X = unknown>(
+    target: X,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ): AnnotationTarget<T, X>;
+
+  of<T extends DecoratorType = DecoratorType, X = unknown>(
+    target: X,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ): AnnotationTarget<T, X>;
+
+  of<T extends DecoratorType = DecoratorType, X = unknown>(
+    ...args: unknown[]
+  ): AnnotationTarget<T, X> {
+    // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
+    // PropertyAnnotation = (target: Object, propertyKey: string | symbol) => void;
+    // MethodAnnotation = <A>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<A>) => TypedPropertyDescriptor<A> | void;
+    // ParameterAnnotation = (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
+
+    return this.find(DecoratorTargetArgs.of(args));
   }
 }
 

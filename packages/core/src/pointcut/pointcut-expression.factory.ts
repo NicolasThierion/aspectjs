@@ -5,7 +5,7 @@ import { PointcutTargetType } from './pointcut-target.type';
 export class PointcutExpressionFactory<T extends PointcutTargetType> {
   constructor(private readonly targetType: T) {}
 
-  withAnyAnnotations(...annotations: Annotation[]): PointcutExpression<T> {
+  withAnnotations(...annotations: Annotation[]): PointcutExpression<T> {
     return new PointcutExpression({
       type: this.targetType,
       annotations,

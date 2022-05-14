@@ -2,7 +2,7 @@ export enum PointcutPhase {
   COMPILE = 'Compile',
   BEFORE = 'Before',
   AROUND = 'Around',
-  AFTERRETURN = 'AfterReturn',
-  AFTERTHROW = 'AfterThrow',
+  AFTER_RETURN = 'AfterReturn',
+  AFTER_THROW = 'AfterThrow',
   AFTER = 'After',
 }

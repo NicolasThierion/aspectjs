@@ -38,7 +38,9 @@
       "@aspectjs/common/testing": [
         "./packages/common/testing/src/public_api.ts"
       ],
-      "@aspectjs/common/utils": ["./packages/common/utils/src/public_api.ts"]
+      "@aspectjs/common/utils": ["./packages/common/utils/src/public_api.ts"],
+      "@aspectjs/core": ["./packages/core/src/public_api.ts"],
+      "@aspectjs/core/testing": ["./packages/core/testing/src/public_api.ts"]
     }
   }
 }
