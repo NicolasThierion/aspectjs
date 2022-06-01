@@ -12,7 +12,7 @@
       "runtimeVersion": "16",
       "outputCapture": "std",
       "console": "integratedTerminal",
-      "runtimeArgs": ["run", "test:unit"]
+      "runtimeArgs": ["run", "test"]
     },
     {
       "type": "node",
@@ -23,7 +23,7 @@
       "outputCapture": "std",
       "cwd": "${workspaceFolder}/packages/common",
       "console": "integratedTerminal",
-      "runtimeArgs": ["run", "test:unit"]
+      "runtimeArgs": ["run", "test"]
     },
     {
       "type": "node",
@@ -34,7 +34,7 @@
       "outputCapture": "std",
       "cwd": "${workspaceFolder}/packages/core",
       "console": "integratedTerminal",
-      "runtimeArgs": ["run", "test:unit"]
+      "runtimeArgs": ["run", "test"]
     },
     {
       "type": "node",

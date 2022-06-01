@@ -215,7 +215,7 @@ function _createParameterAnnotationTarget<X = unknown>(
     targetArgs.propertyKey!,
   )!;
 
-  const name = argsNames(targetArgs.proto[targetArgs.propertyKey!] as Function)[
+  const name = argsNames(targetArgs.proto[targetArgs.propertyKey!])[
     targetArgs.parameterIndex!
   ]!;
   assert(!!descriptor);
@@ -241,10 +241,10 @@ function _validateAnnotationTarget<
   );
 }
 
-function _parentClassTarget(
+function _parentClassTarget<X>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs,
-): ClassAnnotationTarget | undefined {
+): ClassAnnotationTarget<X> | undefined {
   const parentProto = Object.getPrototypeOf(targetArgs.proto);
 
   return parentProto === Object.prototype
@@ -254,17 +254,17 @@ function _parentClassTarget(
       ) as ClassAnnotationTarget);
 }
 
-function _declaringClassTarget(
+function _declaringClassTarget<X>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs,
-): ClassAnnotationTarget {
+): ClassAnnotationTarget<X> {
   return targetFactory.register({ ...targetArgs, type: DecoratorType.CLASS });
 }
 
-function _declaringMethodTarget(
+function _declaringMethodTarget<X>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs<DecoratorType.PARAMETER>,
-): MethodAnnotationTarget<unknown> {
+): MethodAnnotationTarget<X> {
   return targetFactory.register({
     proto: targetArgs.proto,
     propertyKey: targetArgs.propertyKey,
@@ -322,7 +322,7 @@ class MethodAnnotationTargetImpl<X>
 {
   readonly type = DecoratorType.METHOD;
   readonly proto: Prototype;
-  readonly propertyKey: string;
+  readonly propertyKey!: string;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
   readonly name: string;
   readonly label: string;
@@ -337,7 +337,7 @@ class MethodAnnotationTargetImpl<X>
   ) {
     super();
     this.proto = targetArgs.proto;
-    this.propertyKey = targetArgs.propertyKey!;
+    this.propertyKey = targetArgs.propertyKey as any;
     this.descriptor = targetArgs.descriptor!;
     this.name = target.name!;
     this.label = target.label!;
@@ -373,7 +373,7 @@ class PropertyAnnotationTargetImpl<X>
   extends AnnotationTargetImpl
   implements PropertyAnnotationTarget<X>
 {
-  readonly propertyKey: string;
+  readonly propertyKey!: string;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
   readonly type = DecoratorType.PROPERTY;
   readonly proto: Prototype;
@@ -417,8 +417,9 @@ class PropertyAnnotationTargetImpl<X>
   }
 }
 
-function argsNames(func: Function) {
-  return ((func as any) + '')
+function argsNames(func: unknown | ((...args: unknown[]) => unknown)) {
+  assert(typeof func === 'function');
+  return (func + '')
     .replace(/[/][/].*$/gm, '') // strip single-line comments
     .replace(/\s+/g, '') // strip white space
     .replace(/[/][*][^/*]*[*][/]/g, '') // strip multi-line comments
@@ -466,30 +467,33 @@ class ParameterAnnotationTargetImpl<X>
     ]);
   }
 
-  get declaringClass() {
+  get declaringClass(): ClassAnnotationTarget<X> {
     return (
       this._declaringClassTarget ??
-      (this._declaringClassTarget = _declaringClassTarget(
+      (this._declaringClassTarget = _declaringClassTarget<X>(
         this.targetFactory,
         this,
       ))
     );
   }
 
-  get parent() {
+  get parent(): MethodAnnotationTarget<X> {
     return (
       this._declaringMethodTarget ??
-      (this._declaringMethodTarget = _declaringMethodTarget(
+      (this._declaringMethodTarget = _declaringMethodTarget<X>(
         this.targetFactory,
         this,
       ))
     );
   }
 
-  get parentClass() {
+  get parentClass(): ClassAnnotationTarget<unknown> {
     return (
       this._parentClassTarget ??
-      (this._parentClassTarget = _parentClassTarget(this.targetFactory, this))
+      ((this._parentClassTarget = _parentClassTarget<unknown>(
+        this.targetFactory,
+        this,
+      )) as any)
     );
   }
 }

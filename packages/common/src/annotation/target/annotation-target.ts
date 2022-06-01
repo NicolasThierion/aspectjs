@@ -39,7 +39,7 @@ export interface MethodAnnotationTarget<X = unknown>
   extends _BaseAnnotationTarget<DecoratorType.METHOD, X> {
   readonly propertyKey: string;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
-  readonly parent: ClassAnnotationTarget<unknown>;
+  readonly parent: ClassAnnotationTarget<X>;
 }
 
 export interface ParameterAnnotationTarget<X = unknown>
@@ -47,7 +47,7 @@ export interface ParameterAnnotationTarget<X = unknown>
   readonly propertyKey: string;
   readonly parameterIndex: number;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
-  readonly parent: MethodAnnotationTarget<unknown>;
+  readonly parent: MethodAnnotationTarget<X>;
 }
 
 export type AnnotationTarget<

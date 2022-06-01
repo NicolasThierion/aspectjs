@@ -5,8 +5,8 @@ import { PointcutTargetType } from './pointcut-target.type';
 describe('PointcutExpression', () => {
   describe('.of(exp: string)', () => {
     let type: PointcutTargetType;
-    let name = '*';
-    let annotations = [
+    const name = '*';
+    const annotations = [
       new AnnotationRef('test:Test'),
       new AnnotationRef('test2:Test2'),
     ];

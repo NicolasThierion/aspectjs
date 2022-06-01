@@ -12,7 +12,7 @@ export class PointcutExpressionFactory<T extends PointcutTargetType> {
     });
   }
 
-  withAllAnnotations(...annotations: Annotation[]): PointcutExpression<T> {
+  withAllAnnotations(..._annotations: Annotation[]): PointcutExpression<T> {
     // TODO
     throw new Error('not implemented');
   }

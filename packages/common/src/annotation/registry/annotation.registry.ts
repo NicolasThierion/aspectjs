@@ -2,8 +2,11 @@ import { assert } from '@aspectjs/common/utils';
 import type { ConstructorType } from '../../constructor.type';
 import type { AnnotationContext } from '../annotation-context';
 import type { AnnotationRef } from '../annotation-ref';
-import { Annotation, DecoratorType } from '../annotation.types';
-import type { AnnotationTargetRef } from '../target/annotation-target';
+import { DecoratorType } from '../annotation.types';
+import type {
+  AnnotationTarget,
+  AnnotationTargetRef,
+} from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { DecoratorTargetArgs } from '../target/target-args';
 
@@ -68,7 +71,7 @@ export class AnnotationSelector {
     private readonly annotationsRefs: AnnotationRef[],
   ) {}
 
-  all<T = unknown>(type?: ConstructorType<T>): AnnotationContext[] {
+  all<X = unknown>(type?: ConstructorType<X>): AnnotationContext[] {
     return this._find(
       [
         DecoratorType.CLASS,
@@ -79,37 +82,45 @@ export class AnnotationSelector {
       type,
     );
   }
-  onClass<T = unknown>(
-    type?: ConstructorType<T>,
+  onClass<X = unknown>(
+    type?: ConstructorType<X>,
   ): AnnotationContext<DecoratorType.CLASS>[] {
     return this._find([DecoratorType.CLASS], type);
   }
-  onMethod<T = any>(
-    type?: ConstructorType<T>,
-    propertyKey?: keyof T,
+  onMethod<X = any>(
+    type?: ConstructorType<X>,
+    propertyKey?: keyof X,
   ): AnnotationContext<DecoratorType.METHOD>[] {
     return this._find([DecoratorType.METHOD], type, propertyKey);
   }
-  onProperty<T>(
-    type?: ConstructorType<T>,
-    propertyKey?: keyof T,
+  onProperty<X>(
+    type?: ConstructorType<X>,
+    propertyKey?: keyof X,
   ): AnnotationContext<DecoratorType.PROPERTY>[] {
     return this._find([DecoratorType.PROPERTY], type, propertyKey);
   }
-  onArgs<T>(
-    type?: ConstructorType<T>,
-    propertyKey?: keyof T,
+  onArgs<X>(
+    type?: ConstructorType<X>,
+    propertyKey?: keyof X,
   ): AnnotationContext<DecoratorType.PARAMETER>[] {
     return this._find([DecoratorType.PARAMETER], type, propertyKey);
   }
 
-  private _find<T>(
+  on<X>(target: AnnotationTarget<DecoratorType, X>): AnnotationContext[] {
+    return this._find(
+      [target.type],
+      target.proto.constructor,
+      (target as AnnotationTarget<DecoratorType.METHOD>).propertyKey as any,
+    );
+  }
+
+  private _find<X>(
     decoratorTypes: DecoratorType[],
-    type?: ConstructorType<T>,
-    propertyKey?: keyof T,
+    type?: ConstructorType<X>,
+    propertyKey?: keyof X,
   ): AnnotationContext[] {
     let classTargetRef: AnnotationTargetRef | undefined = undefined;
-    if (!!type) {
+    if (type) {
       const classTarget = this.targetFactory.find(
         DecoratorTargetArgs.of([type]),
       );
@@ -140,7 +151,7 @@ export class AnnotationRegistry {
   register(annotationContext: AnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
-  find(...annotations: Annotation[]): AnnotationSelector {
+  find(...annotations: AnnotationRef[]): AnnotationSelector {
     return new AnnotationSelector(
       this.targetFactory,
       this.annotationSet,

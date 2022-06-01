@@ -38,7 +38,7 @@ export type DecoratorFactory<
  * An Annotation is an EcmaScript decorator with no behavior.
  */
 export type Annotation<
-  T extends AnnotationType = AnnotationType.ANY,
+  T extends AnnotationType = AnnotationType,
   S extends AnnotationStub<T> = AnnotationStub<T>,
 > = AnnotationRef & ((...args: Parameters<S & AnnotationRef>) => Decorator<T>);
 

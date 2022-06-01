@@ -1,6 +1,6 @@
 import { configureReflectTestingContext } from '@aspectjs/common/testing';
 import type { ReflectContext } from '../../reflect/reflect.context';
-import type { Annotation } from '../annotation.types';
+import type { Annotation, AnnotationType } from '../annotation.types';
 import { AnnotationFactory } from '../factory/annotation.factory';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import {
@@ -24,10 +24,11 @@ describe('configureReflectContext()', () => {
 
 describe('AnnotationTriggerRegistry', () => {
   let context!: ReflectContext;
-  let annotation: Annotation;
-  let annotationFactory = new AnnotationFactory('test');
+  let annotation: Annotation<AnnotationType.ANY>;
+  const annotationFactory = new AnnotationFactory('test');
   let annotationTargetFactory: AnnotationTargetFactory;
   let annotationTriggerRegistry: AnnotationTriggerRegistry;
+  const annotationArgs = 'annotationArgs';
   beforeEach(() => {
     context = configureReflectTestingContext();
     annotation = annotationFactory.create();
@@ -47,11 +48,11 @@ describe('AnnotationTriggerRegistry', () => {
         target: annotationTargetFactory.of(Toto),
       };
       applyAnnotation = () => {
-        Toto = annotation()(Toto);
+        Toto = annotation(annotationArgs)(Toto);
       };
     });
-    describe('when a class is annotated with an annotation', () => {
-      describe('that matches <trigger.annotation>', () => {
+    describe('called before @SomeAnnotation() class SomeClass{}', () => {
+      describe('when <trigger.annotations> contains "SomeAnnotation"', () => {
         describe('and <trigger.target> matches that class', () => {
           beforeEach(() => {
             annotationTriggerRegistry.add(trigger);
@@ -61,6 +62,9 @@ describe('AnnotationTriggerRegistry', () => {
             expect(trigger.fn).not.toHaveBeenCalled();
             applyAnnotation();
             expect(trigger.fn).toHaveBeenCalledTimes(1);
+            expect(trigger.fn).toHaveBeenCalledWith(annotation, [
+              annotationArgs,
+            ]);
           });
         });
 
@@ -87,6 +91,23 @@ describe('AnnotationTriggerRegistry', () => {
           expect(trigger.fn).not.toHaveBeenCalled();
           applyAnnotation();
           expect(trigger.fn).not.toHaveBeenCalled();
+        });
+      });
+    });
+    describe('called after @SomeAnnotation() class SomeClass{}', () => {
+      describe('when <trigger.annotations> contains "SomeAnnotation"', () => {
+        describe('and <trigger.target> matches that class', () => {
+          beforeEach(() => {
+            applyAnnotation();
+            annotationTriggerRegistry.add(trigger);
+          });
+
+          it('calls <trigger.fn>', () => {
+            expect(trigger.fn).toHaveBeenCalledTimes(1);
+            expect(trigger.fn).toHaveBeenCalledWith(annotation, [
+              annotationArgs,
+            ]);
+          });
         });
       });
     });

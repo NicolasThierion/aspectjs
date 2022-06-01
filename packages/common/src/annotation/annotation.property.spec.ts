@@ -8,7 +8,7 @@ const FACTORY_GROUP_TEST_ID = 'testFactory';
 describe(`Property Annotations`, () => {
   const APropertyStub = jest.fn(function AProperty(
     _x?: string,
-    _y?: number
+    _y?: number,
   ) {});
   let AProperty: Annotation<AnnotationType.PROPERTY, typeof APropertyStub>;
 

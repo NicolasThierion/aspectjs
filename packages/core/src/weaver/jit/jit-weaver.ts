@@ -6,14 +6,14 @@ export class JitWeaver implements Weaver {
   enable(): this {
     throw new Error('Method not implemented.');
   }
-  disable(...aspects: (string | object)[]): this {
+  disable(..._aspects: (string | object)[]): this {
     throw new Error('Method not implemented.');
   }
-  setEnabled(aspect: AspectType, enabled: boolean): this {
+  setEnabled(_aspect: AspectType, _enabled: boolean): this {
     throw new Error('Method not implemented.');
   }
   getAspect<T extends AspectType>(
-    aspect: string | (new () => T),
+    _aspect: string | (new () => T),
   ): T | undefined {
     throw new Error('Method not implemented.');
   }
@@ -21,8 +21,8 @@ export class JitWeaver implements Weaver {
     throw new Error('Method not implemented.');
   }
   enhance<T extends DecoratorType>(
-    target: AnnotationTarget<T>,
-  ): void | Function | PropertyDescriptor {
+    _target: AnnotationTarget<T>,
+  ): void | ((...args: unknown[]) => T) | PropertyDescriptor {
     throw new Error('Method not implemented.');
   }
 }

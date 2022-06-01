@@ -32,26 +32,22 @@ export class Pointcut<
   [Symbol.toPrimitive] = () => `${this.phase}(${this._expr})`;
 }
 
-export interface CompilePointcut<
-  T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.COMPILE, T> {}
+export type CompilePointcut<T extends PointcutTargetType = PointcutTargetType> =
+  Pointcut<PointcutPhase.COMPILE, T>;
 
-export interface AroundPointcut<
-  T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.AROUND, T> {}
+export type AroundPointcut<T extends PointcutTargetType = PointcutTargetType> =
+  Pointcut<PointcutPhase.AROUND, T>;
 
-export interface BeforePointcut<
-  T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.BEFORE, T> {}
+export type BeforePointcut<T extends PointcutTargetType = PointcutTargetType> =
+  Pointcut<PointcutPhase.BEFORE, T>;
 
-export interface AfterReturnPointcut<
+export type AfterReturnPointcut<
   T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.AFTER_RETURN, T> {}
+> = Pointcut<PointcutPhase.AFTER_RETURN, T>;
 
-export interface AfterPointcut<
-  T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.AFTER, T> {}
+export type AfterPointcut<T extends PointcutTargetType = PointcutTargetType> =
+  Pointcut<PointcutPhase.AFTER, T>;
 
-export interface AfterThrowPointcut<
+export type AfterThrowPointcut<
   T extends PointcutTargetType = PointcutTargetType,
-> extends Pointcut<PointcutPhase.AFTER_THROW, T> {}
+> = Pointcut<PointcutPhase.AFTER_THROW, T>;

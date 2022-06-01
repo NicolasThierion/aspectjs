@@ -10,7 +10,7 @@ export function CALL_ANNOTATION_TRIGGERS(
   const targetFactory = context.get('annotationTargetFactory');
   return {
     name: '@aspectjs::annotations.factory-hooks.call-trigger',
-    order: 1,
+    order: 100,
     decorator: (annotation, annotationArgs) => {
       return (...targetArgs: any[]) => {
         const target = targetFactory.get(DecoratorTargetArgs.of(targetArgs));

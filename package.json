@@ -6,6 +6,7 @@
   "scripts": {
     "test": "lerna run test --stream",
     "test:unit": "lerna run test:unit --stream",
+    "lint": "lerna run lint --stream",
     "build": "lerna run build --stream"
   },
   "repository": {
@@ -28,6 +29,7 @@
     "@rollup/plugin-typescript": "^8.3.0",
     "@types/jest": "^27.4.0",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.27.0",
     "eslint": "^8.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",

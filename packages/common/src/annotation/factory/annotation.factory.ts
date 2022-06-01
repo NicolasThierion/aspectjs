@@ -114,7 +114,6 @@ export class AnnotationFactory {
             decoree =
               (decorator as any)
                 .apply(this, [annotation, annotationArgs, annotationStub])
-                // TODO pass annotationTarget instead of targetArgs
                 ?.apply(this, targetArgs) ?? decoree;
             return decoree;
           } catch (e) {

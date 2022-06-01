@@ -1,4 +1,5 @@
 import { defineMetadata, getMetadata } from '@aspectjs/common/utils';
+import { reflectContext } from '../../reflect/reflect.context';
 import type { AnnotationRef } from '../annotation-ref';
 import type { AnnotationTarget } from '../target/annotation-target';
 
@@ -38,6 +39,16 @@ export class AnnotationTriggerRegistry {
   private readonly _ANNOTATION_TRIGGER_REFLECT_KEY = `aspectjs::trigger=${this._id}`;
 
   add(trigger: AnnotationTrigger): void {
+    // if annotation already applied; call trigger right now.
+    const foundAnnotationsContexts = reflectContext()
+      .get('annotationRegistry')
+      .find(...trigger.annotations)
+      .on(trigger.target);
+
+    foundAnnotationsContexts.forEach((a) => trigger.fn(a.annotation, a.args));
+    const foundAnnotations = new Set(
+      foundAnnotationsContexts.map((a) => a.annotation),
+    );
     const triggers = getMetadata<Map<AnnotationRef, AnnotationTrigger[]>>(
       this._ANNOTATION_TRIGGER_REFLECT_KEY,
       trigger.target.ref,
@@ -45,11 +56,13 @@ export class AnnotationTriggerRegistry {
       true,
     );
 
-    trigger.annotations.forEach((a) => {
-      const t = triggers.get(a) ?? [];
-      t.push(trigger);
-      triggers.set(a, t);
-    });
+    trigger.annotations
+      .filter((a) => !foundAnnotations.has(a))
+      .forEach((a) => {
+        const t = triggers.get(a) ?? [];
+        t.push(trigger);
+        triggers.set(a, t);
+      });
 
     defineMetadata(
       this._ANNOTATION_TRIGGER_REFLECT_KEY,

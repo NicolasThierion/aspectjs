@@ -7,7 +7,7 @@ declare let Reflect: {
     key: string,
     value: any,
     target: object,
-    propertyKey?: string
+    propertyKey?: string,
   ): void;
 };
 
@@ -18,7 +18,7 @@ if (!Reflect.getOwnMetadata) {
   Reflect.getOwnMetadata = function (
     key: string,
     target: object,
-    propertyKey?: string
+    propertyKey?: string,
   ): any {
     return _meta
       .get(target)
@@ -29,7 +29,7 @@ if (!Reflect.getOwnMetadata) {
     key: string,
     value: any,
     target: object,
-    propertyKey?: string
+    propertyKey?: string,
   ): void {
     const tBucket = _meta.get(target) ?? new Map();
     const kBucket = tBucket.get(key) ?? new Map();
@@ -44,7 +44,7 @@ export function defineMetadata(
   key: string,
   value: any,
   target: object,
-  propertyKey?: string
+  propertyKey?: string,
 ) {
   return Reflect.defineMetadata(key, value, target, propertyKey);
 }
@@ -53,7 +53,7 @@ export function getMetadata<T>(
   key: string,
   target: object,
   valueGenerator?: () => T,
-  save?: boolean
+  save?: boolean,
 ): T;
 
 export function getMetadata<T>(
@@ -61,14 +61,14 @@ export function getMetadata<T>(
   target: object,
   propertyKey: string,
   valueGenerator?: () => T,
-  save?: boolean
+  save?: boolean,
 ): T;
 export function getMetadata<T>(
   key: string,
   target: object,
   propertyKey?: string | (() => T),
   valueGenerator?: (() => T) | boolean,
-  save = true
+  save = true,
 ): T {
   let _propertyKey = propertyKey as string;
   let _valueGenerator = valueGenerator as () => T;

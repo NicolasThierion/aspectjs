@@ -10,9 +10,9 @@ export const CALL_JIT_WEAVER_HOOK = (): AnnotationFactoryHook => {
     name: 'CALL_JIT_WEAVER_HOOK',
 
     decorator: function (
-      annotation: Annotation<AnnotationType, AnnotationStub<AnnotationType>>,
-      annotationArgs: unknown[],
-      annotationStub: AnnotationStub<AnnotationType>,
+      _annotation: Annotation<AnnotationType, AnnotationStub<AnnotationType>>,
+      _annotationArgs: unknown[],
+      _annotationStub: AnnotationStub<AnnotationType>,
     ): void {
       throw new Error('Function not implemented.');
     },

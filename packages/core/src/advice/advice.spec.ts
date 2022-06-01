@@ -9,6 +9,8 @@ import { Around } from './annotations/around.annotation';
 import { Before } from './annotations/before.annotation';
 import { Compile } from './annotations/compile.annotation';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 describe.each([[Compile, Before, Around, AfterReturn, AfterThrow, After]])(
   `%s() Annotation`,
   (adviceAnnotation) => {

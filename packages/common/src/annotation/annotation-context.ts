@@ -4,12 +4,12 @@ import type { AnnotationTarget } from './target/annotation-target';
 
 export class AnnotationContext<
   T extends DecoratorType = DecoratorType,
-  X = unknown
+  X = unknown,
 > {
   constructor(
     public readonly annotation: AnnotationRef,
     public readonly args: any[],
-    public readonly target: AnnotationTarget<T, X>
+    public readonly target: AnnotationTarget<T, X>,
   ) {}
 
   toString(): string {
@@ -19,7 +19,7 @@ export class AnnotationContext<
 
 export class _AnnotationContextImpl<
   T extends DecoratorType = DecoratorType,
-  X = unknown
+  X = unknown,
 > extends AnnotationContext<T, X> {
   get value(): any {
     throw new TypeError('annotation is not bound to a value');
@@ -33,16 +33,16 @@ export class _AnnotationContextImpl<
 export class _ValuedAnnotationContext<
   T extends DecoratorType = DecoratorType,
   X = unknown,
-  V = unknown
+  V = unknown,
 > extends _AnnotationContextImpl<T, X> {
   constructor(
     annotationContext: _AnnotationContextImpl<T, X>,
-    private readonly _valueProvider: () => V
+    private readonly _valueProvider: () => V,
   ) {
     super(
       annotationContext.annotation,
       annotationContext.args,
-      annotationContext.target
+      annotationContext.target,
     );
   }
 

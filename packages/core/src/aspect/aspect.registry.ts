@@ -13,16 +13,18 @@ export class AspectRegistry {
 
   private readonly _ASPECT_OPTIONS_REFLECT_KEY = `aspectjs::aspectReg=${this._id}`;
 
-  isAspect(aspect: Function): boolean {
+  isAspect(aspect: ConstructorType): boolean {
     return !!this.__getAspectOptions(aspect);
   }
 
-  getAspectOptions(aspect: Function): AspectOptions {
+  getAspectOptions(aspect: ConstructorType): AspectOptions {
     this._assertIsAspect(aspect);
     return this.__getAspectOptions(aspect)!;
   }
 
-  private __getAspectOptions(aspect: Function): AspectOptions | undefined {
+  private __getAspectOptions(
+    aspect: ConstructorType,
+  ): AspectOptions | undefined {
     if (!aspect) {
       return;
     }
@@ -33,7 +35,7 @@ export class AspectRegistry {
       : undefined;
   }
 
-  private _assertIsAspect(aspect: Function) {
+  private _assertIsAspect(aspect: ConstructorType) {
     if (!this.isAspect(aspect)) {
       const proto = getPrototype(aspect);
       throw new TypeError(`${proto.constructor.name} is not an Aspect`);

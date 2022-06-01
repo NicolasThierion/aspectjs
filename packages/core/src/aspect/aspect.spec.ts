@@ -1,6 +1,7 @@
 import { AspectError } from '@aspectjs/common';
 import { configureAspectTestingContext } from '@aspectjs/core/testing';
 import { Aspect } from './aspect.annotation';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 describe('any class', () => {
   beforeEach(() => {
@@ -12,7 +13,7 @@ describe('any class', () => {
       expect(() => {
         @Aspect()
         @Aspect()
-        class _TestAspect {}
+        class TestAspect {}
       }).toThrowError(AspectError);
     });
   });
