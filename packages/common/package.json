@@ -22,12 +22,18 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./package.json": {
-      "default": "./package.json"
+    "./utils": {
+      "types": "./dist/common-utils.d.ts",
+      "esm2020": "./dist/esm2020/index.js",
+      "es2020": "./dist/fesm2020/common-utils.mjs",
+      "node": "./dist/fesm2020/common-utils.mjs",
+      "require": "./dist/common-utils.cjs",
+      "default": "./dist/common-utils.cjs",
+      "unpkg": "./dist/bundles/common-utils.umd.min.js"
     },
     ".": {
       "types": "./dist/common.d.ts",
-      "esm2020": "./dist/esm2020/common.mjs",
+      "esm2020": "./dist/esm2020/common.js",
       "es2020": "./dist/fesm2020/common.mjs",
       "node": "./dist/fesm2020/common.mjs",
       "require": "./dist/common.cjs",

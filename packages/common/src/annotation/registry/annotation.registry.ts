@@ -1,8 +1,12 @@
-import { assert } from '@aspectjs/common/utils';
-import type { ConstructorType } from '../../constructor.type';
+import {
+  assert,
+  ConstructorType,
+  getAnnotationRef,
+  isObject,
+} from '@aspectjs/common/utils';
 import type { AnnotationContext } from '../annotation-context';
 import type { AnnotationRef } from '../annotation-ref';
-import { DecoratorType } from '../annotation.types';
+import { Annotation, AnnotationType, TargetType } from '../annotation.types';
 import type {
   AnnotationTarget,
   AnnotationTargetRef,
@@ -15,16 +19,16 @@ type ByAnnotationSet = {
 };
 class _AnnotationsSet {
   private buckets: {
-    [k in DecoratorType]: Map<AnnotationRef, ByAnnotationSet>;
+    [k in TargetType]: Map<AnnotationRef, ByAnnotationSet>;
   } = {
-    [DecoratorType.CLASS]: new Map(),
-    [DecoratorType.PROPERTY]: new Map(),
-    [DecoratorType.METHOD]: new Map(),
-    [DecoratorType.PARAMETER]: new Map(),
+    [TargetType.CLASS]: new Map(),
+    [TargetType.PROPERTY]: new Map(),
+    [TargetType.METHOD]: new Map(),
+    [TargetType.PARAMETER]: new Map(),
   };
 
   getAnnotations(
-    decoratorTypes: DecoratorType[],
+    decoratorTypes: TargetType[],
     annotationRefs: AnnotationRef[],
     classTargetRef?: AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
@@ -33,7 +37,7 @@ class _AnnotationsSet {
       .map((t) => this.buckets[t])
       .flatMap((m) =>
         annotationRefs.length
-          ? annotationRefs.map((ref) => m.get(ref))
+          ? annotationRefs.map((ref) => m.get(getAnnotationRef(ref)))
           : [...m.values()],
       )
       .filter((set) => !!set)
@@ -47,7 +51,7 @@ class _AnnotationsSet {
     }
 
     return annotationsInClass.filter(
-      (a: AnnotationContext<DecoratorType.METHOD>) =>
+      (a: AnnotationContext<TargetType.METHOD>) =>
         a.target.propertyKey === propertyKey,
     );
   }
@@ -55,12 +59,12 @@ class _AnnotationsSet {
   addAnnotation(ctxt: AnnotationContext) {
     const bucket = this.buckets[ctxt.target.type];
     assert(() => !!bucket);
-    const byAnnotationSet = bucket.get(ctxt.annotation) ?? {
+    const byAnnotationSet = bucket.get(ctxt.annotation.ref) ?? {
       byClassTargetRef: new Map<AnnotationTargetRef, AnnotationContext>(),
     };
 
     byAnnotationSet.byClassTargetRef.set(ctxt.target.declaringClass.ref, ctxt);
-    bucket.set(ctxt.annotation, byAnnotationSet);
+    bucket.set(ctxt.annotation.ref, byAnnotationSet);
   }
 }
 
@@ -74,48 +78,57 @@ export class AnnotationSelector {
   all<X = unknown>(type?: ConstructorType<X>): AnnotationContext[] {
     return this._find(
       [
-        DecoratorType.CLASS,
-        DecoratorType.METHOD,
-        DecoratorType.PROPERTY,
-        DecoratorType.PARAMETER,
+        TargetType.CLASS,
+        TargetType.METHOD,
+        TargetType.PROPERTY,
+        TargetType.PARAMETER,
       ],
       type,
     );
   }
   onClass<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationContext<DecoratorType.CLASS>[] {
-    return this._find([DecoratorType.CLASS], type);
+  ): AnnotationContext<TargetType.CLASS>[] {
+    return this._find([TargetType.CLASS], type);
   }
   onMethod<X = any>(
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
-  ): AnnotationContext<DecoratorType.METHOD>[] {
-    return this._find([DecoratorType.METHOD], type, propertyKey);
+  ): AnnotationContext<TargetType.METHOD>[] {
+    return this._find([TargetType.METHOD], type, propertyKey);
   }
   onProperty<X>(
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
-  ): AnnotationContext<DecoratorType.PROPERTY>[] {
-    return this._find([DecoratorType.PROPERTY], type, propertyKey);
+  ): AnnotationContext<TargetType.PROPERTY>[] {
+    return this._find([TargetType.PROPERTY], type, propertyKey);
   }
   onArgs<X>(
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
-  ): AnnotationContext<DecoratorType.PARAMETER>[] {
-    return this._find([DecoratorType.PARAMETER], type, propertyKey);
+  ): AnnotationContext<TargetType.PARAMETER>[] {
+    return this._find([TargetType.PARAMETER], type, propertyKey);
   }
 
-  on<X>(target: AnnotationTarget<DecoratorType, X>): AnnotationContext[] {
-    return this._find(
-      [target.type],
-      target.proto.constructor,
-      (target as AnnotationTarget<DecoratorType.METHOD>).propertyKey as any,
-    );
+  on<T extends AnnotationType>(type: T): AnnotationContext[];
+  on<X>(target: AnnotationTarget<TargetType, X>): AnnotationContext[];
+  on(
+    targetOrType: AnnotationTarget<TargetType, any> | TargetType,
+  ): AnnotationContext[] {
+    if (isObject(targetOrType)) {
+      return this._find(
+        [targetOrType.type],
+        targetOrType.proto.constructor,
+        (targetOrType as AnnotationTarget<TargetType.METHOD>)
+          .propertyKey as any,
+      );
+    } else {
+      return this._find([targetOrType]);
+    }
   }
 
   private _find<X>(
-    decoratorTypes: DecoratorType[],
+    decoratorTypes: TargetType[],
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
   ): AnnotationContext[] {
@@ -151,11 +164,11 @@ export class AnnotationRegistry {
   register(annotationContext: AnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
-  find(...annotations: AnnotationRef[]): AnnotationSelector {
+  find(...annotations: (AnnotationRef | Annotation)[]): AnnotationSelector {
     return new AnnotationSelector(
       this.targetFactory,
       this.annotationSet,
-      annotations,
+      annotations.map(getAnnotationRef),
     );
   }
 }

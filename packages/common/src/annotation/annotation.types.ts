@@ -1,7 +1,7 @@
 import type { AnnotationRef } from './annotation-ref';
 
 /* eslint-disable @typescript-eslint/ban-types */
-export enum DecoratorType {
+export enum TargetType {
   CLASS = 0b0001,
   PROPERTY = 0b0010,
   METHOD = 0b0100,
@@ -32,7 +32,7 @@ export type AnnotationStub<T extends AnnotationType = AnnotationType> = (
 export type DecoratorFactory<
   S extends AnnotationStub,
   T extends AnnotationType = AnnotationType,
-> = (...args: Parameters<S & AnnotationRef>) => Decorator<T>;
+> = (...args: Parameters<S>) => Decorator<T>;
 
 /**
  * An Annotation is an EcmaScript decorator with no behavior.
@@ -40,7 +40,10 @@ export type DecoratorFactory<
 export type Annotation<
   T extends AnnotationType = AnnotationType,
   S extends AnnotationStub<T> = AnnotationStub<T>,
-> = AnnotationRef & ((...args: Parameters<S & AnnotationRef>) => Decorator<T>);
+> = { ref: AnnotationRef } & {
+  readonly name: string;
+  readonly groupId: string;
+} & ((...args: Parameters<S>) => Decorator<T>);
 
 export type Decorator<T extends AnnotationType = AnnotationType> =
   T extends AnnotationType.CLASS

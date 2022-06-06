@@ -1,4 +1,4 @@
-import type { DecoratorType } from '../annotation.types';
+import type { TargetType } from '../annotation.types';
 
 export type Prototype<X extends object = object> = Record<string, unknown> & {
   constructor: new (...args: unknown[]) => X;
@@ -11,7 +11,7 @@ export class AnnotationTargetRef {
   }
 }
 interface _BaseAnnotationTarget<
-  T extends DecoratorType = DecoratorType,
+  T extends TargetType = TargetType,
   X = unknown,
 > {
   readonly type: T;
@@ -24,26 +24,26 @@ interface _BaseAnnotationTarget<
 }
 
 export interface ClassAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<DecoratorType.CLASS, X> {
+  extends _BaseAnnotationTarget<TargetType.CLASS, X> {
   readonly parent?: ClassAnnotationTarget<unknown>;
 }
 
 export interface PropertyAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<DecoratorType.PROPERTY, X> {
+  extends _BaseAnnotationTarget<TargetType.PROPERTY, X> {
   readonly propertyKey: string;
   readonly parent: ClassAnnotationTarget<unknown>;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
 }
 
 export interface MethodAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<DecoratorType.METHOD, X> {
+  extends _BaseAnnotationTarget<TargetType.METHOD, X> {
   readonly propertyKey: string;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
   readonly parent: ClassAnnotationTarget<X>;
 }
 
 export interface ParameterAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<DecoratorType.PARAMETER, X> {
+  extends _BaseAnnotationTarget<TargetType.PARAMETER, X> {
   readonly propertyKey: string;
   readonly parameterIndex: number;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
@@ -51,14 +51,14 @@ export interface ParameterAnnotationTarget<X = unknown>
 }
 
 export type AnnotationTarget<
-  T extends DecoratorType = DecoratorType,
+  T extends TargetType = TargetType,
   X = unknown,
-> = T extends DecoratorType.CLASS
+> = T extends TargetType.CLASS
   ? ClassAnnotationTarget<X>
-  : T extends DecoratorType.PARAMETER
+  : T extends TargetType.PARAMETER
   ? ParameterAnnotationTarget<X>
-  : T extends DecoratorType.METHOD
+  : T extends TargetType.METHOD
   ? MethodAnnotationTarget<X>
-  : T extends DecoratorType.PROPERTY
+  : T extends TargetType.PROPERTY
   ? PropertyAnnotationTarget<X>
   : never;

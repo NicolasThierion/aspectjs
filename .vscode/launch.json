@@ -12,7 +12,7 @@
       "runtimeVersion": "16",
       "outputCapture": "std",
       "console": "integratedTerminal",
-      "runtimeArgs": ["run", "test"]
+      "runtimeArgs": ["run", "test:unit"]
     },
     {
       "type": "node",

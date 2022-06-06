@@ -1,4 +1,5 @@
-import { configureAspectTestingContext } from '@aspectjs/core/testing';
+import { configureTesting } from '@aspectjs/common/testing';
+import { aspectContext } from '../aspect/aspect-context.global';
 import { Aspect } from '../aspect/aspect.annotation';
 import { on } from '../pointcut/pointcut-expression.factory';
 import type { AdviceRegistry } from './advice.registry';
@@ -10,13 +11,28 @@ import { Before } from './annotations/before.annotation';
 import { Compile } from './annotations/compile.annotation';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+describe('wip', () => {
+  let adviceReg!: AdviceRegistry;
+  beforeEach(() => {
+    adviceReg = configureTesting(aspectContext()).get('adviceRegistry');
+    jest.spyOn(adviceReg, 'register');
+  });
+  it('should call AdviceRegistry.register()', () => {
+    @Aspect()
+    class TestClass {
+      @Compile(on.class.withAnnotations())
+      testCompile() {}
+    }
+    expect(adviceReg.register).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe.each([[Compile, Before, Around, AfterReturn, AfterThrow, After]])(
   `%s() Annotation`,
   (adviceAnnotation) => {
     let adviceReg!: AdviceRegistry;
     beforeEach(() => {
-      adviceReg = configureAspectTestingContext().get('adviceRegistry');
+      adviceReg = configureTesting(aspectContext()).get('adviceRegistry');
       jest.spyOn(adviceReg, 'register');
     });
     describe('on a method', () => {

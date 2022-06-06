@@ -1,6 +1,7 @@
 import { AnnotationFactory } from '@aspectjs/common';
-import { configureAspectTestingContext } from '@aspectjs/core/testing';
-import type { ConstructorType } from 'packages/common/src/constructor.type';
+import { configureTesting } from '@aspectjs/common/testing';
+import type { ConstructorType } from '@aspectjs/common/utils';
+import { weaverContext } from './../weaver/context/weaver.context.global';
 import { Aspect } from './aspect.annotation';
 import type { AspectRegistry } from './aspect.registry';
 import type { AspectType } from './aspect.type';
@@ -8,7 +9,7 @@ import type { AspectType } from './aspect.type';
 describe('AspectRegistry', () => {
   let aspectRegistry!: AspectRegistry;
   beforeEach(() => {
-    const context = configureAspectTestingContext();
+    const context = configureTesting(weaverContext());
     aspectRegistry = context.get('aspectRegistry');
   });
   describe('.isAspect(<arg>)', () => {

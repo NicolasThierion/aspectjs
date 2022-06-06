@@ -1,6 +1,10 @@
-import { assert, getMetadata, isUndefined } from '@aspectjs/common/utils';
-import type { ConstructorType } from '../../constructor.type';
-import { DecoratorType } from '../annotation.types';
+import {
+  assert,
+  ConstructorType,
+  getMetadata,
+  isUndefined,
+} from '@aspectjs/common/utils';
+import { TargetType } from '../annotation.types';
 import {
   AnnotationTarget,
   AnnotationTargetRef,
@@ -22,7 +26,7 @@ export class AnnotationTargetFactory {
   private readonly id = _factoryId++;
 
   private readonly _REF_GENERATORS = {
-    [DecoratorType.CLASS]: (d: DecoratorTargetArgs) => {
+    [TargetType.CLASS]: (d: DecoratorTargetArgs) => {
       const ref = `c[${d.proto.constructor.name}]`;
 
       return getMetadata(
@@ -31,27 +35,27 @@ export class AnnotationTargetFactory {
         () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
-    [DecoratorType.PROPERTY]: (d: DecoratorTargetArgs) => {
+    [TargetType.PROPERTY]: (d: DecoratorTargetArgs) => {
       const ref = `c[${d.proto.constructor.name}].p[${d.propertyKey}]`;
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
-        this._REF_GENERATORS[DecoratorType.CLASS](d),
+        this._REF_GENERATORS[TargetType.CLASS](d),
         () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
-    [DecoratorType.METHOD]: (d: DecoratorTargetArgs) => {
+    [TargetType.METHOD]: (d: DecoratorTargetArgs) => {
       const ref = `c[${d.proto.constructor.name}].m[${d.propertyKey}]`;
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
-        this._REF_GENERATORS[DecoratorType.CLASS](d),
+        this._REF_GENERATORS[TargetType.CLASS](d),
         () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
-    [DecoratorType.PARAMETER]: (d: DecoratorTargetArgs) => {
+    [TargetType.PARAMETER]: (d: DecoratorTargetArgs) => {
       const ref = `c[${d.proto.constructor.name}].m[${d.propertyKey}].a[${d.parameterIndex}]`;
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
-        this._REF_GENERATORS[DecoratorType.CLASS](d),
+        this._REF_GENERATORS[TargetType.CLASS](d),
         () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
@@ -61,7 +65,7 @@ export class AnnotationTargetFactory {
    * @param decoratorArgs - the AnnotationTarget stub.
    * @param type - target type override
    */
-  register<T extends DecoratorType = DecoratorType, X = unknown>(
+  register<T extends TargetType = TargetType, X = unknown>(
     decoratorArgs: DecoratorTargetArgs<T>,
   ): AnnotationTarget<T, X> {
     return this._findOrCreate(
@@ -71,7 +75,7 @@ export class AnnotationTargetFactory {
     );
   }
 
-  find<T extends DecoratorType = DecoratorType, X = unknown>(
+  find<T extends TargetType = TargetType, X = unknown>(
     decoratorArgs: DecoratorTargetArgs<T>,
   ): AnnotationTarget<T, X> {
     const type = decoratorArgs.type;
@@ -79,7 +83,7 @@ export class AnnotationTargetFactory {
 
     return this._findOrCreate(ref, decoratorArgs, false);
   }
-  private _findOrCreate<T extends DecoratorType = DecoratorType, X = unknown>(
+  private _findOrCreate<T extends TargetType = TargetType, X = unknown>(
     ref: AnnotationTargetRef,
     decoratorArgs: DecoratorTargetArgs<T>,
     save: boolean,
@@ -94,10 +98,10 @@ export class AnnotationTargetFactory {
     ) as AnnotationTarget<T, X>;
   }
 
-  get<T extends DecoratorType = DecoratorType, X = unknown>(
+  get<T extends TargetType = TargetType, X = unknown>(
     decoratorArgs: DecoratorTargetArgs<T>,
   ): AnnotationTarget<T, X>;
-  get<T extends DecoratorType = DecoratorType, X = unknown>(
+  get<T extends TargetType = TargetType, X = unknown>(
     decoratorArgs: DecoratorTargetArgs<T>,
   ): AnnotationTarget<T, X> {
     const target = this.find<T, X>(decoratorArgs);
@@ -112,28 +116,28 @@ export class AnnotationTargetFactory {
     return target;
   }
 
-  of<T extends DecoratorType = DecoratorType, X = unknown>(
+  of<T extends TargetType = TargetType, X = unknown>(
     target: ConstructorType<X>,
   ): AnnotationTarget<T, X>;
 
-  of<T extends DecoratorType = DecoratorType, X = unknown>(
+  of<T extends TargetType = TargetType, X = unknown>(
     target: X,
     propertyKey: string | symbol,
   ): AnnotationTarget<T, X>;
 
-  of<T extends DecoratorType = DecoratorType, X = unknown>(
+  of<T extends TargetType = TargetType, X = unknown>(
     target: X,
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
   ): AnnotationTarget<T, X>;
 
-  of<T extends DecoratorType = DecoratorType, X = unknown>(
+  of<T extends TargetType = TargetType, X = unknown>(
     target: X,
     propertyKey: string | symbol,
     parameterIndex: number,
   ): AnnotationTarget<T, X>;
 
-  of<T extends DecoratorType = DecoratorType, X = unknown>(
+  of<T extends TargetType = TargetType, X = unknown>(
     ...args: unknown[]
   ): AnnotationTarget<T, X> {
     // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
@@ -146,17 +150,17 @@ export class AnnotationTargetFactory {
 }
 
 const _TARGET_GENERATORS: {
-  [t in DecoratorType]: (...args: any[]) => AnnotationTarget<t>;
+  [t in TargetType]: (...args: any[]) => AnnotationTarget<t>;
 } = {
-  [DecoratorType.CLASS]: _createClassAnnotationTarget,
-  [DecoratorType.PROPERTY]: _createPropertyAnnotationTarget,
-  [DecoratorType.METHOD]: _createMethodAnnotationTarget,
-  [DecoratorType.PARAMETER]: _createParameterAnnotationTarget,
+  [TargetType.CLASS]: _createClassAnnotationTarget,
+  [TargetType.PROPERTY]: _createPropertyAnnotationTarget,
+  [TargetType.METHOD]: _createMethodAnnotationTarget,
+  [TargetType.PARAMETER]: _createParameterAnnotationTarget,
 };
 
 function _createClassAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
-  targetArgs: DecoratorTargetArgs<DecoratorType.CLASS>,
+  targetArgs: DecoratorTargetArgs<TargetType.CLASS>,
   targetRef: AnnotationTargetRef,
 ): ClassAnnotationTarget<X> {
   return new ClassAnnotationTargetImpl(targetFactory, targetArgs, {
@@ -168,7 +172,7 @@ function _createClassAnnotationTarget<X = unknown>(
 
 function _createMethodAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
-  targetArgs: DecoratorTargetArgs<DecoratorType.METHOD>,
+  targetArgs: DecoratorTargetArgs<TargetType.METHOD>,
   targetRef: AnnotationTargetRef,
 ): MethodAnnotationTarget<X> {
   assert(!!targetArgs.propertyKey);
@@ -184,7 +188,7 @@ function _createMethodAnnotationTarget<X = unknown>(
 
 function _createPropertyAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
-  targetArgs: DecoratorTargetArgs<DecoratorType.PROPERTY>,
+  targetArgs: DecoratorTargetArgs<TargetType.PROPERTY>,
   targetRef: AnnotationTargetRef,
 ): PropertyAnnotationTarget<X> {
   const descriptor = Object.getOwnPropertyDescriptor(
@@ -193,7 +197,7 @@ function _createPropertyAnnotationTarget<X = unknown>(
   )!;
 
   // assert(!!descriptor);
-  assert(targetArgs.type === DecoratorType.PROPERTY);
+  assert(targetArgs.type === TargetType.PROPERTY);
 
   return new PropertyAnnotationTargetImpl(targetFactory, targetArgs, {
     name: targetArgs.propertyKey!,
@@ -207,7 +211,7 @@ function _createPropertyAnnotationTarget<X = unknown>(
 
 function _createParameterAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
-  targetArgs: DecoratorTargetArgs<DecoratorType.PARAMETER>,
+  targetArgs: DecoratorTargetArgs<TargetType.PARAMETER>,
   targetRef: AnnotationTargetRef,
 ): ParameterAnnotationTarget<X> {
   const descriptor = Object.getOwnPropertyDescriptor(
@@ -233,7 +237,7 @@ function _createParameterAnnotationTarget<X = unknown>(
 }
 
 function _validateAnnotationTarget<
-  T extends DecoratorType,
+  T extends TargetType,
   R extends keyof DecoratorTargetArgs,
 >(targetArgs: DecoratorTargetArgs<T>, requiredProperties: R[]): void {
   requiredProperties.forEach((n) =>
@@ -258,17 +262,17 @@ function _declaringClassTarget<X>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs,
 ): ClassAnnotationTarget<X> {
-  return targetFactory.register({ ...targetArgs, type: DecoratorType.CLASS });
+  return targetFactory.register({ ...targetArgs, type: TargetType.CLASS });
 }
 
 function _declaringMethodTarget<X>(
   targetFactory: AnnotationTargetFactory,
-  targetArgs: DecoratorTargetArgs<DecoratorType.PARAMETER>,
+  targetArgs: DecoratorTargetArgs<TargetType.PARAMETER>,
 ): MethodAnnotationTarget<X> {
   return targetFactory.register({
     proto: targetArgs.proto,
     propertyKey: targetArgs.propertyKey,
-    type: DecoratorType.METHOD,
+    type: TargetType.METHOD,
   });
 }
 
@@ -282,7 +286,7 @@ class ClassAnnotationTargetImpl<X>
   extends AnnotationTargetImpl
   implements ClassAnnotationTarget<X>
 {
-  public readonly type = DecoratorType.CLASS;
+  public readonly type = TargetType.CLASS;
   public readonly proto: Prototype;
   public readonly name: string;
   public readonly label: string;
@@ -291,7 +295,7 @@ class ClassAnnotationTargetImpl<X>
   private _parentClass?: ClassAnnotationTarget<X>;
   constructor(
     private targetFactory: AnnotationTargetFactory,
-    targetArgs: DecoratorTargetArgs<DecoratorType.CLASS>,
+    targetArgs: DecoratorTargetArgs<TargetType.CLASS>,
     target: Partial<ClassAnnotationTargetImpl<X>>,
   ) {
     super();
@@ -320,7 +324,7 @@ class MethodAnnotationTargetImpl<X>
   extends AnnotationTargetImpl
   implements MethodAnnotationTarget<X>
 {
-  readonly type = DecoratorType.METHOD;
+  readonly type = TargetType.METHOD;
   readonly proto: Prototype;
   readonly propertyKey!: string;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
@@ -332,7 +336,7 @@ class MethodAnnotationTargetImpl<X>
 
   constructor(
     private targetFactory: AnnotationTargetFactory,
-    targetArgs: DecoratorTargetArgs<DecoratorType.METHOD>,
+    targetArgs: DecoratorTargetArgs<TargetType.METHOD>,
     target: Partial<MethodAnnotationTargetImpl<X>>,
   ) {
     super();
@@ -375,7 +379,7 @@ class PropertyAnnotationTargetImpl<X>
 {
   readonly propertyKey!: string;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
-  readonly type = DecoratorType.PROPERTY;
+  readonly type = TargetType.PROPERTY;
   readonly proto: Prototype;
   readonly name: string;
   readonly label: string;
@@ -384,7 +388,7 @@ class PropertyAnnotationTargetImpl<X>
   private _parentClassTarget?: ClassAnnotationTarget<unknown> | undefined;
   constructor(
     private targetFactory: AnnotationTargetFactory,
-    targetArgs: DecoratorTargetArgs<DecoratorType.PROPERTY>,
+    targetArgs: DecoratorTargetArgs<TargetType.PROPERTY>,
     target: Partial<MethodAnnotationTargetImpl<X>>,
   ) {
     super();
@@ -437,7 +441,7 @@ class ParameterAnnotationTargetImpl<X>
   readonly propertyKey!: string;
   readonly parameterIndex!: number;
   readonly descriptor!: TypedPropertyDescriptor<unknown>;
-  readonly type = DecoratorType.PARAMETER;
+  readonly type = TargetType.PARAMETER;
   readonly proto!: Prototype;
   readonly name!: string;
   readonly label!: string;
@@ -448,7 +452,7 @@ class ParameterAnnotationTargetImpl<X>
 
   constructor(
     private targetFactory: AnnotationTargetFactory,
-    targetArgs: DecoratorTargetArgs<DecoratorType.PARAMETER>,
+    targetArgs: DecoratorTargetArgs<TargetType.PARAMETER>,
     target: Partial<MethodAnnotationTargetImpl<X>>,
   ) {
     super();

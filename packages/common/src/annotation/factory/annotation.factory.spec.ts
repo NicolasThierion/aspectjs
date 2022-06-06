@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import type { AnnotationRef } from '../annotation-ref';
 import type { Annotation, AnnotationType } from '../annotation.types';
 import { AnnotationFactory } from './annotation.factory';
 
@@ -23,9 +22,14 @@ describe('AnnotationFactory(groupId)', () => {
 
     it('returns an annotation', () => {
       AClass = factory.create(AClassStub);
-      const properties: (keyof AnnotationRef)[] = ['groupId', 'name', 'value'];
-      properties.forEach((p) => expect(AClass).toHaveProperty(p));
-      properties.forEach((p) => expect(AClass[p]).toBeDefined());
+      expect(AClass.groupId).toBeDefined();
+      expect(AClass.name).toBeDefined();
+      expect(AClass.ref).toBeDefined();
+
+      const ref = AClass.ref;
+      expect(ref.groupId).toBeDefined();
+      expect(ref.name).toBeDefined();
+      expect(ref.value).toBeDefined();
     });
 
     describe(':Annotation', () => {
@@ -42,15 +46,16 @@ describe('AnnotationFactory(groupId)', () => {
           expect(AClass.groupId).toEqual(factory.groupId);
         });
       });
-      describe('.value', () => {
+      describe('.ref.value', () => {
         it(`should match name:groupId`, () => {
-          expect(AClass.value).toEqual(`${AClass.groupId}:${AClass.name}`);
+          expect(AClass.ref.value).toEqual(`${AClass.groupId}:${AClass.name}`);
         });
       });
     });
   });
 });
 
+// TODO
 // describe('.create(<PropertyAnnotationStub>)', () => {
 //   let labeled: Labeled;
 //   let stubSpy: jest.SpiedFunction;

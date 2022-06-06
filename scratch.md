@@ -1,5 +1,8 @@
-- common
+- @common
   - annotations
+    - registry
+    - factory
+  - reflect
 - core
   - advice
   - weaver
@@ -7,3 +10,8 @@
   - reflect
 - core/testing
   - testBench
+
+# TODO
+
+WeaverModule
+JitWeaverHook => `Function not implemented`

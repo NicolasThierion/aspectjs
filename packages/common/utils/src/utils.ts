@@ -1,3 +1,6 @@
+import type { AnnotationRef } from 'packages/common/src/annotation/annotation-ref';
+import type { Annotation } from '../../src/annotation/annotation.types';
+
 export function getPrototype(
   target: Record<string, any> | Function,
 ): Record<string, any> & { constructor?: new (...args: any[]) => any } {
@@ -9,6 +12,20 @@ export function getPrototype(
   return target.hasOwnProperty('constructor')
     ? target
     : Object.getPrototypeOf(target);
+}
+
+export function isAnnotation(obj: unknown): obj is Annotation {
+  return (
+    typeof obj === 'function' &&
+    typeof (obj as Annotation).ref?.groupId === 'string' &&
+    typeof (obj as Annotation).ref?.name === 'string'
+  );
+}
+
+export function getAnnotationRef(
+  obj: Annotation | AnnotationRef,
+): AnnotationRef {
+  return (obj as Annotation)?.ref ?? obj;
 }
 
 export function isFunction(

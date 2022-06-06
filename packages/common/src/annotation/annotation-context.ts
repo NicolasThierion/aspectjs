@@ -1,13 +1,9 @@
-import type { AnnotationRef } from './annotation-ref';
-import type { DecoratorType } from './annotation.types';
+import type { Annotation, TargetType } from './annotation.types';
 import type { AnnotationTarget } from './target/annotation-target';
 
-export class AnnotationContext<
-  T extends DecoratorType = DecoratorType,
-  X = unknown,
-> {
+export class AnnotationContext<T extends TargetType = TargetType, X = unknown> {
   constructor(
-    public readonly annotation: AnnotationRef,
+    public readonly annotation: Annotation,
     public readonly args: any[],
     public readonly target: AnnotationTarget<T, X>,
   ) {}
@@ -17,36 +13,38 @@ export class AnnotationContext<
   }
 }
 
-export class _AnnotationContextImpl<
-  T extends DecoratorType = DecoratorType,
-  X = unknown,
-> extends AnnotationContext<T, X> {
-  get value(): any {
-    throw new TypeError('annotation is not bound to a value');
-  }
+// TODO
+// export class _AnnotationContextImpl<
+//   T extends DecoratorType = DecoratorType,
+//   X = unknown,
+// > extends AnnotationContext<T, X> {
+//   get value(): any {
+//     throw new TypeError('annotation is not bound to a value');
+//   }
 
-  withValue<V>(valueProvider: () => V): _ValuedAnnotationContext<T, X, V> {
-    return new _ValuedAnnotationContext<T, X, V>(this, valueProvider);
-  }
-}
+//   withValue<V>(valueProvider: () => V): _ValuedAnnotationContext<T, X, V> {
+//     return new _ValuedAnnotationContext<T, X, V>(this, valueProvider);
+//   }
+// }
 
-export class _ValuedAnnotationContext<
-  T extends DecoratorType = DecoratorType,
-  X = unknown,
-  V = unknown,
-> extends _AnnotationContextImpl<T, X> {
-  constructor(
-    annotationContext: _AnnotationContextImpl<T, X>,
-    private readonly _valueProvider: () => V,
-  ) {
-    super(
-      annotationContext.annotation,
-      annotationContext.args,
-      annotationContext.target,
-    );
-  }
+// TODO
+// export class _ValuedAnnotationContext<
+//   T extends DecoratorType = DecoratorType,
+//   X = unknown,
+//   V = unknown,
+// > extends _AnnotationContextImpl<T, X> {
+//   constructor(
+//     annotationContext: _AnnotationContextImpl<T, X>,
+//     private readonly _valueProvider: () => V,
+//   ) {
+//     super(
+//       annotationContext.annotation,
+//       annotationContext.args,
+//       annotationContext.target,
+//     );
+//   }
 
-  override get value(): V {
-    return this._valueProvider();
-  }
-}
+//   override get value(): V {
+//     return this._valueProvider();
+//   }
+// }

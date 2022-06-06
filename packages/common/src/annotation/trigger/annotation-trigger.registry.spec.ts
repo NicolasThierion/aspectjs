@@ -1,26 +1,13 @@
-import { configureReflectTestingContext } from '@aspectjs/common/testing';
+import { configureTesting } from '@aspectjs/common/testing';
 import type { ReflectContext } from '../../reflect/reflect.context';
-import type { Annotation, AnnotationType } from '../annotation.types';
+import { AnnotationContext } from '../annotation-context';
+import { Annotation, AnnotationType, TargetType } from '../annotation.types';
+import { annotationsContext } from '../context/annotations.context.global';
 import { AnnotationFactory } from '../factory/annotation.factory';
-import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import {
-  AnnotationTrigger,
-  AnnotationTriggerRegistry,
-} from './annotation-trigger.registry';
-
-describe('configureReflectContext()', () => {
-  let context!: ReflectContext;
-  beforeEach(() => {
-    context = configureReflectTestingContext();
-  });
-
-  it('has a "annotationTriggerRegistry" provider', () => {
-    expect(context.has('annotationTriggerRegistry')).toBeTruthy();
-    expect(context.get('annotationTriggerRegistry')).toBeInstanceOf(
-      AnnotationTriggerRegistry,
-    );
-  });
-});
+import type { AnnotationTarget } from '../target/annotation-target';
+import { AnnotationTargetFactory } from '../target/annotation-target.factory';
+import { AnnotationTriggerRegistry } from './annotation-trigger.registry';
+import type { AnnotationTrigger } from './annotation-trigger.type';
 
 describe('AnnotationTriggerRegistry', () => {
   let context!: ReflectContext;
@@ -28,32 +15,39 @@ describe('AnnotationTriggerRegistry', () => {
   const annotationFactory = new AnnotationFactory('test');
   let annotationTargetFactory: AnnotationTargetFactory;
   let annotationTriggerRegistry: AnnotationTriggerRegistry;
-  const annotationArgs = 'annotationArgs';
+  const annotationArgs = ['annotationArgs'];
+  let fooTarget: AnnotationTarget;
+  let barTarget: AnnotationTarget;
   beforeEach(() => {
-    context = configureReflectTestingContext();
+    context = configureTesting(annotationsContext());
     annotation = annotationFactory.create();
-    annotationTargetFactory = context.get('annotationTargetFactory');
-    annotationTriggerRegistry = context.get('annotationTriggerRegistry');
+    annotationTargetFactory = context.get(AnnotationTargetFactory);
+    annotationTriggerRegistry = context.get(AnnotationTriggerRegistry);
   });
 
   describe('.add(<trigger>)', () => {
     let trigger: AnnotationTrigger;
     let applyAnnotation: () => void;
     beforeEach(() => {
-      let Toto = class Toto {};
+      let Foo = class Foo {};
+      let Bar = class Bar {};
 
+      fooTarget = annotationTargetFactory.of(Foo);
+      barTarget = annotationTargetFactory.of(Foo);
       trigger = {
         annotations: [annotation],
-        fn: jest.fn(),
-        target: annotationTargetFactory.of(Toto),
+        fn: () => {},
+        targets: [fooTarget],
       };
+      jest.spyOn(trigger, 'fn');
       applyAnnotation = () => {
-        Toto = annotation(annotationArgs)(Toto);
+        Foo = annotation(...annotationArgs)(Foo);
+        Bar = annotation(...annotationArgs)(Bar);
       };
     });
-    describe('called before @SomeAnnotation() class SomeClass{}', () => {
-      describe('when <trigger.annotations> contains "SomeAnnotation"', () => {
-        describe('and <trigger.target> matches that class', () => {
+    describe('when called before @SomeAnnotation() class SomeClass{}', () => {
+      describe('and <trigger.annotations> contains "SomeAnnotation"', () => {
+        describe('and <trigger.targets> matches that class', () => {
           beforeEach(() => {
             annotationTriggerRegistry.add(trigger);
           });
@@ -62,15 +56,15 @@ describe('AnnotationTriggerRegistry', () => {
             expect(trigger.fn).not.toHaveBeenCalled();
             applyAnnotation();
             expect(trigger.fn).toHaveBeenCalledTimes(1);
-            expect(trigger.fn).toHaveBeenCalledWith(annotation, [
-              annotationArgs,
-            ]);
+            expect(trigger.fn).toHaveBeenCalledWith(
+              new AnnotationContext(annotation, annotationArgs, fooTarget),
+            );
           });
         });
 
-        describe('but <trigger.target> does not match that class', () => {
+        describe('but <trigger.targets> does not match that class', () => {
           beforeEach(() => {
-            trigger.target = annotationTargetFactory.of(class X {});
+            trigger.targets = [annotationTargetFactory.of(class X {})];
             annotationTriggerRegistry.add(trigger);
           });
 
@@ -78,6 +72,35 @@ describe('AnnotationTriggerRegistry', () => {
             expect(trigger.fn).not.toHaveBeenCalled();
             applyAnnotation();
             expect(trigger.fn).not.toHaveBeenCalled();
+          });
+        });
+        describe('and <trigger.targets> is empty', () => {
+          beforeEach(() => {
+            trigger.targets = [];
+            annotationTriggerRegistry.add(trigger);
+          });
+
+          it('does not call <trigger.fn> ', () => {
+            applyAnnotation();
+            expect(trigger.fn).not.toHaveBeenCalled();
+          });
+        });
+        describe('and <trigger.targets> contains TargetType.CLASS', () => {
+          beforeEach(() => {
+            trigger.targets = [TargetType.CLASS];
+            annotationTriggerRegistry.add(trigger);
+          });
+
+          it('calls <trigger.fn> ', () => {
+            expect(trigger.fn).not.toHaveBeenCalled();
+            applyAnnotation();
+            expect(trigger.fn).toHaveBeenCalledTimes(2);
+            expect(trigger.fn).toHaveBeenCalledWith(
+              new AnnotationContext(annotation, annotationArgs, fooTarget),
+            );
+            expect(trigger.fn).toHaveBeenCalledWith(
+              new AnnotationContext(annotation, annotationArgs, barTarget),
+            );
           });
         });
       });
@@ -96,17 +119,17 @@ describe('AnnotationTriggerRegistry', () => {
     });
     describe('called after @SomeAnnotation() class SomeClass{}', () => {
       describe('when <trigger.annotations> contains "SomeAnnotation"', () => {
-        describe('and <trigger.target> matches that class', () => {
+        describe('and <trigger.targets> matches that class', () => {
           beforeEach(() => {
             applyAnnotation();
-            annotationTriggerRegistry.add(trigger);
           });
 
           it('calls <trigger.fn>', () => {
+            annotationTriggerRegistry.add(trigger);
             expect(trigger.fn).toHaveBeenCalledTimes(1);
-            expect(trigger.fn).toHaveBeenCalledWith(annotation, [
-              annotationArgs,
-            ]);
+            expect(trigger.fn).toHaveBeenCalledWith(
+              new AnnotationContext(annotation, annotationArgs, fooTarget),
+            );
           });
         });
       });

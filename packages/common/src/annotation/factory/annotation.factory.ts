@@ -1,17 +1,18 @@
+import { annotationsContext } from '../context/annotations.context.global';
+import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { assert, isFunction } from '@aspectjs/common/utils';
+import { isFunction } from '@aspectjs/common/utils';
+import { AnnotationRef } from '../annotation-ref';
+import type { AnnotationStub } from '../annotation.types';
 import {
   Annotation,
   AnnotationType,
   AnyDecorator,
   Decorator,
 } from '../annotation.types';
-import type { AnnotationStub } from '../annotation.types';
-import { AnnotationRef } from '../annotation-ref';
-import { reflectContext } from '../../reflect/reflect.context';
 
 let anonymousAnnotationId = 0;
 
@@ -87,6 +88,7 @@ export class AnnotationFactory {
     if (!_opts.annotationStub) {
       _opts.annotationStub = function () {} as S;
     }
+
     // create the annotation (ie: decorator factory)
     return this._createAnnotation(groupId, _opts.name, _opts.annotationStub);
   }
@@ -102,7 +104,7 @@ export class AnnotationFactory {
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
       return [
-        ...reflectContext().get('annotationFactoryHooksRegistry').values(),
+        ...annotationsContext().get(_AnnotationFactoryHookRegistry).values(),
       ]
         .sort(
           (c1, c2) =>
@@ -138,14 +140,15 @@ export class AnnotationFactory {
       return _factory._createDecorator(annotation, stub, annotationArgs);
     } as any as Annotation<T, S>;
 
+    // copy static properties
     Object.defineProperties(annotation, Object.getOwnPropertyDescriptors(stub));
     Object.defineProperties(
       annotation,
       Object.getOwnPropertyDescriptors(annotationRef),
     );
-    assert(
-      Object.getOwnPropertySymbols(annotation).indexOf(Symbol.toPrimitive) >= 0,
-    );
+    Object.defineProperty(annotation, 'ref', {
+      value: annotationRef,
+    });
 
     return annotation;
   }

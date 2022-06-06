@@ -9,4 +9,4 @@
 
 export * from './aspect/aspect-options.type';
 export * from './aspect/aspect.annotation';
-export * from './aspect/aspect.module';
+export * from './aspect/aspect.provider';

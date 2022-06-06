@@ -1,8 +1,10 @@
-import type { AnnotationTarget, DecoratorType } from '@aspectjs/common';
+import type { AnnotationTarget, TargetType } from '@aspectjs/common';
 import type { AspectType } from '../../aspect/aspect.type';
 import type { Weaver } from '../weaver';
 
 export class JitWeaver implements Weaver {
+  static readonly __providerName = 'Weaver';
+
   enable(): this {
     throw new Error('Method not implemented.');
   }
@@ -20,7 +22,7 @@ export class JitWeaver implements Weaver {
   getAspects(): AspectType[] {
     throw new Error('Method not implemented.');
   }
-  enhance<T extends DecoratorType>(
+  enhance<T extends TargetType>(
     _target: AnnotationTarget<T>,
   ): void | ((...args: unknown[]) => T) | PropertyDescriptor {
     throw new Error('Method not implemented.');

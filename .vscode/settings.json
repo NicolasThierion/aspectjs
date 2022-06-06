@@ -17,7 +17,9 @@
     "titleBar.activeBackground": "#0b2016",
     "titleBar.activeForeground": "#e7e7e7",
     "titleBar.inactiveBackground": "#0b201699",
-    "titleBar.inactiveForeground": "#e7e7e799"
+    "titleBar.inactiveForeground": "#e7e7e799",
+    "commandCenter.border": "#e7e7e799"
   },
-  "peacock.color": "#0b2016"
+  "peacock.color": "#0b2016",
+  "typescript.preferences.importModuleSpecifier": "shortest"
 }

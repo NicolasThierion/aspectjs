@@ -1,12 +1,12 @@
-import { AnnotationRef } from '@aspectjs/common';
-import { assert } from '@aspectjs/common/utils';
+import { Annotation, AnnotationRef } from '@aspectjs/common';
+import { assert, getAnnotationRef } from '@aspectjs/common/utils';
 import { PointcutTargetType } from './pointcut-target.type';
 
 interface PointcutExpressionInit<
   T extends PointcutTargetType = PointcutTargetType,
 > {
   type: T;
-  annotations: AnnotationRef[];
+  annotations: (AnnotationRef | Annotation)[];
 }
 const ANNOTATIONS_MATCH = '(?<annotations>(?:@\\S+)*)';
 const NAME_MATCH = `(?<name>\\S*)`;
@@ -39,7 +39,7 @@ export class PointcutExpression<
 
   constructor(pointcutExpression: PointcutExpressionInit<T>) {
     this.type = pointcutExpression.type;
-    this.annotations = pointcutExpression.annotations;
+    this.annotations = pointcutExpression.annotations.map(getAnnotationRef);
 
     this._expr = _trimSpaces(
       `${this.annotations.map((a) => `@${a.value}`).join('|')} ${this.type} ${

@@ -1,4 +1,5 @@
 /* eslint-disable */
+
 require('ts-node').register();
 const { join } = require('path');
 const pkg = require('./package.json');

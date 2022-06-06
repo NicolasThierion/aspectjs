@@ -1,9 +1,9 @@
 import {
-  getPrototype,
-  getMetadata,
+  ConstructorType,
   defineMetadata,
+  getMetadata,
+  getPrototype,
 } from '@aspectjs/common/utils';
-import type { ConstructorType } from 'packages/common/src/constructor.type';
 import type { AspectOptions } from './aspect-options.type';
 import type { AspectType } from './aspect.type';
 

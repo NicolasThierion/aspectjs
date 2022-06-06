@@ -1,7 +1,8 @@
-import { reflectContext } from '../../reflect/reflect.context';
 import type { Annotation } from '../annotation.types';
+import { annotationsContext } from '../context/annotations.context.global';
+import { AnnotationRegistry } from './annotation.registry';
 
 export const annotations = (...annotations: Annotation[]) =>
-  reflectContext()
-    .get('annotationRegistry')
+  annotationsContext()
+    .get(AnnotationRegistry)
     .find(...annotations);

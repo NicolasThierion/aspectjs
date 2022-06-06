@@ -32,13 +32,6 @@ export class AnnotationRef {
 
     this.name = _name;
     this.groupId = _groupId;
-
-    Object.defineProperty(this, Symbol.toPrimitive, {
-      enumerable: false,
-      value: () => {
-        return `@${this.name}`;
-      },
-    });
   }
 
   toString(): string {

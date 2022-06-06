@@ -1,5 +1,6 @@
 import { AnnotationFactory, type Annotation } from '@aspectjs/common';
-import { ReflectContext } from '../../reflect/reflect.context';
+import { configureTesting } from '@aspectjs/common/testing';
+import { annotationsContext } from './../context/annotations.context.global';
 import { AnnotationRegistry, AnnotationSelector } from './annotation.registry';
 import { annotations } from './annotations';
 
@@ -49,10 +50,9 @@ function setup() {
   A = class A {};
   B = class B {};
   X = class X {};
-  annotationRegistry =
-    ReflectContext.configureTesting().get<AnnotationRegistry>(
-      'annotationRegistry',
-    );
+  annotationRegistry = configureTesting(annotationsContext()).get(
+    AnnotationRegistry,
+  );
 
   const af = new AnnotationFactory('test');
   A1Annotation = af.create('A1Annotation');
@@ -211,9 +211,10 @@ function setup() {
   X = _X;
   annotationRegistry.find = jest.fn(annotationRegistry.find);
 }
+
 describe('annotations()', () => {
   beforeEach(setup);
-  it('calls s', () => {
+  it('calls AnnotationRegistry.find()', () => {
     annotations();
     expect(annotationRegistry.find).toHaveBeenCalledTimes(1);
     expect(annotationRegistry.find).toHaveBeenCalledWith();
@@ -264,20 +265,20 @@ describe('AnnotationRegistry', () => {
       });
     });
 
-    // describe(`.all(someClassInstance);`, () => {
-    //   describe(`if "SomeClass" has annotations`, () => {
-    //     it('returns all annotations found within class SomeClass', () => {
-    //       expect(s.all(new A()).map((a) => a.annotation)).toEqual(
-    //         expect.arrayContaining(A_ANNOTATIONS),
-    //       );
-    //     });
-    //   });
-    //   describe(`if "SomeClass" has no annotation`, () => {
-    //     it('returns empty array', () => {
-    //       expect(s.all(new X())).toEqual([]);
-    //     });
-    //   });
-    // });
+    xdescribe(`.all(someClassInstance);`, () => {
+      xdescribe(`if "SomeClass" has annotations`, () => {
+        xit('returns all annotations found within class SomeClass', () => {
+          // expect(s.all(new A()).map((a) => a.annotation)).toEqual(
+          //   expect.arrayContaining(A_ANNOTATIONS),
+          // );
+        });
+      });
+      xdescribe(`if "SomeClass" has no annotation`, () => {
+        xit('returns empty array', () => {
+          // expect(s.all(new X())).toEqual([]);
+        });
+      });
+    });
 
     describe(`.onClass()`, () => {
       it('returns all annotations found on all classes', () => {
