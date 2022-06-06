@@ -6,7 +6,7 @@
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "jest --runInBand",
-    "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
+    "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "doc": "typedoc src/index.ts",
     "build:common": "rollup --config ./rollup.config.js",
     "build:utils": "rollup --config ./utils/rollup.config.js",

@@ -6,6 +6,7 @@ import del from 'rollup-plugin-delete';
 import type { OutputOptions, RollupOptions } from 'rollup';
 import { resolve, relative, join } from 'path';
 import { cwd } from 'process';
+import { assert } from '@aspectjs/common/utils';
 // This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
 interface PackageJson {
   name: string;
@@ -34,7 +35,7 @@ export const createConfig = (
     );
 
   const pkg = options.pkg;
-
+  assert(!!pkg);
   const external = [
     '@aspectjs/common',
     '@aspectjs/common/testing',
