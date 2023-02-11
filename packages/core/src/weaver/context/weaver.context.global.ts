@@ -1,10 +1,8 @@
-import { reflectContext } from '@aspectjs/common';
-import { WeaverContext, WeaverModule } from './weaver.context';
+import { annotationsContext } from '@aspectjs/common';
 
-let _context: WeaverContext;
+import { WeaverModule } from './weaver.module';
+
+import type { WeaverContext } from './weaver.context';
 export const weaverContext = (): WeaverContext => {
-  if (_context) {
-    return _context;
-  }
-  return (_context = reflectContext().addModules(new WeaverModule()));
+  return annotationsContext().addModules(new WeaverModule());
 };

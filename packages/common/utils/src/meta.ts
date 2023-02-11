@@ -13,7 +13,7 @@ declare let Reflect: {
 
 // rough Reflect polyfill
 if (!Reflect.getOwnMetadata) {
-  const _meta = new Map<Object, Map<string, Map<string, any>>>();
+  const _meta = new Map<object, Map<string, Map<string, any>>>();
 
   Reflect.getOwnMetadata = function (
     key: string,
@@ -85,7 +85,7 @@ export function getMetadata<T>(
   let value = Reflect.getOwnMetadata(key, target, _propertyKey);
 
   if (isUndefined(value)) {
-    value = _valueGenerator();
+    value = _valueGenerator?.();
     if (save && value !== undefined) {
       Reflect.defineMetadata(key, value, target, _propertyKey);
     }

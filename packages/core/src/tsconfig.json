@@ -1,5 +1,0 @@
-{
-  "$schema": "http://json.schemastore.org/tsconfig",
-  "extends": "../../../tsconfig.json",
-  "include": ["./**/*.ts", "aspect/__aspect-registry.spec.ts__"]
-}

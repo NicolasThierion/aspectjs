@@ -1,6 +1,6 @@
 import type { TargetType } from '../annotation.types';
 
-export type Prototype<X extends object = object> = Record<string, unknown> & {
+export type Prototype<X = unknown> = Record<string, unknown> & {
   constructor: new (...args: unknown[]) => X;
 };
 
@@ -15,7 +15,7 @@ interface _BaseAnnotationTarget<
   X = unknown,
 > {
   readonly type: T;
-  readonly proto: Prototype;
+  readonly proto: Prototype<X>;
   readonly name: string;
   readonly label: string;
   readonly ref: AnnotationTargetRef;

@@ -14,7 +14,11 @@
     // Type declaration settings.
     "declaration": true,
     "declarationDir": "types/",
-    "declarationMap": true
+    "declarationMap": true,
+
+    // disable errors
+    "noUnusedParameters": false,
+    "noUnusedLocals": false
   },
   "exclude": ["**/*.spec.ts"]
 }

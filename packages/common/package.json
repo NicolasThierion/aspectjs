@@ -7,11 +7,11 @@
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "jest --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
-    "doc": "typedoc src/index.ts",
+    "doc": "typedoc --excludeInternal --out dist/docs index.ts",
     "build:common": "rollup --config ./rollup.config.js",
     "build:utils": "rollup --config ./utils/rollup.config.js",
     "build:testing": "rollup --config ./testing/rollup.config.js",
-    "build": "rimraf dist && npm run build:utils && npm run build:common && npm run build:testing"
+    "build": "npm run build:utils && npm run build:common && npm run build:testing"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "license": "MIT",

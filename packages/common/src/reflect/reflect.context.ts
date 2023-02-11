@@ -1,3 +1,5 @@
+import { assert } from '@aspectjs/common/utils';
+
 /**
  * Returns an object to store global values across the framework
  */
@@ -9,32 +11,62 @@ export class ReflectContext {
   private readonly providersToResolve: Map<
     ReflectProvider['provide'],
     ReflectProvider[]
-  >;
+  > = new Map();
 
-  private readonly providersRegistry: Map<string, unknown>;
+  private readonly providersRegistry: Map<string, unknown> = new Map();
+  private readonly modules: Set<ReflectModule> = new Set();
+  private addedProviders: Set<ReflectProvider> = new Set();
 
   constructor(context?: ReflectContext) {
-    this.providersToResolve = context?.providersToResolve ?? new Map();
-    this.providersRegistry = context?.providersRegistry ?? new Map();
+    if (context?.modules) {
+      this.addModules(...context.modules.values());
+    }
   }
 
   addModules(...modules: ReflectModule[]): ReflectContext {
-    Object.values(modules)
-      .flatMap((m) => m.providers)
-      .forEach((p) => {
-        const providerName = getProviderName(p.provide);
-        this.providersToResolve.set(
-          providerName,
-          (this.providersToResolve.get(providerName) ?? []).concat(p),
-        );
-      }, new Map<string, ReflectProvider[]>());
+    modules = Object.values(modules).filter((m) => !this.modules.has(m));
 
+    // dedupe providers
+    const providers = [
+      ...new Set(modules.flatMap((m) => m.providers)).values(),
+    ].filter((p) => !this.addedProviders.has(p));
+
+    providers.forEach((p) => {
+      const providerName = getProviderName(p.provide);
+      this.addedProviders.add(p);
+      this.providersToResolve.set(
+        providerName,
+        (this.providersToResolve.get(providerName) ?? []).concat(p),
+      );
+    }, new Map<string, ReflectProvider[]>());
+
+    Object.values(modules).forEach((m) => !this.modules.add(m));
     return this;
   }
 
-  get<T>(provider: ReflectProvider<T>['provide']): T {
-    return (this.providersRegistry.get(getProviderName(provider)) ??
-      this._resolveProvider(provider)) as T;
+  get<T>(providerType: ReflectProvider<T>['provide']): T {
+    return this._get(getProviderName(providerType));
+  }
+
+  private _get<T>(
+    providerName: string,
+    neededBy: string[] = [],
+    resolveFirst = false,
+  ): T {
+    const provider =
+      this._tryResolveProvider(providerName, neededBy, resolveFirst) ??
+      (this.providersRegistry.get(providerName) as T);
+
+    // if provider not found
+    if (!provider) {
+      throw new Error(
+        `No ReflectContext provider found for ${providerName}${
+          neededBy?.length ? `. Needed by ${neededBy.join(' -> ')}` : ''
+        }`,
+      );
+    }
+
+    return provider as T;
   }
 
   has<T>(providerType: ReflectProvider<T>['provide']): boolean {
@@ -42,25 +74,19 @@ export class ReflectContext {
   }
 
   protected _reset() {
+    this.modules.clear();
+    this.addedProviders.clear();
     this.providersRegistry.clear();
     this.providersToResolve.clear();
   }
 
-  private _resolveProvider<T>(
-    providerType: ReflectProvider<T>['provide'],
+  private _tryResolveProvider<T>(
+    providerType: string,
     neededBy: string[] = [],
     resolveFirst = false,
   ): T {
     const providerName = getProviderName(providerType);
     const providers = this.providersToResolve.get(providerName);
-    // if provider not found
-    if (!providers?.length) {
-      throw new Error(
-        `No ReflectContext provider found for ${providerName}${
-          neededBy?.length ? `. Needed by ${neededBy.join(' -> ')}` : ''
-        }`,
-      );
-    }
 
     let component: any;
 
@@ -86,10 +112,10 @@ export class ReflectContext {
 
         try {
           neededBy.push(providerName);
-          const dependencyComponent = this._resolveProvider(
-            dep,
+          const dependencyComponent = this._get(
+            depName,
             neededBy,
-            true,
+            depName === providerName, // if a provider depends on itself, only resolve the first matching provider
           );
           this.providersRegistry.set(depName, dependencyComponent);
           return dependencyComponent;
@@ -114,6 +140,7 @@ export class ReflectContext {
 function getProviderName<T>(
   providerType: ReflectProvider<T>['provide'],
 ): string {
+  assert(!!providerType);
   return typeof providerType === 'string'
     ? providerType
     : providerType.__providerName ?? providerType.name;

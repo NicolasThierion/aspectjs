@@ -5,6 +5,7 @@ import del from 'rollup-plugin-delete';
 
 import type { OutputOptions, RollupOptions } from 'rollup';
 import { resolve, relative, join } from 'path';
+import { existsSync } from 'fs';
 import { cwd } from 'process';
 
 // This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
@@ -15,17 +16,27 @@ interface PackageJson {
   license: string;
 }
 
+export interface CreateConfigOptions {
+  pkg?: PackageJson;
+  tsconfig?: string;
+
+  rootDir?: string;
+  input?: string;
+  typesInput?: string;
+}
+
 export const createConfig = (
   name: string,
-  options: {
-    pkg: PackageJson;
-    tsconfig: string;
-
-    input?: string;
-    typesInput?: string;
-  },
+  optionsOrRootDir: string | CreateConfigOptions,
 ) => {
-  options.input = options.input ?? './index.ts';
+  const options =
+    typeof optionsOrRootDir === 'string'
+      ? {
+          rootDir: optionsOrRootDir,
+        }
+      : optionsOrRootDir;
+  options.rootDir = options.rootDir ?? '.';
+  options.input = options.input ?? join(options.rootDir, 'index.ts');
 
   options.typesInput =
     options.typesInput ??
@@ -34,7 +45,14 @@ export const createConfig = (
       relative(cwd(), options.input).replace(/\.ts$/, '.d.ts'),
     );
 
-  const pkg = options.pkg;
+  const localTsConfig = join(options.rootDir, 'tsconfig.json');
+  options.tsconfig =
+    options.tsconfig ??
+    (existsSync(localTsConfig)
+      ? localTsConfig
+      : resolve(__dirname, './tsconfig.json'));
+  options.pkg = options.pkg ?? require(join(options.rootDir, 'package.json'));
+  const pkg = options.pkg!;
   const external = [
     '@aspectjs/common',
     '@aspectjs/common/testing',
@@ -112,17 +130,10 @@ export const createConfig = (
       }),
     ],
 
-    // createOutputOptions({
-    //   file: `./dist/${name}.umd.min.js`,
-    //   format: 'umd',
-    //   plugins: [terser()],
-    // }),
-    // ],
     plugins: [
       typescript({
         // cacheDir: '.rollup.tscache',
-        tsconfig:
-          options.tsconfig ?? resolve(__dirname, './tsconfig.bundle.json'),
+        tsconfig: options.tsconfig,
         // explicitly disable declarations, as a rollup config is dedicated for them
         declaration: false,
         declarationDir: undefined,
@@ -133,6 +144,9 @@ export const createConfig = (
     external,
   };
 
+  /**
+   * Generate only types into dist/types/index.d.ts
+   */
   const dtsOptions: RollupOptions = {
     input: options.input,
 
@@ -152,12 +166,15 @@ export const createConfig = (
         declaration: true,
         emitDeclarationOnly: true,
         skipLibCheck: true,
-        // paths: {},
+        paths: {},
       }),
     ],
     external,
   };
 
+  /**
+   * Bundle previously generated dist/types/index.d.ts
+   */
   const dtsBundleOptions: RollupOptions = {
     input: options.typesInput,
     // .d.ts bundle
@@ -171,7 +188,5 @@ export const createConfig = (
     ],
     external,
   };
-  console.debug();
-
   return [bundleOptions, dtsOptions, dtsBundleOptions];
 };

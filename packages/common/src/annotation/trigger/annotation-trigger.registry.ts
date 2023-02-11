@@ -1,12 +1,14 @@
 import {
   assert,
   defineMetadata,
-  getAnnotationRef,
   getMetadata,
+  isObject,
 } from '@aspectjs/common/utils';
-import type { AnnotationContext } from '../annotation-context';
-import type { AnnotationRef } from '../annotation-ref';
+
 import { AnnotationType, TargetType } from '../annotation.types';
+
+import type { AnnotationContext } from '../annotation-context';
+import { AnnotationRef } from '../annotation-ref';
 import type { AnnotationRegistry } from '../registry/annotation.registry';
 import type { AnnotationTarget } from '../target/annotation-target';
 import type { AnnotationTrigger } from './annotation-trigger.type';
@@ -17,8 +19,7 @@ let _globalId = 0;
  * Registry for the {@link AnnotationTrigger}.
  */
 export class AnnotationTriggerRegistry {
-  private readonly _id = _globalId++;
-  private readonly _ANNOTATION_TRIGGER_REFLECT_KEY = `aspectjs::triggers.registry=${this._id}`;
+  private readonly _ANNOTATION_TRIGGER_REFLECT_KEY = `@aspectjs/core:AnnotationTriggerRegistry@${_globalId++}`;
 
   constructor(private readonly annotationRegistry: AnnotationRegistry) {}
   /**
@@ -31,44 +32,55 @@ export class AnnotationTriggerRegistry {
    */
   add(...triggers: AnnotationTrigger[]): this {
     triggers.forEach((trigger) => {
-      trigger.targets.forEach((target) => {
-        const foundAnnotations = new Set<AnnotationRef>();
+      trigger.targets
+        .map((targetOrType) => {
+          return isObject(targetOrType)
+            ? targetOrType
+            : ({
+                type: targetOrType,
+                ref: getTargetRef(targetOrType),
+              } as AnnotationTarget);
+        })
+        .forEach((target) => {
+          const foundAnnotations = new Set<AnnotationRef>();
 
-        // if annotation already applied; calls the trigger right now.
-        this.annotationRegistry
-          .find(...trigger.annotations.map(getAnnotationRef))
-          .on(target as any)
-          .forEach((a) => {
-            trigger.fn(a);
-            foundAnnotations.add(a.annotation.ref);
-          });
+          // if annotation already applied; calls the trigger right now.
+          this.annotationRegistry
+            .select(...trigger.annotations.map(AnnotationRef.of))
+            .on({ target })
+            .forEach((a) => {
+              trigger.fn(a);
+              foundAnnotations.add(a.annotation.ref);
+            });
 
-        // else, add triggers to the map for not found annotations
-        const notFoundAnnotationRefs = trigger.annotations
-          .map(getAnnotationRef)
-          .filter((a) => !foundAnnotations.has(a));
+          // else, add triggers to the map for not found annotations
+          const notFoundAnnotationRefs = trigger.annotations
+            .map(AnnotationRef.of)
+            .filter((a) => !foundAnnotations.has(a));
 
-        if (notFoundAnnotationRefs.length) {
-          const triggers = getMetadata<Map<AnnotationRef, AnnotationTrigger[]>>(
-            this._ANNOTATION_TRIGGER_REFLECT_KEY,
-            getTargetRef(target),
-            () => new Map(),
-            true,
-          );
+          if (notFoundAnnotationRefs.length) {
+            const triggers = getMetadata<
+              Map<AnnotationRef, AnnotationTrigger[]>
+            >(
+              this._ANNOTATION_TRIGGER_REFLECT_KEY,
+              target.ref,
+              () => new Map(),
+              true,
+            );
 
-          notFoundAnnotationRefs.forEach((a) => {
-            const t = triggers.get(a) ?? [];
-            t.push(trigger);
-            triggers.set(a, t);
-          });
+            notFoundAnnotationRefs.forEach((a) => {
+              const t = triggers.get(a) ?? [];
+              t.push(trigger);
+              triggers.set(a, t);
+            });
 
-          defineMetadata(
-            this._ANNOTATION_TRIGGER_REFLECT_KEY,
-            triggers,
-            getTargetRef(target),
-          );
-        }
-      });
+            defineMetadata(
+              this._ANNOTATION_TRIGGER_REFLECT_KEY,
+              triggers,
+              target.ref,
+            );
+          }
+        });
     });
 
     return this;
@@ -117,7 +129,7 @@ export class AnnotationTriggerRegistry {
       annotationTypeEntries.forEach((v, k) => {
         const entry = triggers.get(k) ?? [];
         entry.push(...v);
-        triggers.set(getAnnotationRef(k), entry);
+        triggers.set(AnnotationRef.of(k), entry);
       });
     }
 

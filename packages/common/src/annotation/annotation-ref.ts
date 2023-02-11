@@ -1,4 +1,5 @@
 import { assert } from '@aspectjs/common/utils';
+import { Annotation } from './annotation.types';
 
 export class AnnotationRef {
   public readonly value: string;
@@ -36,5 +37,9 @@ export class AnnotationRef {
 
   toString(): string {
     return `@${this.groupId}:${this.name}`;
+  }
+
+  static of(obj: Annotation | AnnotationRef): AnnotationRef {
+    return (obj as Annotation)?.ref ?? obj;
   }
 }

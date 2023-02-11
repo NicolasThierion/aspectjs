@@ -1,11 +1,10 @@
 import { AnnotationContext } from '../../annotation-context';
 import type { AnnotationFactoryHook } from '../../factory/annotation-factory-hook.type';
 import type { AnnotationTargetFactory } from '../../target/annotation-target.factory';
-import { DecoratorTargetArgs } from '../../target/target-args';
 import type { AnnotationRegistry } from '../annotation.registry';
 
 /**
- * Returns an {@link AnnotationFactoryHook} to add annotations to the {@link AnnotationRegistry}
+ * Returns an {@link AnnotationFactoryHook} that adds annotations to the {@link AnnotationRegistry}
  * @param annotationRegistry
  * @returns
  */
@@ -16,7 +15,7 @@ export const REGISTER_ANNOTATION_HOOK = (
   name: '@aspectjs::hook:registerAnnotation',
   decorator: (annotation, annotationArgs) => {
     return (...targetArgs: any[]) => {
-      const target = targetFactory.register(DecoratorTargetArgs.of(targetArgs));
+      const target = targetFactory.of(...targetArgs);
       const annotationContext = new AnnotationContext(
         annotation,
         annotationArgs,

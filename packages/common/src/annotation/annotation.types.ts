@@ -16,11 +16,17 @@ export enum AnnotationType {
   ANY = 0b1111,
 }
 
+/**
+ * @internal
+ */
 type ClassDecorator = <TFunction extends Function>(
   target: TFunction,
 ) => TFunction;
+/**
+ * @internal
+ */
 type MethodDecorator = <X>(
-  target: Object,
+  target: object,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<X>,
 ) => TypedPropertyDescriptor<X>;
@@ -45,6 +51,9 @@ export type Annotation<
   readonly groupId: string;
 } & ((...args: Parameters<S>) => Decorator<T>);
 
+/**
+ * @internal
+ */
 export type Decorator<T extends AnnotationType = AnnotationType> =
   T extends AnnotationType.CLASS
     ? ClassDecorator
@@ -56,6 +65,9 @@ export type Decorator<T extends AnnotationType = AnnotationType> =
     ? PropertyDecorator
     : AnyDecorator;
 
+/**
+ * @internal
+ */
 export type AnyDecorator = ClassDecorator &
   MethodDecorator &
   ParameterDecorator &

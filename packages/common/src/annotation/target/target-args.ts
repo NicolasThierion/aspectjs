@@ -8,16 +8,21 @@ import {
 import { TargetType } from '../annotation.types';
 import type { Prototype } from './annotation-target';
 
-export interface DecoratorLocation {
-  proto: Prototype;
+export interface DecoratorLocation<X = unknown> {
+  proto: Prototype<X>;
   propertyKey?: string;
   parameterIndex?: number;
 }
 
-export abstract class DecoratorTargetArgs<T extends TargetType = TargetType>
-  implements DecoratorLocation
+/**
+ * Represents ts decorator arguments, used for creating the {@link AnnotationTarget}
+ */
+export abstract class DecoratorTargetArgs<
+  T extends TargetType = TargetType,
+  X = unknown,
+> implements DecoratorLocation
 {
-  readonly proto!: Prototype;
+  readonly proto!: Prototype<X>;
   readonly type!: T;
   readonly propertyKey?: string;
   readonly parameterIndex?: number;

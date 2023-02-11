@@ -3,7 +3,12 @@ import type { AnnotationRef } from '../annotation-ref';
 import type { Annotation, TargetType } from '../annotation.types';
 import type { AnnotationTarget } from '../target/annotation-target';
 
-type AnnotationTriggerFn = (annotationContext: AnnotationContext) => void;
+/**
+ * @internal
+ */
+export type AnnotationTriggerFn = (
+  annotationContext: AnnotationContext,
+) => void;
 
 /**
  * For a given class, typescript decorators are evaluated from the inner to the outer.
@@ -11,6 +16,8 @@ type AnnotationTriggerFn = (annotationContext: AnnotationContext) => void;
  * For this reason, higer inner decorators cannot rely on outer decorators.
  * This class allows moving the behavior of an inner decorator into a trigger,
  * that can later be called when the decorator is effectively applied.
+ * @internal
+ *
  */
 export interface AnnotationTrigger {
   targets: (AnnotationTarget | TargetType)[];

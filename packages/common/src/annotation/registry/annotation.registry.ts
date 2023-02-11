@@ -1,22 +1,21 @@
-import {
-  assert,
-  ConstructorType,
-  getAnnotationRef,
-  isObject,
-} from '@aspectjs/common/utils';
-import type { AnnotationContext } from '../annotation-context';
-import type { AnnotationRef } from '../annotation-ref';
-import { Annotation, AnnotationType, TargetType } from '../annotation.types';
+import { assert, ConstructorType, isObject } from '@aspectjs/common/utils';
+import { AnnotationRef } from '../annotation-ref';
+import { Annotation, TargetType } from '../annotation.types';
 import type {
   AnnotationTarget,
   AnnotationTargetRef,
 } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { DecoratorTargetArgs } from '../target/target-args';
+import { AnnotationContext } from './../annotation-context';
+import { AnnotationSelectionFilter } from './annotation-selection-filter';
 
 type ByAnnotationSet = {
   byClassTargetRef: Map<AnnotationTargetRef, AnnotationContext>;
 };
+
+/**
+ * @internal
+ */
 class _AnnotationsSet {
   private buckets: {
     [k in TargetType]: Map<AnnotationRef, ByAnnotationSet>;
@@ -37,7 +36,7 @@ class _AnnotationsSet {
       .map((t) => this.buckets[t])
       .flatMap((m) =>
         annotationRefs.length
-          ? annotationRefs.map((ref) => m.get(getAnnotationRef(ref)))
+          ? annotationRefs.map((ref) => m.get(AnnotationRef.of(ref)))
           : [...m.values()],
       )
       .filter((set) => !!set)
@@ -88,69 +87,82 @@ export class AnnotationSelector {
   }
   onClass<X = unknown>(
     type?: ConstructorType<X>,
+    searchParent = false,
   ): AnnotationContext<TargetType.CLASS>[] {
-    return this._find([TargetType.CLASS], type);
+    return this._find([TargetType.CLASS], type, undefined, searchParent);
   }
   onMethod<X = any>(
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
+    searchParent = false,
   ): AnnotationContext<TargetType.METHOD>[] {
-    return this._find([TargetType.METHOD], type, propertyKey);
+    return this._find([TargetType.METHOD], type, propertyKey, searchParent);
   }
   onProperty<X>(
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
+    searchParent = false,
   ): AnnotationContext<TargetType.PROPERTY>[] {
-    return this._find([TargetType.PROPERTY], type, propertyKey);
+    return this._find([TargetType.PROPERTY], type, propertyKey, searchParent);
   }
   onArgs<X>(
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
+    searchParent = false,
   ): AnnotationContext<TargetType.PARAMETER>[] {
-    return this._find([TargetType.PARAMETER], type, propertyKey);
+    return this._find([TargetType.PARAMETER], type, propertyKey, searchParent);
   }
 
-  on<T extends AnnotationType>(type: T): AnnotationContext[];
-  on<X>(target: AnnotationTarget<TargetType, X>): AnnotationContext[];
-  on(
-    targetOrType: AnnotationTarget<TargetType, any> | TargetType,
-  ): AnnotationContext[] {
-    if (isObject(targetOrType)) {
-      return this._find(
-        [targetOrType.type],
-        targetOrType.proto.constructor,
-        (targetOrType as AnnotationTarget<TargetType.METHOD>)
-          .propertyKey as any,
-      );
-    } else {
-      return this._find([targetOrType]);
-    }
+  on(filter: AnnotationSelectionFilter): AnnotationContext[] {
+    const { target, searchParent } = filter;
+    assert(isObject(target));
+    return this._find(
+      filter.types ?? [target.type],
+      target.proto?.constructor,
+      (target as AnnotationTarget<TargetType.METHOD>).propertyKey as any,
+      searchParent,
+    );
   }
 
   private _find<X>(
     decoratorTypes: TargetType[],
     type?: ConstructorType<X>,
     propertyKey?: keyof X,
+    includeParent = false,
   ): AnnotationContext[] {
-    let classTargetRef: AnnotationTargetRef | undefined = undefined;
-    if (type) {
-      const classTarget = this.targetFactory.find(
-        DecoratorTargetArgs.of([type]),
+    if (!type) {
+      assert(!includeParent);
+
+      return this.annotationSet.getAnnotations(
+        decoratorTypes,
+        this.annotationsRefs,
+        undefined,
+        propertyKey,
       );
-
-      assert(!!classTarget);
-      if (!classTarget) {
-        return [];
-      }
-
-      classTargetRef = classTarget.ref;
     }
-    return this.annotationSet.getAnnotations(
-      decoratorTypes,
-      this.annotationsRefs,
-      classTargetRef,
-      propertyKey,
-    );
+    // search annotations on given type
+    const classTarget = this.targetFactory.of(type);
+
+    assert(!!classTarget);
+    if (!classTarget) {
+      return [];
+    }
+
+    // search extends the search to parent types ?
+    const classTargets = includeParent
+      ? [classTarget, ...getAncestors(classTarget)]
+      : [classTarget];
+
+    return classTargets
+      .map((target) => target.ref)
+      .flatMap((ref) =>
+        this.annotationSet.getAnnotations(
+          decoratorTypes,
+          this.annotationsRefs,
+          ref,
+          propertyKey,
+        ),
+      );
   }
 }
 
@@ -164,11 +176,23 @@ export class AnnotationRegistry {
   register(annotationContext: AnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
-  find(...annotations: (AnnotationRef | Annotation)[]): AnnotationSelector {
+  select(...annotations: (AnnotationRef | Annotation)[]): AnnotationSelector {
     return new AnnotationSelector(
       this.targetFactory,
       this.annotationSet,
-      annotations.map(getAnnotationRef),
+      annotations.map(AnnotationRef.of),
     );
   }
+}
+
+function getAncestors<T extends TargetType>(
+  target: AnnotationTarget<T, any>,
+): Array<AnnotationTarget<T, any>> {
+  if (!target.parent) {
+    return [];
+  }
+  return [
+    target.parent as AnnotationTarget<T, any>,
+    ...getAncestors<T>(target.parent as AnnotationTarget<T, any>),
+  ];
 }

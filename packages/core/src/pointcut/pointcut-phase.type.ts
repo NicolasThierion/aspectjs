@@ -1,4 +1,4 @@
-export enum AdviceType {
+export enum PointcutType {
   COMPILE = 'Compile',
   BEFORE = 'Before',
   AROUND = 'Around',

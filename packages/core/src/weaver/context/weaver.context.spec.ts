@@ -2,8 +2,9 @@ import {
   configureTesting,
   ReflectTestingContext,
 } from '@aspectjs/common/testing';
+
+import { AdviceRegistry } from '../../advice/registry/advice.registry';
 import { AspectRegistry } from '../../aspect/aspect.registry';
-import { AdviceRegistry } from './../../advice/advice.registry';
 import { weaverContext } from './weaver.context.global';
 
 describe('weaverContext()', () => {

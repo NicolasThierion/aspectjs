@@ -1,19 +1,20 @@
-import { annotationsContext } from '../context/annotations.context.global';
-import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-empty-function */
-
 import { isFunction } from '@aspectjs/common/utils';
+
 import { AnnotationRef } from '../annotation-ref';
-import type { AnnotationStub } from '../annotation.types';
 import {
   Annotation,
   AnnotationType,
   AnyDecorator,
   Decorator,
 } from '../annotation.types';
+import { annotationsContext } from '../context/annotations.context.global';
+import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-empty-function */
+
+import type { AnnotationStub } from '../annotation.types';
 let anonymousAnnotationId = 0;
 
 interface AnnotationCreateOptions<
@@ -94,7 +95,10 @@ export class AnnotationFactory {
   }
 
   // Turn an annotation into an ES decorator
-  _createDecorator<T extends AnnotationType, S extends AnnotationStub<T>>(
+  private _createDecorator<
+    T extends AnnotationType,
+    S extends AnnotationStub<T>,
+  >(
     annotation: Annotation<T, S>,
     annotationStub: S,
     annotationArgs: any[],
@@ -128,11 +132,10 @@ export class AnnotationFactory {
     };
   }
 
-  _createAnnotation<T extends AnnotationType, S extends AnnotationStub<T>>(
-    groupId: string,
-    name: string,
-    stub: S,
-  ): Annotation<T, S> {
+  private _createAnnotation<
+    T extends AnnotationType,
+    S extends AnnotationStub<T>,
+  >(groupId: string, name: string, stub: S): Annotation<T, S> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _factory = this;
     const annotationRef = new AnnotationRef(groupId, name);
@@ -149,6 +152,8 @@ export class AnnotationFactory {
     Object.defineProperty(annotation, 'ref', {
       value: annotationRef,
     });
+
+    annotation.toString = () => `@${annotation.name}`;
 
     return annotation;
   }

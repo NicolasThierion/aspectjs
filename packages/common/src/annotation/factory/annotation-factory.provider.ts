@@ -1,7 +1,7 @@
-import type { ReflectProvider } from '../../reflect/reflect-provider.type';
 import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
 import { CALL_ANNOTATION_STUB } from './hooks/call-annotation-stub.hook';
 
+import type { ReflectProvider } from '../../reflect/reflect-provider.type';
 /**
  * @internal
  */

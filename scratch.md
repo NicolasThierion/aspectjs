@@ -15,3 +15,5 @@
 
 WeaverModule
 JitWeaverHook => `Function not implemented`
+
+@aspectjs/reflect

@@ -1,8 +1,9 @@
-import { AnnotationFactory, type Annotation } from '@aspectjs/common';
+import { Annotation, AnnotationFactory } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
+
 import { annotationsContext } from './../context/annotations.context.global';
 import { AnnotationRegistry, AnnotationSelector } from './annotation.registry';
-import { annotations } from './annotations';
+import { annotations } from './annotations.global';
 
 let annotationRegistry: AnnotationRegistry;
 
@@ -209,15 +210,15 @@ function setup() {
     fn(_arg: string) {}
   }
   X = _X;
-  annotationRegistry.find = jest.fn(annotationRegistry.find);
+  annotationRegistry.select = jest.fn(annotationRegistry.select);
 }
 
 describe('annotations()', () => {
   beforeEach(setup);
   it('calls AnnotationRegistry.find()', () => {
     annotations();
-    expect(annotationRegistry.find).toHaveBeenCalledTimes(1);
-    expect(annotationRegistry.find).toHaveBeenCalledWith();
+    expect(annotationRegistry.select).toHaveBeenCalledTimes(1);
+    expect(annotationRegistry.select).toHaveBeenCalledWith();
   });
 });
 
@@ -226,8 +227,8 @@ describe('annotations(AClassAnnotation)', () => {
 
   it('calls AnnotationRegistry.find(AClassAnnotation)', () => {
     annotations(AClassAnnotation);
-    expect(annotationRegistry.find).toHaveBeenCalledTimes(1);
-    expect(annotationRegistry.find).toHaveBeenCalledWith(AClassAnnotation);
+    expect(annotationRegistry.select).toHaveBeenCalledTimes(1);
+    expect(annotationRegistry.select).toHaveBeenCalledWith(AClassAnnotation);
   });
 });
 
@@ -237,7 +238,7 @@ describe('AnnotationRegistry', () => {
   describe('.find()', () => {
     let s: AnnotationSelector;
 
-    beforeEach(() => (s = annotationRegistry.find()));
+    beforeEach(() => (s = annotationRegistry.select()));
     it('returns an AnnotationSelector', () => {
       expect(s).toBeInstanceOf(AnnotationSelector);
     });
@@ -425,7 +426,7 @@ describe('AnnotationRegistry', () => {
     let s: AnnotationSelector;
 
     describe('if "AAnnotation" is used', () => {
-      beforeEach(() => (s = annotationRegistry.find(XAnnotation)));
+      beforeEach(() => (s = annotationRegistry.select(XAnnotation)));
       describe('.all()', () => {
         it('returns an empty array', () => {
           expect(s.all()).toEqual([]);
@@ -433,7 +434,7 @@ describe('AnnotationRegistry', () => {
       });
     });
     describe('if "AAnnotation" is used', () => {
-      beforeEach(() => (s = annotationRegistry.find(A1Annotation)));
+      beforeEach(() => (s = annotationRegistry.select(A1Annotation)));
 
       describe('.all()', () => {
         it('returns all "AAnnotation" annotations found all over the code', () => {

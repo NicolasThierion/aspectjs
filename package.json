@@ -7,7 +7,8 @@
     "test": "lerna run test --stream",
     "test:unit": "lerna run test:unit --stream",
     "lint": "lerna run test:lint --stream",
-    "build": "lerna run build --stream"
+    "build": "lerna run build --stream",
+    "doc": "lerna run doc --stream"
   },
   "repository": {
     "type": "git",
@@ -34,8 +35,9 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.5.1",
-    "prettier": "^2.5.1",
+    "jest-extended": "^3.2.4",
     "lerna": "^4.0.0",
+    "prettier": "^2.5.1",
     "require-json5": "^1.2.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.67.2",

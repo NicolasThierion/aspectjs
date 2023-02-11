@@ -1,7 +1,7 @@
-import type { AnnotationRef } from 'packages/common/src/annotation/annotation-ref';
 import type { Annotation } from '../../src/annotation/annotation.types';
 
 export function getPrototype(
+  // eslint-disable-next-line @typescript-eslint/ban-types
   target: Record<string, any> | Function,
 ): Record<string, any> & { constructor?: new (...args: any[]) => any } {
   if (isFunction(target)) {
@@ -9,6 +9,7 @@ export function getPrototype(
   } else if (target === null || target === undefined) {
     return target as any;
   }
+  // eslint-disable-next-line no-prototype-builtins
   return target.hasOwnProperty('constructor')
     ? target
     : Object.getPrototypeOf(target);
@@ -20,12 +21,6 @@ export function isAnnotation(obj: unknown): obj is Annotation {
     typeof (obj as Annotation).ref?.groupId === 'string' &&
     typeof (obj as Annotation).ref?.name === 'string'
   );
-}
-
-export function getAnnotationRef(
-  obj: Annotation | AnnotationRef,
-): AnnotationRef {
-  return (obj as Annotation)?.ref ?? obj;
 }
 
 export function isFunction(

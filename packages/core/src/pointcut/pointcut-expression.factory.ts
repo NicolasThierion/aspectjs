@@ -29,8 +29,8 @@ export class PropertyPointcutFactory extends PointcutExpressionFactory<PointcutT
 }
 
 export const on = {
-  class: new PointcutExpressionFactory(PointcutTargetType.CLASS),
-  method: new PointcutExpressionFactory(PointcutTargetType.METHOD),
-  parameter: new PointcutExpressionFactory(PointcutTargetType.PARAMETER),
-  property: new PropertyPointcutFactory(),
+  classes: new PointcutExpressionFactory(PointcutTargetType.CLASS),
+  methods: new PointcutExpressionFactory(PointcutTargetType.METHOD),
+  parameters: new PointcutExpressionFactory(PointcutTargetType.PARAMETER),
+  properties: new PropertyPointcutFactory(),
 };

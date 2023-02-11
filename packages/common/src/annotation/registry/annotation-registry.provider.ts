@@ -1,9 +1,12 @@
-import type { ReflectProvider } from '../../reflect/reflect-provider.type';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { _AnnotationFactoryHookRegistry } from './../factory/annotations-hooks.registry';
 import { AnnotationRegistry } from './annotation.registry';
 import { REGISTER_ANNOTATION_HOOK } from './hooks/register-annotation.hook';
 
+import type { ReflectProvider } from '../../reflect/reflect-provider.type';
+/**
+ * @internal
+ */
 export const ANNOTATION_REGISTRY_PROVIDERS: ReflectProvider[] = [
   {
     provide: AnnotationRegistry,

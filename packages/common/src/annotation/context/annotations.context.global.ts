@@ -15,12 +15,6 @@ export class AnnotationsReflectModule implements ReflectModule {
   ];
 }
 
-let _bootstraped = false;
 export const annotationsContext = () => {
-  if (!_bootstraped) {
-    _bootstraped = true;
-    return reflectContext().addModules(new AnnotationsReflectModule());
-  }
-
-  return reflectContext();
+  return reflectContext().addModules(new AnnotationsReflectModule());
 };

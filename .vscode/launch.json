@@ -64,6 +64,16 @@
       "runtimeVersion": "16",
       "runtimeArgs": ["run", "build:testing"],
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "rollup core",
+      "runtimeExecutable": "npm",
+      "cwd": "${workspaceFolder}/packages/core",
+      "runtimeVersion": "16",
+      "runtimeArgs": ["run", "build"],
+      "console": "integratedTerminal"
     }
   ]
 }

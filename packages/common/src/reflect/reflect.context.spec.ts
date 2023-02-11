@@ -1,6 +1,6 @@
-import type { ReflectProvider } from './reflect-provider.type';
 import { ReflectContext } from './reflect.context';
 
+import type { ReflectProvider } from './reflect-provider.type';
 describe('ReflectContext', () => {
   let reflectContext: ReflectContext;
   let PROVIDERS: ReflectProvider[];
@@ -164,6 +164,30 @@ describe('ReflectContext', () => {
 
           it(`calls provider's factories in order of dependency`, () => {
             expect(reflectContext.get(A)).toEqual('A0-A2-A1-A3');
+          });
+        });
+
+        describe('with the exact same provider', () => {
+          beforeEach(() => {
+            PROVIDERS = [
+              {
+                provide: A,
+                factory: jest.fn(() => 'A'),
+              },
+            ];
+            reflectContext = new ReflectContext().addModules(
+              {
+                providers: PROVIDERS,
+              },
+              {
+                providers: PROVIDERS,
+              },
+            );
+          });
+
+          it(`register the providers only once`, () => {
+            expect(reflectContext.get(A)).toEqual('A');
+            expect(PROVIDERS[0]?.factory).toHaveBeenCalledTimes(1);
           });
         });
       });

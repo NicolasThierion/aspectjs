@@ -1,4 +1,5 @@
 import { assert } from '@aspectjs/common/utils';
+
 import type { AnnotationFactoryHook } from './annotation-factory-hook.type';
 
 /**
