@@ -2,10 +2,16 @@
   "$schema": "http://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "outDir": "./out-tsc/spec",
     "types": ["jest", "node"],
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
+  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
+  "ts-node": {
+    "moduleTypes": {
+      "**": "cjs"
+    }
+  }
 }

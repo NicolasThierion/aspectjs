@@ -1,12 +1,12 @@
+import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
-import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
+import dts from 'rollup-plugin-dts';
 
-import type { OutputOptions, RollupOptions } from 'rollup';
-import { resolve, relative, join } from 'path';
 import { existsSync } from 'fs';
+import { join, relative, resolve } from 'path';
 import { cwd } from 'process';
+import type { OutputOptions, RollupOptions } from 'rollup';
 
 // This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
 interface PackageJson {

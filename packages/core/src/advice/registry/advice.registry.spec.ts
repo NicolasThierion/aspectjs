@@ -2,13 +2,13 @@ import { AnnotationFactory } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '@aspectjs/core';
 
+import { After } from '../../advices/after/after.annotation';
 import { Before } from '../../advices/before/before.annotation';
 import { ASPECT_PROVIDERS } from '../../aspect/aspect.provider';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { PointcutType } from '../../pointcut/pointcut-phase.type';
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
-import { After } from '../../advices/after/after.annotation';
 import { AdviceEntry } from './advice-entry.model';
 import { AdviceRegistry } from './advice.registry';
 
@@ -30,7 +30,9 @@ describe('AdviceRegisrty', () => {
 
   let aaspect: any;
   let baspect: any;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let xaspect: any;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let yaspect: any;
   let subAaaspect: any;
   let Aannotation: any;

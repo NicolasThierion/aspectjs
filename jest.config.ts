@@ -1,21 +1,33 @@
 // @ts-check
 /* eslint-env node */
-require('require-json5').replace();
-const { pathsToModuleNameMapper } = require('ts-jest');
-const { compilerOptions } = require('./tsconfig.json');
-const { resolve } = require('path');
+
+import { resolve } from 'path';
+import { pathsToModuleNameMapper } from 'ts-jest';
+
+import { readFileSync } from 'fs';
+import { parse } from 'json5';
+import { join } from 'path';
+const tsconfig = parse(
+  readFileSync(join(__dirname, './tsconfig.json')).toString(),
+);
+
+const { compilerOptions } = tsconfig;
+
 const pathsConfig = Object.entries(compilerOptions.paths ?? {}).reduce(
-  (pathsConfig, [alias, paths]) => {
-    pathsConfig[alias] = [].concat(paths).map((p) => resolve(__dirname, p));
+  (pathsConfig: any, [alias, paths]: [any, any]) => {
+    pathsConfig[alias] = ([] as string[])
+      .concat(paths)
+      .map((p) => resolve(__dirname, p));
     return pathsConfig;
   },
   {},
 );
+
 /**
  * An object with Jest options.
  * @type {import('@jest/types').Config.InitialOptions}
  */
-const options = {
+export default {
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
   preset: 'ts-jest',
@@ -29,5 +41,3 @@ const options = {
   resolver: 'ts-jest-resolver',
   verbose: true,
 };
-
-module.exports = options;

@@ -2,7 +2,7 @@ import { configureTesting } from '@aspectjs/common/testing';
 
 import { AspectError } from '../errors/aspect.error';
 import { JitWeaver } from '../jit/jit-weaver';
-import { weaverContext } from './../weaver/context/weaver.context.global';
+import { weaverContext } from '../weaver/context/weaver.context.global';
 import { Aspect } from './aspect.annotation';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */

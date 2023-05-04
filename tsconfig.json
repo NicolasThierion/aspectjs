@@ -1,6 +1,8 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "module": "nodenext",
+
     "baseUrl": ".",
     "target": "ES6",
     "experimentalDecorators": true,
@@ -40,6 +42,11 @@
       "@aspectjs/common/utils": ["./packages/common/utils/src/public_api.ts"],
       "@aspectjs/core": ["./packages/core/src/public_api.ts"],
       "@aspectjs/core/testing": ["./packages/core/testing/src/public_api.ts"]
+    }
+  },
+  "ts-node": {
+    "moduleTypes": {
+      "jest.config.ts": "cjs"
     }
   }
 }
