@@ -102,10 +102,10 @@ describe('@Before(on.classes.withAnotations(<CLASS_ANOMATION>) advice', () => {
     expect(advice).toHaveBeenCalledBefore(ctor);
   });
 
-  describe('is called within a context ', () => {
+  describe('is called with a context ', () => {
     let thisInstance: any;
 
-    it('where context.instance is null', () => {
+    it('with context.instance = null', () => {
       @AClass()
       class A {
         constructor() {}
