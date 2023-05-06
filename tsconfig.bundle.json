@@ -20,5 +20,5 @@
     "noUnusedParameters": false,
     "noUnusedLocals": false
   },
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "**/jest.config.ts"]
 }

@@ -4,7 +4,7 @@
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
   "ts-node": {
     "moduleTypes": {
-      "jest.config.ts": "cjs"
+      "lol_jest.config.ts": "cjs"
     }
   }
 }

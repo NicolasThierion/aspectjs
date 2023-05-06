@@ -1,12 +1,16 @@
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
-import del from 'rollup-plugin-delete';
-import dts from 'rollup-plugin-dts';
-
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
+import json5 from 'json5';
 import { join, relative, resolve } from 'path';
 import { cwd } from 'process';
 import type { OutputOptions, RollupOptions } from 'rollup';
+import del from 'rollup-plugin-delete';
+import dts from 'rollup-plugin-dts';
+
+const { parse } = json5;
+
+import { defineConfig as rollupDefineConfig } from 'rollup';
 
 // This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
 interface PackageJson {
@@ -51,7 +55,10 @@ export const createConfig = (
     (existsSync(localTsConfig)
       ? localTsConfig
       : resolve(__dirname, './tsconfig.json'));
-  options.pkg = options.pkg ?? require(join(options.rootDir, 'package.json'));
+
+  options.pkg =
+    options.pkg ??
+    parse(readFileSync(join(join(options.rootDir, 'package.json'))).toString());
   const pkg = options.pkg!;
   const external = [
     '@aspectjs/common',
@@ -188,5 +195,5 @@ export const createConfig = (
     ],
     external,
   };
-  return [bundleOptions, dtsOptions, dtsBundleOptions];
+  return rollupDefineConfig([bundleOptions, dtsOptions, dtsBundleOptions]);
 };

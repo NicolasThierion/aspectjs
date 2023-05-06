@@ -7,6 +7,18 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "core build",
+      "runtimeExecutable": "npm",
+      "runtimeVersion": "18",
+      "outputCapture": "std",
+      "cwd": "${workspaceFolder}/packages/core",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["run", "build"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "test all",
       "runtimeExecutable": "npm",
       "runtimeVersion": "18",

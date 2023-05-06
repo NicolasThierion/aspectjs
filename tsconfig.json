@@ -1,8 +1,8 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "module": "nodenext",
-
+    "module": "es2022",
+    "moduleResolution": "Node",
     "baseUrl": ".",
     "target": "ES6",
     "experimentalDecorators": true,
@@ -13,7 +13,6 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
 
     // Strictness and quality settings.
@@ -46,7 +45,8 @@
   },
   "ts-node": {
     "moduleTypes": {
-      "jest.config.ts": "cjs"
+      "lol_jest.config.ts": "cjs",
+      "rollup.config.ts": "cjs"
     }
   }
 }
