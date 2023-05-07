@@ -5,11 +5,12 @@ import { PointcutTargetType } from './../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
+import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import type { MutableAdviceContext } from './../../advice/advice.context';
 
 /**
- * Canvas to weave classes
+ * Canvas to advise classes
  */
 export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
   PointcutTargetType.CLASS,
@@ -34,11 +35,12 @@ export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
 
     // if another @Compile advice has been applied
     // replace wrapped ctor by original ctor before it gets wrapped again
-    ctxt.target.proto.constructor = getMetadata(
+    const constructor = getMetadata(
       '@aspectjs:jitClassCanvas',
       ctxt.target.proto,
       'ref_ctor',
       () => ctxt.target.proto.constructor,
+      true,
     );
 
     let ctor: ConstructorType<X> | undefined = undefined;
@@ -47,8 +49,18 @@ export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
       assert(typeof entry === 'function');
       ctor = entry.advice.call(entry.aspect, ctxt.asCompileContext()) as any;
     });
-    return (ctxt.target.proto.constructor =
-      ctor ?? ctxt.target.proto.constructor);
+    return ctor ?? constructor;
+  }
+
+  override before(
+    ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+    selection: AdvicesSelection,
+  ): void {
+    // void instance, as instance is not reliable before the actuall call of the constructor
+    const instanceSave = ctxt.instance;
+    ctxt.instance = null;
+    super.before(ctxt, selection);
+    ctxt.instance = instanceSave;
   }
 
   override callJoinpoint(
@@ -56,15 +68,21 @@ export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
     originalSymbol: ConstructorType<X>,
   ): void {
     assert(!!ctxt.args);
-    ctxt.instance = ctxt.value = new originalSymbol(...ctxt.args!);
+    assert(!!ctxt.instance);
+    const origInstance = ctxt.instance;
+    ctxt.instance = null;
+    const newInstance = new originalSymbol(...ctxt.args!);
+    Object.assign(origInstance as any, newInstance);
+    ctxt.instance = ctxt.value = origInstance;
   }
 
   finalize(
     ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+    compiledSymbol: CompiledSymbol<PointcutTargetType.CLASS, X>,
     joinpoint: (...args: any[]) => unknown,
   ): ConstructorType<X> {
     assert(!!ctxt.target?.proto);
-    const originalCtor = ctxt.target.proto.constructor;
+    const originalCtor = compiledSymbol;
     const ctorName = originalCtor.name;
 
     joinpoint = wrapConstructor(
@@ -88,7 +106,7 @@ export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
  * @param toString
  * @internal
  */
-export function wrapConstructor<T, F extends (...args: any[]) => T>(
+function wrapConstructor<T, F extends (...args: any[]) => T>(
   fn: F,
   name: string,
   tag: string,
@@ -96,7 +114,16 @@ export function wrapConstructor<T, F extends (...args: any[]) => T>(
 ): F {
   assert(typeof fn === 'function');
 
-  let newFn: F = ((...args: any[]) => fn(null, ...args)) as any;
+  // const map = new Map<string, F>();
+  // map.set(name, function (...args: any[]) {
+  //   fn(null, ...args);
+  // } as F);
+  // const newFn = map.get(name)!;
+  let newFn: F = function (this: any, ...args: any[]) {
+    const result = fn(this, ...args);
+    console.log(result);
+    return result;
+  } as any;
   try {
     // try to rename thr function.
     newFn = new Function(
@@ -117,7 +144,7 @@ export function wrapConstructor<T, F extends (...args: any[]) => T>(
     value: () => tag,
   });
 
-  newFn.prototype.toString = toString;
+  // newFn.prototype.toString = toString;
   newFn.toString = toString;
   return newFn;
 }

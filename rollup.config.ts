@@ -49,7 +49,14 @@ export const createConfig = (
       relative(cwd(), options.input).replace(/\.ts$/, '.d.ts'),
     );
 
-  const localTsConfig = join(options.rootDir, 'tsconfig.json');
+  const localTsConfig = [
+    'tsconfig.lib.json',
+    'tsconfig.app.json',
+    'tsconfig.json',
+  ]
+    .map((tsconfig) => join(options.rootDir ?? '.', tsconfig))
+    .filter((tsconfig) => existsSync(tsconfig))[0]!;
+
   options.tsconfig =
     options.tsconfig ??
     (existsSync(localTsConfig)

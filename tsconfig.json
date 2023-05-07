@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "module": "es2022",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "baseUrl": ".",
     "target": "ES6",
@@ -45,7 +45,6 @@
   },
   "ts-node": {
     "moduleTypes": {
-      "lol_jest.config.ts": "cjs",
       "rollup.config.ts": "cjs"
     }
   }

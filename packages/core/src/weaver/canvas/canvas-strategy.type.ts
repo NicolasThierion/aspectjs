@@ -52,6 +52,7 @@ export interface WeaverCanvasStrategy<
 
   finalize(
     ctxt: MutableAdviceContext<T, X>,
+    compiledSymbol: CompiledSymbol<T, X>,
     joinpoint: (...args: any[]) => T,
   ): CompiledSymbol<T, X>;
 }

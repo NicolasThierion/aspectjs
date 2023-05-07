@@ -1,5 +1,4 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
-  "extends": "../../tsconfig.json",
-  "exclude": ["jest.config.ts", "./**/*.spec.ts"]
+  "extends": "../../tsconfig.json"
 }

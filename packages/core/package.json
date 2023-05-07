@@ -8,7 +8,7 @@
     "test:unit": "jest --runInBand",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
     "doc": "typedoc --excludeInternal --out dist/docs index.ts",
-    "build": "rollup --config ./rollup.config.cjs --bundleConfigAsCjs"
+    "build": "rollup --config ./rollup.config.cjs"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "license": "MIT",

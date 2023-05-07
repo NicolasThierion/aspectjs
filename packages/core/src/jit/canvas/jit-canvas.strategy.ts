@@ -166,6 +166,7 @@ export abstract class JitWeaverCanvasStrategy<
 
   abstract finalize(
     ctxt: MutableAdviceContext<T, X>,
+    compiledSymbol: CompiledSymbol<T, X>,
     joinpoint: (...args: any[]) => unknown,
   ): CompiledSymbol<T, X>;
 
@@ -177,16 +178,10 @@ export abstract class JitWeaverCanvasStrategy<
    */
   protected _applyNotReturn(
     ctxt: AdviceContext<T, X>,
-    // originalSymbol: CompiledSymbol<T, X>,
     adviceEntries: Iterable<AdviceEntry<T>>,
   ) {
     [...adviceEntries].forEach((entry) => {
-      const retVal = this._safeCallAdvice(
-        // ctxt,
-        //  originalSymbol,
-        entry,
-        [ctxt, ctxt.args],
-      );
+      const retVal = this._safeCallAdvice(entry, [ctxt, ctxt.args]);
       if (!isUndefined(retVal)) {
         throw new AdviceError(
           entry.advice,
@@ -198,7 +193,6 @@ export abstract class JitWeaverCanvasStrategy<
   }
 
   private _safeCallAdvice(
-    // ctxt: AdviceContext<T, X>,
     adviceEntry: AdviceEntry<T>,
     args: unknown[],
   ): unknown {

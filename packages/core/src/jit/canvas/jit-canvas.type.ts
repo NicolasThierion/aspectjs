@@ -33,6 +33,7 @@ export class JitWeaverCanvas<
     const compiledSymbol = this.strategy.compile(ctxt, selection);
     this.compiled = true;
     if (!compiledSymbol) {
+      assert(false);
       throw new WeavingError(
         `${
           Reflect.getPrototypeOf(this.strategy)!.constructor.name
@@ -42,53 +43,54 @@ export class JitWeaverCanvas<
     /**
      * Returns a function that executes the plan for the Before, Around, AfterReturn, AfterThrow & After advices.
      */
-    const link = () => {
-      let withinAdviceSafeguard = false; // toggled to true before running joinpoint to avoid advice calling back itself
-      assert(!!compiledSymbol);
-
-      const bootstrapJp = (instance: any, ...args: any[]) => {
-        ctxt.instance = null;
-        ctxt.args = args;
-        if (withinAdviceSafeguard) {
-          return this.strategy.callJoinpoint(ctxt, compiledSymbol);
-        }
-
-        // create the joinpoint for the original method
-        const joinpoint = (...args: any[]) => {
-          ctxt.args = args;
-          try {
-            this.strategy.before(ctxt, selection);
-
-            this.strategy.callJoinpoint(ctxt, compiledSymbol);
-
-            return this.strategy.afterReturn(ctxt, selection);
-          } catch (error) {
-            // consider WeavingErrors as not recoverable by an aspect
-            if (error instanceof WeavingError) {
-              throw error;
-            }
-
-            ctxt.error = error;
-            return this.strategy.afterThrow(ctxt, selection);
-          } finally {
-            withinAdviceSafeguard = false;
-            this.strategy.after(ctxt, selection);
-          }
-        };
-        withinAdviceSafeguard = true;
-
-        ctxt.value = null;
-        ctxt.args = args;
-        ctxt.instance = instance;
-        ctxt.joinpoint = joinpoint;
-        return this.strategy.around(ctxt, selection)(...args);
-      };
-
-      return this.strategy.finalize(ctxt, bootstrapJp) ?? bootstrapJp;
-    };
-
     return {
-      link,
+      link: () => {
+        let withinAdviceSafeguard = false; // toggled to true before running joinpoint to avoid advice calling back itself
+        assert(!!compiledSymbol);
+
+        const bootstrapJp = (instance: any, ...args: any[]) => {
+          ctxt.instance = instance;
+          ctxt.args = args;
+          if (withinAdviceSafeguard) {
+            return this.strategy.callJoinpoint(ctxt, compiledSymbol);
+          }
+
+          // create the joinpoint for the original method
+          const joinpoint = (...args: any[]) => {
+            ctxt.args = args;
+            try {
+              this.strategy.before(ctxt, selection);
+
+              this.strategy.callJoinpoint(ctxt, compiledSymbol);
+
+              return this.strategy.afterReturn(ctxt, selection);
+            } catch (error) {
+              // consider WeavingErrors as not recoverable by an aspect
+              if (error instanceof WeavingError) {
+                throw error;
+              }
+
+              ctxt.error = error;
+              return this.strategy.afterThrow(ctxt, selection);
+            } finally {
+              withinAdviceSafeguard = false;
+              this.strategy.after(ctxt, selection);
+            }
+          };
+          withinAdviceSafeguard = true;
+
+          ctxt.value = null;
+          ctxt.args = args;
+          ctxt.instance = instance;
+          ctxt.joinpoint = joinpoint;
+          return this.strategy.around(ctxt, selection)(...args);
+        };
+
+        return (
+          this.strategy.finalize(ctxt, compiledSymbol, bootstrapJp) ??
+          compiledSymbol
+        );
+      },
     };
   }
 }

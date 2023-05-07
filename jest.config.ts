@@ -2,11 +2,12 @@
 /* eslint-env node */
 
 import { resolve } from 'path';
-import { pathsToModuleNameMapper } from 'ts-jest';
+import { JestConfigWithTsJest, pathsToModuleNameMapper } from 'ts-jest';
 
 import { readFileSync } from 'fs';
 import { parse } from 'json5';
 import { join } from 'path';
+
 const tsconfig = parse(
   readFileSync(join(__dirname, './tsconfig.json')).toString(),
 );
@@ -31,13 +32,16 @@ export default {
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
   preset: 'ts-jest',
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.spec.json',
-    },
+  transform: {
+    '^.+.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.spec.json',
+      },
+    ],
   },
   // rootDir: module.parent.path,
   moduleNameMapper: pathsToModuleNameMapper(pathsConfig),
   resolver: 'ts-jest-resolver',
   verbose: true,
-};
+} satisfies JestConfigWithTsJest;

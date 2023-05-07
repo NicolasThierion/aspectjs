@@ -8,9 +8,9 @@
     "test:unit": "jest --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "doc": "typedoc --excludeInternal --out dist/docs index.ts",
-    "build:common": "rollup --config ./rollup.config.cjs --bundleConfigAsCjs",
-    "build:utils": "rollup --config ./utils/rollup.config.cjs --bundleConfigAsCjs",
-    "build:testing": "rollup --config ./testing/rollup.config.cjs --bundleConfigAsCjs",
+    "build:common": "rollup --config ./rollup.config.cjs",
+    "build:utils": "rollup --config ./utils/rollup.config.cjs",
+    "build:testing": "rollup --config ./testing/rollup.config.cjs",
     "build": "npm run build:utils && npm run build:common && npm run build:testing"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",

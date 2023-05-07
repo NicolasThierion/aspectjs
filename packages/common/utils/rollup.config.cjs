@@ -1,3 +1,3 @@
 /* eslint-disable */
 const { createConfig } = require('../../../rollup.config.cjs');
-export default createConfig('common-utils', __dirname);
+module.exports = createConfig('common-utils', __dirname);

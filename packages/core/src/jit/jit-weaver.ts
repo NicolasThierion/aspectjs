@@ -17,6 +17,7 @@ import type { PointcutTargetType } from '../pointcut/pointcut-target.type';
 import type { WeaverContext } from './../weaver/context/weaver.context';
 
 import type { Weaver } from '../weaver/weaver';
+import { JitPropertyGetCanvas } from './canvas/jit-property-get-canvas.strategy';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
@@ -70,25 +71,36 @@ export class JitWeaver implements Weaver {
     }
 
     // find all class advices for enabled aspects
-
     const advicesSelection = this.adviceRegistry.select({
       annotations: ctxt.annotations.map((a) => a.annotation.ref),
     });
-    if (advicesSelection.find().next().done) {
-      return ctxt.target.proto.constructor;
-    }
 
-    const canvas = new JitWeaverCanvas<PointcutTargetType.CLASS, X>(
+    return new JitWeaverCanvas<PointcutTargetType.CLASS, X>(
       new JitClassCanvas<X>(this.weaverContext),
-    );
-
-    return canvas.compile(ctxt, advicesSelection).link();
+    )
+      .compile(ctxt, advicesSelection)
+      .link();
   }
 
-  private enhanceProperty<T>(
-    _ctxt: MutableAdviceContext<PointcutTargetType.GET_PROPERTY, T>,
+  private enhanceProperty<X>(
+    ctxt: MutableAdviceContext<PointcutTargetType.GET_PROPERTY, X>,
   ): PropertyDescriptor | void {
-    return;
+    if (!ctxt.annotations.length) {
+      // no annotations... Bypass the weaver as a whole,
+      // as there are no chances this prop has to be enhanced.
+      return ctxt.target.descriptor;
+    }
+
+    // find all property getter advices for enabled aspects
+    const advicesSelection = this.adviceRegistry.select({
+      annotations: ctxt.annotations.map((a) => a.annotation.ref),
+    });
+
+    return new JitWeaverCanvas<PointcutTargetType.GET_PROPERTY, X>(
+      new JitPropertyGetCanvas<X>(this.weaverContext),
+    )
+      .compile(ctxt, advicesSelection)
+      .link();
   }
 
   private enhanceMethod<T>(
