@@ -33,6 +33,7 @@
   extends: .node:npm-command
   variables:
     NPM_COMMAND: test:unit
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
 
 .node:build:
   extends: .node:npm-command

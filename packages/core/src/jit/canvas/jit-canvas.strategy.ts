@@ -2,13 +2,10 @@ import { assert, isUndefined } from '@aspectjs/common/utils';
 
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
-import { PointcutType } from '../../pointcut/pointcut-phase.type';
+import { PointcutType } from '../../pointcut/pointcut.type';
 import { JoinPointFactory } from '../joinpoint.factory';
 
-import type {
-  AdviceContext,
-  MutableAdviceContext,
-} from './../../advice/advice.context';
+import type { AdviceContext } from './../../advice/advice.context';
 
 import type { JoinPoint } from '../../advice/joinpoint';
 
@@ -17,6 +14,7 @@ import type {
   WeaverCanvasStrategy,
 } from '../../weaver/canvas/canvas-strategy.type';
 
+import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
@@ -26,14 +24,14 @@ export abstract class JitWeaverCanvasStrategy<
 > implements WeaverCanvasStrategy<T, X>
 {
   constructor(
-    private readonly targetType: T,
-    private readonly weaverContext: WeaverContext,
+    protected readonly weaverContext: WeaverContext,
+    protected readonly targetType: T,
   ) {}
 
   abstract compile(
     ctxt: MutableAdviceContext<T, X>,
     selection: AdvicesSelection,
-  ): CompiledSymbol<T, X>;
+  ): CompiledSymbol<T, X> | undefined;
   // TODO remove ?
   // advices.forEach((a) => {
   //     if (Reflect.getOwnMetadata('@aspectjs::isCompiled', a, ctxt.target.ref)) {
@@ -67,7 +65,7 @@ export abstract class JitWeaverCanvasStrategy<
     [...selection.find(this.targetType, PointcutType.AFTER_RETURN)].forEach(
       (advice) => {
         const newContext = ctxt.asAfterContext();
-        value = this._safeCallAdvice(
+        value = this.callAdvice(
           // newContext as any,
           //  compiledSymbol,
           advice,
@@ -92,7 +90,7 @@ export abstract class JitWeaverCanvasStrategy<
     const errorContext = ctxt.asAfterThrowContext();
     if (adviceEntries.length) {
       adviceEntries.forEach((entry) => {
-        value = this._safeCallAdvice(
+        value = this.callAdvice(
           // ctxt,
           //  compiledSymbol,
           entry,
@@ -138,7 +136,7 @@ export abstract class JitWeaverCanvasStrategy<
             joinpoint: nextJp,
             args,
           };
-          value = this._safeCallAdvice(
+          value = this.callAdvice(
             // newContext,
             //  compiledSymbol,
             entry,
@@ -162,9 +160,9 @@ export abstract class JitWeaverCanvasStrategy<
   abstract callJoinpoint(
     ctxt: MutableAdviceContext<T, X>,
     originalSymbol: CompiledSymbol<T, X>,
-  ): void;
+  ): unknown;
 
-  abstract finalize(
+  abstract link(
     ctxt: MutableAdviceContext<T, X>,
     compiledSymbol: CompiledSymbol<T, X>,
     joinpoint: (...args: any[]) => unknown,
@@ -181,7 +179,7 @@ export abstract class JitWeaverCanvasStrategy<
     adviceEntries: Iterable<AdviceEntry<T>>,
   ) {
     [...adviceEntries].forEach((entry) => {
-      const retVal = this._safeCallAdvice(entry, [ctxt, ctxt.args]);
+      const retVal = this.callAdvice(entry, [ctxt, ctxt.args]);
       if (!isUndefined(retVal)) {
         throw new AdviceError(
           entry.advice,
@@ -192,10 +190,7 @@ export abstract class JitWeaverCanvasStrategy<
     });
   }
 
-  private _safeCallAdvice(
-    adviceEntry: AdviceEntry<T>,
-    args: unknown[],
-  ): unknown {
+  protected callAdvice(adviceEntry: AdviceEntry<T>, args: unknown[]): unknown {
     // accessing ctxt.value inside within a "before" advices will call the advice itself... prevent this.
     // if (getMetadata('@aspectjs::called', adviceEntry)) {
     //   return this.callJoinpoint(ctxt, compiledSymbol);

@@ -44,4 +44,6 @@ export default {
   moduleNameMapper: pathsToModuleNameMapper(pathsConfig),
   resolver: 'ts-jest-resolver',
   verbose: true,
+  coverageDirectory: join(__dirname, 'dist', 'coverage'),
+  collectCoverage: true,
 } satisfies JestConfigWithTsJest;

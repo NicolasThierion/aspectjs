@@ -1,23 +1,23 @@
 import { assert, ConstructorType, getMetadata } from '@aspectjs/common/utils';
 
-import { PointcutType } from './../../pointcut/pointcut-phase.type';
+import { PointcutType } from '../../pointcut/pointcut.type';
 import { PointcutTargetType } from './../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
-import type { MutableAdviceContext } from './../../advice/advice.context';
+import { MutableAdviceContext } from './../../advice/mutable-advice.context';
+import { renameFunction } from './canvas.utils';
 
 /**
  * Canvas to advise classes
  */
-export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
-  PointcutTargetType.CLASS,
-  X
-> {
+export class JitClassCanvasStrategy<
+  X = unknown,
+> extends JitWeaverCanvasStrategy<PointcutTargetType.CLASS, X> {
   constructor(weaverContext: WeaverContext) {
-    super(PointcutTargetType.CLASS, weaverContext);
+    super(weaverContext, PointcutTargetType.CLASS);
   }
 
   compile(
@@ -29,67 +29,58 @@ export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
       ...selection.find(PointcutTargetType.CLASS, PointcutType.COMPILE),
     ];
 
-    if (!adviceEntries.length) {
-      return ctxt.target.proto.constructor;
-    }
-
     // if another @Compile advice has been applied
     // replace wrapped ctor by original ctor before it gets wrapped again
-    const constructor = getMetadata(
+    let constructor = getMetadata(
       '@aspectjs:jitClassCanvas',
       ctxt.target.proto,
-      'ref_ctor',
       () => ctxt.target.proto.constructor,
       true,
-    );
+    ) as ConstructorType<X>;
 
-    let ctor: ConstructorType<X> | undefined = undefined;
+    if (!adviceEntries.length) {
+      return constructor;
+    }
 
     adviceEntries.forEach((entry) => {
       assert(typeof entry === 'function');
-      ctor = entry.advice.call(entry.aspect, ctxt.asCompileContext()) as any;
+      constructor = (entry.advice.call(entry.aspect, ctxt.asCompileContext()) ??
+        constructor) as ConstructorType<X>;
     });
-    return ctor ?? constructor;
+    return constructor;
   }
 
   override before(
     ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
     selection: AdvicesSelection,
   ): void {
-    // void instance, as instance is not reliable before the actuall call of the constructor
-    const instanceSave = ctxt.instance;
-    ctxt.instance = null;
-    super.before(ctxt, selection);
-    ctxt.instance = instanceSave;
+    super.before(withNullInstance(ctxt), selection);
   }
 
   override callJoinpoint(
     ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
     originalSymbol: ConstructorType<X>,
-  ): void {
+  ): unknown {
     assert(!!ctxt.args);
     assert(!!ctxt.instance);
-    const origInstance = ctxt.instance;
-    ctxt.instance = null;
     const newInstance = new originalSymbol(...ctxt.args!);
-    Object.assign(origInstance as any, newInstance);
-    ctxt.instance = ctxt.value = origInstance;
+    Object.assign(ctxt.instance as any, newInstance);
+    return (ctxt.value = ctxt.instance);
   }
 
-  finalize(
+  override link(
     ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
-    compiledSymbol: CompiledSymbol<PointcutTargetType.CLASS, X>,
+    compiledConstructor: CompiledSymbol<PointcutTargetType.CLASS, X>,
     joinpoint: (...args: any[]) => unknown,
   ): ConstructorType<X> {
     assert(!!ctxt.target?.proto);
-    const originalCtor = compiledSymbol;
-    const ctorName = originalCtor.name;
+    const ctorName = compiledConstructor.name;
 
-    joinpoint = wrapConstructor(
+    joinpoint = renameFunction(
       joinpoint,
       ctorName,
       `class ${ctorName}$$advised {}`,
-      originalCtor.toString.bind(originalCtor),
+      compiledConstructor.toString.bind(compiledConstructor),
     );
     joinpoint.prototype = ctxt.target.proto;
     joinpoint.prototype.constructor = joinpoint;
@@ -99,52 +90,13 @@ export class JitClassCanvas<X = unknown> extends JitWeaverCanvasStrategy<
 }
 
 /**
- *
- * @param fn
- * @param name
- * @param tag
- * @param toString
- * @internal
+ * Void instance, as instance is not reliable before the actual call of the constructor
  */
-function wrapConstructor<T, F extends (...args: any[]) => T>(
-  fn: F,
-  name: string,
-  tag: string,
-  toString: () => string,
-): F {
-  assert(typeof fn === 'function');
-
-  // const map = new Map<string, F>();
-  // map.set(name, function (...args: any[]) {
-  //   fn(null, ...args);
-  // } as F);
-  // const newFn = map.get(name)!;
-  let newFn: F = function (this: any, ...args: any[]) {
-    const result = fn(this, ...args);
-    console.log(result);
-    return result;
-  } as any;
-  try {
-    // try to rename thr function.
-    newFn = new Function(
-      'fn',
-      `return function ${name}(...args) { return fn.apply(this, args) };`,
-    )(newFn);
-  } catch (e) {
-    // won't work if name is a keyword (eg: delete). Let newFn as is.
-  }
-  Object.defineProperty(newFn, 'name', {
-    value: name,
+function withNullInstance<X>(
+  ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+): MutableAdviceContext<PointcutTargetType.CLASS, X> {
+  return new MutableAdviceContext<PointcutTargetType.CLASS, X>({
+    ...ctxt,
+    instance: null,
   });
-  tag = tag ?? name;
-
-  Object.defineProperty(newFn, Symbol.toPrimitive, {
-    enumerable: false,
-    configurable: true,
-    value: () => tag,
-  });
-
-  // newFn.prototype.toString = toString;
-  newFn.toString = toString;
-  return newFn;
 }

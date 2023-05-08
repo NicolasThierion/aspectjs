@@ -1,8 +1,8 @@
 import { ConstructorType } from '@aspectjs/common/utils';
 
 import type { AspectType } from '../../aspect/aspect.type';
-import type { PointcutType } from '../../pointcut/pointcut-phase.type';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut.type';
 import type { AdviceType } from '../advice.type';
 
 export type AdviceRegBuckets = {

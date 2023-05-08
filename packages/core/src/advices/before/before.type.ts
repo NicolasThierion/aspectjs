@@ -1,6 +1,6 @@
 import type { Pointcut } from 'packages/core/src/pointcut/pointcut';
 import type { AdviceContext } from '../../advice/advice.context';
-import type { PointcutType } from '../../pointcut/pointcut-phase.type';
+import type { PointcutType } from '../../pointcut/pointcut.type';
 import type { PointcutTargetType } from './../../pointcut/pointcut-target.type';
 
 export type BeforePointcut<T extends PointcutTargetType = PointcutTargetType> =

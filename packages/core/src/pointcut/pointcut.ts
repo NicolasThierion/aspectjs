@@ -1,7 +1,7 @@
 import type { AnnotationRef } from '@aspectjs/common';
 import type { PointcutExpression } from './pointcut-expression.type';
-import type { PointcutType } from './pointcut-phase.type';
 import type { PointcutTargetType } from './pointcut-target.type';
+import type { PointcutType } from './pointcut.type';
 
 interface PointcutInit<
   P extends PointcutType,

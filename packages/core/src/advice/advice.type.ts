@@ -5,7 +5,7 @@ import type { AfterAdvice } from '../advices/after/after.type';
 import type { AroundAdvice } from '../advices/around/around.type';
 import type { BeforeAdvice } from '../advices/before/before.type';
 import type { CompileAdvice } from '../advices/compile/compile.type';
-import type { PointcutType } from './../pointcut/pointcut-phase.type';
+import type { PointcutType } from '../pointcut/pointcut.type';
 import type {
   PointcutTargetType,
   ToTargetType,

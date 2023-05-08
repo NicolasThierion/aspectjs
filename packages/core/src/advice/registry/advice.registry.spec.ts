@@ -6,8 +6,8 @@ import { After } from '../../advices/after/after.annotation';
 import { Before } from '../../advices/before/before.annotation';
 import { ASPECT_PROVIDERS } from '../../aspect/aspect.provider';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { PointcutType } from '../../pointcut/pointcut-phase.type';
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut.type';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { AdviceEntry } from './advice-entry.model';
 import { AdviceRegistry } from './advice.registry';
@@ -41,9 +41,9 @@ describe('AdviceRegisrty', () => {
 
   beforeEach(() => {
     const factory = new AnnotationFactory('test');
-    Aannotation = factory.create();
-    Bannotation = factory.create();
-    Xannotation = factory.create();
+    Aannotation = factory.create('Aannotation');
+    Bannotation = factory.create('Bannotation');
+    Xannotation = factory.create('Xannotation');
     @Aspect()
     class _AAspect {
       @Before(on.classes.withAnnotations(Aannotation))
@@ -194,7 +194,7 @@ describe('AdviceRegisrty', () => {
   describe('.select({aspects: <...ASPECTS>}, annotations: <...ANNOTATIONS>)', () => {
     describe('.find()', () => {
       describe('given <...ASPECTS> defines no advices with <...ANNOTATIONS>', () => {
-        it('returns empty array', () => {
+        it('returns only advices with pointcutl on all annotations', () => {
           expect([
             ...adviceReg
               .select({
@@ -202,17 +202,16 @@ describe('AdviceRegisrty', () => {
                 annotations: [Xannotation],
               })
               .find(),
-          ]).toEqual([]);
+          ]).toEqual([
+            {
+              aspect: aaspect,
+              advice: aaspect.afterClassA1,
+            },
+          ] satisfies AdviceEntry[]);
         });
       });
       describe('given <...ASPECTS> defines some advices with <...ANNOTATIONS>', () => {
-        it('returns empty array', () => {
-          const expected: AdviceEntry[] = [
-            {
-              aspect: aaspect,
-              advice: aaspect.beforeClassA1,
-            },
-          ];
+        it('returns advices with pointcut on those annotations', () => {
           expect([
             ...adviceReg
               .select({
@@ -220,7 +219,14 @@ describe('AdviceRegisrty', () => {
                 annotations: [Aannotation, Xannotation],
               })
               .find(),
-          ]).toEqual(expected);
+          ]).toEqual([
+            {
+              aspect: aaspect,
+              advice: aaspect.beforeClassA1,
+            },
+            { aspect: aaspect, advice: aaspect.afterClassA1 },
+            { aspect: baspect, advice: baspect.afterMethodB1 },
+          ] satisfies AdviceEntry[]);
         });
       });
     });

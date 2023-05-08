@@ -2,8 +2,8 @@ import { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 
 import { Pointcut } from '../../pointcut/pointcut';
-import { PointcutType } from '../../pointcut/pointcut-phase.type';
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut.type';
 import { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
 import { AdviceRegistryFilters } from './advice.registry';
 
@@ -77,6 +77,7 @@ function annotationFilterMatches(
 ) {
   return (
     !annotationsRefFilter.size ||
+    !pointcut.annotations.length ||
     new Set([...annotationsRefFilter, ...pointcut.annotations]).size <
       annotationsRefFilter.size + pointcut.annotations.length
   );

@@ -14,7 +14,7 @@ import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import { AdviceError } from '../../public_api';
 import type { BeforeContext } from './before.context';
 
-describe('property get advice', () => {
+describe('property set advice', () => {
   let advice: ReturnType<typeof jest.fn>;
   let aaspect: any;
   let baspect: any;
@@ -36,9 +36,9 @@ describe('property get advice', () => {
   function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
     @Aspect('APropertyAspect')
     class AAspect {
-      @Before(on.properties.withAnnotations(...aanotations))
+      @Before(on.properties.setter.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutTargetType.SET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -46,9 +46,9 @@ describe('property get advice', () => {
     }
     @Aspect('BPropertyAspect')
     class BAspect {
-      @Before(on.properties.withAnnotations(...bannotations))
+      @Before(on.properties.setter.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutTargetType.SET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -61,13 +61,13 @@ describe('property get advice', () => {
     weaver.enable(baspect);
   }
 
-  describe('on pointcut @Before(on.properties.withAnnotations()', () => {
+  describe('on pointcut @Before(on.properties.setter.withAnnotations()', () => {
     beforeEach(() => setupAspects());
 
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        labels = ['a'];
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -76,55 +76,20 @@ describe('property get advice', () => {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const p = new A().prop;
-      expect(advice).toBeCalledTimes(2);
-      expect(p).toEqual('p');
+      const a = new A();
+      a.labels = a.labels.concat('b');
+      expect(advice).toBeCalledTimes(4);
+      expect(a.labels).toEqual(['a', 'b']);
     });
   });
 
-  describe('on pointcut @Before(on.properties.withAnnotations(<PROPERTY_ANNOTATION>)', () => {
-    beforeEach(() => {
-      @Aspect('APropertyAspect')
-      class AAspect {
-        @Before(on.properties.withAnnotations(AProperty))
-        applyBefore(
-          ctxt: BeforeContext<PointcutTargetType.GET_PROPERTY>,
-          ...args: unknown[]
-        ): void {
-          return advice.bind(this)(ctxt, ...args);
-        }
-      }
-
-      aaspect = new AAspect();
-      weaver.enable(aaspect);
-    });
+  describe('on pointcut @Before(on.properties.setter.withAnnotations(<PROPERTY_ANNOTATION>)', () => {
+    beforeEach(() => setupAspects([AProperty], [BProperty]));
 
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        prop = 'p';
-      }
-
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
-        expect(this).toEqual(aaspect);
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const p = new A().prop;
-      expect(advice).toBeCalled();
-      expect(p).toEqual('p');
-    });
-
-    it('calls the advice before the property is get', () => {
-      const prop = jest.fn();
-      class A {
-        @AProperty()
-        get prop() {
-          prop();
-          expect(this).toBe(a);
-          return 'x';
-        }
+        labels = ['a'];
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -134,17 +99,34 @@ describe('property get advice', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
-      const p = a.prop;
+      expect(advice).toBeCalledTimes(1);
+      expect(a.labels).toEqual(['a']);
+    });
+
+    it('calls the advice before the property is set', () => {
+      class A {
+        @AProperty()
+        labels = ['a'];
+      }
+
+      expect(advice).not.toHaveBeenCalled();
+      const a = new A();
+
+      advice = jest.fn(function (this: any) {
+        expect(this).toEqual(aaspect);
+        expect(a.labels).toEqual(['a']);
+      });
+
+      a.labels = a.labels.concat('b');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       expect(advice).toBeCalled();
-      expect(advice).toHaveBeenCalledBefore(prop);
-      expect(advice).toHaveBeenCalledTimes(1);
-      expect(p).toEqual('x');
+      expect(a.labels).toEqual(['a', 'b']);
     });
 
     it('is not allowed to return', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        prop?: string;
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -153,7 +135,7 @@ describe('property get advice', () => {
       });
 
       expect(() => {
-        new A().prop;
+        new A().prop = 'b';
       }).toThrowError(AdviceError);
 
       try {
@@ -174,7 +156,7 @@ describe('property get advice', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
       advice = jest.fn(function (this: any) {
-        expect(this).toBe(aaspect);
+        expect(this).toEqual(aaspect);
         expect(a.labels).toEqual(['a']);
         a.labels = a.labels.concat('c');
         expect(a.labels).toEqual(['a', 'c']);
@@ -184,20 +166,18 @@ describe('property get advice', () => {
 
       expect(advice).toBeCalled();
     });
-
     describe('is called with a context that ', () => {
       let thisInstance: any;
 
       it('has context.instance = the instance that owns the property', () => {
         class A {
           @AProperty()
-          prop?: string;
+          labels = ['a'];
         }
         advice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
         });
         const a = new A();
-        a.prop;
         expect(advice).toHaveBeenCalled();
         expect(thisInstance).toEqual(a);
       });
@@ -207,14 +187,13 @@ describe('property get advice', () => {
           constructor() {}
           @AProperty('annotationArg')
           @BProperty()
-          prop?: string;
+          prop = 'a';
         }
         advice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.annotations.length).toEqual(2);
           const aclassAnnotationContext = ctxt.annotations.filter(
             (an) => an.annotation === AProperty,
           )[0];
-
           expect(advice).toHaveBeenCalled();
           expect(aclassAnnotationContext).toBeTruthy();
           expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);

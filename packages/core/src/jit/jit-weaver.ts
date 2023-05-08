@@ -6,18 +6,19 @@ import {
 } from '@aspectjs/common';
 import { ConstructorType } from '@aspectjs/common/utils';
 
-import { MutableAdviceContext } from '../advice/advice.context';
+import { MutableAdviceContext } from '../advice/mutable-advice.context';
 import { AdviceRegistry } from '../advice/registry/advice.registry';
 import { AspectRegistry } from '../aspect/aspect.registry';
 import { AspectType } from '../aspect/aspect.type';
 import { JitWeaverCanvas } from './canvas/jit-canvas.type';
-import { JitClassCanvas } from './canvas/jit-class-canvas.strategy';
+import { JitClassCanvasStrategy } from './canvas/jit-class-canvas.strategy';
 
 import type { PointcutTargetType } from '../pointcut/pointcut-target.type';
 import type { WeaverContext } from './../weaver/context/weaver.context';
 
 import type { Weaver } from '../weaver/weaver';
-import { JitPropertyGetCanvas } from './canvas/jit-property-get-canvas.strategy';
+import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
+import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
@@ -76,14 +77,17 @@ export class JitWeaver implements Weaver {
     });
 
     return new JitWeaverCanvas<PointcutTargetType.CLASS, X>(
-      new JitClassCanvas<X>(this.weaverContext),
+      new JitClassCanvasStrategy<X>(this.weaverContext),
     )
       .compile(ctxt, advicesSelection)
       .link();
   }
 
   private enhanceProperty<X>(
-    ctxt: MutableAdviceContext<PointcutTargetType.GET_PROPERTY, X>,
+    ctxt: MutableAdviceContext<
+      PointcutTargetType.GET_PROPERTY | PointcutTargetType.SET_PROPERTY,
+      X
+    >,
   ): PropertyDescriptor | void {
     if (!ctxt.annotations.length) {
       // no annotations... Bypass the weaver as a whole,
@@ -91,21 +95,39 @@ export class JitWeaver implements Weaver {
       return ctxt.target.descriptor;
     }
 
-    // find all property getter advices for enabled aspects
+    // find all property getter | setter advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
       annotations: ctxt.annotations.map((a) => a.annotation.ref),
     });
 
-    return new JitWeaverCanvas<PointcutTargetType.GET_PROPERTY, X>(
-      new JitPropertyGetCanvas<X>(this.weaverContext),
-    )
+    return new JitWeaverCanvas<
+      PointcutTargetType.GET_PROPERTY | PointcutTargetType.SET_PROPERTY,
+      X
+    >(new JitPropertyCanvasStrategy<X>(this.weaverContext))
       .compile(ctxt, advicesSelection)
       .link();
   }
 
-  private enhanceMethod<T>(
-    _ctxt: MutableAdviceContext<PointcutTargetType.METHOD, T>,
+  private enhanceMethod<X>(
+    ctxt: MutableAdviceContext<PointcutTargetType.METHOD, X>,
   ): PropertyDescriptor | void {
+    if (!ctxt.annotations.length) {
+      // no annotations... Bypass the weaver as a whole,
+      // as there are no chances this prop has to be enhanced.
+      return ctxt.target.descriptor;
+    }
+
+    // find all method advices for enabled aspects
+    const advicesSelection = this.adviceRegistry.select({
+      annotations: ctxt.annotations.map((a) => a.annotation.ref),
+    });
+
+    return new JitWeaverCanvas<PointcutTargetType.METHOD, X>(
+      new JitMethodCanvasStrategy<X>(this.weaverContext),
+    )
+      .compile(ctxt, advicesSelection)
+      .link();
+
     return;
   }
 

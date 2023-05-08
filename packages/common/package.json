@@ -7,7 +7,7 @@
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "jest --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
-    "doc": "typedoc --excludeInternal --out dist/docs index.ts",
+    "doc": "typedoc --excludeInternal --tsconfig tsconfig.lib.json --out dist/docs index.ts",
     "build:common": "rollup --config ./rollup.config.cjs",
     "build:utils": "rollup --config ./utils/rollup.config.cjs",
     "build:testing": "rollup --config ./testing/rollup.config.cjs",
