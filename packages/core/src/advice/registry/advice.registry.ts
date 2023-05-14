@@ -59,7 +59,8 @@ export class AdviceRegistry {
     this.weaverContext
       .get(AnnotationRegistry)
       .select(...KNOWN_ADVICE_ANNOTATION_REFS)
-      .onMethod(aspectCtor, undefined, true)
+      .onMethod(aspectCtor)
+      .find({ searchParents: true })
       .forEach((adviceAnnotation) => {
         const advice: AdviceType = adviceAnnotation.target.descriptor
           .value as AdviceType;
@@ -125,6 +126,7 @@ export class AdviceRegistry {
         .get(AnnotationRegistry)
         .select(...annotations)
         .all()
+        .find()
         .map((a) => a.annotation.ref),
     );
 

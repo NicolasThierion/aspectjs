@@ -8,8 +8,4 @@ export type AnnotationSelectionFilter = {
    * Which kind of annotation to select ?
    */
   types?: TargetType[];
-  /**
-   * Also search for annotations on parent class
-   */
-  searchParent?: boolean;
 };

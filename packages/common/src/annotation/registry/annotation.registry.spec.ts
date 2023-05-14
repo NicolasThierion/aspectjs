@@ -2,7 +2,7 @@ import { Annotation, AnnotationFactory } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { annotationsContext } from './../context/annotations.context.global';
-import { AnnotationRegistry, AnnotationSelector } from './annotation.registry';
+import { AnnotationRegistry, AnnotationSelection } from './annotation.registry';
 import { annotations } from './annotations.global';
 
 let annotationRegistry: AnnotationRegistry;
@@ -235,38 +235,43 @@ describe('annotations(AClassAnnotation)', () => {
 describe('AnnotationRegistry', () => {
   beforeEach(setup);
 
-  describe('.find()', () => {
-    let s: AnnotationSelector;
-
+  describe('.select()', () => {
+    let s: AnnotationSelection;
     beforeEach(() => (s = annotationRegistry.select()));
     it('returns an AnnotationSelector', () => {
-      expect(s).toBeInstanceOf(AnnotationSelector);
+      expect(s).toBeInstanceOf(AnnotationSelection);
     });
 
-    describe('.all()', () => {
+    describe('.all().find()', () => {
       it('returns all annotations found all over the code', () => {
-        expect(s.all().map((a) => a.annotation)).toEqual(
-          expect.arrayContaining([...A_ANNOTATIONS, ...B_ANNOTATIONS]),
-        );
+        expect(
+          s
+            .all()
+            .find()
+            .map((a) => a.annotation),
+        ).toEqual(expect.arrayContaining([...A_ANNOTATIONS, ...B_ANNOTATIONS]));
       });
     });
 
-    describe(`.all(SomeClass);`, () => {
+    describe(`.all(SomeClass).find();`, () => {
       describe(`if "SomeClass" has annotations`, () => {
         it('returns all annotations found within class SomeClass', () => {
-          expect(s.all(A).map((a) => a.annotation)).toEqual(
-            expect.arrayContaining(A_ANNOTATIONS),
-          );
+          expect(
+            s
+              .all(A)
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(expect.arrayContaining(A_ANNOTATIONS));
         });
       });
       describe(`if "SomeClass" has no annotation`, () => {
         it('returns empty array', () => {
-          expect(s.all(X).length).toEqual(0);
+          expect(s.all(X).find().length).toEqual(0);
         });
       });
     });
 
-    xdescribe(`.all(someClassInstance);`, () => {
+    xdescribe(`.all(someClassInstance).find();`, () => {
       xdescribe(`if "SomeClass" has annotations`, () => {
         xit('returns all annotations found within class SomeClass', () => {
           // expect(s.all(new A()).map((a) => a.annotation)).toEqual(
@@ -281,9 +286,14 @@ describe('AnnotationRegistry', () => {
       });
     });
 
-    describe(`.onClass()`, () => {
+    describe(`.onClass().find()`, () => {
       it('returns all annotations found on all classes', () => {
-        expect(s.onClass().map((a) => a.annotation)).toEqual(
+        expect(
+          s
+            .onClass()
+            .find()
+            .map((a) => a.annotation),
+        ).toEqual(
           expect.arrayContaining([
             ...A_CLASS_ANNOTATIONS,
             ...B_CLASS_ANNOTATIONS,
@@ -292,16 +302,24 @@ describe('AnnotationRegistry', () => {
       });
     });
 
-    describe(`.onClass(A)`, () => {
+    describe(`.onClass(A).find()`, () => {
       it('returns all annotations found on class A', () => {
-        expect(s.onClass().map((a) => a.annotation)).toEqual(
-          expect.arrayContaining(A_CLASS_ANNOTATIONS),
-        );
+        expect(
+          s
+            .onClass()
+            .find()
+            .map((a) => a.annotation),
+        ).toEqual(expect.arrayContaining(A_CLASS_ANNOTATIONS));
       });
     });
-    describe(`.onMethod()`, () => {
+    describe(`.onMethod().find()`, () => {
       it('returns all annotations found on all methods', () => {
-        expect(s.onMethod().map((a) => a.annotation)).toEqual(
+        expect(
+          s
+            .onMethod()
+            .find()
+            .map((a) => a.annotation),
+        ).toEqual(
           expect.arrayContaining([
             ...A_METHOD_ANNOTATIONS,
             ...B_METHOD_ANNOTATIONS,
@@ -309,38 +327,49 @@ describe('AnnotationRegistry', () => {
         );
       });
     });
-    describe(`.onMethod(A)`, () => {
+    describe(`.onMethod(A).find()`, () => {
       describe('if methods on A have annotations', () => {
         it('returns all annotations found methods of class A', () => {
-          expect(s.onMethod(A).map((a) => a.annotation)).toEqual(
-            expect.arrayContaining(A_METHOD_ANNOTATIONS),
-          );
+          expect(
+            s
+              .onMethod(A)
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(expect.arrayContaining(A_METHOD_ANNOTATIONS));
         });
       });
       describe('if methods on A do not have annotations', () => {
         it('returns all annotations found methods of class A', () => {
-          expect(s.onMethod(X)).toEqual([]);
+          expect(s.onMethod(X).find()).toEqual([]);
         });
       });
     });
-    describe(`.onMethod(A, 'fn')`, () => {
+    describe(`.onMethod(A, 'fn').find()`, () => {
       describe('if "fn" method exists', () => {
         it('returns all annotations found on method "A.fn"', () => {
-          expect(s.onMethod(A as any, 'fn1').map((a) => a.annotation)).toEqual(
-            expect.arrayContaining([A1MethodAnnotation, A1Annotation]),
-          );
+          expect(
+            s
+              .onMethod(A as any, 'fn1')
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(expect.arrayContaining([A1MethodAnnotation, A1Annotation]));
         });
       });
 
       describe('if "fn" method does not exist', () => {
         it('returns an empty array', () => {
-          expect(s.onMethod(A as any, 'fnX')).toEqual([]);
+          expect(s.onMethod(A as any, 'fnX').find()).toEqual([]);
         });
       });
     });
-    describe(`.onProperty()`, () => {
+    describe(`.onProperty().find()`, () => {
       it('returns all annotations found on properties', () => {
-        expect(s.onProperty().map((a) => a.annotation)).toEqual(
+        expect(
+          s
+            .onProperty()
+            .find()
+            .map((a) => a.annotation),
+        ).toEqual(
           expect.arrayContaining([
             ...A_PROPERTY_ANNOTATIONS,
             ...B_PROPERTY_ANNOTATIONS,
@@ -348,26 +377,32 @@ describe('AnnotationRegistry', () => {
         );
       });
     });
-    describe(`.onProperty(A)`, () => {
+    describe(`.onProperty(A).find()`, () => {
       describe('if properties on A have annotations', () => {
         it('returns all annotations found on properties', () => {
-          expect(s.onProperty(A).map((a) => a.annotation)).toEqual(
-            expect.arrayContaining([...A_PROPERTY_ANNOTATIONS]),
-          );
+          expect(
+            s
+              .onProperty(A)
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(expect.arrayContaining([...A_PROPERTY_ANNOTATIONS]));
         });
       });
 
       describe('if properties on A do not have annotations', () => {
         it('returns empty array', () => {
-          expect(s.onProperty(X)).toEqual([]);
+          expect(s.onProperty(X).find()).toEqual([]);
         });
       });
     });
-    describe(`.onProperty(A, 'prop')`, () => {
+    describe(`.onProperty(A, 'prop').find()`, () => {
       describe('if "prop" property exists', () => {
         it('returns all annotations found on property "A.prop"', () => {
           expect(
-            s.onProperty(A as any, 'prop1').map((a) => a.annotation),
+            s
+              .onProperty(A as any, 'prop1')
+              .find()
+              .map((a) => a.annotation),
           ).toEqual(
             expect.arrayContaining([A1PropertyAnnotation, A1Annotation]),
           );
@@ -376,13 +411,18 @@ describe('AnnotationRegistry', () => {
 
       describe('if "prop" property does not exist', () => {
         it('returns an empty array', () => {
-          expect(s.onProperty(A as any, 'propX')).toEqual([]);
+          expect(s.onProperty(A as any, 'propX').find()).toEqual([]);
         });
       });
     });
-    describe(`.onArgs()`, () => {
+    describe(`.onArgs().find()`, () => {
       it('returns all annotations found on methods arguments', () => {
-        expect(s.onArgs().map((a) => a.annotation)).toEqual(
+        expect(
+          s
+            .onArgs()
+            .find()
+            .map((a) => a.annotation),
+        ).toEqual(
           expect.arrayContaining([
             ...A_PARAMETER_ANNOTATIONS,
             ...B_PARAMETER_ANNOTATIONS,
@@ -390,26 +430,34 @@ describe('AnnotationRegistry', () => {
         );
       });
     });
-    describe(`.onArgs(A)`, () => {
+    describe(`.onArgs(A).find()`, () => {
       describe('if arguments on A have annotations', () => {
         it('returns all annotations found on any argument of a method of class A', () => {
-          expect(s.onArgs(A).map((a) => a.annotation)).toEqual(
-            expect.arrayContaining([...A_PARAMETER_ANNOTATIONS]),
-          );
+          expect(
+            s
+              .onArgs(A)
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(expect.arrayContaining([...A_PARAMETER_ANNOTATIONS]));
         });
       });
 
       describe('if arguments on A do not have annotations', () => {
         it('returns an empty array', () => {
-          expect(s.onArgs(X)).toEqual([]);
+          expect(s.onArgs(X).find()).toEqual([]);
         });
       });
     });
 
-    describe(`.onArgs(A, 'fn')`, () => {
+    describe(`.onArgs(A, 'fn').find()`, () => {
       describe('if method "fn" exists on class A', () => {
         it('returns all annotations found on any argument of method "A.fn"', () => {
-          expect(s.onArgs(A as any, 'fn1').map((a) => a.annotation)).toEqual(
+          expect(
+            s
+              .onArgs(A as any, 'fn1')
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(
             expect.arrayContaining([A1Annotation, A1ParameterAnnotation]),
           );
         });
@@ -422,23 +470,29 @@ describe('AnnotationRegistry', () => {
     });
   });
 
-  describe('.find(AAnnotation)', () => {
-    let s: AnnotationSelector;
+  describe('.select(AAnnotation)', () => {
+    let s: AnnotationSelection;
 
-    describe('if "AAnnotation" is used', () => {
-      beforeEach(() => (s = annotationRegistry.select(XAnnotation)));
-      describe('.all()', () => {
+    describe('.all().find', () => {
+      describe('with "AAnnotation" not being used', () => {
+        beforeEach(() => (s = annotationRegistry.select(XAnnotation)));
+
         it('returns an empty array', () => {
-          expect(s.all()).toEqual([]);
+          expect(s.all().find()).toEqual([]);
         });
       });
     });
-    describe('if "AAnnotation" is used', () => {
-      beforeEach(() => (s = annotationRegistry.select(A1Annotation)));
 
-      describe('.all()', () => {
+    describe('.all().find()', () => {
+      beforeEach(() => (s = annotationRegistry.select(A1Annotation)));
+      describe('if "AAnnotation" is used', () => {
         it('returns all "AAnnotation" annotations found all over the code', () => {
-          expect(s.all().map((a) => a.annotation)).toEqual(
+          expect(
+            s
+              .all()
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(
             expect.arrayContaining(
               A_ANNOTATIONS.filter((a) => a === A1Annotation),
             ),
@@ -446,10 +500,15 @@ describe('AnnotationRegistry', () => {
         });
       });
 
-      describe(`.all(SomeClass);`, () => {
+      describe(`.all(SomeClass).find();`, () => {
         describe(`if "SomeClass" has annotations`, () => {
           it('returns all "AAnnotation" annotations found within class SomeClass', () => {
-            expect(s.all(A).map((a) => a.annotation)).toEqual(
+            expect(
+              s
+                .all(A)
+                .find()
+                .map((a) => a.annotation),
+            ).toEqual(
               expect.arrayContaining(
                 A_ANNOTATIONS.filter((a) => a === A1Annotation),
               ),
@@ -458,7 +517,7 @@ describe('AnnotationRegistry', () => {
         });
         describe(`if "SomeClass" has no "AAnnotation" annotation`, () => {
           it('returns empty array', () => {
-            expect(s.all(B)).toEqual([]);
+            expect(s.all(B).find()).toEqual([]);
           });
         });
       });
@@ -466,7 +525,7 @@ describe('AnnotationRegistry', () => {
       // describe(`.all(someClassInstance);`, () => {
       //   describe(`if "SomeClass" has "AAnnotation" annotations`, () => {
       //     it('returns all annotations found within class SomeClass', () => {
-      //       expect(s.all(new A()).map((a) => a.annotation)).toEqual(
+      //       expect(s.all(new A()).find().map((a) => a.annotation)).toEqual(
       //         expect.arrayContaining(
       //           A_ANNOTATIONS.filter((a) => a === A1Annotation),
       //         ),
@@ -479,19 +538,29 @@ describe('AnnotationRegistry', () => {
       //     });
       //   });
       // });
-      describe(`.onMethod()`, () => {
+      describe(`.onMethod().find()`, () => {
         it('returns all "AAnnotation" annotations found on all methods', () => {
-          expect(s.onMethod().map((a) => a.annotation)).toEqual(
+          expect(
+            s
+              .onMethod()
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(
             expect.arrayContaining(
               A_METHOD_ANNOTATIONS.filter((a) => a === A1Annotation),
             ),
           );
         });
       });
-      describe(`.onMethod(A)`, () => {
+      describe(`.onMethod(A).find()`, () => {
         describe('if methods on A have "AAnnotation" annotations', () => {
           it('returns all annotations found methods of class A', () => {
-            expect(s.onMethod(A).map((a) => a.annotation)).toEqual(
+            expect(
+              s
+                .onMethod(A)
+                .find()
+                .map((a) => a.annotation),
+            ).toEqual(
               expect.arrayContaining(
                 A_METHOD_ANNOTATIONS.filter((a) => a === A1Annotation),
               ),
@@ -500,38 +569,51 @@ describe('AnnotationRegistry', () => {
         });
         describe('if methods on A do not have "AAnnotation" annotations', () => {
           it('returns all annotations found methods of class A', () => {
-            expect(s.onMethod(B)).toEqual([]);
+            expect(s.onMethod(B).find()).toEqual([]);
           });
         });
       });
-      describe(`.onMethod(A, 'fn')`, () => {
+      describe(`.onMethod(A, 'fn').find()`, () => {
         describe('if "fn" method exists', () => {
           it('returns all "AAnnotation" annotations found on method "A.fn"', () => {
             expect(
-              s.onMethod(A as any, 'fn1').map((a) => a.annotation),
+              s
+                .onMethod(A as any, 'fn1')
+                .find()
+                .map((a) => a.annotation),
             ).toEqual(expect.arrayContaining([A1Annotation]));
           });
         });
 
         describe('if "fn" method does not have "AAnnotation" annotations', () => {
           it('returns an empty array', () => {
-            expect(s.onMethod(A as any, 'fn2')).toEqual([]);
+            expect(s.onMethod(A as any, 'fn2').find()).toEqual([]);
           });
         });
       });
-      describe(`.onProperty()`, () => {
+      describe(`.onProperty().find()`, () => {
         it('returns all "AAnnotation" annotations found on properties', () => {
-          expect(s.onProperty().map((a) => a.annotation)).toEqual(
+          expect(
+            s
+              .onProperty()
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(
             expect.arrayContaining(
               A_PROPERTY_ANNOTATIONS.filter((a) => a === A1Annotation),
             ),
           );
         });
       });
-      describe(`.onProperty(A)`, () => {
+      describe(`.onProperty(A).find()`, () => {
         describe('if properties on A have "AAnnotation" annotations', () => {
           it('returns all annotations found on properties', () => {
-            expect(s.onProperty(A).map((a) => a.annotation)).toEqual(
+            expect(
+              s
+                .onProperty(A)
+                .find()
+                .map((a) => a.annotation),
+            ).toEqual(
               expect.arrayContaining(
                 A_PROPERTY_ANNOTATIONS.filter((a) => a === A1Annotation),
               ),
@@ -541,38 +623,51 @@ describe('AnnotationRegistry', () => {
 
         describe('if properties on A do not have "AAnnotation" annotations', () => {
           it('returns empty array', () => {
-            expect(s.onProperty(B)).toEqual([]);
+            expect(s.onProperty(B).find()).toEqual([]);
           });
         });
       });
-      describe(`.onProperty(A, 'prop')`, () => {
+      describe(`.onProperty(A, 'prop').find()`, () => {
         describe('if "prop" property exists', () => {
           it('returns all "AAnnotation" annotations found on property "A.prop"', () => {
             expect(
-              s.onProperty(A as any, 'prop1').map((a) => a.annotation),
+              s
+                .onProperty(A as any, 'prop1')
+                .find()
+                .map((a) => a.annotation),
             ).toEqual(expect.arrayContaining([A1Annotation]));
           });
         });
 
         describe('if "prop" property does not have "AAnnotation" annotation', () => {
           it('returns an empty array', () => {
-            expect(s.onProperty(A as any, 'prop2')).toEqual([]);
+            expect(s.onProperty(A as any, 'prop2').find()).toEqual([]);
           });
         });
       });
-      describe(`.onArgs()`, () => {
+      describe(`.onArgs().find()`, () => {
         it('returns all "AAnnotation" annotations found on methods arguments', () => {
-          expect(s.onArgs().map((a) => a.annotation)).toEqual(
+          expect(
+            s
+              .onArgs()
+              .find()
+              .map((a) => a.annotation),
+          ).toEqual(
             expect.arrayContaining(
               A_PARAMETER_ANNOTATIONS.filter((a) => a === A1Annotation),
             ),
           );
         });
       });
-      describe(`.onArgs(A)`, () => {
+      describe(`.onArgs(A).find()`, () => {
         describe('if arguments on A have "AAnnotation" annotations', () => {
           it('returns all annotations found on any argument of a method of class A', () => {
-            expect(s.onArgs(A).map((a) => a.annotation)).toEqual(
+            expect(
+              s
+                .onArgs(A)
+                .find()
+                .map((a) => a.annotation),
+            ).toEqual(
               expect.arrayContaining(
                 A_PARAMETER_ANNOTATIONS.filter((a) => a === A1Annotation),
               ),
@@ -582,17 +677,20 @@ describe('AnnotationRegistry', () => {
 
         describe('if arguments on A do not have "AAnnotation" annotations', () => {
           it('returns an empty array', () => {
-            expect(s.onArgs(B)).toEqual([]);
+            expect(s.onArgs(B).find()).toEqual([]);
           });
         });
       });
 
-      describe(`.onArgs(A, 'fn')`, () => {
+      describe(`.onArgs(A, 'fn').find()`, () => {
         describe('if method "fn" exists on class A', () => {
           it('returns all "AAnnotation" annotations found on any argument of method "A.fn"', () => {
-            expect(s.onArgs(A as any, 'fn1').map((a) => a.annotation)).toEqual(
-              expect.arrayContaining([A1Annotation]),
-            );
+            expect(
+              s
+                .onArgs(A as any, 'fn1')
+                .find()
+                .map((a) => a.annotation),
+            ).toEqual(expect.arrayContaining([A1Annotation]));
           });
         });
         describe('if method "fn" does not have AAnnotation annotations', () => {

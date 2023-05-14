@@ -56,7 +56,8 @@ export class AspectRegistry {
     const annotation = this.weaverContext
       .get(AnnotationRegistry)
       .select(Aspect)
-      .on({ target, searchParent: true })[0];
+      .on({ target })
+      .find({ searchParents: true })[0];
 
     if (!annotation) {
       throw new WeavingError(`${target.label} is not an aspect`);

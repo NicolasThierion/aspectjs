@@ -33,8 +33,13 @@
   extends: .node:npm-command
   variables:
     NPM_COMMAND: test:unit
+    ARTIFACT_PATH: $CWD/dist/coverage
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
-
+  artifacts:
+    untracked: false
+    expire_in: 30 days
+    paths:
+      - $COVERAGE_PATY
 .node:build:
   extends: .node:npm-command
   variables:

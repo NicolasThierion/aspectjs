@@ -48,6 +48,7 @@ export class AnnotationTriggerRegistry {
           this.annotationRegistry
             .select(...trigger.annotations.map(AnnotationRef.of))
             .on({ target })
+            .find()
             .forEach((a) => {
               trigger.fn(a);
               foundAnnotations.add(a.annotation.ref);

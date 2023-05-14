@@ -52,7 +52,7 @@ export class JitWeaver implements Weaver {
   enhance<T extends TargetType, X = unknown>(
     target: AnnotationTarget<T>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
-    const annotations = this.annotationRegistry.select().on({ target });
+    const annotations = this.annotationRegistry.select().on({ target }).find();
 
     const ctxt = new MutableAdviceContext({
       target,
