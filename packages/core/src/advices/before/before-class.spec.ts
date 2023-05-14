@@ -211,12 +211,25 @@ describe('class advice', () => {
         aadvice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.annotations.length).toEqual(2);
           const aclassAnnotationContext = ctxt.annotations.filter(
-            (an) => an.annotation === AClass,
+            (an) => an.ref === AClass.ref,
           )[0];
           expect(aclassAnnotationContext).toBeTruthy();
           expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
         });
         new A();
+      });
+
+      it('has context.annotation.ref = the anntation that invoked that aspect', () => {
+        @AClass()
+        class A {
+          constructor(public labels = ['X']) {}
+        }
+        aadvice = jest.fn((ctxt: BeforeContext) => {
+          expect(ctxt.annotations[0]?.value instanceof A);
+        });
+        new A();
+
+        expect(aadvice).toHaveBeenCalled();
       });
     });
   });

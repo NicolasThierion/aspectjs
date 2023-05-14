@@ -6,11 +6,11 @@ import type {
   AnnotationTargetRef,
 } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { AnnotationContext } from './../annotation-context';
+import { BindableAnnotationContext } from './../annotation-context';
 import { AnnotationSelectionFilter } from './annotation-selection-filter';
 
 type ByAnnotationSet = {
-  byClassTargetRef: Map<AnnotationTargetRef, AnnotationContext>;
+  byClassTargetRef: Map<AnnotationTargetRef, BindableAnnotationContext[]>;
 };
 
 /**
@@ -31,7 +31,7 @@ class _AnnotationsSet {
     annotationRefs: AnnotationRef[],
     classTargetRef?: AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
-  ): AnnotationContext[] {
+  ): BindableAnnotationContext[] {
     const annotationsInClass = decoratorTypes
       .map((t) => this.buckets[t])
       .flatMap((m) =>
@@ -41,29 +41,42 @@ class _AnnotationsSet {
       )
       .filter((set) => !!set)
       .map((set) => set!.byClassTargetRef)
-      .flatMap((map) =>
-        classTargetRef ? map?.get(classTargetRef) ?? [] : [...map.values()],
-      );
+      .flatMap((byClassTargetRef) => {
+        return classTargetRef
+          ? byClassTargetRef?.get(classTargetRef) ?? []
+          : [...byClassTargetRef.values()].flat();
+      });
 
     if (propertyKey === undefined) {
       return annotationsInClass;
     }
 
     return annotationsInClass.filter(
-      (a: AnnotationContext<TargetType.METHOD>) =>
+      (a: BindableAnnotationContext<TargetType.METHOD>) =>
         a.target.propertyKey === propertyKey,
     );
   }
 
-  addAnnotation(ctxt: AnnotationContext) {
+  addAnnotation(ctxt: BindableAnnotationContext) {
     const bucket = this.buckets[ctxt.target.type];
     assert(() => !!bucket);
-    const byAnnotationSet = bucket.get(ctxt.annotation.ref) ?? {
-      byClassTargetRef: new Map<AnnotationTargetRef, AnnotationContext>(),
+    const byAnnotationSet = bucket.get(ctxt.ref) ?? {
+      byClassTargetRef: new Map<
+        AnnotationTargetRef,
+        BindableAnnotationContext[]
+      >(),
     };
 
-    byAnnotationSet.byClassTargetRef.set(ctxt.target.declaringClass.ref, ctxt);
-    bucket.set(ctxt.annotation.ref, byAnnotationSet);
+    const contexts =
+      byAnnotationSet.byClassTargetRef.get(ctxt.target.declaringClass.ref) ??
+      [];
+
+    contexts.push(ctxt);
+    byAnnotationSet.byClassTargetRef.set(
+      ctxt.target.declaringClass.ref,
+      contexts,
+    );
+    bucket.set(ctxt.ref, byAnnotationSet);
   }
 }
 
@@ -73,9 +86,10 @@ interface AnnotationByTypeSelectionOptions {
 /**
  * @internal
  */
-class AnnotationByTypeSelection<
+export class AnnotationByTypeSelection<
   T extends TargetType = TargetType,
   X = unknown,
+  P extends keyof X = any,
 > {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
@@ -83,10 +97,12 @@ class AnnotationByTypeSelection<
     private readonly annotationsRefs: AnnotationRef[],
     private readonly decoratorTypes: T[],
     private readonly type?: ConstructorType<X>,
-    private readonly propertyKey?: keyof X,
+    private readonly propertyKey?: P,
   ) {}
 
-  find(options?: AnnotationByTypeSelectionOptions): AnnotationContext<T, X>[] {
+  find(
+    options?: AnnotationByTypeSelectionOptions,
+  ): BindableAnnotationContext<T, X>[] {
     if (!this.type) {
       assert(!options?.searchParents);
 
@@ -95,7 +111,7 @@ class AnnotationByTypeSelection<
         this.annotationsRefs,
         undefined,
         this.propertyKey,
-      ) as AnnotationContext<T, X>[];
+      ) as BindableAnnotationContext<T, X>[];
     }
     // search annotations on given type
     const classTarget = this.targetFactory.of(this.type);
@@ -119,9 +135,10 @@ class AnnotationByTypeSelection<
           ref,
           this.propertyKey,
         ),
-      ) as AnnotationContext<T, X>[];
+      ) as BindableAnnotationContext<T, X>[];
   }
 }
+
 export class AnnotationSelection {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
@@ -156,9 +173,9 @@ export class AnnotationSelection {
       type,
     );
   }
-  onMethod<X = any>(
+  onMethod<X = any, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
-    propertyKey?: keyof X,
+    propertyKey?: K,
   ): AnnotationByTypeSelection<TargetType.METHOD, X> {
     return new AnnotationByTypeSelection<TargetType.METHOD, X>(
       this.targetFactory,
@@ -169,9 +186,9 @@ export class AnnotationSelection {
       propertyKey,
     );
   }
-  onProperty<X>(
+  onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
-    propertyKey?: keyof X,
+    propertyKey?: K,
   ): AnnotationByTypeSelection<TargetType.PROPERTY, X> {
     return new AnnotationByTypeSelection<TargetType.PROPERTY, X>(
       this.targetFactory,
@@ -182,9 +199,9 @@ export class AnnotationSelection {
       propertyKey,
     );
   }
-  onArgs<X>(
+  onArgs<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
-    propertyKey?: keyof X,
+    propertyKey?: K,
   ): AnnotationByTypeSelection<TargetType.PARAMETER, X> {
     return new AnnotationByTypeSelection<TargetType.PARAMETER, X>(
       this.targetFactory,
@@ -223,7 +240,7 @@ export class AnnotationRegistry {
   private readonly annotationSet = new _AnnotationsSet();
   constructor(private targetFactory: AnnotationTargetFactory) {}
 
-  register(annotationContext: AnnotationContext) {
+  register(annotationContext: BindableAnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
   select(...annotations: (AnnotationRef | Annotation)[]): AnnotationSelection {

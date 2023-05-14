@@ -52,7 +52,9 @@ export class JitWeaver implements Weaver {
   enhance<T extends TargetType, X = unknown>(
     target: AnnotationTarget<T>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
-    const annotations = this.annotationRegistry.select().on({ target }).find();
+    const annotations = this.annotationRegistry.select().on({ target }).find({
+      searchParents: true,
+    });
 
     const ctxt = new MutableAdviceContext({
       target,
@@ -73,7 +75,7 @@ export class JitWeaver implements Weaver {
 
     // find all class advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.annotation.ref),
+      annotations: ctxt.annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<PointcutTargetType.CLASS, X>(
@@ -97,7 +99,7 @@ export class JitWeaver implements Weaver {
 
     // find all property getter | setter advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.annotation.ref),
+      annotations: ctxt.annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<
@@ -119,7 +121,7 @@ export class JitWeaver implements Weaver {
 
     // find all method advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.annotation.ref),
+      annotations: ctxt.annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<PointcutTargetType.METHOD, X>(

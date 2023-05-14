@@ -72,7 +72,7 @@ export class AdviceRegistry {
         processedAdvices.add(advice.name);
 
         const expression = adviceAnnotation.args[0] as PointcutExpression;
-        const type = KNOWN_ADVICE_TYPES[adviceAnnotation.annotation.name]!;
+        const type = KNOWN_ADVICE_TYPES[adviceAnnotation.ref.name]!;
         assert(!!type);
         const pointcut = new Pointcut({
           type: type,
@@ -127,7 +127,7 @@ export class AdviceRegistry {
         .select(...annotations)
         .all()
         .find()
-        .map((a) => a.annotation.ref),
+        .map((a) => a.ref),
     );
 
     // Allow @Aspect a advice annotations to be processed already

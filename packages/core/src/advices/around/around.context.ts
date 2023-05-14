@@ -1,4 +1,4 @@
-import type { AnnotationContext } from '@aspectjs/common';
+import type { BoundAnnotationContext } from '@aspectjs/common';
 import type { AdviceTarget } from './../../advice/advice.type';
 import type { JoinPoint } from './../../advice/joinpoint';
 import type {
@@ -11,7 +11,7 @@ export interface AroundContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: Array<AnnotationContext<ToTargetType<T>, X>>;
+  readonly annotations: Array<BoundAnnotationContext<ToTargetType<T>, X>>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

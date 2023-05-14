@@ -1,4 +1,4 @@
-import type { AnnotationContext } from '@aspectjs/common';
+import { BoundAnnotationContext } from '@aspectjs/common';
 import type { AdviceTarget } from './../../advice/advice.type';
 import type {
   PointcutTargetType,
@@ -10,7 +10,7 @@ export interface AfterContext<
   X = unknown,
 > {
   /** The annotations contexts **/
-  readonly annotations: Array<AnnotationContext<ToTargetType<T>, X>>;
+  readonly annotations: Array<BoundAnnotationContext<ToTargetType<T>, X>>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: T;
   /** the arguments originally passed to the joinpoint **/

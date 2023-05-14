@@ -51,7 +51,7 @@ export class AnnotationTriggerRegistry {
             .find()
             .forEach((a) => {
               trigger.fn(a);
-              foundAnnotations.add(a.annotation.ref);
+              foundAnnotations.add(a.ref);
             });
 
           // else, add triggers to the map for not found annotations
@@ -94,7 +94,7 @@ export class AnnotationTriggerRegistry {
   call(context: AnnotationContext<TargetType, unknown>) {
     const foundTriggers = this.get(context.target);
     foundTriggers
-      .get(context.annotation.ref)
+      .get(context.ref)
       ?.sort(
         (t1, t2) =>
           (t1.order ?? Number.MAX_SAFE_INTEGER) -
@@ -102,7 +102,7 @@ export class AnnotationTriggerRegistry {
       )
       .forEach((t) => t.fn(context));
 
-    foundTriggers.delete(context.annotation.ref);
+    foundTriggers.delete(context.ref);
   }
 
   private get(

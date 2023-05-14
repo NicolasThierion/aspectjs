@@ -237,7 +237,7 @@ describe('method advice', () => {
         advice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.annotations.length).toEqual(2);
           const AMethodAnnotationContext = ctxt.annotations.filter(
-            (an) => an.annotation === AMethod,
+            (an) => an.ref === AMethod.ref,
           )[0];
           expect(AMethodAnnotationContext).toBeTruthy();
           expect(AMethodAnnotationContext?.args).toEqual(['annotationArg']);
