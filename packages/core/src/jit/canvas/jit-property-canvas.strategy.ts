@@ -183,7 +183,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
       conpileAdviceEntries
         .map((entry) => {
           assert(typeof entry === 'function');
-          // TODO do not call all @Compile advices. Only the one with highest precedence
+          // TODO: do not call all @Compile advices. Only the one with highest precedence
           const descriptor = entry.advice.call(
             entry.aspect,
             ctxt.asCompileContext(),

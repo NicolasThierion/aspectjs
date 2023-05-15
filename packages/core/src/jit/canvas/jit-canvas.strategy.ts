@@ -32,7 +32,7 @@ export abstract class JitWeaverCanvasStrategy<
     ctxt: MutableAdviceContext<T, X>,
     selection: AdvicesSelection,
   ): CompiledSymbol<T, X> | undefined;
-  // TODO remove ?
+  // TODO: remove ?
   // advices.forEach((a) => {
   //     if (Reflect.getOwnMetadata('@aspectjs::isCompiled', a, ctxt.target.ref)) {
   //         // prevent @Compile advices to be called twice
@@ -43,16 +43,14 @@ export abstract class JitWeaverCanvasStrategy<
 
   before(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
     this._applyNotReturn(
-      ctxt.asBeforeContext(),
-      // compiledSymbol,
+      () => ctxt.asBeforeContext(),
       selection.find(this.targetType, PointcutType.BEFORE),
     );
   }
 
   after(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
     this._applyNotReturn(
-      ctxt.asAfterContext(),
-      // compiledSymbol,
+      () => ctxt.asAfterContext(),
       selection.find(this.targetType, PointcutType.AFTER),
     );
   }
@@ -61,20 +59,20 @@ export abstract class JitWeaverCanvasStrategy<
     ctxt: MutableAdviceContext<T, X>,
     selection: AdvicesSelection,
   ): T {
-    let value = ctxt.value;
-    [...selection.find(this.targetType, PointcutType.AFTER_RETURN)].forEach(
-      (advice) => {
-        const newContext = ctxt.asAfterContext();
-        value = this.callAdvice(
-          // newContext as any,
-          //  compiledSymbol,
-          advice,
-          [newContext, value],
-        );
-      },
-    );
+    const advices = [
+      ...selection.find(this.targetType, PointcutType.AFTER_RETURN),
+    ];
+    if (!advices.length) {
+      return ctxt.value as T;
+    }
+    const afterReturnContext = ctxt.asAfterReturnContext();
 
-    return value as T;
+    advices.forEach((advice) => {
+      const newContext = afterReturnContext;
+      ctxt.value = this.callAdvice(advice, [newContext, ctxt.value]);
+    });
+
+    return ctxt.value as T;
   }
 
   afterThrow(
@@ -87,15 +85,10 @@ export abstract class JitWeaverCanvasStrategy<
     ];
 
     let value: any;
-    const errorContext = ctxt.asAfterThrowContext();
     if (adviceEntries.length) {
+      const errorContext = ctxt.asAfterThrowContext();
       adviceEntries.forEach((entry) => {
-        value = this.callAdvice(
-          // ctxt,
-          //  compiledSymbol,
-          entry,
-          [errorContext, errorContext.error],
-        );
+        value = this.callAdvice(entry, [errorContext, errorContext.error]);
         if (!allowReturn && !isUndefined(value)) {
           throw new AdviceError(
             entry.advice,
@@ -106,9 +99,9 @@ export abstract class JitWeaverCanvasStrategy<
       });
       return value;
     } else {
-      assert(!!errorContext.error);
+      assert(!!ctxt.error);
       // pass-trough errors by default
-      throw errorContext.error;
+      throw ctxt.error;
     }
   }
 
@@ -117,10 +110,16 @@ export abstract class JitWeaverCanvasStrategy<
     advicesEntries: AdvicesSelection,
     allowReturn = true,
   ): JoinPoint {
+    const advices = [
+      ...advicesEntries.find(this.targetType, PointcutType.AROUND),
+    ];
+    if (!advices.length) {
+      return ctxt.joinpoint!;
+    }
     const aroundContext = ctxt.asAroundContext();
     let jp = aroundContext.joinpoint;
-    [...advicesEntries.find(this.targetType, PointcutType.AROUND)]
-      // TODO why reverse ?
+    advices
+      // TODO: why reverse ?
       .reverse()
       .forEach((entry) => {
         const originalJp = aroundContext.joinpoint;
@@ -136,12 +135,7 @@ export abstract class JitWeaverCanvasStrategy<
             joinpoint: nextJp,
             args,
           };
-          value = this.callAdvice(
-            // newContext,
-            //  compiledSymbol,
-            entry,
-            [newContext, nextJp, args],
-          );
+          value = this.callAdvice(entry, [newContext, nextJp, args]);
           if (value !== undefined && !allowReturn) {
             throw new AdviceError(
               entry.advice,
@@ -175,10 +169,15 @@ export abstract class JitWeaverCanvasStrategy<
    * @param adviceEntries
    */
   protected _applyNotReturn(
-    ctxt: AdviceContext<T, X>,
+    contextCreator: () => AdviceContext<T, X>,
     adviceEntries: Iterable<AdviceEntry<T>>,
   ) {
-    [...adviceEntries].forEach((entry) => {
+    const advices = [...adviceEntries];
+    if (!advices.length) {
+      return;
+    }
+    const ctxt = contextCreator();
+    advices.forEach((entry) => {
       const retVal = this.callAdvice(entry, [ctxt, ctxt.args]);
       if (!isUndefined(retVal)) {
         throw new AdviceError(

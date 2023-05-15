@@ -10,7 +10,6 @@ import { JitWeaver } from './jit-weaver';
 import { CALL_JIT_WEAVER_HOOK } from './jit-weaver.hook';
 import { JoinPointFactory } from './joinpoint.factory';
 
-// TODO test
 export const JIT_WEAVER_PROVIDERS: ReflectProvider[] = [
   {
     provide: WeaverContext,

@@ -49,12 +49,13 @@ class _AnnotationsSet {
 
     if (propertyKey === undefined) {
       return annotationsInClass;
+    } else {
+      return annotationsInClass.filter(
+        (annotation) =>
+          (annotation as BindableAnnotationContext<TargetType.METHOD>).target
+            .propertyKey === propertyKey,
+      );
     }
-
-    return annotationsInClass.filter(
-      (a: BindableAnnotationContext<TargetType.METHOD>) =>
-        a.target.propertyKey === propertyKey,
-    );
   }
 
   addAnnotation(ctxt: BindableAnnotationContext) {

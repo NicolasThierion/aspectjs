@@ -80,8 +80,8 @@ export class JitWeaverCanvas<
           ctxt.error = error;
           return this.strategy.afterThrow(ctxt, selection);
         } finally {
-          withinAdviceSafeguard = false;
           this.strategy.after(ctxt, selection);
+          withinAdviceSafeguard = false;
         }
       };
       withinAdviceSafeguard = true;

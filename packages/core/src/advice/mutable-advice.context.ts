@@ -1,4 +1,4 @@
-import { AnnotationContext } from '@aspectjs/common';
+import { BindableAnnotationContext } from '@aspectjs/common';
 
 import { AdviceTarget } from './advice.type';
 import { JoinPoint } from './joinpoint';
@@ -20,7 +20,7 @@ export class MutableAdviceContext<
   X = unknown,
 > {
   /** The annotations contexts **/
-  annotations: Array<AnnotationContext<ToTargetType<T>, X>>;
+  annotations: BindableAnnotationContext<ToTargetType<T>, X>[];
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/
@@ -106,11 +106,21 @@ export class MutableAdviceContext<
   }
 }
 
-function copyProps<A>(ctxt: any, ...keys: (keyof A)[]) {
-  return keys
-    .map((prop) => ({ prop, value: ctxt[prop] }))
+function copyProps<A>(ctxt: MutableAdviceContext, ...keys: (keyof A)[]) {
+  const res = keys
+    .map((prop) => ({ prop, value: (ctxt as any)[prop] }))
     .reduce((res, { prop, value }) => {
       res[prop] = value as any;
       return res;
     }, {} as A);
+
+  const annotations = [...ctxt.annotations];
+  Object.defineProperty(res, 'annotations', {
+    get: () => {
+      return annotations.map((annotation) =>
+        annotation.bind(ctxt.instance, ctxt.args),
+      );
+    },
+  });
+  return res as A;
 }

@@ -32,7 +32,7 @@ const POINTCUT_REGEXES = {
 export class PointcutExpression<
   T extends PointcutTargetType = PointcutTargetType,
 > {
-  readonly name: string = '*'; // TODO
+  readonly name: string = '*'; // TODO: Add support for pointcut by symbol name
   readonly type: T;
   readonly annotations: AnnotationRef[] = [];
   private readonly _expr: string;
