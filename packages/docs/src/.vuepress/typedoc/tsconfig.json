@@ -1,0 +1,13 @@
+{
+  "extends": "../../../../../tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+    // "module": "ES2020",
+    // "moduleResolution": "nodenext",
+    "downlevelIteration": true
+  },
+  "include": ["../../../../../*.ts"],
+  "exclude": ["../../../../../*.spec.ts", "../../../../../node_modules/**/*"]
+}

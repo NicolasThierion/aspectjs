@@ -14,19 +14,20 @@ import { AdviceError } from '../../errors/advice.error';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import type { BeforeContext } from './before.context';
 
-describe('method advice', () => {
+describe('parameter advice', () => {
   let advice: ReturnType<typeof jest.fn>;
   let aaspect: any;
   let baspect: any;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let mImpl: any;
 
-  const AMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
-    'AMethod',
+  const AParameter = new AnnotationFactory('test').create(
+    AnnotationType.PARAMETER,
+    'AParameter',
   );
-  const BMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
-    'BMethod',
+  const BParameter = new AnnotationFactory('test').create(
+    AnnotationType.PARAMETER,
+    'BParameter',
   );
   let weaver: JitWeaver;
   beforeEach(() => {
@@ -38,22 +39,22 @@ describe('method advice', () => {
   });
 
   function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
-    @Aspect('AMethodLabel')
+    @Aspect('AParameterLabel')
     class AAspect {
-      @Before(on.methods.withAnnotations(...aanotations))
+      @Before(on.parameters.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.METHOD>,
+        ctxt: BeforeContext<PointcutTargetType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
       }
     }
 
-    @Aspect('BMethodLabel')
+    @Aspect('BParameterLabel')
     class BAspect {
-      @Before(on.methods.withAnnotations(...bannotations))
+      @Before(on.parameters.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.METHOD>,
+        ctxt: BeforeContext<PointcutTargetType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -64,16 +65,14 @@ describe('method advice', () => {
     baspect = new BAspect();
     weaver.enable(aaspect, baspect);
   }
-  describe('on pointcut @Before(on.methods.withAnnotations()', () => {
+  describe('on pointcut @Before(on.parameter.withAnnotations()', () => {
     beforeEach(() => setupAspects());
 
     it('has a "this"  bound to the aspect instance', () => {
       const mImpl = jest.fn();
       class A {
-        @AMethod()
-        @BMethod()
-        m(...args: any[]) {
-          mImpl(this, ...args);
+        m(@AParameter() @BParameter() arg1: any, @AParameter() arg2: any) {
+          mImpl(this, arg1, arg2);
         }
       }
 
@@ -82,38 +81,35 @@ describe('method advice', () => {
         expect(this).toEqual(aaspect);
       });
 
-      new A().m();
+      new A().m('a', 'b');
       expect(advice).toBeCalled();
     });
 
     it('calls each matching advice once', () => {
       const mImpl = jest.fn();
       class A {
-        @AMethod()
-        @BMethod()
-        m(..._args: any[]) {
-          mImpl(this, ..._args);
+        m(@AParameter() @BParameter() arg1: any, @AParameter() arg2: any) {
+          mImpl(this, arg1, arg2);
         }
       }
 
       expect(advice).not.toHaveBeenCalled();
       advice = jest.fn(function (this: any) {});
 
-      new A().m();
+      new A().m('a', 'b');
       expect(advice).toHaveBeenCalledTimes(2);
       expect(mImpl).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('on pointcut @Before(on.methods.withAnnotations(<CLASS_ANNOTATION>)', () => {
-    beforeEach(() => setupAspects([AMethod], [BMethod]));
+    beforeEach(() => setupAspects([AParameter], [BParameter]));
 
     it('has a "this"  bound to the aspect instance', () => {
       const mImpl = jest.fn();
       class A {
-        @AMethod()
-        m(...args: any[]) {
-          mImpl(this, ...args);
+        m(@AParameter() @BParameter() arg1: any, @AParameter() arg2: any) {
+          mImpl(this, arg1, arg2);
         }
       }
 
@@ -122,34 +118,35 @@ describe('method advice', () => {
         expect(this).toEqual(aaspect);
       });
 
-      new A().m();
+      new A().m('a', 'b');
       expect(advice).toBeCalled();
     });
 
     it('calls through the method once', () => {
       const mImpl = jest.fn();
       class A {
-        @AMethod()
-        m(..._args: any[]) {
-          mImpl(this, ..._args);
+        m(@AParameter() arg1: any, @AParameter() arg2: any) {
+          mImpl(this, arg1, arg2);
         }
       }
 
       expect(advice).not.toHaveBeenCalled();
       advice = jest.fn(function (this: any) {});
 
-      new A().m();
+      new A().m('a', 'b');
       expect(advice).toHaveBeenCalledTimes(1);
       expect(mImpl).toHaveBeenCalledTimes(1);
     });
     it('receives method arguments', () => {
       class A {
         labels: any;
-        @AMethod()
-        m(...args: any[]) {
-          mImpl(this, ...args);
-          expect(this).toEqual(a);
-          this.labels = args;
+        m(@AParameter() @BParameter() arg1: any, @AParameter() arg2: any) {
+          mImpl(this, arg1, arg2);
+          this.labels = [arg1, arg2];
+
+          expect(arg1).toBe('a');
+          expect(arg2).toBe('b');
+
           return this;
         }
       }
@@ -160,20 +157,19 @@ describe('method advice', () => {
         ctxt: BeforeContext,
         args: unknown[],
       ) {
-        expect(ctxt.args).toEqual(['b', 'c']);
-        expect(args).toEqual(['b', 'c']);
+        expect(ctxt.args).toEqual(['a', 'b']);
+        expect(args).toEqual(['a', 'b']);
       });
 
       let a = new A();
-      a = a.m('b', 'c');
-      expect(a.labels).toEqual(['b', 'c']);
+      a = a.m('a', 'b');
+      expect(a.labels).toEqual(['a', 'b']);
     });
 
     it('is called before the method', () => {
       class A {
-        @AMethod()
-        m(...args: any[]) {
-          mImpl(this, ...args);
+        m(@AParameter() @BParameter() arg1?: any, @AParameter() arg2?: any) {
+          mImpl(this, arg1, arg2);
         }
       }
 
@@ -186,9 +182,8 @@ describe('method advice', () => {
 
     it('is not allowed to return', () => {
       class A {
-        @AMethod()
-        m(...args: any[]) {
-          mImpl(this, ...args);
+        m(@AParameter() @BParameter() arg1?: any, @AParameter() arg2?: any) {
+          mImpl(this, arg1, arg2);
         }
       }
 
@@ -213,9 +208,8 @@ describe('method advice', () => {
 
       it(`has context.instance = the annotated class's instance`, () => {
         class A {
-          @AMethod()
-          m(...args: any[]) {
-            mImpl(this, ...args);
+          m(@AParameter() @BParameter() arg1?: any, @AParameter() arg2?: any) {
+            mImpl(this, arg1, arg2);
           }
         }
         advice = jest.fn((ctxt) => {
@@ -227,23 +221,41 @@ describe('method advice', () => {
         expect(thisInstance).toBe(a);
       });
 
-      it('has context.annotation that contains the proper annotations context', () => {
+      it('has context.annotations that contains the proper annotations context', () => {
         class A {
-          @AMethod('annotationArg')
-          @BMethod()
-          m(...args: any[]) {
-            mImpl(this, ...args);
+          m(@AParameter() @BParameter() arg1?: any, @AParameter() arg2?: any) {
+            mImpl(this, arg1, arg2);
           }
         }
-        advice = jest.fn((ctxt: BeforeContext) => {
-          expect(ctxt.annotations.length).toEqual(2);
-          const AMethodAnnotationContext = ctxt.annotations.filter(
-            (an) => an.ref === AMethod.ref,
-          )[0];
-          expect(AMethodAnnotationContext).toBeTruthy();
-          expect(AMethodAnnotationContext?.args).toEqual(['annotationArg']);
-        });
-        new A().m();
+        advice = jest.fn(
+          (ctxt: BeforeContext<PointcutTargetType.PARAMETER>) => {
+            expect(ctxt.annotations.length).toEqual(3);
+            expect(
+              ctxt.annotations
+                .map((a) => a.ref)
+                .filter((r) => r === AParameter.ref).length,
+            ).toEqual(2);
+
+            expect(
+              ctxt.annotations
+                .map((a) => a.ref)
+                .filter((r) => r === BParameter.ref).length,
+            ).toEqual(1);
+
+            ctxt.annotations
+              .filter((a) => a!.target.parameterIndex === 0)
+              .forEach((a) => {
+                expect(a.value).toEqual('a');
+              });
+
+            ctxt.annotations
+              .filter((a) => a!.target.parameterIndex === 1)
+              .forEach((a) => {
+                expect(a.value).toEqual('b');
+              });
+          },
+        );
+        new A().m('a', 'b');
 
         expect(advice).toHaveBeenCalled();
       });

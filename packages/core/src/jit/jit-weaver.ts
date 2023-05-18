@@ -2,6 +2,7 @@ import {
   AnnotationRegistry,
   AnnotationTarget,
   AnnotationType,
+  MethodPropertyDescriptor,
   TargetType,
 } from '@aspectjs/common';
 import { ConstructorType } from '@aspectjs/common/utils';
@@ -18,6 +19,7 @@ import type { WeaverContext } from './../weaver/context/weaver.context';
 
 import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
+import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
 import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
@@ -112,7 +114,8 @@ export class JitWeaver implements Weaver {
 
   private enhanceMethod<X>(
     ctxt: MutableAdviceContext<PointcutTargetType.METHOD, X>,
-  ): PropertyDescriptor | void {
+  ): MethodPropertyDescriptor | void {
+    // TODO: test when 2 advices & 2 annotations on the same method
     if (!ctxt.annotations.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
@@ -129,13 +132,26 @@ export class JitWeaver implements Weaver {
     )
       .compile(ctxt, advicesSelection)
       .link();
-
-    return;
   }
 
-  private enhanceParameter<T>(
-    _ctxt: MutableAdviceContext<PointcutTargetType.METHOD, T>,
-  ): PropertyDescriptor | void {
-    return;
+  private enhanceParameter<X>(
+    ctxt: MutableAdviceContext<PointcutTargetType.PARAMETER, X>,
+  ): MethodPropertyDescriptor | void {
+    if (!ctxt.annotations.length) {
+      // no annotations... Bypass the weaver as a whole,
+      // as there are no chances this prop has to be enhanced.
+      return ctxt.target.descriptor;
+    }
+
+    // find all parameter advices for enabled aspects
+    const advicesSelection = this.adviceRegistry.select({
+      annotations: ctxt.annotations.map((a) => a.ref),
+    });
+
+    return new JitWeaverCanvas<PointcutTargetType.PARAMETER, X>(
+      new JitParameterCanvasStrategy<X>(this.weaverContext),
+    )
+      .compile(ctxt, advicesSelection)
+      .link();
   }
 }

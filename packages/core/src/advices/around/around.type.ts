@@ -1,6 +1,6 @@
-import type { Pointcut } from 'packages/core/src/pointcut/pointcut';
 import type { AdviceContext } from '../../advice/advice.context';
 import type { JoinPoint } from '../../advice/joinpoint';
+import { Pointcut } from '../../pointcut/pointcut';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import type { PointcutType } from '../../pointcut/pointcut.type';
 

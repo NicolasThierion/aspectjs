@@ -52,8 +52,11 @@
       - $ARTIFACT_PATH
 
 .node:gitlab:publish:
+  variables:
+    CWD: .
   image: node:latest
   script:
+    - cd ${CWD}
     # If no .npmrc is included in the repo, generate a temporary one that is configured to publish to GitLab's NPM registry
     - |
       if [[ ! -f .npmrc ]]; then
@@ -81,7 +84,7 @@
     # If the package.json version has not yet been published, run `npm publish`.
     - |
       if [[ $(npm view "${NPM_PACKAGE_NAME}" versions) != *"'${NPM_PACKAGE_VERSION}'"* ]]; then
-        npm publish
+        npm publish  --no-workspaces
         echo "Successfully published version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} to GitLab's NPM registry: ${CI_PROJECT_URL}/-/packages"
       else
         echo "Version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} has already been published, so no new version has been published."

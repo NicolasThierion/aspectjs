@@ -23,5 +23,6 @@
   "peacock.color": "#0b2016",
   "typescript.preferences.importModuleSpecifier": "project-relative",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "markiscodecoverage.searchCriteria": "dist/coverage/lcov*.info"
 }

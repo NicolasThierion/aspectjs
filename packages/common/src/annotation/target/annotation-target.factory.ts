@@ -7,10 +7,11 @@ import {
 
 import { TargetType } from '../annotation.types';
 import {
+  _AnnotationTargetRef,
   AnnotationTarget,
-  AnnotationTargetRef,
   ClassAnnotationTarget,
   MethodAnnotationTarget,
+  MethodPropertyDescriptor,
   ParameterAnnotationTarget,
   PropertyAnnotationTarget,
   Prototype,
@@ -33,7 +34,7 @@ export class AnnotationTargetFactory {
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
         d.proto,
-        () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
+        () => new _AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
     [TargetType.PROPERTY]: (d: DecoratorTargetArgs) => {
@@ -41,7 +42,7 @@ export class AnnotationTargetFactory {
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
         this._REF_GENERATORS[TargetType.CLASS](d),
-        () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
+        () => new _AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
     [TargetType.METHOD]: (d: DecoratorTargetArgs) => {
@@ -49,7 +50,7 @@ export class AnnotationTargetFactory {
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
         this._REF_GENERATORS[TargetType.CLASS](d),
-        () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
+        () => new _AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
     [TargetType.PARAMETER]: (d: DecoratorTargetArgs) => {
@@ -57,13 +58,13 @@ export class AnnotationTargetFactory {
       return getMetadata(
         `aspectjs.targetFactory#${this.id}:${ref}`,
         this._REF_GENERATORS[TargetType.CLASS](d),
-        () => new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
+        () => new _AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
       );
     },
   };
 
   private _findOrCreate<T extends TargetType = TargetType, X = unknown>(
-    ref: AnnotationTargetRef,
+    ref: _AnnotationTargetRef,
     decoratorArgs: DecoratorTargetArgs<T>,
     save: boolean,
   ): AnnotationTarget<T, X> {
@@ -139,7 +140,7 @@ const _TARGET_GENERATORS: {
 function _createClassAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs<TargetType.CLASS, X>,
-  targetRef: AnnotationTargetRef,
+  targetRef: _AnnotationTargetRef,
 ): ClassAnnotationTarget<X> {
   return new ClassAnnotationTargetImpl(targetFactory, targetArgs, {
     ref: targetRef,
@@ -151,7 +152,7 @@ function _createClassAnnotationTarget<X = unknown>(
 function _createMethodAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs<TargetType.METHOD, X>,
-  targetRef: AnnotationTargetRef,
+  targetRef: _AnnotationTargetRef,
 ): MethodAnnotationTarget<X> {
   assert(!!targetArgs.propertyKey);
 
@@ -167,7 +168,7 @@ function _createMethodAnnotationTarget<X = unknown>(
 function _createPropertyAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs<TargetType.PROPERTY, X>,
-  targetRef: AnnotationTargetRef,
+  targetRef: _AnnotationTargetRef,
 ): PropertyAnnotationTarget<X> {
   const descriptor = Object.getOwnPropertyDescriptor(
     targetArgs.proto,
@@ -190,12 +191,12 @@ function _createPropertyAnnotationTarget<X = unknown>(
 function _createParameterAnnotationTarget<X = unknown>(
   targetFactory: AnnotationTargetFactory,
   targetArgs: DecoratorTargetArgs<TargetType.PARAMETER, X>,
-  targetRef: AnnotationTargetRef,
+  targetRef: _AnnotationTargetRef,
 ): ParameterAnnotationTarget<X> {
   const descriptor = Object.getOwnPropertyDescriptor(
     targetArgs.proto,
     targetArgs.propertyKey!,
-  )!;
+  )! as MethodPropertyDescriptor;
 
   const name = argsNames(targetArgs.proto[targetArgs.propertyKey!])[
     targetArgs.parameterIndex!
@@ -269,7 +270,7 @@ class ClassAnnotationTargetImpl<X>
   public readonly proto: Prototype<X>;
   public readonly name: string;
   public readonly label: string;
-  public readonly ref: AnnotationTargetRef;
+  public readonly ref: _AnnotationTargetRef;
   public readonly declaringClass = this;
   private _parentClass?: ClassAnnotationTarget<X>;
   constructor(
@@ -306,10 +307,10 @@ class MethodAnnotationTargetImpl<X>
   readonly type = TargetType.METHOD;
   readonly proto: Prototype<X>;
   readonly propertyKey!: string;
-  readonly descriptor: TypedPropertyDescriptor<unknown>;
+  readonly descriptor: MethodPropertyDescriptor;
   readonly name: string;
   readonly label: string;
-  readonly ref: AnnotationTargetRef;
+  readonly ref: _AnnotationTargetRef;
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
   private _parentClassTarget?: ClassAnnotationTarget<X> | undefined;
 
@@ -321,7 +322,7 @@ class MethodAnnotationTargetImpl<X>
     super();
     this.proto = targetArgs.proto;
     this.propertyKey = targetArgs.propertyKey as any;
-    this.descriptor = targetArgs.descriptor!;
+    this.descriptor = targetArgs.descriptor! as MethodPropertyDescriptor;
     this.name = target.name!;
     this.label = target.label!;
     this.ref = target.ref!;
@@ -362,13 +363,13 @@ class PropertyAnnotationTargetImpl<X>
   readonly proto: Prototype<X>;
   readonly name: string;
   readonly label: string;
-  readonly ref: AnnotationTargetRef;
+  readonly ref: _AnnotationTargetRef;
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
   private _parentClassTarget?: ClassAnnotationTarget<X> | undefined;
   constructor(
     private targetFactory: AnnotationTargetFactory,
     targetArgs: DecoratorTargetArgs<TargetType.PROPERTY, X>,
-    target: Partial<MethodAnnotationTargetImpl<X>>,
+    target: Partial<PropertyAnnotationTargetImpl<X>>,
   ) {
     super();
     this.propertyKey = targetArgs.propertyKey!;
@@ -419,12 +420,12 @@ class ParameterAnnotationTargetImpl<X>
 {
   readonly propertyKey!: string;
   readonly parameterIndex!: number;
-  readonly descriptor!: TypedPropertyDescriptor<unknown>;
+  readonly descriptor!: MethodPropertyDescriptor;
   readonly type = TargetType.PARAMETER;
   readonly proto!: Prototype<X>;
   readonly name!: string;
   readonly label!: string;
-  readonly ref!: AnnotationTargetRef;
+  readonly ref!: _AnnotationTargetRef;
   private _parentClassTarget: ClassAnnotationTarget<X> | undefined;
   private _declaringClassTarget!: ClassAnnotationTarget<X>;
   private _declaringMethodTarget!: MethodAnnotationTarget<X>;
@@ -436,7 +437,7 @@ class ParameterAnnotationTargetImpl<X>
   ) {
     super();
     this.propertyKey = targetArgs.propertyKey!;
-    this.descriptor = targetArgs.descriptor!;
+    this.descriptor = targetArgs.descriptor! as MethodPropertyDescriptor;
     this.parameterIndex = targetArgs.parameterIndex!;
     this.proto = targetArgs.proto!;
     this.name = target.name!;

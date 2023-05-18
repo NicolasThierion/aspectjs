@@ -78,7 +78,7 @@ export class JitClassCanvasStrategy<
 
     joinpoint = renameFunction(
       joinpoint,
-      ctorName,
+      compiledConstructor,
       `class ${ctorName}$$advised {}`,
       compiledConstructor.toString.bind(compiledConstructor),
     );

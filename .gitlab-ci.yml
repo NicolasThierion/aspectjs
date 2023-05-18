@@ -24,78 +24,110 @@ common:lint:
     CWD: packages/common
   extends: .node:lint
   stage: test
-  needs: [node:prepare]
+  needs:
+    - node:prepare
 
 core:lint:
   variables:
     CWD: packages/core
   extends: .node:lint
   stage: test
-  needs: [node:prepare]
+  needs:
+    - node:prepare
 
 common:unit:
   extends: .node:test:unit
   variables:
     CWD: packages/common
   stage: test
-  needs: [node:prepare]
+  needs:
+    - node:prepare
 
 core:unit:
   extends: .node:test:unit
   variables:
     CWD: packages/core
   stage: test
-  needs: [node:prepare]
+  needs:
+    - node:prepare
 
 common:build:
   extends: .node:build
   variables:
     CWD: packages/common
   stage: compile
-  needs: [node:prepare]
+  needs:
+    - node:prepare
 
 core:build:
   extends: .node:build
   variables:
     CWD: packages/core
   stage: compile
-  needs: [node:prepare]
+  needs:
+    - node:prepare
 
-common:docs:
+docs:
   extends: .node:build
   variables:
-    CWD: packages/common
-    ARTIFACT_PATH: packages/common/dist/docs
+    ARTIFACT_PATH: packages/docs/dist/
   stage: doc
-  needs: [node:prepare]
+  needs:
+    - node:prepare
   script:
-    - cd packages/common
-    - npm run doc
+    - npm run docs
 
-core:docs:
-  extends: .node:build
-  variables:
-    CWD: packages/core
-    ARTIFACT_PATH: packages/core/dist/docs
-  stage: doc
-  needs: [node:prepare]
-  script:
-    - cd packages/core
-    - npm run doc
-
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/npm.gitlab-ci.yml
-
-publish:gitlab:
+core:publish:gitlab:
   extends: .node:gitlab:publish
   stage: deploy
+  variables:
+    CWD: packages/core
+  # needs:
+  #   - docs
+  #   - core:build
+  #   - common:build
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+  #     changes:
+  #       - package.json
+common:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: deploy
+  variables:
+    CWD: packages/common
+  # needs:
+  #   - docs
+  #   - core:build
+  #   - common:build
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+  #     changes:
+  #       - package.json
+
+docs:publish:
+  image: alpine
+  stage: deploy
+  before_script:
+    - apk add git openssh-client
+    - mkdir -p ~/.ssh
+    - cp $PAGES_SSH_PRIVATE_KEY ~/.ssh/id_rsa
+    - ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts
+    - chmod -R 600 ~/.ssh
+    - git config --global user.email "nicolas.thierion+ci@outlook.com"
+    - git config --global user.name "Gitlab CI"
+
   needs:
-    - core:build
-    - common:build
+    - docs
+
+  script:
+    - cd packages/docs/
+    - rm -rf .git .gitignore
+    - git init --initial-branch=main
+    - git add . dist .gitlab-ci.yml
+    - git commit -m"deploy doc"
+    - git push -f git@gitlab.com:aspectjs/aspectjs.gitlab.io.git main
+
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
-      changes:
-        - package.json
+    - if: '$CI_COMMIT_REF_PROTECTED == "true"'
+  # - when: manual
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/

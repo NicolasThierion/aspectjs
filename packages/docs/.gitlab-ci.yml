@@ -1,0 +1,10 @@
+pages:
+  stage: deploy
+  script:
+    - mv dist/ public
+  artifacts:
+    untracked: true
+    when: on_success
+    expire_in: 30 days
+    paths:
+      - 'public'

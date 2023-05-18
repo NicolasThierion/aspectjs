@@ -2,15 +2,15 @@ import { assert, ConstructorType, isObject } from '@aspectjs/common/utils';
 import { AnnotationRef } from '../annotation-ref';
 import { Annotation, TargetType } from '../annotation.types';
 import type {
+  _AnnotationTargetRef,
   AnnotationTarget,
-  AnnotationTargetRef,
 } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { BindableAnnotationContext } from './../annotation-context';
 import { AnnotationSelectionFilter } from './annotation-selection-filter';
 
 type ByAnnotationSet = {
-  byClassTargetRef: Map<AnnotationTargetRef, BindableAnnotationContext[]>;
+  byClassTargetRef: Map<_AnnotationTargetRef, BindableAnnotationContext[]>;
 };
 
 /**
@@ -29,7 +29,7 @@ class _AnnotationsSet {
   getAnnotations(
     decoratorTypes: TargetType[],
     annotationRefs: AnnotationRef[],
-    classTargetRef?: AnnotationTargetRef | undefined,
+    classTargetRef?: _AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
   ): BindableAnnotationContext[] {
     const annotationsInClass = decoratorTypes
@@ -63,7 +63,7 @@ class _AnnotationsSet {
     assert(() => !!bucket);
     const byAnnotationSet = bucket.get(ctxt.ref) ?? {
       byClassTargetRef: new Map<
-        AnnotationTargetRef,
+        _AnnotationTargetRef,
         BindableAnnotationContext[]
       >(),
     };
@@ -140,6 +140,9 @@ export class AnnotationByTypeSelection<
   }
 }
 
+/**
+ * Selects annotations based on their type or target.
+ */
 export class AnnotationSelection {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,

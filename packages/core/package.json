@@ -7,7 +7,6 @@
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "jest --runInBand",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
-    "doc": "typedoc --excludeInternal --tsconfig tsconfig.lib.json --out dist/docs index.ts ",
     "build": "rollup --config ./rollup.config.cjs"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
@@ -33,5 +32,8 @@
       "unpkg": "./dist/bundles/core.umd.min.js"
     }
   },
-  "main": "./dist/bundles/core.umd.js"
+  "main": "./dist/bundles/core.umd.js",
+  "files": [
+    "./dist"
+  ]
 }

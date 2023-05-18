@@ -17,44 +17,82 @@ import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
 import type { AnnotationStub } from '../annotation.types';
 let anonymousAnnotationId = 0;
 
-interface AnnotationCreateOptions<
+/**
+ * Options given to the AnnotationFactory to create a new annotation.
+ * @param T The type of annotation to create.
+ * @param S The signature of the annotation to create.
+ */
+export interface AnnotationCreateOptions<
   T extends AnnotationType,
   S extends AnnotationStub<T>,
 > {
+  /**
+   * The name of the annotation to create.
+   */
   name?: string;
+  /**
+   * An no-op function with the same signature as the annotation to create.
+   */
   annotationStub?: S;
+  /**
+   * The type of annotation to create.
+   */
   type?: T;
 }
 /**
  * Factory to create an {@link Annotation}.
- * @public
  */
 export class AnnotationFactory {
-  readonly groupId: string;
+  constructor(
+    /**
+     * The group of this factory.
+     * All annotations created by this factory will belong to this group.
+     */
+    public readonly groupId: string,
+  ) {}
 
-  constructor(groupId: string) {
-    this.groupId = groupId;
-  }
+  /**
+   * Creates a new annotation.
+   * @param type The type of annotation to create.
+   * @param name The name of the annotation to create.
+   */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
     type?: T,
     name?: string,
   ): Annotation<T, S>;
 
+  /**
+   * Creates a new annotation.
+   * @param name The name of the annotation to create.
+   */
   create<S extends AnnotationStub<AnnotationType.ANY>>(
     name?: string,
   ): Annotation<AnnotationType.ANY, S>;
 
+  /**
+   * Creates a new annotation.
+   * @param type The type of annotation to create.
+   * @param annotationStub The signature of the annotation to create.
+   */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
     type?: T,
     annotationStub?: S,
   ): Annotation<T, S>;
 
+  /**
+   * Creates a new annotation.
+   * @param annotationStub The signature of the annotation to create.
+   */
   create<S extends AnnotationStub<AnnotationType.ANY>>(
     annotationStub?: S,
   ): Annotation<AnnotationType.ANY, S>;
 
+  /**
+   * Creates a new annotation.
+   * @param options The options for the annotation to create.
+   */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
-    init?: AnnotationCreateOptions<T, S>,
+    options?: AnnotationCreateOptions<T, S>,
   ): Annotation<T, S>;
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
     init?: string | S | AnnotationCreateOptions<T, S> | AnnotationType,

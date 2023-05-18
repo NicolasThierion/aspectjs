@@ -1,14 +1,14 @@
 {
   "name": "@aspectjs/parent",
+  "private": true,
   "version": "0.3.0",
   "description": "Aspect Oriented Programming based on decorators, for browser & node",
-  "private": true,
   "scripts": {
     "test": "lerna run test --stream",
     "test:unit": "lerna run test:unit --stream",
     "lint": "lerna run test:lint --stream",
     "build": "lerna run build --stream",
-    "doc": "lerna run doc --stream"
+    "docs": "cd packages/docs; npm run build"
   },
   "repository": {
     "type": "git",

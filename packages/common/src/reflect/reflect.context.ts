@@ -7,6 +7,11 @@ import { assert } from '@aspectjs/common/utils';
 import type { ReflectProvider } from './reflect-provider.type';
 import type { ReflectModule } from './reflect.module';
 
+/**
+ * The ReflectContext is a container for the global values and services of the framework.
+ * The services are added to the context in the form of {@link ReflectProvider}s,
+ * through the use of {@link ReflectModule}s.
+ */
 export class ReflectContext {
   private readonly providersToResolve: Map<
     ReflectProvider['provide'],
@@ -17,12 +22,21 @@ export class ReflectContext {
   private readonly modules: Set<ReflectModule> = new Set();
   private addedProviders: Set<ReflectProvider> = new Set();
 
+  /**
+   * @internal
+   * @param context
+   */
   constructor(context?: ReflectContext) {
     if (context?.modules) {
       this.addModules(...context.modules.values());
     }
   }
 
+  /**
+   * Adds a module to the context. Modules are unique by their name.
+   * Adding a module with the same name overrides the existing one.
+   * @param module The module to add
+   */
   addModules(...modules: ReflectModule[]): ReflectContext {
     modules = Object.values(modules).filter((m) => !this.modules.has(m));
 
@@ -44,6 +58,12 @@ export class ReflectContext {
     return this;
   }
 
+  /**
+   * Get a provider by its name or type.
+   * @param provider The provider name or type.
+   * @param T the provider type
+   * @return The provider, if registered, undefined otherwise.
+   */
   get<T>(providerType: ReflectProvider<T>['provide']): T {
     return this._get(getProviderName(providerType));
   }
@@ -69,10 +89,19 @@ export class ReflectContext {
     return provider as T;
   }
 
+  /**
+   * Know if a provider is registered.
+   * @param providerType The provider name or type.
+   * @param T the provider type
+   * @returns true if the provider is registered, false otherwise.
+   */
   has<T>(providerType: ReflectProvider<T>['provide']): boolean {
     return !!this.get(providerType);
   }
 
+  /**
+   * @internal
+   */
   protected _reset() {
     this.modules.clear();
     this.addedProviders.clear();

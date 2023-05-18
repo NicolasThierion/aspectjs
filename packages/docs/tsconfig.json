@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "module": "ES2020",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true
+  }
+}

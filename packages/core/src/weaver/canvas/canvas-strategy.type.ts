@@ -2,21 +2,20 @@ import type { ConstructorType } from '@aspectjs/common/utils';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 
+import { MethodPropertyDescriptor } from '@aspectjs/common';
 import type { JoinPoint } from '../../advice/joinpoint';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 
-export type MethodPropertyDescriptor = PropertyDescriptor & {
-  value: (...args: any[]) => any;
-  get: never;
-};
 export type CompiledSymbol<
   T extends PointcutTargetType = PointcutTargetType,
   X = unknown,
 > = T extends PointcutTargetType.CLASS
   ? ConstructorType<X>
-  : T extends PointcutTargetType.METHOD
+  : T extends PointcutTargetType.METHOD | PointcutTargetType.PARAMETER
   ? MethodPropertyDescriptor
-  : PropertyDescriptor;
+  : T extends PointcutTargetType.GET_PROPERTY | PointcutTargetType.SET_PROPERTY
+  ? PropertyDescriptor
+  : never;
 
 export interface WeaverCanvasStrategy<
   T extends PointcutTargetType = PointcutTargetType,

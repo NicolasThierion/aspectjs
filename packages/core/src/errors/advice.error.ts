@@ -8,8 +8,17 @@ import { AspectError } from './aspect.error';
  */
 export class AdviceError extends AspectError {
   constructor(
+    /**
+     * The advice that caused the error
+     */
     public readonly advice: AdviceType<any, any, any>,
+    /**
+     * The target on which the advice was applied
+     */
     public readonly target: AnnotationTarget,
+    /**
+     * The error message
+     */
     message: string,
   ) {
     super(`Error applying advice ${advice} on ${target.label}: ${message}`);

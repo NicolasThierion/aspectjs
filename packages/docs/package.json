@@ -1,0 +1,30 @@
+{
+  "name": "@aspectjs/docs",
+  "private": true,
+  "version": "0.3.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "npm run docs:dev",
+    "build": "npm run typedoc && vuepress build src --dest dist",
+    "docs:clean-dev": "vuepress dev src --clean-cache",
+    "typedoc": "node --loader ts-node/esm ./src/typedoc.ts src",
+    "docs:dev": "vuepress dev src",
+    "docs:update-package": "npx vp-update"
+  },
+  "devDependencies": {
+    "@vuepress/client": "2.0.0-beta.62",
+    "typedoc": "^0.24.7",
+    "typedoc-plugin-markdown": "^3.15.3",
+    "vue": "^3.2.47",
+    "vuepress": "2.0.0-beta.62",
+    "vuepress-plugin-search-pro": "^2.0.0-beta.211",
+    "vuepress-plugin-typedoc": "^0.12.1",
+    "vuepress-theme-hope": "2.0.0-beta.210"
+  },
+  "dependencies": {
+    "find-up": "^6.3.0",
+    "glob": "^10.2.5",
+    "json5": "^2.2.3"
+  }
+}
