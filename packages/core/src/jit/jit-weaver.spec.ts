@@ -27,7 +27,7 @@ describe('JitWeaver', () => {
   });
 
   describe('.getAspects()', () => {
-    it('should return the aspects that have been enabled', () => {
+    it('returns the aspects that have been enabled', () => {
       @Aspect()
       class Aspect1 {}
 
@@ -42,7 +42,7 @@ describe('JitWeaver', () => {
 
   describe('.enable(<CLASS>)', () => {
     describe('after any annotation has been applied already', () => {
-      it('should throw an error', () => {
+      it('throws an error', () => {
         const AClass = new AnnotationFactory('tests').create(
           AnnotationType.CLASS,
           'AClass',
@@ -68,14 +68,14 @@ describe('JitWeaver', () => {
     });
 
     describe('given a class that is not annotated with @Aspect', () => {
-      it('should throw an error', () => {
+      it('throws an error', () => {
         expect(() => {
           weaver.enable({});
         }).toThrow(new WeavingError('class "Object" is not an aspect'));
       });
 
       describe('but parent class is', () => {
-        it('should not throw an error', () => {
+        it('does not throw an error', () => {
           @Aspect()
           class AspectA {}
 

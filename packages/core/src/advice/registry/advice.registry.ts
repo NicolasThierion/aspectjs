@@ -80,6 +80,18 @@ export class AdviceRegistry {
         });
 
         advice.pointcut = pointcut;
+
+        Reflect.defineProperty(advice, Symbol.toPrimitive, {
+          value: () =>
+            `@${pointcut.type}(${pointcut.annotations.join(',')}) ${
+              aspect.constructor.name
+            }.${String(advice.name)}()`,
+        });
+
+        Reflect.defineProperty(advice, 'name', {
+          value: advice.name,
+        });
+
         Object.seal(advice);
         this.registerAdvice(aspect, pointcut, advice);
         pointcut.annotations.forEach((a) => pointcutAnnotations.add(a));

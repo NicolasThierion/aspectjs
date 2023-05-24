@@ -119,35 +119,32 @@ export abstract class JitWeaverCanvasStrategy<
     const aroundContext = ctxt.asAroundContext();
     let jp = aroundContext.joinpoint;
     const jpFactory = this.weaverContext.get(JoinPointFactory);
-    advices
-      // TODO: why reverse ?
-      .reverse()
-      .forEach((entry) => {
-        const originalJp = jp;
-        const nextJp = jpFactory.create(
-          entry.advice,
-          aroundContext,
-          (...args: unknown[]) => originalJp(...args),
-        );
-        jp = (...args: unknown[]) => {
-          let value = ctxt.value;
-          const newContext = {
-            ...ctxt,
-            joinpoint: nextJp,
-            args,
-          };
-          value = this.callAdvice(entry, [newContext, nextJp, args]);
-          if (value !== undefined && !allowReturn) {
-            throw new AdviceError(
-              entry.advice,
-              ctxt.target,
-              // TODO: why ?
-              `Returning from advice is not supported`,
-            );
-          }
-          return value;
+    advices.forEach((entry) => {
+      const originalJp = jp;
+      const nextJp = jpFactory.create(
+        entry.advice,
+        aroundContext,
+        (...args: unknown[]) => originalJp(...args),
+      );
+      jp = (...args: unknown[]) => {
+        let value = ctxt.value;
+        const newContext = {
+          ...ctxt,
+          joinpoint: nextJp,
+          args,
         };
-      });
+        value = this.callAdvice(entry, [newContext, nextJp, args]);
+        if (value !== undefined && !allowReturn) {
+          throw new AdviceError(
+            entry.advice,
+            ctxt.target,
+            // TODO: why ?
+            `Returning from advice is not supported`,
+          );
+        }
+        return value;
+      };
+    });
 
     return jp;
   }

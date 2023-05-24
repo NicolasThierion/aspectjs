@@ -27,7 +27,7 @@ describe('@Aspect annotation', () => {
       expect(weaver.enhance).toHaveBeenCalled();
     });
     xdescribe('twice', () => {
-      it('should throw as AspectError', () => {
+      it('throws as AspectError', () => {
         jest.spyOn(console, 'error').mockImplementation(() => {});
         expect(() => {
           @Aspect()
