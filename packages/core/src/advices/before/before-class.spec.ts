@@ -226,7 +226,6 @@ describe('class advice', () => {
         }
         aadvice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.annotations[0]?.ref).toBe(AClass.ref);
-          expect(ctxt.annotations[0]?.value).toBe(null);
         });
         new A();
 

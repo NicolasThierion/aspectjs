@@ -1,4 +1,4 @@
-import { BindableAnnotationContext } from '../../annotation-context';
+import { AnnotationContext } from '../../annotation-context';
 import type { AnnotationFactoryHook } from '../../factory/annotation-factory-hook.type';
 import type { AnnotationTargetFactory } from '../../target/annotation-target.factory';
 import type { AnnotationRegistry } from '../annotation.registry';
@@ -16,7 +16,7 @@ export const REGISTER_ANNOTATION_HOOK = (
   decorator: (annotation, annotationArgs) => {
     return (...targetArgs: any[]) => {
       const target = targetFactory.of(...targetArgs);
-      const annotationContext = new BindableAnnotationContext(
+      const annotationContext = new AnnotationContext(
         annotation,
         annotationArgs,
         target,

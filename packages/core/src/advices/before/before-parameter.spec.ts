@@ -241,18 +241,6 @@ describe('parameter advice', () => {
                 .map((a) => a.ref)
                 .filter((r) => r === BParameter.ref).length,
             ).toEqual(1);
-
-            ctxt.annotations
-              .filter((a) => a!.target.parameterIndex === 0)
-              .forEach((a) => {
-                expect(a.value).toEqual('a');
-              });
-
-            ctxt.annotations
-              .filter((a) => a!.target.parameterIndex === 1)
-              .forEach((a) => {
-                expect(a.value).toEqual('b');
-              });
           },
         );
         new A().m('a', 'b');

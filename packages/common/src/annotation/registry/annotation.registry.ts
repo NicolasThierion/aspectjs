@@ -1,4 +1,5 @@
 import { assert, ConstructorType, isObject } from '@aspectjs/common/utils';
+import { AnnotationContext } from '../annotation-context';
 import { AnnotationRef } from '../annotation-ref';
 import { Annotation, TargetType } from '../annotation.types';
 import type {
@@ -6,11 +7,10 @@ import type {
   AnnotationTarget,
 } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { BindableAnnotationContext } from './../annotation-context';
 import { AnnotationSelectionFilter } from './annotation-selection-filter';
 
 type ByAnnotationSet = {
-  byClassTargetRef: Map<_AnnotationTargetRef, BindableAnnotationContext[]>;
+  byClassTargetRef: Map<_AnnotationTargetRef, AnnotationContext[]>;
 };
 
 /**
@@ -31,7 +31,7 @@ class _AnnotationsSet {
     annotationRefs: AnnotationRef[],
     classTargetRef?: _AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
-  ): BindableAnnotationContext[] {
+  ): AnnotationContext[] {
     const annotationsInClass = decoratorTypes
       .map((t) => this.buckets[t])
       .flatMap((m) =>
@@ -52,20 +52,17 @@ class _AnnotationsSet {
     } else {
       return annotationsInClass.filter(
         (annotation) =>
-          (annotation as BindableAnnotationContext<TargetType.METHOD>).target
+          (annotation as AnnotationContext<TargetType.METHOD>).target
             .propertyKey === propertyKey,
       );
     }
   }
 
-  addAnnotation(ctxt: BindableAnnotationContext) {
+  addAnnotation(ctxt: AnnotationContext) {
     const bucket = this.buckets[ctxt.target.type];
     assert(() => !!bucket);
     const byAnnotationSet = bucket.get(ctxt.ref) ?? {
-      byClassTargetRef: new Map<
-        _AnnotationTargetRef,
-        BindableAnnotationContext[]
-      >(),
+      byClassTargetRef: new Map<_AnnotationTargetRef, AnnotationContext[]>(),
     };
 
     const contexts =
@@ -101,9 +98,7 @@ export class AnnotationByTypeSelection<
     private readonly propertyKey?: P,
   ) {}
 
-  find(
-    options?: AnnotationByTypeSelectionOptions,
-  ): BindableAnnotationContext<T, X>[] {
+  find(options?: AnnotationByTypeSelectionOptions): AnnotationContext<T, X>[] {
     if (!this.type) {
       assert(!options?.searchParents);
 
@@ -112,7 +107,7 @@ export class AnnotationByTypeSelection<
         this.annotationsRefs,
         undefined,
         this.propertyKey,
-      ) as BindableAnnotationContext<T, X>[];
+      ) as AnnotationContext<T, X>[];
     }
     // search annotations on given type
     const classTarget = this.targetFactory.of(this.type);
@@ -136,7 +131,7 @@ export class AnnotationByTypeSelection<
           ref,
           this.propertyKey,
         ),
-      ) as BindableAnnotationContext<T, X>[];
+      ) as AnnotationContext<T, X>[];
   }
 }
 
@@ -244,7 +239,7 @@ export class AnnotationRegistry {
   private readonly annotationSet = new _AnnotationsSet();
   constructor(private targetFactory: AnnotationTargetFactory) {}
 
-  register(annotationContext: BindableAnnotationContext) {
+  register(annotationContext: AnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
   select(...annotations: (AnnotationRef | Annotation)[]): AnnotationSelection {
