@@ -18,7 +18,7 @@ export function renameFunction<T, F extends (...args: any[]) => T>(
 
   const name = typeof nameOrStub === 'string' ? nameOrStub : nameOrStub.name;
   const args =
-    typeof nameOrStub === 'string' ? '...args' : getParamNames(nameOrStub);
+    typeof nameOrStub === 'string' ? ['...args'] : getParamNames(nameOrStub);
   // const map = new Map<string, F>();
   // map.set(name, function (...args: any[]) {
   //   fn(null, ...args);
@@ -31,11 +31,12 @@ export function renameFunction<T, F extends (...args: any[]) => T>(
     // try to rename thr function.
     newFn = new Function(
       'fn',
-      `return function ${name}(${args}) { return fn.call(${['this', args].join(
-        ', ',
-      )}) };`,
+      `return function ${name}(${args}) { return fn.call(${['this']
+        .concat(args)
+        .join(', ')}) };`,
     )(newFn);
   } catch (e) {
+    assert(false);
     // won't work if name is a keyword (eg: delete). Let newFn as is.
   }
   Object.defineProperty(newFn, 'name', {
@@ -58,11 +59,14 @@ export function renameFunction<T, F extends (...args: any[]) => T>(
 
 // JavaScript program to get the function
 // name/values dynamically
-function getParamNames(fn: ((...args: any[]) => any) | ConstructorType) {
+function getParamNames(
+  fn: ((...args: any[]) => any) | ConstructorType,
+): string[] {
   // Remove comments of the form /* ... */
   // Removing comments of the form //
   // Remove body of the function { ... }
   // removing '=>' if func is arrow function
+
   const str = fn
     .toString()
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -71,11 +75,16 @@ function getParamNames(fn: ((...args: any[]) => any) | ConstructorType) {
     .replace(/=>/g, '')
     .trim();
 
-  // Start parameter names after first '('
-  const start = str.indexOf('(') + 1;
+  const classMatch = str.match(/class .+/);
 
-  // End parameter names is just before last ')'
-  const end = str.length - 1;
+  const args = classMatch
+    ? fn
+        .toString()
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/(.)*/g, '')
+        .match(/.*constructor\((?<args>.*?)\).*/)
+        ?.groups!['args']?.split(',') ?? []
+    : str.match(/(\((?<args>.*?)\).*)/)?.groups!['args']?.split(',') ?? [];
 
-  return str.substring(start, end);
+  return args.map((arg) => arg.split('=')).map(([n]) => n!.trim());
 }

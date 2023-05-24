@@ -3,7 +3,6 @@ import { assert, isUndefined } from '@aspectjs/common/utils';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
 import { PointcutType } from '../../pointcut/pointcut.type';
-import { JoinPointFactory } from '../joinpoint.factory';
 
 import type { AdviceContext } from './../../advice/advice.context';
 
@@ -18,6 +17,7 @@ import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
+import { JoinPointFactory } from '../joinpoint.factory';
 export abstract class JitWeaverCanvasStrategy<
   T extends PointcutTargetType = PointcutTargetType,
   X = unknown,
@@ -118,16 +118,17 @@ export abstract class JitWeaverCanvasStrategy<
     }
     const aroundContext = ctxt.asAroundContext();
     let jp = aroundContext.joinpoint;
+    const jpFactory = this.weaverContext.get(JoinPointFactory);
     advices
       // TODO: why reverse ?
       .reverse()
       .forEach((entry) => {
-        const originalJp = aroundContext.joinpoint;
-        const nextJp = this.weaverContext
-          .get(JoinPointFactory)
-          .create(entry.advice, aroundContext, (...args: unknown[]) =>
-            originalJp(args),
-          );
+        const originalJp = jp;
+        const nextJp = jpFactory.create(
+          entry.advice,
+          aroundContext,
+          (...args: unknown[]) => originalJp(...args),
+        );
         jp = (...args: unknown[]) => {
           let value = ctxt.value;
           const newContext = {
@@ -140,7 +141,7 @@ export abstract class JitWeaverCanvasStrategy<
             throw new AdviceError(
               entry.advice,
               ctxt.target,
-              // TODO why ?
+              // TODO: why ?
               `Returning from advice is not supported`,
             );
           }
@@ -190,6 +191,7 @@ export abstract class JitWeaverCanvasStrategy<
   }
 
   protected callAdvice(adviceEntry: AdviceEntry<T>, args: unknown[]): unknown {
+    // TODO: remove code commented out
     // accessing ctxt.value inside within a "before" advices will call the advice itself... prevent this.
     // if (getMetadata('@aspectjs::called', adviceEntry)) {
     //   return this.callJoinpoint(ctxt, compiledSymbol);

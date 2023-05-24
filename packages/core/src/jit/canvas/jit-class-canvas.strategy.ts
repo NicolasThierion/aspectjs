@@ -57,6 +57,14 @@ export class JitClassCanvasStrategy<
     super.before(withNullInstance(ctxt), selection);
   }
 
+  // override around(
+  //   ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+  //   selection: AdvicesSelection,
+  // ): JoinPoint {
+  //   const jp = super.around(withNullInstance(ctxt), selection);
+
+  // }
+
   override callJoinpoint(
     ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
     originalSymbol: ConstructorType<X>,

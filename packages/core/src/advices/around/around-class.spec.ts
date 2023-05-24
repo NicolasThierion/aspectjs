@@ -4,15 +4,15 @@ import 'jest-extended/all';
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
+import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
-import { Aspect } from './../../aspect/aspect.annotation';
-import { on } from './../../pointcut/pointcut-expression.factory';
-import { weaverContext } from './../../weaver/context/weaver.context.global';
-import { Before } from './before.annotation';
+import { on } from '../../pointcut/pointcut-expression.factory';
+import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import { AdviceError } from '../../errors/advice.error';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
-import type { BeforeContext } from './before.context';
+import { JoinPoint } from '../../public_api';
+import { Around } from './around.annotation';
+import { AroundContext } from './around.context';
 
 describe('class advice', () => {
   let aadvice: ReturnType<typeof jest.fn>;
@@ -38,9 +38,9 @@ describe('class advice', () => {
   function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
     @Aspect('AClassLabel')
     class AAspect {
-      @Before(on.classes.withAnnotations(...aanotations))
-      applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.CLASS>,
+      @Around(on.classes.withAnnotations(...aanotations))
+      applyAround(
+        ctxt: AroundContext<PointcutTargetType.CLASS>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -49,9 +49,9 @@ describe('class advice', () => {
 
     @Aspect('BClassLabel')
     class BAspect {
-      @Before(on.classes.withAnnotations(...bannotations))
-      applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.CLASS>,
+      @Around(on.classes.withAnnotations(...bannotations))
+      applyAround(
+        ctxt: AroundContext<PointcutTargetType.CLASS>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -65,7 +65,7 @@ describe('class advice', () => {
     ctorImpl = jest.fn();
   }
 
-  describe('on pointcut @Before(on.classes.withAnnotations()', () => {
+  describe('on pointcut @Around(on.classes.withAnnotations()', () => {
     beforeEach(() => {
       setupAspects();
     });
@@ -75,7 +75,7 @@ describe('class advice', () => {
       class A {}
 
       expect(aadvice).not.toHaveBeenCalled();
-      aadvice = jest.fn(function (this: any, _ctxt: BeforeContext<any>) {
+      aadvice = jest.fn(function (this: any, _ctxt: AroundContext<any>) {
         expect(this === aaspect || this === baspect).toBeTrue();
       });
 
@@ -92,30 +92,67 @@ describe('class advice', () => {
       }
 
       expect(aadvice).not.toHaveBeenCalled();
-      aadvice = jest.fn(function (this: any, _ctxt: BeforeContext) {});
+      aadvice = jest.fn(function (
+        this: any,
+        _ctxt: AroundContext,
+        jp: JoinPoint,
+        jpArgs: any[],
+      ) {
+        return jp(jpArgs);
+      });
 
       new A();
       expect(aadvice).toHaveBeenCalledTimes(2);
       expect(ctorImpl).toHaveBeenCalledTimes(1);
     });
-  });
 
-  describe('on pointcut @Before(on.classes.withAnnotations(<CLASS_ANNOTATION>)', () => {
-    beforeEach(() => {
-      setupAspects([AClass], [BClass]);
-    });
-
-    it('has a "this"  bound to the aspect instance', () => {
+    it('creates an object that is an instance of its constructor', () => {
       @AClass()
       class A {}
 
-      expect(aadvice).not.toHaveBeenCalled();
-      aadvice = jest.fn(function (this: any) {
-        expect(this).toBe(aaspect);
+      expect(new A() instanceof A).toBeTrue();
+    });
+
+    describe('when the joinpoint is not called', () => {
+      it('does not call through the constructor', () => {
+        @AClass()
+        class A {}
+        aadvice = jest.fn(function (this: any) {});
+
+        const a = new A();
+        expect(a instanceof A).toBeTrue();
+        expect(ctorImpl).not.toHaveBeenCalled();
+        expect(aadvice).toHaveBeenCalled();
       });
 
-      new A();
-      expect(aadvice).toHaveBeenCalled();
+      it('creates an object that is an instance of its constructor', () => {
+        @AClass()
+        class A {}
+
+        expect(new A() instanceof A).toBeTrue();
+        expect(aadvice).toHaveBeenCalled();
+      });
+    });
+
+    describe('when the advice returns a value', () => {
+      it('should assign the instance to that value', () => {
+        const newInstance = { name: 'newInstance' };
+        @AClass()
+        class A {}
+        aadvice = jest.fn(function (this: any) {
+          return newInstance;
+        });
+
+        const a = new A();
+        expect(aadvice).toHaveBeenCalled();
+        expect(a).toBe(newInstance);
+      });
+    });
+  });
+
+  describe('on pointcut @Around(on.classes.withAnnotations(<CLASS_ANNOTATION>)', () => {
+    beforeEach(() => {
+      setupAspects([AClass], [BClass]);
     });
 
     it('calls through the advice once', () => {
@@ -125,7 +162,7 @@ describe('class advice', () => {
       }
 
       expect(aadvice).not.toHaveBeenCalled();
-      aadvice = jest.fn(function (this: any, _ctxt: BeforeContext) {});
+      aadvice = jest.fn(function (this: any, _ctxt: AroundContext) {});
 
       new A();
       expect(aadvice).toHaveBeenCalledTimes(1);
@@ -139,57 +176,23 @@ describe('class advice', () => {
       expect(aadvice).not.toHaveBeenCalled();
       aadvice = jest.fn(function (
         this: any,
-        ctxt: BeforeContext,
-        args: unknown[],
+        ctxt: AroundContext,
+        jp: JoinPoint,
+        jpArgs: unknown[],
       ) {
         expect(ctxt.args).toEqual([['X']]);
-        expect(args).toEqual([['X']]);
+        expect(ctxt.joinpoint).toBe(jp);
+        jp(...jpArgs);
       });
 
       const a = new A(['X']);
       expect(a.labels).toEqual(['X']);
     });
 
-    it('is called before the constructor', () => {
-      @AClass()
-      class A {
-        constructor() {
-          ctorImpl();
-        }
-      }
-
-      new A();
-      expect(aadvice).toHaveBeenCalled();
-      expect(ctorImpl).toHaveBeenCalled();
-      expect(aadvice).toHaveBeenCalledBefore(ctorImpl);
-    });
-
-    it('is not allowed to return', () => {
-      @AClass()
-      class A {}
-
-      expect(aadvice).not.toHaveBeenCalled();
-      aadvice = jest.fn(function (this: any) {
-        return 'x';
-      });
-
-      expect(() => {
-        new A();
-      }).toThrowError(AdviceError);
-
-      try {
-        new A();
-      } catch (e: any) {
-        expect(
-          e.message.indexOf('Returning from advice is not supported'),
-        ).toBeGreaterThanOrEqual(0);
-      }
-    });
-
     describe('is called with a context that ', () => {
       let thisInstance: any;
 
-      it('has context.instance = null', () => {
+      it('has context.instance = the class instance', () => {
         @AClass()
         class A {
           constructor(public labels = ['X']) {}
@@ -197,9 +200,9 @@ describe('class advice', () => {
         aadvice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
         });
-        new A();
+        const a = new A();
 
-        expect(thisInstance).toBeNull();
+        expect(thisInstance).toBe(a);
       });
 
       it('has context.annotation that contains the proper annotations context', () => {
@@ -208,7 +211,7 @@ describe('class advice', () => {
         class A {
           constructor() {}
         }
-        aadvice = jest.fn((ctxt: BeforeContext) => {
+        aadvice = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.annotations.length).toEqual(2);
           const aclassAnnotationContext = ctxt.annotations.filter(
             (an) => an.ref === AClass.ref,
@@ -224,11 +227,12 @@ describe('class advice', () => {
         class A {
           constructor(public labels = ['X']) {}
         }
-        aadvice = jest.fn((ctxt: BeforeContext) => {
+        aadvice = jest.fn((ctxt: AroundContext) => {
+          expect(ctxt.annotations[0]?.args).toEqual([]);
           expect(ctxt.annotations[0]?.ref).toBe(AClass.ref);
-          expect(ctxt.annotations[0]?.value).toBe(null);
+          expect(ctxt.annotations[0]?.value).toBe(a);
         });
-        new A();
+        const a = new A();
 
         expect(aadvice).toHaveBeenCalled();
       });
