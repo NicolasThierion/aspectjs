@@ -259,7 +259,7 @@ describe('class advice', () => {
     });
 
     describe('when multiple "around" advices are configured', () => {
-      describe('and joinpoint has been called', () => {
+      describe('and the joinpoint has been called', () => {
         let labels: string[];
         beforeEach(() => {
           labels = [];
@@ -311,7 +311,7 @@ describe('class advice', () => {
         expect(thisInstance).toBe(a);
       });
 
-      it('has context.annotation that contains the proper annotations context', () => {
+      it('has context.annotations that contains the proper annotation contexts', () => {
         @AClass('annotationArg')
         @BClass()
         class A {

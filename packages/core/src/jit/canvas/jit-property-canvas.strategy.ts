@@ -210,7 +210,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
   private normalizeDescriptor(descriptor: PropertyDescriptor): any {
     // test property validity
-    const surrogate = { prop: '' };
+    const surrogate = { prop: undefined };
     const surrogateProp = Reflect.getOwnPropertyDescriptor(surrogate, 'prop')!;
     if (isUndefined(descriptor.enumerable)) {
       descriptor.enumerable = surrogateProp.enumerable;
@@ -229,7 +229,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
   }
 
   private createPropertyDescriptor(propertyName: string): PropertyDescriptor {
-    const surrogate = { [propertyName]: '' };
+    const surrogate = { [propertyName]: undefined };
     const surrogateDescriptor = Reflect.getOwnPropertyDescriptor(
       surrogate,
       propertyName,

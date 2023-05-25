@@ -19,16 +19,20 @@ export abstract class AbstractJitMethodCanvasStrategy<
   T extends PointcutTargetType.METHOD | PointcutTargetType.PARAMETER,
   X = unknown,
 > extends JitWeaverCanvasStrategy<T, X> {
-  protected abstract getAdviceEntries(
+  protected abstract getAdviceEntries<P extends PointcutType>(
     selection: AdvicesSelection,
-  ): AdviceEntry<T, X, PointcutType.COMPILE>[];
+    pointcutType: P,
+  ): AdviceEntry<T, X, P>[];
 
   compile(
     ctxt: MutableAdviceContext<T, X>,
     selection: AdvicesSelection,
   ): CompiledSymbol<T, X> {
     //  if no method compile advices, return method is
-    const adviceEntries = this.getAdviceEntries(selection);
+    const adviceEntries = this.getAdviceEntries(
+      selection,
+      PointcutType.COMPILE,
+    );
 
     assert(!!ctxt.target.propertyKey);
     if (!adviceEntries.length) {
@@ -90,10 +94,11 @@ export class JitMethodCanvasStrategy<
     super(weaverContext, PointcutTargetType.METHOD);
   }
 
-  protected override getAdviceEntries(
+  protected override getAdviceEntries<P extends PointcutType>(
     selection: AdvicesSelection,
-  ): AdviceEntry<PointcutTargetType.METHOD, X>[] {
-    return [...selection.find(PointcutTargetType.METHOD, PointcutType.COMPILE)];
+    pointcutType: P,
+  ): AdviceEntry<PointcutTargetType.METHOD, X, P>[] {
+    return [...selection.find(PointcutTargetType.METHOD, pointcutType)];
   }
 
   override compile(

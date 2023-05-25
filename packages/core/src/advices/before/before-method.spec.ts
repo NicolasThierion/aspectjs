@@ -227,7 +227,7 @@ describe('method advice', () => {
         expect(thisInstance).toBe(a);
       });
 
-      it('has context.annotation that contains the proper annotations context', () => {
+      it('has context.annotations that contains the proper annotation contexts', () => {
         class A {
           @AMethod('annotationArg')
           @BMethod()

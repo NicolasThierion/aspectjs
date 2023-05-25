@@ -202,7 +202,7 @@ describe('class advice', () => {
         expect(thisInstance).toBeNull();
       });
 
-      it('has context.annotation that contains the proper annotations context', () => {
+      it('has context.annotations that contains the proper annotation contexts', () => {
         @AClass('annotationArg')
         @BClass()
         class A {

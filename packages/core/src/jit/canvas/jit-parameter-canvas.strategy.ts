@@ -22,12 +22,11 @@ export class JitParameterCanvasStrategy<
     super(weaverContext, PointcutTargetType.PARAMETER);
   }
 
-  protected override getAdviceEntries(
+  protected override getAdviceEntries<P extends PointcutType>(
     selection: AdvicesSelection,
-  ): AdviceEntry<PointcutTargetType.PARAMETER, X, PointcutType.COMPILE>[] {
-    return [
-      ...selection.find(PointcutTargetType.PARAMETER, PointcutType.COMPILE),
-    ];
+    pointcutType: P,
+  ): AdviceEntry<PointcutTargetType.PARAMETER, X, P>[] {
+    return [...selection.find(PointcutTargetType.PARAMETER, pointcutType)];
   }
 
   override link(

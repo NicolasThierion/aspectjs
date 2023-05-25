@@ -202,7 +202,7 @@ describe('property get advice', () => {
         expect(thisInstance).toEqual(a);
       });
 
-      it('has context.annotation that contains the proper annotations context', () => {
+      it('has context.annotations that contains the proper annotation contexts', () => {
         class A {
           constructor() {}
           @AProperty('annotationArg')

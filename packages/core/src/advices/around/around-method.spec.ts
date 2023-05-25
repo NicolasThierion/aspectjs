@@ -16,20 +16,20 @@ import { JoinPoint } from '../../public_api';
 import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
 
-describe('property advice', () => {
+describe('method advice', () => {
   let aroundAdviceA: ReturnType<typeof jest.fn>;
   let aroundAdviceB: ReturnType<typeof jest.fn>;
   let beforeAdvice: ReturnType<typeof jest.fn>;
   let aaspect: any;
   let baspect: any;
-  let getterImpl: any;
-  const AProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
-    'AProperty',
+  let methodImpl: any;
+  const AMethod = new AnnotationFactory('test').create(
+    AnnotationType.METHOD,
+    'AMethod',
   );
-  const BProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
-    'BProperty',
+  const BMethod = new AnnotationFactory('test').create(
+    AnnotationType.METHOD,
+    'BMethod',
   );
   let weaver: JitWeaver;
   beforeEach(() => {
@@ -42,9 +42,9 @@ describe('property advice', () => {
   });
 
   function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
-    @Aspect('APropertyLabel')
+    @Aspect()
     class AAspect {
-      @Around(on.properties.withAnnotations(...aanotations))
+      @Around(on.methods.withAnnotations(...aanotations))
       applyAround(
         ctxt: AroundContext<PointcutTargetType.CLASS>,
         ...args: unknown[]
@@ -52,7 +52,7 @@ describe('property advice', () => {
         return aroundAdviceA.bind(this)(ctxt, ...args);
       }
 
-      @Around(on.properties.withAnnotations(...aanotations))
+      @Around(on.methods.withAnnotations(...aanotations))
       applyAround2(
         ctxt: AroundContext<PointcutTargetType.CLASS>,
         ...args: unknown[]
@@ -60,7 +60,7 @@ describe('property advice', () => {
         return aroundAdviceB.bind(this)(ctxt, ...args);
       }
 
-      @Before(on.properties.withAnnotations(...aanotations))
+      @Before(on.methods.withAnnotations(...aanotations))
       applyBefore(
         ctxt: AroundContext<PointcutTargetType.CLASS>,
         ...args: unknown[]
@@ -69,9 +69,9 @@ describe('property advice', () => {
       }
     }
 
-    @Aspect('BPropertyLabel')
+    @Aspect()
     class BAspect {
-      @Around(on.properties.withAnnotations(...bannotations))
+      @Around(on.methods.withAnnotations(...bannotations))
       applyAround(
         ctxt: AroundContext<PointcutTargetType.CLASS>,
         ...args: unknown[]
@@ -84,18 +84,18 @@ describe('property advice', () => {
     baspect = new BAspect();
     weaver.enable(aaspect);
     weaver.enable(baspect);
-    getterImpl = jest.fn();
+    methodImpl = jest.fn();
   }
 
-  describe('on pointcut @Around(on.properties.withAnnotations()', () => {
+  describe('on pointcut @Around(on.methods.withAnnotations()', () => {
     beforeEach(() => {
       setupAspects();
     });
 
     it('has a "this"  bound to the aspect instance', () => {
       class A {
-        @AProperty()
-        labels = ['a'];
+        @AMethod()
+        method(): any {}
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
@@ -103,16 +103,15 @@ describe('property advice', () => {
         expect(this === aaspect || this === baspect).toBeTrue();
       });
 
-      new A().labels;
+      new A().method();
       expect(aroundAdviceA).toBeCalled();
     });
 
     it('calls through each matching advice once', () => {
       class A {
-        @AProperty()
-        get labels() {
-          getterImpl();
-          return ['a'];
+        @AMethod()
+        method(...args: any): any {
+          return methodImpl(...args);
         }
       }
 
@@ -126,27 +125,29 @@ describe('property advice', () => {
         return jp(...jpArgs);
       });
 
-      new A().labels;
+      new A().method();
       expect(aroundAdviceA).toHaveBeenCalledTimes(2);
-      expect(getterImpl).toHaveBeenCalledTimes(1);
+      expect(methodImpl).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('on pointcut @Around(on.properties.withAnnotations(<CLASS_ANNOTATION>)', () => {
+  describe('on pointcut @Around(on.methods.withAnnotations(<CLASS_ANNOTATION>)', () => {
     beforeEach(() => {
-      setupAspects([AProperty], [BProperty]);
+      setupAspects([AMethod], [BMethod]);
     });
 
     it('calls through the advice once', () => {
       class A {
-        @AProperty()
-        labels = ['a'];
+        @AMethod()
+        method(...args: any): any {
+          return methodImpl(...args);
+        }
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
       aroundAdviceA = jest.fn(function (this: any, _ctxt: AroundContext) {});
 
-      new A().labels;
+      new A().method();
       expect(aroundAdviceA).toHaveBeenCalledTimes(1);
     });
 
@@ -154,27 +155,28 @@ describe('property advice', () => {
       beforeEach(() => {
         aroundAdviceA = jest.fn(function (this: any) {});
       });
-      it('does not call through the getter', () => {
+      it('does not call through the ORIGINAL METHOD', () => {
         class A {
-          @AProperty()
-          get labels() {
-            getterImpl();
-            return ['a'];
+          @AMethod()
+          method(...args: any): any {
+            return methodImpl(...args);
           }
         }
 
-        new A().labels;
-        expect(getterImpl).not.toHaveBeenCalled();
+        new A().method();
+        expect(methodImpl).not.toHaveBeenCalled();
         expect(aroundAdviceA).toHaveBeenCalled();
       });
 
       it('returns undefined', () => {
         class A {
-          @AProperty()
-          labels = ['a'];
+          @AMethod()
+          method(): any {
+            return 'VALUE';
+          }
         }
 
-        expect(new A().labels).toBe(undefined);
+        expect(new A().method()).toBe(undefined);
         expect(aroundAdviceA).toHaveBeenCalled();
       });
     });
@@ -188,20 +190,19 @@ describe('property advice', () => {
             },
           );
         });
-        it('calls the aspect around the getter', () => {
+        it('calls the aspect around the method', () => {
           class A {
-            @AProperty()
-            get labels() {
-              getterImpl();
-              return ['a'];
+            @AMethod()
+            method(...args: any): any {
+              return methodImpl(...args);
             }
           }
 
-          new A().labels;
+          new A().method();
           expect(beforeAdvice).toHaveBeenCalled();
           expect(aroundAdviceA).toHaveBeenCalled();
-          expect(getterImpl).toHaveBeenCalled();
-          expect(beforeAdvice).toHaveBeenCalledBefore(getterImpl);
+          expect(methodImpl).toHaveBeenCalled();
+          expect(beforeAdvice).toHaveBeenCalledBefore(methodImpl);
           expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
         });
       });
@@ -214,13 +215,15 @@ describe('property advice', () => {
         });
         it('throws an error', () => {
           class A {
-            @AProperty()
-            labels = ['a'];
+            @AMethod()
+            method(...args: any): any {
+              return methodImpl(...args);
+            }
           }
 
-          expect(() => new A().labels).toThrow(
+          expect(() => new A().method()).toThrow(
             new WeavingError(
-              'Error applying advice @Around(@test:AProperty) AAspect.applyAround() on property "A.labels": joinPoint already proceeded',
+              'Error applying advice @Around(@test:AMethod) AAspect.applyAround() on method "A.method": joinPoint already proceeded',
             ),
           );
         });
@@ -228,31 +231,22 @@ describe('property advice', () => {
     });
 
     describe('when the advice returns a value', () => {
-      it('replaces the property value', () => {
+      it('replaces the value returned by the original method', () => {
         const newVal = 'newVal';
         class A {
-          @AProperty()
-          labels = ['a'];
+          @AMethod()
+          method(...args: any): any {
+            return methodImpl(...args);
+          }
         }
         aroundAdviceA = jest.fn(function (this: any) {
           return newVal;
         });
 
-        const a = new A().labels;
+        const a = new A().method();
         expect(aroundAdviceA).toHaveBeenCalled();
         expect(a).toBe(newVal);
       });
-    });
-
-    it('does not interfere with property setter', () => {
-      class A {
-        @AProperty()
-        labels = ['a'];
-      }
-
-      const a = new A();
-      a.labels = a.labels.concat('b');
-      expect(a.labels).toEqual(['a', 'b']);
     });
 
     describe('when multiple "around" advices are configured', () => {
@@ -274,11 +268,13 @@ describe('property advice', () => {
         });
         it('should call them nested, in declaration order', () => {
           class A {
-            @AProperty()
-            labels = ['a'];
+            @AMethod()
+            method(...args: any): any {
+              return methodImpl(...args);
+            }
           }
 
-          new A().labels;
+          new A().method();
           expect(labels).toEqual(['beforeB', 'beforeA', 'afterA', 'afterB']);
         });
       });
@@ -289,14 +285,16 @@ describe('property advice', () => {
 
       it('has context.instance = the class instance', () => {
         class A {
-          @AProperty()
-          labels = ['a'];
+          @AMethod()
+          method(...args: any): any {
+            return methodImpl(...args);
+          }
         }
         aroundAdviceA = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
         });
         const a = new A();
-        a.labels;
+        a.method();
 
         expect(thisInstance).toBe(a);
         expect(aroundAdviceA).toHaveBeenCalled();
@@ -304,31 +302,35 @@ describe('property advice', () => {
 
       it('has context.annotations that contains the proper annotation contexts', () => {
         class A {
-          @AProperty('annotationArg')
-          @BProperty()
-          labels = ['a'];
+          @AMethod('annotationArg')
+          @BMethod()
+          method(...args: any): any {
+            return methodImpl(...args);
+          }
         }
         aroundAdviceA = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.annotations.length).toEqual(2);
           const aPropertyAnnotationContext = ctxt.annotations.filter(
-            (an) => an.ref === AProperty.ref,
+            (an) => an.ref === AMethod.ref,
           )[0];
           expect(aPropertyAnnotationContext).toBeTruthy();
           expect(aPropertyAnnotationContext?.args).toEqual(['annotationArg']);
         });
-        new A().labels;
+        new A().method();
       });
 
       it('has context.annotation = the annotation that invoked that aspect', () => {
         class A {
-          @AProperty()
-          labels = ['a'];
+          @AMethod()
+          method(...args: any): any {
+            return methodImpl(...args);
+          }
         }
         aroundAdviceA = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.annotations[0]?.args).toEqual([]);
-          expect(ctxt.annotations[0]?.ref).toBe(AProperty.ref);
+          expect(ctxt.annotations[0]?.ref).toBe(AMethod.ref);
         });
-        new A().labels;
+        new A().method();
 
         expect(aroundAdviceA).toHaveBeenCalled();
       });
