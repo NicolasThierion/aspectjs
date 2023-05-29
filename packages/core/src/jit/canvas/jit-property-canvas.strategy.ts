@@ -208,6 +208,19 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     return newDescriptor;
   }
 
+  override afterThrow(
+    ctxt: MutableAdviceContext<PointcutTargetType.SET_PROPERTY, X>,
+    advicesSelection: AdvicesSelection,
+  ) {
+    return super.afterThrow(ctxt, advicesSelection, false);
+  }
+  override around(
+    ctxt: MutableAdviceContext<PointcutTargetType.SET_PROPERTY, X>,
+    advicesEntries: AdvicesSelection,
+  ) {
+    return super.around(ctxt, advicesEntries, false);
+  }
+
   private normalizeDescriptor(descriptor: PropertyDescriptor): any {
     // test property validity
     const surrogate = { prop: undefined };

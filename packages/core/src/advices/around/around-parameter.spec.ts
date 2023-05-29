@@ -17,7 +17,7 @@ import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
 
 describe('parameter advice', () => {
-  let aroundAdviceA2: ReturnType<typeof jest.fn>;
+  let aroundAdviceA1: ReturnType<typeof jest.fn>;
   let aroundAdviceA2: ReturnType<typeof jest.fn>;
   let aroundAdviceB: ReturnType<typeof jest.fn>;
   let beforeAdvice: ReturnType<typeof jest.fn>;
@@ -37,7 +37,7 @@ describe('parameter advice', () => {
     const context = configureTesting(weaverContext());
     weaver = context.get(JitWeaver);
 
-    aroundAdviceA2 = jest.fn((c: AroundContext) => c.joinpoint(...c.args));
+    aroundAdviceA1 = jest.fn((c: AroundContext) => c.joinpoint(...c.args));
     aroundAdviceA2 = jest.fn((c: AroundContext) => c.joinpoint(...c.args));
     aroundAdviceB = jest.fn((c: AroundContext) => c.joinpoint(...c.args));
     beforeAdvice = jest.fn();
@@ -51,7 +51,7 @@ describe('parameter advice', () => {
         ctxt: AroundContext<PointcutTargetType.PARAMETER>,
         ...args: unknown[]
       ): void {
-        return aroundAdviceA2.bind(this)(ctxt, ...args);
+        return aroundAdviceA1.bind(this)(ctxt, ...args);
       }
 
       @Around(on.parameters.withAnnotations(...aanotations))
@@ -102,14 +102,14 @@ describe('parameter advice', () => {
         ): any {}
       }
 
-      expect(aroundAdviceA2).not.toHaveBeenCalled();
-      aroundAdviceA2 = jest.fn(function (this: any, ctxt: AroundContext<any>) {
+      expect(aroundAdviceA1).not.toHaveBeenCalled();
+      aroundAdviceA1 = jest.fn(function (this: any, ctxt: AroundContext<any>) {
         expect(this === aaspect || this === baspect).toBeTrue();
         return ctxt.joinpoint(...ctxt.args);
       });
 
       new A().method();
-      expect(aroundAdviceA2).toBeCalled();
+      expect(aroundAdviceA1).toBeCalled();
     });
 
     it('calls through each matching advice once', () => {
@@ -122,8 +122,8 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(aroundAdviceA2).not.toHaveBeenCalled();
-      aroundAdviceA2 = jest.fn(function (
+      expect(aroundAdviceA1).not.toHaveBeenCalled();
+      aroundAdviceA1 = jest.fn(function (
         this: any,
         _ctxt: AroundContext,
         jp: JoinPoint,
@@ -133,7 +133,7 @@ describe('parameter advice', () => {
       });
 
       new A().method();
-      expect(aroundAdviceA2).toHaveBeenCalledTimes(1);
+      expect(aroundAdviceA1).toHaveBeenCalledTimes(1);
       expect(aroundAdviceA2).toHaveBeenCalledTimes(1);
       expect(aroundAdviceB).toHaveBeenCalledTimes(1);
       expect(methodImpl).toHaveBeenCalledTimes(1);
@@ -155,16 +155,16 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(aroundAdviceA2).not.toHaveBeenCalled();
+      expect(aroundAdviceA1).not.toHaveBeenCalled();
 
       new A().method();
-      expect(aroundAdviceA2).toHaveBeenCalledTimes(1);
+      expect(aroundAdviceA1).toHaveBeenCalledTimes(1);
       expect(aroundAdviceA2).toHaveBeenCalledTimes(1);
     });
 
     describe('when the joinpoint is not called', () => {
       beforeEach(() => {
-        aroundAdviceA2 = jest.fn(function (this: any) {});
+        aroundAdviceA1 = jest.fn(function (this: any) {});
       });
       it('does not call through the original method', () => {
         class A {
@@ -178,7 +178,7 @@ describe('parameter advice', () => {
 
         new A().method();
         expect(methodImpl).not.toHaveBeenCalled();
-        expect(aroundAdviceA2).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
       });
 
       it('returns undefined', () => {
@@ -192,14 +192,14 @@ describe('parameter advice', () => {
         }
 
         expect(new A().method()).toBe(undefined);
-        expect(aroundAdviceA2).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
       });
     });
 
     describe('when the joinpoint is called', () => {
       describe('once', () => {
         beforeEach(() => {
-          aroundAdviceA2 = jest.fn(
+          aroundAdviceA1 = jest.fn(
             (ctxt: AroundContext<PointcutTargetType.PARAMETER>) => {
               return ctxt.joinpoint(...ctxt.args);
             },
@@ -217,15 +217,15 @@ describe('parameter advice', () => {
 
           new A().method();
           expect(beforeAdvice).toHaveBeenCalled();
-          expect(aroundAdviceA2).toHaveBeenCalled();
+          expect(aroundAdviceA1).toHaveBeenCalled();
           expect(methodImpl).toHaveBeenCalled();
           expect(beforeAdvice).toHaveBeenCalledBefore(methodImpl);
-          expect(aroundAdviceA2).toHaveBeenCalledBefore(beforeAdvice);
+          expect(aroundAdviceA1).toHaveBeenCalledBefore(beforeAdvice);
         });
       });
       describe('twice', () => {
         beforeEach(() => {
-          aroundAdviceA2 = jest.fn((ctxt: AroundContext, jp: JoinPoint) => {
+          aroundAdviceA1 = jest.fn((ctxt: AroundContext, jp: JoinPoint) => {
             jp();
             jp();
           });
@@ -260,12 +260,12 @@ describe('parameter advice', () => {
             return methodImpl(arg1);
           }
         }
-        aroundAdviceA2 = jest.fn(function (this: any) {
+        aroundAdviceA1 = jest.fn(function (this: any) {
           return newVal;
         });
 
         const a = new A().method();
-        expect(aroundAdviceA2).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
         expect(a).toBe(newVal);
       });
     });
@@ -276,7 +276,7 @@ describe('parameter advice', () => {
         beforeEach(() => {
           labels = [];
 
-          aroundAdviceA2 = jest.fn((ctxt: AroundContext) => {
+          aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
             labels.push('beforeA');
             ctxt.joinpoint();
             labels.push('afterA');
@@ -313,13 +313,13 @@ describe('parameter advice', () => {
             return methodImpl(arg1);
           }
         }
-        aroundAdviceA2 = jest.fn((ctxt: AroundContext) => {
+        aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.instance).toBe(a);
         });
         const a = new A();
         a.method();
 
-        expect(aroundAdviceA2).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
       });
 
       it('has context.args = the arguments given to the method', () => {
@@ -331,13 +331,13 @@ describe('parameter advice', () => {
             return methodImpl(arg1);
           }
         }
-        aroundAdviceA2 = jest.fn((ctxt: AroundContext) => {
+        aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.args).toEqual(['arg1']);
         });
         const a = new A();
         a.method('arg1');
 
-        expect(aroundAdviceA2).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
       });
 
       it('has context.annotations that contains the proper annotation contexts', () => {
@@ -350,7 +350,7 @@ describe('parameter advice', () => {
             return methodImpl(arg1);
           }
         }
-        aroundAdviceA2 = jest.fn((ctxt: AroundContext) => {
+        aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.annotations.length).toEqual(2);
           const aPropertyAnnotationContext = ctxt.annotations.filter(
             (an) => an.ref === AParameter.ref,
@@ -370,13 +370,13 @@ describe('parameter advice', () => {
             return methodImpl(arg1);
           }
         }
-        aroundAdviceA2 = jest.fn((ctxt: AroundContext) => {
+        aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
           expect(ctxt.annotations[0]?.args).toEqual([]);
           expect(ctxt.annotations[0]?.ref).toBe(AParameter.ref);
         });
         new A().method();
 
-        expect(aroundAdviceA2).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
       });
     });
   });

@@ -81,16 +81,19 @@ export class JitWeaverCanvas<
           return this.strategy.afterThrow(ctxt, selection);
         } finally {
           this.strategy.after(ctxt, selection);
-          withinAdviceSafeguard = false;
         }
       };
       withinAdviceSafeguard = true;
 
-      ctxt.value = null;
+      ctxt.value = undefined;
       ctxt.args = args;
       ctxt.instance = instance;
       ctxt.joinpoint = joinpoint;
-      return this.strategy.around(ctxt, selection)(...args);
+      try {
+        return this.strategy.around(ctxt, selection)(...args);
+      } finally {
+        withinAdviceSafeguard = false;
+      }
     };
 
     return {

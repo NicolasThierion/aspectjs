@@ -1,12 +1,11 @@
 import { assert, isUndefined } from '@aspectjs/common/utils';
+import { JoinPoint } from './../../advice/joinpoint';
 
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
 import { PointcutType } from '../../pointcut/pointcut.type';
 
 import type { AdviceContext } from './../../advice/advice.context';
-
-import type { JoinPoint } from '../../advice/joinpoint';
 
 import type {
   CompiledSymbol,
@@ -85,10 +84,19 @@ export abstract class JitWeaverCanvasStrategy<
     ];
 
     let value: any;
-    if (adviceEntries.length) {
+
+    if (!adviceEntries.length) {
+      assert(!!ctxt.error);
+      // pass-trough errors by default
+      throw ctxt.error;
+    }
+
+    for (const entry of adviceEntries) {
       const errorContext = ctxt.asAfterThrowContext();
-      adviceEntries.forEach((entry) => {
+      try {
         value = this.callAdvice(entry, [errorContext, errorContext.error]);
+        // advice did not throw, break;
+
         if (!allowReturn && !isUndefined(value)) {
           throw new AdviceError(
             entry.advice,
@@ -96,13 +104,18 @@ export abstract class JitWeaverCanvasStrategy<
             `Returning from advice is not supported`,
           );
         }
-      });
-      return value;
-    } else {
-      assert(!!ctxt.error);
-      // pass-trough errors by default
+        ctxt.error = undefined;
+        break;
+      } catch (error) {
+        // advice did throw, continue the advice chain
+        ctxt.error = error;
+      }
+    }
+
+    if (ctxt.error) {
       throw ctxt.error;
     }
+    return value;
   }
 
   around(

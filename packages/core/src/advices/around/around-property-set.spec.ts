@@ -36,8 +36,12 @@ describe('property setter advice', () => {
     const context = configureTesting(weaverContext());
     weaver = context.get(JitWeaver);
 
-    aroundAdviceA = jest.fn((c: AroundContext) => c.joinpoint(...c.args));
-    aroundAdviceB = jest.fn((c: AroundContext) => c.joinpoint(...c.args));
+    aroundAdviceA = jest.fn((c: AroundContext) => {
+      return c.joinpoint(...c.args);
+    });
+    aroundAdviceB = jest.fn((c: AroundContext) => {
+      return c.joinpoint(...c.args);
+    });
     beforeAdvice = jest.fn();
   });
 
@@ -143,6 +147,8 @@ describe('property setter advice', () => {
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
+
+      aroundAdviceA = jest.fn(function (this: any, _ctxt: AroundContext) {});
 
       const a = new A();
       aroundAdviceA = jest.fn(function (this: any, _ctxt: AroundContext) {});
