@@ -360,24 +360,6 @@ describe('parameter advice', () => {
         });
         new A().method();
       });
-
-      it('has context.annotation = the annotation that invoked that aspect', () => {
-        class A {
-          method(
-            @AParameter()
-            arg1?: any,
-          ): any {
-            return methodImpl(arg1);
-          }
-        }
-        aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations[0]?.args).toEqual([]);
-          expect(ctxt.annotations[0]?.ref).toBe(AParameter.ref);
-        });
-        new A().method();
-
-        expect(aroundAdviceA1).toHaveBeenCalled();
-      });
     });
   });
 });

@@ -47,9 +47,12 @@ export class MutableAdviceContext<
     this.error = ctxt.error;
   }
 
-  asAfterContext(): AfterContext<T, X> {
+  asAfterContext(
+    overrides: Partial<AfterContext<T, X>> = {},
+  ): AfterContext<T, X> {
     return copyProps<AfterContext<T, X>>(
       this,
+      overrides,
       'annotations',
       'instance',
       'args',
@@ -57,9 +60,12 @@ export class MutableAdviceContext<
     );
   }
 
-  asBeforeContext(): BeforeContext<T, X> {
+  asBeforeContext(
+    overrides: Partial<BeforeContext<T, X>> = {},
+  ): BeforeContext<T, X> {
     return copyProps<BeforeContext<T, X>>(
       this,
+      overrides,
       'annotations',
       'instance',
       'args',
@@ -67,9 +73,12 @@ export class MutableAdviceContext<
     );
   }
 
-  asAfterReturnContext(): AfterReturnContext<T, X> {
+  asAfterReturnContext(
+    overrides: Partial<AfterReturnContext<T, X>> = {},
+  ): AfterReturnContext<T, X> {
     return copyProps<AfterReturnContext<T, X>>(
       this,
+      overrides,
       'annotations',
       'instance',
       'args',
@@ -78,9 +87,12 @@ export class MutableAdviceContext<
     );
   }
 
-  asAfterThrowContext(): AfterThrowContext<T, X> {
+  asAfterThrowContext(
+    overrides: Partial<AfterThrowContext<T, X>> = {},
+  ): AfterThrowContext<T, X> {
     return copyProps<AfterThrowContext<T, X>>(
       this,
+      overrides,
       'annotations',
       'instance',
       'args',
@@ -89,13 +101,23 @@ export class MutableAdviceContext<
     );
   }
 
-  asCompileContext(): CompileContext<T, X> {
-    return copyProps<CompileContext<T, X>>(this, 'annotations', 'target');
+  asCompileContext(
+    overrides: Partial<CompileContext<T, X>> = {},
+  ): CompileContext<T, X> {
+    return copyProps<CompileContext<T, X>>(
+      this,
+      overrides,
+      'annotations',
+      'target',
+    );
   }
 
-  asAroundContext(): AroundContext<T, X> {
+  asAroundContext(
+    overrides: Partial<AroundContext<T, X>> = {},
+  ): AroundContext<T, X> {
     return copyProps<AroundContext<T, X>>(
       this,
+      overrides,
       'annotations',
       'instance',
       'args',
@@ -106,9 +128,22 @@ export class MutableAdviceContext<
   }
 }
 
-function copyProps<A>(ctxt: MutableAdviceContext, ...keys: (keyof A)[]) {
+function copyProps<A>(
+  ctxt: MutableAdviceContext,
+  overrides: Partial<MutableAdviceContext> = {},
+  ...keys: (keyof A)[]
+) {
   return keys
-    .map((prop) => ({ prop, value: (ctxt as any)[prop] }))
+    .map((prop) => {
+      const value =
+        typeof (overrides as any)[prop] !== 'undefined'
+          ? (overrides as any)[prop]
+          : (ctxt as any)[prop];
+      return {
+        prop,
+        value,
+      };
+    })
     .reduce((res, { prop, value }) => {
       res[prop] = value as any;
       return res;

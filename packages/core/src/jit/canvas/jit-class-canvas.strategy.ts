@@ -1,4 +1,5 @@
 import { assert, ConstructorType, getMetadata } from '@aspectjs/common/utils';
+import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
 import { PointcutType } from '../../pointcut/pointcut.type';
 import { PointcutTargetType } from './../../pointcut/pointcut-target.type';
@@ -94,6 +95,20 @@ export class JitClassCanvasStrategy<
     joinpoint.prototype.constructor = joinpoint;
 
     return joinpoint as any;
+  }
+
+  protected override callAdvice(
+    adviceEntry: AdviceEntry<PointcutTargetType.CLASS>,
+    ctxt: MutableAdviceContext<PointcutTargetType.CLASS>,
+    args: unknown[],
+    allowReturn = true,
+  ): unknown {
+    const val = super.callAdvice(adviceEntry, ctxt, args, allowReturn);
+
+    if (val !== undefined) {
+      ctxt.instance = val;
+    }
+    return (ctxt.value = ctxt.instance);
   }
 }
 

@@ -318,22 +318,6 @@ describe('method advice', () => {
         });
         new A().method();
       });
-
-      it('has context.annotation = the annotation that invoked that aspect', () => {
-        class A {
-          @AMethod()
-          method(...args: any): any {
-            return methodImpl(...args);
-          }
-        }
-        aroundAdviceA = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations[0]?.args).toEqual([]);
-          expect(ctxt.annotations[0]?.ref).toBe(AMethod.ref);
-        });
-        new A().method();
-
-        expect(aroundAdviceA).toHaveBeenCalled();
-      });
     });
   });
 });

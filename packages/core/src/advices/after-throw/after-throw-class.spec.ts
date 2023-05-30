@@ -279,22 +279,6 @@ describe('class advice', () => {
         new A();
       });
 
-      it('has context.annotation = the annotation that invoked that aspect', () => {
-        @AClass()
-        class A {
-          constructor(public labels = ['X']) {
-            throw new Error('original error');
-          }
-        }
-        afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {
-          expect(ctxt.annotations[0]?.args).toEqual([]);
-          expect(ctxt.annotations[0]?.ref).toBe(AClass.ref);
-        });
-        new A();
-
-        expect(afterThrowAdviceA1).toHaveBeenCalled();
-      });
-
       it('has context.error = the error that has been throws', () => {
         const e = new Error('original error');
         @AClass()

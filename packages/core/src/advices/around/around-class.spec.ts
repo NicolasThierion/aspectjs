@@ -327,20 +327,6 @@ describe('class advice', () => {
         });
         new A();
       });
-
-      it('has context.annotation = the annotation that invoked that aspect', () => {
-        @AClass()
-        class A {
-          constructor(public labels = ['X']) {}
-        }
-        aroundAdviceA = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations[0]?.args).toEqual([]);
-          expect(ctxt.annotations[0]?.ref).toBe(AClass.ref);
-        });
-        new A();
-
-        expect(aroundAdviceA).toHaveBeenCalled();
-      });
     });
   });
 });

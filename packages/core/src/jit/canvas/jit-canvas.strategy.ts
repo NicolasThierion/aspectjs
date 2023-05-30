@@ -42,6 +42,7 @@ export abstract class JitWeaverCanvasStrategy<
 
   before(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
     this._applyNotReturn(
+      ctxt,
       () => ctxt.asBeforeContext(),
       selection.find(this.targetType, PointcutType.BEFORE),
     );
@@ -49,6 +50,8 @@ export abstract class JitWeaverCanvasStrategy<
 
   after(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
     this._applyNotReturn(
+      ctxt,
+
       () => ctxt.asAfterContext(),
       selection.find(this.targetType, PointcutType.AFTER),
     );
@@ -64,11 +67,13 @@ export abstract class JitWeaverCanvasStrategy<
     if (!advices.length) {
       return ctxt.value as T;
     }
-    const afterReturnContext = ctxt.asAfterReturnContext();
 
     advices.forEach((advice) => {
-      const newContext = afterReturnContext;
-      ctxt.value = this.callAdvice(advice, [newContext, ctxt.value]);
+      const afterReturnContext = ctxt.asAfterReturnContext();
+      ctxt.value = this.callAdvice(advice, ctxt, [
+        afterReturnContext,
+        ctxt.value,
+      ]);
     });
 
     return ctxt.value as T;
@@ -83,8 +88,6 @@ export abstract class JitWeaverCanvasStrategy<
       ...advicesSelection.find(this.targetType, PointcutType.AFTER_THROW),
     ];
 
-    let value: any;
-
     if (!adviceEntries.length) {
       assert(!!ctxt.error);
       // pass-trough errors by default
@@ -94,16 +97,14 @@ export abstract class JitWeaverCanvasStrategy<
     for (const entry of adviceEntries) {
       const errorContext = ctxt.asAfterThrowContext();
       try {
-        value = this.callAdvice(entry, [errorContext, errorContext.error]);
+        ctxt.value = this.callAdvice(
+          entry,
+          ctxt,
+          [errorContext, errorContext.error],
+          allowReturn,
+        );
         // advice did not throw, break;
 
-        if (!allowReturn && !isUndefined(value)) {
-          throw new AdviceError(
-            entry.advice,
-            errorContext.target,
-            `Returning from advice is not supported`,
-          );
-        }
         ctxt.error = undefined;
         break;
       } catch (error) {
@@ -115,7 +116,7 @@ export abstract class JitWeaverCanvasStrategy<
     if (ctxt.error) {
       throw ctxt.error;
     }
-    return value;
+    return ctxt.value;
   }
 
   around(
@@ -140,22 +141,17 @@ export abstract class JitWeaverCanvasStrategy<
         (...args: unknown[]) => originalJp(...args),
       );
       jp = (...args: unknown[]) => {
-        let value = ctxt.value;
-        const newContext = {
-          ...ctxt,
+        const newContext = ctxt.asAroundContext({
           joinpoint: nextJp,
-          args,
-        };
-        value = this.callAdvice(entry, [newContext, nextJp, args]);
-        if (value !== undefined && !allowReturn) {
-          throw new AdviceError(
-            entry.advice,
-            ctxt.target,
-            // TODO: why ?
-            `Returning from advice is not supported`,
-          );
-        }
-        return value;
+        });
+        ctxt.value = this.callAdvice(
+          entry,
+          ctxt,
+          [newContext, nextJp, args],
+          allowReturn,
+        );
+
+        return ctxt.value;
       };
     });
 
@@ -180,6 +176,7 @@ export abstract class JitWeaverCanvasStrategy<
    * @param adviceEntries
    */
   protected _applyNotReturn(
+    ctxt: MutableAdviceContext<T, X>,
     contextCreator: () => AdviceContext<T, X>,
     adviceEntries: Iterable<AdviceEntry<T>>,
   ) {
@@ -187,26 +184,32 @@ export abstract class JitWeaverCanvasStrategy<
     if (!advices.length) {
       return;
     }
-    const ctxt = contextCreator();
+    const newContext = contextCreator();
     advices.forEach((entry) => {
-      const retVal = this.callAdvice(entry, [ctxt, ctxt.args]);
-      if (!isUndefined(retVal)) {
-        throw new AdviceError(
-          entry.advice,
-          ctxt.target,
-          `Returning from advice is not supported`,
-        );
-      }
+      this.callAdvice(entry, ctxt, [newContext, newContext.args], false);
     });
   }
 
-  protected callAdvice(adviceEntry: AdviceEntry<T>, args: unknown[]): unknown {
+  protected callAdvice(
+    adviceEntry: AdviceEntry<T>,
+    ctxt: MutableAdviceContext<T>,
+    args: unknown[],
+    allowReturn = true,
+  ): unknown {
     // TODO: remove code commented out
     // accessing ctxt.value inside within a "before" advices will call the advice itself... prevent this.
     // if (getMetadata('@aspectjs::called', adviceEntry)) {
     //   return this.callJoinpoint(ctxt, compiledSymbol);
     // }
 
-    return (adviceEntry.advice as any).apply(adviceEntry.aspect, args);
+    const retVal = (adviceEntry.advice as any).apply(adviceEntry.aspect, args);
+    if (!isUndefined(retVal) && !allowReturn) {
+      throw new AdviceError(
+        adviceEntry.advice,
+        ctxt.target,
+        `Returning from advice is not supported`,
+      );
+    }
+    return (ctxt.value = retVal);
   }
 }

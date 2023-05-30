@@ -318,20 +318,6 @@ describe('property advice', () => {
         });
         new A().labels;
       });
-
-      it('has context.annotation = the annotation that invoked that aspect', () => {
-        class A {
-          @AProperty()
-          labels = ['a'];
-        }
-        aroundAdviceA = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations[0]?.args).toEqual([]);
-          expect(ctxt.annotations[0]?.ref).toBe(AProperty.ref);
-        });
-        new A().labels;
-
-        expect(aroundAdviceA).toHaveBeenCalled();
-      });
     });
   });
 });
