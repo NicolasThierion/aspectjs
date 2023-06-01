@@ -2,7 +2,7 @@ import type { Annotation } from '@aspectjs/common';
 import { PointcutExpression } from './pointcut-expression.type';
 import { PointcutTargetType } from './pointcut-target.type';
 
-export class PointcutExpressionFactory<T extends PointcutTargetType> {
+class PointcutExpressionFactory<T extends PointcutTargetType> {
   constructor(private readonly targetType: T) {}
 
   withAnnotations(...annotations: Annotation[]): PointcutExpression<T> {
@@ -18,7 +18,7 @@ export class PointcutExpressionFactory<T extends PointcutTargetType> {
   // }
 }
 
-export class PropertyPointcutFactory extends PointcutExpressionFactory<PointcutTargetType.GET_PROPERTY> {
+class PropertyPointcutFactory extends PointcutExpressionFactory<PointcutTargetType.GET_PROPERTY> {
   readonly setter: PointcutExpressionFactory<PointcutTargetType.SET_PROPERTY>;
   constructor() {
     super(PointcutTargetType.GET_PROPERTY);
