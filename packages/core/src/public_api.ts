@@ -25,4 +25,5 @@ export * from './errors/aspect.error';
 export * from './errors/weaving.error';
 export * from './pointcut/pointcut';
 export * from './pointcut/pointcut.type';
+export * from './weaver/context/weaver.context.global';
 export * from './weaver/weaver';

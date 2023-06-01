@@ -6,7 +6,7 @@ import { assert, defineMetadata, getMetadata } from '@aspectjs/common/utils';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
-import { PointcutType } from '../../public_api';
+import { PointcutType } from '../../pointcut/pointcut.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { AbstractJitMethodCanvasStrategy } from './jit-method-canvas.strategy';
 

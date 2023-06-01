@@ -82,6 +82,8 @@ core:publish:gitlab:
   stage: deploy
   variables:
     CWD: packages/core
+    PACKAGE_DIR: dist
+
   # needs:
   #   - docs
   #   - core:build
@@ -95,6 +97,7 @@ common:publish:gitlab:
   stage: deploy
   variables:
     CWD: packages/common
+    PACKAGE_DIR: dist
   # needs:
   #   - docs
   #   - core:build

@@ -1,13 +1,13 @@
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
+import findUp from 'find-up';
 import { existsSync, readFileSync } from 'fs';
 import json5 from 'json5';
-import { join, relative, resolve } from 'path';
-import { cwd } from 'process';
+import { dirname, join, relative, resolve } from 'path';
 import type { OutputOptions, RollupOptions } from 'rollup';
+import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import dts from 'rollup-plugin-dts';
-
 const { parse } = json5;
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
@@ -30,7 +30,6 @@ export interface CreateConfigOptions {
 }
 
 export const createConfig = (
-  name: string,
   optionsOrRootDir: string | CreateConfigOptions,
 ) => {
   const options =
@@ -41,13 +40,6 @@ export const createConfig = (
       : optionsOrRootDir;
   options.rootDir = options.rootDir ?? '.';
   options.input = options.input ?? join(options.rootDir, 'index.ts');
-
-  options.typesInput =
-    options.typesInput ??
-    join(
-      './dist/types/',
-      relative(cwd(), options.input).replace(/\.ts$/, '.d.ts'),
-    );
 
   const localTsConfig = [
     'tsconfig.lib.json',
@@ -63,9 +55,24 @@ export const createConfig = (
       ? localTsConfig
       : resolve(__dirname, './tsconfig.json'));
 
-  options.pkg =
-    options.pkg ??
-    parse(readFileSync(join(join(options.rootDir, 'package.json'))).toString());
+  let name!: string;
+  let subExportsPath!: string;
+  const packageJsonPath = findUp.sync('package.json', {
+    cwd: options.rootDir,
+  })!;
+
+  if (!options.pkg) {
+    name = relative(dirname(packageJsonPath), options.rootDir);
+    subExportsPath = name;
+
+    options.pkg = parse(readFileSync(packageJsonPath).toString());
+  }
+
+  if (!name) {
+    name = options.pkg!.name.split('/').splice(-1)[0]!;
+    subExportsPath = '';
+  }
+
   const pkg = options.pkg!;
   const external = [
     '@aspectjs/common',
@@ -95,7 +102,7 @@ export const createConfig = (
   function createOutputOptions(options: Partial<OutputOptions>): OutputOptions {
     return {
       banner,
-      name: `${pkg.name.replace('@', '').replace('/', '-')}`,
+      name,
       exports: 'named',
       sourcemap: true,
       ...options,
@@ -111,12 +118,12 @@ export const createConfig = (
   /**
    * @type {import('rollup').RollupOptions}
    */
-  const bundleOptions: RollupOptions = {
+  const bundleOptions = {
     input: options.input,
     output: [
       // CommonJS
       createOutputOptions({
-        file: `./dist/${name}.cjs`,
+        file: `./dist/cjs/${name}.cjs`,
         format: 'cjs',
       }),
       // ES 2020
@@ -156,22 +163,17 @@ export const createConfig = (
       }),
     ],
     external,
-  };
+  } satisfies RollupOptions;
 
   /**
    * Generate only types into dist/types/index.d.ts
    */
+  const dtsOutput = bundleOptions.output[0]!;
   const dtsOptions: RollupOptions = {
     input: options.input,
 
     // .d.ts
-    output: [
-      createOutputOptions({
-        file: `./dist/${name}.cjs`,
-        format: 'cjs',
-        sourcemap: true,
-      }),
-    ],
+    output: dtsOutput,
     // types
     plugins: [
       typescript({
@@ -189,10 +191,20 @@ export const createConfig = (
   /**
    * Bundle previously generated dist/types/index.d.ts
    */
+
+  const typesDir = join(dirname(dtsOutput.file!), 'types');
+  options.typesInput =
+    options.typesInput ?? join(typesDir, subExportsPath, 'index.d.ts');
+
   const dtsBundleOptions: RollupOptions = {
     input: options.typesInput,
     // .d.ts bundle
-    output: [{ file: `dist/${name}.d.ts`, format: 'es' }],
+    output: [
+      {
+        file: join(`dist`, subExportsPath, `index.d.ts`),
+        format: 'es',
+      },
+    ],
     plugins: [
       dts(),
       del({
@@ -202,5 +214,14 @@ export const createConfig = (
     ],
     external,
   };
+
+  // building the main bundle
+  if (!subExportsPath) {
+    bundleOptions.plugins.push(
+      copy({
+        targets: [{ src: packageJsonPath, dest: 'dist/' }],
+      }),
+    );
+  }
   return rollupDefineConfig([bundleOptions, dtsOptions, dtsBundleOptions]);
 };

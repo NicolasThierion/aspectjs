@@ -1,4 +1,4 @@
-import { AnnotationFactory } from '@aspectjs/common';
+import { AnnotationFactory, ReflectModule } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '@aspectjs/core';
 
@@ -16,9 +16,11 @@ describe('AdviceRegisrty', () => {
   let adviceReg: AdviceRegistry;
   beforeEach(() => {
     adviceReg = configureTesting(
-      weaverContext().addModules({
-        providers: ASPECT_PROVIDERS,
-      }),
+      weaverContext().addModules(
+        class TestModule implements ReflectModule {
+          providers = ASPECT_PROVIDERS;
+        },
+      ),
     ).get(AdviceRegistry);
   });
 

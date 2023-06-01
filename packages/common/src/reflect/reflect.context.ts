@@ -1,4 +1,4 @@
-import { assert } from '@aspectjs/common/utils';
+import { ConstructorType, assert } from '@aspectjs/common/utils';
 
 /**
  * Returns an object to store global values across the framework
@@ -19,7 +19,7 @@ export class ReflectContext {
   > = new Map();
 
   private readonly providersRegistry: Map<string, unknown> = new Map();
-  private readonly modules: Set<ReflectModule> = new Set();
+  private readonly modules: Set<ConstructorType<ReflectModule>> = new Set();
   private addedProviders: Set<ReflectProvider> = new Set();
 
   /**
@@ -34,16 +34,23 @@ export class ReflectContext {
 
   /**
    * Adds a module to the context. Modules are unique by their name.
-   * Adding a module with the same name overrides the existing one.
+   * Adding the same module twice has no effect.
    * @param module The module to add
    */
-  addModules(...modules: ReflectModule[]): ReflectContext {
-    modules = Object.values(modules).filter((m) => !this.modules.has(m));
+  addModules(...modules: ConstructorType<ReflectModule>[]): ReflectContext {
+    // dedupe modules
+    modules = [...new Set(modules).values()].filter(
+      (m) => !this.modules.has(m),
+    );
 
-    // dedupe providers
-    const providers = [
-      ...new Set(modules.flatMap((m) => m.providers)).values(),
-    ].filter((p) => !this.addedProviders.has(p));
+    const moduleInstances = modules.map((m) => new m());
+
+    // dedupe providers. TODO: why ?
+    // const providers = [
+    //   ...new Set(moduleInstances.flatMap((m) => m.providers)).values(),
+    // ].filter((p) => !this.addedProviders.has(p));
+
+    const providers = moduleInstances.flatMap((m) => m.providers);
 
     providers.forEach((p) => {
       const providerName = getProviderName(p.provide);

@@ -21,5 +21,5 @@ export class AnnotationsReflectModule implements ReflectModule {
  * @returns The current {@link ReflectContext}, configured to use with an {@link AnnotationsReflectModule}
  */
 export const annotationsContext = (): ReflectContext => {
-  return reflectContext().addModules(new AnnotationsReflectModule());
+  return reflectContext().addModules(AnnotationsReflectModule);
 };

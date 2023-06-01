@@ -7,7 +7,7 @@ heroText: AspectJS
 tagline: The AOP framework for Javascript, Typescript, Browser & Node.
 actions:
   - text: How to Use 💡
-    link: /00.demo/
+    link: /00.guide/0.getting-started.html
     type: primary
 
   - text: API documentation 🖹
@@ -27,3 +27,20 @@ features:
 copyright: false
 footer: Theme by <a href="https://theme-hope.vuejs.press/" target="_blank">VuePress Theme Hope</a> | MIT Licensed
 ---
+
+## Installation
+
+:::code-tabs
+@tab npm
+
+```bash
+npm i @aspectjs/common @aspectjs/core
+```
+
+@tab yarn
+
+```bash
+yarn add @aspectjs/common @aspectjs/core
+```
+
+:::

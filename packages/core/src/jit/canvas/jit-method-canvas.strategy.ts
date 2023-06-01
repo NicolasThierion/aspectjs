@@ -4,10 +4,10 @@ import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import { MethodPropertyDescriptor } from '@aspectjs/common';
 import { assert, getMetadata } from '@aspectjs/common/utils';
+import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
-import { JoinPoint } from '../../public_api';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { renameFunction } from './canvas.utils';

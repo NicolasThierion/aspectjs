@@ -11,10 +11,10 @@ import { WeavingError } from '../../errors/weaving.error';
 import { Pointcut } from '../../pointcut/pointcut';
 import { PointcutExpression } from '../../pointcut/pointcut-expression.type';
 import { PointcutType } from '../../pointcut/pointcut.type';
-import { Aspect } from '../../public_api';
 import { WeaverContext } from '../../weaver/context/weaver.context';
 import { AdvicesSelection } from './advices-selection.model';
 
+import { Aspect } from '../../aspect/aspect.annotation';
 import type { AspectType } from '../../aspect/aspect.type';
 import type { AdviceType } from '../advice.type';
 import type { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';

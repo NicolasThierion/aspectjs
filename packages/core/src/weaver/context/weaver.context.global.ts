@@ -4,5 +4,5 @@ import { WeaverModule } from './weaver.module';
 
 import type { WeaverContext } from './weaver.context';
 export const weaverContext = (): WeaverContext => {
-  return annotationsContext().addModules(new WeaverModule());
+  return annotationsContext().addModules(WeaverModule);
 };

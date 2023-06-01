@@ -22,18 +22,15 @@
       "default": "./package.json"
     },
     ".": {
-      "types": "./dist/core.d.ts",
-      "esm2020": "./dist/esm2020/core.mjs",
-      "es2020": "./dist/fesm2020/core.mjs",
-      "es2015": "./dist/fesm2015/core.mjs",
-      "node": "./dist/fesm2015/core.mjs",
-      "require": "./dist/core.cjs",
-      "default": "./dist/core.cjs",
-      "unpkg": "./dist/bundles/core.umd.min.js"
+      "types": "./index.d.ts",
+      "esm2020": "./esm2020/core.mjs",
+      "es2020": "./fesm2020/core.mjs",
+      "es2015": "./fesm2015/core.mjs",
+      "node": "./fesm2015/core.mjs",
+      "require": "./core.cjs",
+      "default": "./core.cjs",
+      "unpkg": "./bundles/core.umd.min.js"
     }
   },
-  "main": "./dist/bundles/core.umd.js",
-  "files": [
-    "./dist"
-  ]
+  "main": "./bundles/core.umd.js"
 }
