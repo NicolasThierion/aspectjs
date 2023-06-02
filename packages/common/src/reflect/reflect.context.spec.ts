@@ -1,6 +1,7 @@
+import { ReflectProvider } from './reflect-provider.type';
 import { ReflectContext } from './reflect.context';
+import { ReflectModule } from './reflect.module';
 
-import { ReflectModule, ReflectProvider } from 'packages/common/dist';
 describe('ReflectContext', () => {
   let reflectContext: ReflectContext;
   let A: any;

@@ -269,10 +269,10 @@ describe('parameter advice', () => {
         }
 
         afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {
-          expect(ctxt.annotations.length).toEqual(3);
-          const AParameterAnnotationContext = ctxt.annotations.filter(
-            (an) => an.ref === AParameter.ref,
-          )[0];
+          expect(ctxt.annotations.find().length).toEqual(3);
+          const AParameterAnnotationContext = ctxt.annotations
+            .filter(AParameter)
+            .find()[0];
           expect(AParameterAnnotationContext).toBeTruthy();
           expect(AParameterAnnotationContext?.args).toEqual(['annotationArg']);
         });

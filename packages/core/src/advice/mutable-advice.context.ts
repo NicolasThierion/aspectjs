@@ -1,4 +1,4 @@
-import { AnnotationContext } from '@aspectjs/common';
+import { AnnotationsByTypeSelection } from '@aspectjs/common';
 
 import { AdviceTarget } from './advice.type';
 import { JoinPoint } from './joinpoint';
@@ -20,7 +20,7 @@ export class MutableAdviceContext<
   X = unknown,
 > {
   /** The annotations contexts **/
-  annotations: AnnotationContext<ToTargetType<T>, X>[];
+  annotations: AnnotationsByTypeSelection<ToTargetType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/

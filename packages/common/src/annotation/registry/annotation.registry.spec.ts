@@ -2,7 +2,10 @@ import { AnnotationFactory, AnnotationRef } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { annotationsContext } from './../context/annotations.context.global';
-import { AnnotationRegistry, AnnotationSelection } from './annotation.registry';
+import {
+  AnnotationRegistry,
+  AnnotationsSelection,
+} from './annotation.registry';
 
 describe('AnnotationRegistry', () => {
   let annotationRegistry: AnnotationRegistry;
@@ -221,10 +224,10 @@ describe('AnnotationRegistry', () => {
   beforeEach(setup);
 
   describe('.select()', () => {
-    let s: AnnotationSelection;
+    let s: AnnotationsSelection;
     beforeEach(() => (s = annotationRegistry.select()));
     it('returns an AnnotationSelector', () => {
-      expect(s).toBeInstanceOf(AnnotationSelection);
+      expect(s).toBeInstanceOf(AnnotationsSelection);
     });
 
     describe('.all().find()', () => {
@@ -513,7 +516,7 @@ describe('AnnotationRegistry', () => {
   });
 
   describe('.select(AAnnotation)', () => {
-    let s: AnnotationSelection;
+    let s: AnnotationsSelection;
 
     describe('.all().find', () => {
       describe('with "AAnnotation" not being used', () => {

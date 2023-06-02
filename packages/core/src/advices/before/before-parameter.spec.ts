@@ -229,18 +229,14 @@ describe('parameter advice', () => {
         }
         advice = jest.fn(
           (ctxt: BeforeContext<PointcutTargetType.PARAMETER>) => {
-            expect(ctxt.annotations.length).toEqual(3);
-            expect(
-              ctxt.annotations
-                .map((a) => a.ref)
-                .filter((r) => r === AParameter.ref).length,
-            ).toEqual(2);
+            expect(ctxt.annotations.find().length).toEqual(3);
+            expect(ctxt.annotations.filter(AParameter).find().length).toEqual(
+              2,
+            );
 
-            expect(
-              ctxt.annotations
-                .map((a) => a.ref)
-                .filter((r) => r === BParameter.ref).length,
-            ).toEqual(1);
+            expect(ctxt.annotations.filter(BParameter).find().length).toEqual(
+              1,
+            );
           },
         );
         new A().m('a', 'b');

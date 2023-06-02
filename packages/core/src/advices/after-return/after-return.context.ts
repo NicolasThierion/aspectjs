@@ -1,4 +1,4 @@
-import type { AnnotationContext } from '@aspectjs/common';
+import { AnnotationsByTypeSelection } from '@aspectjs/common';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import type { AdviceTarget } from './../../advice/advice.type';
 import type { ToTargetType } from './../../pointcut/pointcut-target.type';
@@ -8,7 +8,7 @@ export interface AfterReturnContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: Array<AnnotationContext<ToTargetType<T>, X>>;
+  readonly annotations: AnnotationsByTypeSelection<ToTargetType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

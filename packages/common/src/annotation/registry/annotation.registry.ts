@@ -28,15 +28,15 @@ class _AnnotationsSet {
 
   getAnnotations(
     decoratorTypes: TargetType[],
-    annotationRefs: AnnotationRef[],
+    annotationRefs?: Set<AnnotationRef>,
     classTargetRef?: _AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
   ): AnnotationContext[] {
     const annotationsInClass = decoratorTypes
       .map((t) => this.buckets[t])
       .flatMap((m) =>
-        annotationRefs.length
-          ? annotationRefs.map((ref) => m.get(AnnotationRef.of(ref)))
+        annotationRefs
+          ? [...annotationRefs].map((ref) => m.get(AnnotationRef.of(ref)))
           : [...m.values()],
       )
       .filter((set) => !!set)
@@ -78,13 +78,13 @@ class _AnnotationsSet {
   }
 }
 
-interface AnnotationByTypeSelectionOptions {
+interface AnnotationsByTypeSelectionOptions {
   searchParents: boolean;
 }
 /**
  * @internal
  */
-export class AnnotationByTypeSelection<
+export class AnnotationsByTypeSelection<
   T extends TargetType = TargetType,
   X = unknown,
   P extends keyof X = any,
@@ -92,13 +92,45 @@ export class AnnotationByTypeSelection<
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
     private readonly annotationSet: _AnnotationsSet,
-    private readonly annotationsRefs: AnnotationRef[],
+    private readonly annotationsRefs: Set<AnnotationRef> | undefined,
     private readonly decoratorTypes: T[],
     private readonly type?: ConstructorType<X>,
     private readonly propertyKey?: P,
   ) {}
 
-  find(options?: AnnotationByTypeSelectionOptions): AnnotationContext<T, X>[] {
+  filter(
+    ...annotations: (AnnotationRef | Annotation)[]
+  ): AnnotationsByTypeSelection<T, X, P> {
+    let annotationRefs = this.annotationsRefs;
+
+    if (annotations.length) {
+      if (!annotationRefs) {
+        annotationRefs = new Set(annotations.map(AnnotationRef.of));
+      } else {
+        annotationRefs = new Set(
+          annotations
+            .map(AnnotationRef.of)
+            .filter((a) => annotationRefs!.has(a)),
+        );
+      }
+    }
+
+    return new AnnotationsByTypeSelection(
+      this.targetFactory,
+      this.annotationSet,
+      annotationRefs,
+      this.decoratorTypes,
+      this.type,
+      this.propertyKey,
+    );
+    // return new AnnotationSelection(
+    //   this.targetFactory,
+    //   this.annotationSet,
+    //   annotations.map(AnnotationRef.of),
+    // );
+  }
+
+  find(options?: AnnotationsByTypeSelectionOptions): AnnotationContext<T, X>[] {
     if (!this.type) {
       assert(!options?.searchParents);
 
@@ -138,17 +170,17 @@ export class AnnotationByTypeSelection<
 /**
  * Selects annotations based on their type or target.
  */
-export class AnnotationSelection {
+export class AnnotationsSelection {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
     private readonly annotationSet: _AnnotationsSet,
-    private readonly annotationsRefs: AnnotationRef[],
+    private readonly annotationsRefs: Set<AnnotationRef> | undefined,
   ) {}
 
   all<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationByTypeSelection<TargetType, X> {
-    return new AnnotationByTypeSelection<TargetType, X>(
+  ): AnnotationsByTypeSelection<TargetType, X> {
+    return new AnnotationsByTypeSelection<TargetType, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -163,8 +195,8 @@ export class AnnotationSelection {
   }
   onClass<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationByTypeSelection<TargetType.CLASS, X> {
-    return new AnnotationByTypeSelection<TargetType.CLASS, X>(
+  ): AnnotationsByTypeSelection<TargetType.CLASS, X> {
+    return new AnnotationsByTypeSelection<TargetType.CLASS, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -175,8 +207,8 @@ export class AnnotationSelection {
   onMethod<X = any, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationByTypeSelection<TargetType.METHOD, X> {
-    return new AnnotationByTypeSelection<TargetType.METHOD, X>(
+  ): AnnotationsByTypeSelection<TargetType.METHOD, X> {
+    return new AnnotationsByTypeSelection<TargetType.METHOD, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -188,8 +220,8 @@ export class AnnotationSelection {
   onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationByTypeSelection<TargetType.PROPERTY, X> {
-    return new AnnotationByTypeSelection<TargetType.PROPERTY, X>(
+  ): AnnotationsByTypeSelection<TargetType.PROPERTY, X> {
+    return new AnnotationsByTypeSelection<TargetType.PROPERTY, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -201,8 +233,8 @@ export class AnnotationSelection {
   onArgs<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationByTypeSelection<TargetType.PARAMETER, X> {
-    return new AnnotationByTypeSelection<TargetType.PARAMETER, X>(
+  ): AnnotationsByTypeSelection<TargetType.PARAMETER, X> {
+    return new AnnotationsByTypeSelection<TargetType.PARAMETER, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -214,11 +246,11 @@ export class AnnotationSelection {
 
   on<X>(
     filter: AnnotationSelectionFilter,
-  ): AnnotationByTypeSelection<TargetType, X> {
+  ): AnnotationsByTypeSelection<TargetType, X> {
     const { target, types } = filter;
     assert(isObject(target));
 
-    return new AnnotationByTypeSelection<TargetType, X>(
+    return new AnnotationsByTypeSelection<TargetType, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -242,11 +274,15 @@ export class AnnotationRegistry {
   register(annotationContext: AnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
-  select(...annotations: (AnnotationRef | Annotation)[]): AnnotationSelection {
-    return new AnnotationSelection(
+  select(...annotations: (AnnotationRef | Annotation)[]): AnnotationsSelection {
+    const annotationsFilter = annotations.length
+      ? new Set(annotations.map(AnnotationRef.of))
+      : undefined;
+
+    return new AnnotationsSelection(
       this.targetFactory,
       this.annotationSet,
-      annotations.map(AnnotationRef.of),
+      annotationsFilter,
     );
   }
 }

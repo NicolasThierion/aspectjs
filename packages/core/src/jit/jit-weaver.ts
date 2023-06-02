@@ -54,13 +54,14 @@ export class JitWeaver implements Weaver {
   enhance<T extends TargetType, X = unknown>(
     target: AnnotationTarget<T>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
-    const annotations = this.annotationRegistry.select().on({ target }).find({
-      searchParents: true,
-    });
+    // TODO: remove
+    // const annotations = this.annotationRegistry.select().on({ target }).find({
+    //   searchParents: true,
+    // });
 
     const ctxt = new MutableAdviceContext({
       target,
-      annotations,
+      annotations: this.annotationRegistry.select().on({ target }),
     });
 
     return this.enhancers[target.type](ctxt as any);
@@ -69,7 +70,9 @@ export class JitWeaver implements Weaver {
   private enhanceClass<X>(
     ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
   ): (new (...args: any[]) => X) | void {
-    if (!ctxt.annotations.length) {
+    const annotations = ctxt.annotations.find();
+
+    if (!annotations.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this class has to be enhanced.
       return ctxt.target.proto.constructor;
@@ -77,7 +80,7 @@ export class JitWeaver implements Weaver {
 
     // find all class advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.ref),
+      annotations: annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<PointcutTargetType.CLASS, X>(
@@ -93,7 +96,9 @@ export class JitWeaver implements Weaver {
       X
     >,
   ): PropertyDescriptor | void {
-    if (!ctxt.annotations.length) {
+    const annotations = ctxt.annotations.find();
+
+    if (!annotations.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
       return ctxt.target.descriptor;
@@ -101,7 +106,7 @@ export class JitWeaver implements Weaver {
 
     // find all property getter | setter advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.ref),
+      annotations: annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<
@@ -115,8 +120,10 @@ export class JitWeaver implements Weaver {
   private enhanceMethod<X>(
     ctxt: MutableAdviceContext<PointcutTargetType.METHOD, X>,
   ): MethodPropertyDescriptor | void {
+    const annotations = ctxt.annotations.find();
+
     // TODO: test when 2 advices & 2 annotations on the same method
-    if (!ctxt.annotations.length) {
+    if (!annotations.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
       return ctxt.target.descriptor;
@@ -124,7 +131,7 @@ export class JitWeaver implements Weaver {
 
     // find all method advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.ref),
+      annotations: annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<PointcutTargetType.METHOD, X>(
@@ -137,7 +144,8 @@ export class JitWeaver implements Weaver {
   private enhanceParameter<X>(
     ctxt: MutableAdviceContext<PointcutTargetType.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
-    if (!ctxt.annotations.length) {
+    const annotations = ctxt.annotations.find();
+    if (!annotations.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
       return ctxt.target.descriptor;
@@ -145,7 +153,7 @@ export class JitWeaver implements Weaver {
 
     // find all parameter advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: ctxt.annotations.map((a) => a.ref),
+      annotations: annotations.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<PointcutTargetType.PARAMETER, X>(
