@@ -12,5 +12,5 @@ export type AroundAdvice<
   X = unknown,
 > = {
   name: string;
-  pointcut: AroundPointcut<T>;
+  pointcuts: Set<AroundPointcut<T>>;
 } & ((ctxt: AdviceContext<T, X>, joinPoint: JoinPoint, args: any[]) => any);

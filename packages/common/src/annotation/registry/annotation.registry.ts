@@ -1,7 +1,12 @@
 import { assert, ConstructorType, isObject } from '@aspectjs/common/utils';
 import { AnnotationContext } from '../annotation-context';
 import { AnnotationRef } from '../annotation-ref';
-import { Annotation, TargetType } from '../annotation.types';
+import {
+  Annotation,
+  AnnotationStub,
+  AnnotationType,
+  TargetType,
+} from '../annotation.types';
 import type {
   _AnnotationTargetRef,
   AnnotationTarget,
@@ -88,6 +93,7 @@ export class AnnotationsByTypeSelection<
   T extends TargetType = TargetType,
   X = unknown,
   P extends keyof X = any,
+  S extends AnnotationStub = AnnotationStub,
 > {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
@@ -97,12 +103,12 @@ export class AnnotationsByTypeSelection<
     private readonly type?: ConstructorType<X>,
     private readonly propertyKey?: P,
   ) {}
-
-  filter(
-    ...annotations: (AnnotationRef | Annotation)[]
-  ): AnnotationsByTypeSelection<T, X, P> {
+  filter<S2 extends AnnotationStub>(
+    annotation: Annotation<AnnotationType, S2>,
+  ): AnnotationsByTypeSelection<T, X, P, S2>;
+  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X, P>;
+  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X, P> {
     let annotationRefs = this.annotationsRefs;
-
     if (annotations.length) {
       if (!annotationRefs) {
         annotationRefs = new Set(annotations.map(AnnotationRef.of));
@@ -130,7 +136,9 @@ export class AnnotationsByTypeSelection<
     // );
   }
 
-  find(options?: AnnotationsByTypeSelectionOptions): AnnotationContext<T, X>[] {
+  find(
+    options?: AnnotationsByTypeSelectionOptions,
+  ): AnnotationContext<T, X, S>[] {
     if (!this.type) {
       assert(!options?.searchParents);
 

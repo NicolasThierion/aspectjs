@@ -41,7 +41,7 @@ export default {
     ],
   },
   // rootDir: module.parent.path,
-  modulePathIgnorePatterns: ['<rootDir>/.*/dist/'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
 
   moduleNameMapper: pathsToModuleNameMapper(pathsConfig),
   resolver: 'ts-jest-resolver',

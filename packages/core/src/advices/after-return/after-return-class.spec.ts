@@ -12,7 +12,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
-import { AfterReturn } from '../../public_api';
+import { AfterReturn } from './after-return.annotation';
 
 describe('class advice', () => {
   let afterReturnA1: ReturnType<typeof jest.fn>;

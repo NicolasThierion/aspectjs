@@ -155,11 +155,15 @@ export class AnnotationFactory {
         )
         .reduce((decoree, { name, decorator }) => {
           try {
-            decoree =
+            const newDecoree =
               (decorator as any)
                 .apply(this, [annotation, annotationArgs, annotationStub])
                 ?.apply(this, targetArgs) ?? decoree;
-            return decoree;
+
+            if (newDecoree) {
+              Object.assign(newDecoree, decoree); // copy static props
+            }
+            return newDecoree;
           } catch (e) {
             console.error(
               `Error applying annotation hook ${name}: ${(e as Error).message}`,

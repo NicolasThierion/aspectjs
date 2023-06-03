@@ -11,7 +11,7 @@ export type CompileAdvice<
   X = unknown,
 > = {
   name: string;
-  pointcut: CompilePointcut<T>;
+  pointcuts: Set<CompilePointcut<T>>;
 } & ((ctxt: AdviceContext<T, X>) => T extends PointcutTargetType.CLASS
   ? // eslint-disable-next-line @typescript-eslint/ban-types
     undefined | Function

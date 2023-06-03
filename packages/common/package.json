@@ -5,12 +5,13 @@
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "jest --runInBand",
+    "test:unit": "npm run clean && jest --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "build:common": "rollup --config ./rollup.config.cjs",
     "build:utils": "rollup --config ./utils/rollup.config.cjs",
     "build:testing": "rollup --config ./testing/rollup.config.cjs",
-    "build": "npm run build:utils && npm run build:common && npm run build:testing"
+    "build": "npm run build:utils && npm run build:common && npm run build:testing",
+    "clean": "rimraf ./dist && rimraf ./*.tgz"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "license": "MIT",

@@ -8,6 +8,7 @@
     "test:unit": "lerna run test:unit --stream",
     "lint": "lerna run test:lint --stream",
     "build": "lerna run build --stream",
+    "clean": "lerna run clean --stream",
     "docs": "cd packages/docs; npm run build"
   },
   "repository": {

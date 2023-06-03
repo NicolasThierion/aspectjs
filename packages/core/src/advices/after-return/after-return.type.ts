@@ -12,5 +12,5 @@ export type AfterReturnAdvice<
   X = unknown,
 > = {
   name: string;
-  pointcut: AfterReturnPointcut<T>;
+  pointcuts: Set<AfterReturnPointcut<T>>;
 } & ((ctxt: AdviceContext<T, X>, returnValue: any) => T | null | undefined);

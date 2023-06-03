@@ -75,7 +75,7 @@ export class AnnotationRef {
    * @param obj
    * @returns
    */
-  static of(obj: Annotation | AnnotationRef | string): AnnotationRef {
+  static of(obj: Annotation<any, any> | AnnotationRef | string): AnnotationRef {
     if (typeof obj === 'string') {
       return new AnnotationRef(obj);
     }

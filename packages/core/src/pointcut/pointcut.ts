@@ -11,6 +11,8 @@ interface PointcutInit<
   readonly expression: PointcutExpression<T>;
 }
 
+const pointcutReg: Record<string, Pointcut> = {};
+
 export class Pointcut<
   P extends PointcutType = PointcutType,
   T extends PointcutTargetType = PointcutTargetType,
@@ -21,7 +23,7 @@ export class Pointcut<
   readonly type: PointcutType;
   private readonly _expr: PointcutExpression;
 
-  constructor(pointcutInit: PointcutInit<P, T>) {
+  private constructor(pointcutInit: PointcutInit<P, T>) {
     this._expr = pointcutInit.expression;
     this.type = pointcutInit.type;
     this.targetType = this._expr.type as T;
@@ -29,5 +31,14 @@ export class Pointcut<
     this.name = this._expr.name;
   }
 
+  static of<
+    P extends PointcutType = PointcutType,
+    T extends PointcutTargetType = PointcutTargetType,
+  >(pointcutInit: PointcutInit<P, T>): Pointcut<P, T> {
+    const p = new Pointcut<P, T>(pointcutInit);
+    const k = `${p}`;
+    pointcutReg[k] ??= p;
+    return pointcutReg[k] as Pointcut<P, T>;
+  }
   [Symbol.toPrimitive] = () => `${this.type}(${this._expr})`;
 }

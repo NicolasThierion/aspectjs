@@ -53,11 +53,11 @@ export class AdvicesSelection {
 
             for (const entry of adviceEntries) {
               if (entry) {
-                assert(!!entry.advice.pointcut);
+                assert(!!entry.advice.pointcuts?.size);
                 if (
                   annotationFilterMatches(
                     annotationsRefFilter,
-                    entry.advice.pointcut,
+                    entry.advice.pointcuts,
                   )
                 )
                   yield entry as any as AdviceEntry<T, unknown, P>;
@@ -73,13 +73,14 @@ export class AdvicesSelection {
 
 function annotationFilterMatches(
   annotationsRefFilter: Set<AnnotationRef>,
-  pointcut: Pointcut,
+  pointcuts: Set<Pointcut>,
 ) {
+  const pointcutsAnnotations = [...pointcuts].flatMap((p) => p.annotations);
   return (
     !annotationsRefFilter.size ||
-    !pointcut.annotations.length ||
-    new Set([...annotationsRefFilter, ...pointcut.annotations]).size <
-      annotationsRefFilter.size + pointcut.annotations.length
+    !pointcutsAnnotations.length ||
+    new Set([...annotationsRefFilter, ...pointcutsAnnotations]).size <
+      annotationsRefFilter.size + pointcutsAnnotations.length
   );
 }
 const isObject = (obj: unknown) => obj && typeof obj === 'object';

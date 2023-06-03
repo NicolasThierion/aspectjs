@@ -5,9 +5,10 @@
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "jest --runInBand",
+    "test:unit": "npm run clean && jest --runInBand",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
-    "build": "rollup --config ./rollup.config.cjs"
+    "build": "rollup --config ./rollup.config.cjs",
+    "clean": "rimraf dist && rimraf ./*.tgz"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "license": "MIT",

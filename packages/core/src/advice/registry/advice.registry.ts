@@ -54,6 +54,7 @@ export class AdviceRegistry {
 
     const pointcutAnnotations = new Set<AnnotationRef>();
 
+    const advices: AdviceType[] = [];
     const processedAdvices = new Set<string>();
     // find advices annotations
     this.weaverContext
@@ -65,37 +66,58 @@ export class AdviceRegistry {
         const advice: AdviceType = adviceAnnotation.target.descriptor
           .value as AdviceType;
 
-        // dedupe same advices found on parent classes
-        if (processedAdvices.has(advice.name)) {
-          return;
-        }
-        processedAdvices.add(advice.name);
+        // const processedAndAssignablePointcut = processedAdvices.filter(
+        //   (pointcut) => pointcut.isAssignableFrom(advice.pointcut),
+        // )[0];
+        // if (processedAndAssignablePointcut) {
+        //   processedAndAssignablePointcut.merge(advice.pointcut);
+        //   return;
+        // }
+
+        // processedAdvices.push(advice.pointcut);
+        // processedAdvicesMap.set(advice.name, processedAdvices);
 
         const expression = adviceAnnotation.args[0] as PointcutExpression;
         const type = KNOWN_ADVICE_TYPES[adviceAnnotation.ref.name]!;
         assert(!!type);
-        const pointcut = new Pointcut({
+        const pointcut = Pointcut.of({
           type: type,
           expression,
         });
 
-        advice.pointcut = pointcut;
+        // dedupe same advices found on parent classes for the same pointcut
+        if (processedAdvices.has(advice.name)) {
+          assert(!!advice.pointcuts?.size);
+          advice.pointcuts.add(pointcut);
+
+          return;
+        }
+        advice.pointcuts ??= new Set();
+        advice.pointcuts.add(pointcut);
+
+        //
+        processedAdvices.add(advice.name);
 
         Reflect.defineProperty(advice, Symbol.toPrimitive, {
           value: () =>
-            `@${pointcut.type}(${pointcut.annotations.join(',')}) ${
-              aspect.constructor.name
-            }.${String(advice.name)}()`,
+            [...advice.pointcuts]
+              .map((p) => `@${p.type}(${p.annotations.join(',')})`)
+              .join('|') +
+            ` ${aspect.constructor.name}.${String(advice.name)}()`,
         });
 
         Reflect.defineProperty(advice, 'name', {
           value: advice.name,
         });
 
-        Object.seal(advice);
+        advices.push(advice);
+
         this.registerAdvice(aspect, pointcut, advice);
         pointcut.annotations.forEach((a) => pointcutAnnotations.add(a));
       });
+
+    advices.forEach(Object.seal);
+
     this.assertAnnotationsNotprocessed(aspect, [...pointcutAnnotations]);
   }
 

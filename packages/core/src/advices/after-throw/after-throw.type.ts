@@ -12,5 +12,5 @@ export type AfterThrowAdvice<
   X = unknown,
 > = {
   name: string;
-  pointcut: AfterThrowPointcut<T>;
+  pointcuts: Set<AfterThrowPointcut<T>>;
 } & ((ctxt: AdviceContext<T, X>, thrownError: Error) => T | null | undefined);
