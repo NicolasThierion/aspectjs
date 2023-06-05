@@ -228,7 +228,7 @@ describe('property setter advice', () => {
 
           expect(() => new A()).toThrow(
             new WeavingError(
-              'Error applying advice @Around(@test:AProperty) AAspect.applyAround() on property "A.labels": joinPoint already proceeded',
+              'Error applying advice @Around(@test:AProperty) AAspect.applyAround() on property A.labels: joinPoint already proceeded',
             ),
           );
         });

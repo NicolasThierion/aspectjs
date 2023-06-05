@@ -11,5 +11,5 @@ export type BeforeAdvice<
   X = unknown,
 > = {
   name: string;
-  pointcuts: Set<BeforePointcut<T>>;
+  pointcuts: BeforePointcut<T>[];
 } & ((ctxt: AdviceContext<T, X>) => void);

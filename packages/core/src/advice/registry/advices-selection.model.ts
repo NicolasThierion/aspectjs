@@ -11,7 +11,11 @@ export class AdvicesSelection {
   constructor(
     private readonly buckets: AdviceRegBuckets,
     private readonly filters: AdviceRegistryFilters,
-  ) {}
+  ) {
+    if (this.filters.annotations) {
+      this.filters.annotations = [...new Set(this.filters.annotations)];
+    }
+  }
 
   select(filters?: AdviceRegistryFilters) {
     return new AdvicesSelection(
@@ -53,7 +57,7 @@ export class AdvicesSelection {
 
             for (const entry of adviceEntries) {
               if (entry) {
-                assert(!!entry.advice.pointcuts?.size);
+                assert(!!entry.advice.pointcuts?.length);
                 if (
                   annotationFilterMatches(
                     annotationsRefFilter,
@@ -73,14 +77,14 @@ export class AdvicesSelection {
 
 function annotationFilterMatches(
   annotationsRefFilter: Set<AnnotationRef>,
-  pointcuts: Set<Pointcut>,
+  pointcuts: Pointcut[],
 ) {
-  const pointcutsAnnotations = [...pointcuts].flatMap((p) => p.annotations);
+  const pointcutsAnnotations = new Set(pointcuts.flatMap((p) => p.annotations));
   return (
     !annotationsRefFilter.size ||
-    !pointcutsAnnotations.length ||
+    !pointcutsAnnotations.size ||
     new Set([...annotationsRefFilter, ...pointcutsAnnotations]).size <
-      annotationsRefFilter.size + pointcutsAnnotations.length
+      annotationsRefFilter.size + pointcutsAnnotations.size
   );
 }
 const isObject = (obj: unknown) => obj && typeof obj === 'object';

@@ -236,7 +236,7 @@ describe('class advice', () => {
 
           expect(() => new A()).toThrow(
             new WeavingError(
-              'Error applying advice @Around(@test:AClass) AAspect.applyAround() on class "A": joinPoint already proceeded',
+              'Error applying advice @Around(@test:AClass) AAspect.applyAround() on class A: joinPoint already proceeded',
             ),
           );
         });

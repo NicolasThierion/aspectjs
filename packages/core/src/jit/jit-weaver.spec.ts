@@ -71,7 +71,7 @@ describe('JitWeaver', () => {
       it('throws an error', () => {
         expect(() => {
           weaver.enable({});
-        }).toThrow(new WeavingError('class "Object" is not an aspect'));
+        }).toThrow(new WeavingError('class Object is not an aspect'));
       });
 
       describe('but parent class is', () => {

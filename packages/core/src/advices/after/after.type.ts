@@ -11,5 +11,5 @@ export type AfterAdvice<
   X = unknown,
 > = {
   name: string;
-  pointcuts: Set<AfterPointcut<T>>;
+  pointcuts: AfterPointcut<T>[];
 } & ((ctxt: AdviceContext<T, X>) => void);

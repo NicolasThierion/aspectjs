@@ -40,12 +40,14 @@ describe('AdviceRegisrty', () => {
   let Aannotation: any;
   let Bannotation: any;
   let Xannotation: any;
+  let Yannotation: any;
 
   beforeEach(() => {
     const factory = new AnnotationFactory('test');
     Aannotation = factory.create('Aannotation');
     Bannotation = factory.create('Bannotation');
     Xannotation = factory.create('Xannotation');
+    Yannotation = factory.create('Yannotation');
     @Aspect()
     class _AAspect {
       @Before(on.classes.withAnnotations(Aannotation))
@@ -70,7 +72,7 @@ describe('AdviceRegisrty', () => {
 
     @Aspect()
     class _YAspect {
-      @Before(on.parameters.withAnnotations(Xannotation))
+      @Before(on.parameters.withAnnotations(Yannotation))
       beforeParameterX1() {}
       @After(on.parameters.withAnnotations())
       afterParameterX1() {}
@@ -196,7 +198,7 @@ describe('AdviceRegisrty', () => {
   describe('.select({aspects: <...ASPECTS>}, annotations: <...ANNOTATIONS>)', () => {
     describe('.find()', () => {
       describe('given <...ASPECTS> defines no advices with <...ANNOTATIONS>', () => {
-        it('returns only advices with pointcutl on all annotations', () => {
+        it('returns only advices with pointcut on all annotations', () => {
           expect([
             ...adviceReg
               .select({
@@ -229,6 +231,45 @@ describe('AdviceRegisrty', () => {
             { aspect: aaspect, advice: aaspect.afterClassA1 },
             { aspect: baspect, advice: baspect.afterMethodB1 },
           ] satisfies AdviceEntry[]);
+        });
+      });
+    });
+  });
+
+  describe('.select({annotations}: <...ANNOTATIONS>})', () => {
+    describe('.find()', () => {
+      it('returns all advices that uses the given annotations', () => {
+        const advices = [
+          ...adviceReg
+            .select({
+              annotations: [Aannotation, Xannotation],
+            })
+            .find(),
+        ];
+        expect(advices).toContainEqual({
+          aspect: aaspect,
+          advice: aaspect.beforeClassA1,
+        });
+        expect(advices).toContainEqual({
+          aspect: aaspect,
+          advice: aaspect.afterClassA1,
+        });
+        expect(advices).toContainEqual({
+          aspect: baspect,
+          advice: baspect.afterMethodB1,
+        });
+        expect(advices).toContainEqual({
+          aspect: subAaaspect,
+          advice: subAaaspect.beforeClassA1,
+        });
+        expect(advices).toContainEqual({
+          aspect: subAaaspect,
+          advice: subAaaspect.afterClassSubA1,
+        });
+
+        expect(advices).not.toContainEqual({
+          aspect: baspect,
+          advice: baspect.beforeMethodB1,
         });
       });
     });

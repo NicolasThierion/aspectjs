@@ -1,5 +1,6 @@
 ---
 index: false
+icon: file-alt
 order: 0
 ---
 

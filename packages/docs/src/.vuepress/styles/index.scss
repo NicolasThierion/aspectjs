@@ -1,1 +1,23 @@
 // place your custom styles here
+
+html[data-theme='light'] #app {
+  --code-color: #686868;
+  --code-line-color: rgba(63, 64, 66, 0.67);
+  --code-bg-color: #f0f5ee;
+  --code-border-color: #e2ebde;
+  --code-highlight-line-color: #d3def5;
+}
+
+html #app {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    i {
+      color: var(--theme-color-dark);
+    }
+    color: var(--theme-color);
+  }
+}

@@ -1,4 +1,5 @@
 import type { AnnotationRef } from '@aspectjs/common';
+import { assert } from '@aspectjs/common/utils';
 import type { PointcutExpression } from './pointcut-expression.type';
 import type { PointcutTargetType } from './pointcut-target.type';
 import type { PointcutType } from './pointcut.type';
@@ -11,8 +12,6 @@ interface PointcutInit<
   readonly expression: PointcutExpression<T>;
 }
 
-const pointcutReg: Record<string, Pointcut> = {};
-
 export class Pointcut<
   P extends PointcutType = PointcutType,
   T extends PointcutTargetType = PointcutTargetType,
@@ -23,7 +22,7 @@ export class Pointcut<
   readonly type: PointcutType;
   private readonly _expr: PointcutExpression;
 
-  private constructor(pointcutInit: PointcutInit<P, T>) {
+  constructor(pointcutInit: PointcutInit<P, T>) {
     this._expr = pointcutInit.expression;
     this.type = pointcutInit.type;
     this.targetType = this._expr.type as T;
@@ -31,14 +30,29 @@ export class Pointcut<
     this.name = this._expr.name;
   }
 
-  static of<
-    P extends PointcutType = PointcutType,
-    T extends PointcutTargetType = PointcutTargetType,
-  >(pointcutInit: PointcutInit<P, T>): Pointcut<P, T> {
-    const p = new Pointcut<P, T>(pointcutInit);
-    const k = `${p}`;
-    pointcutReg[k] ??= p;
-    return pointcutReg[k] as Pointcut<P, T>;
-  }
   [Symbol.toPrimitive] = () => `${this.type}(${this._expr})`;
+
+  isAssignableFrom(pointcut: Pointcut): boolean {
+    return (
+      pointcut.targetType === this.targetType && this.type === pointcut.type
+    );
+  }
+
+  merge(pointcut: Pointcut): void {
+    assert(this.isAssignableFrom(pointcut));
+
+    if (!this.annotations.length) {
+      // pointcut already target all annotations
+      return;
+    } else if (!pointcut.annotations.length) {
+      this.annotations.splice(0, this.annotations.length);
+      return;
+    }
+    // merge annotations
+    const annotations = [
+      ...new Set([...this.annotations, ...pointcut.annotations]),
+    ];
+
+    this.annotations.push(...annotations.slice(annotations.length - 1));
+  }
 }

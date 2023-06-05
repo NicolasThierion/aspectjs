@@ -145,7 +145,7 @@ function _createClassAnnotationTarget<X = unknown>(
   return new ClassAnnotationTargetImpl(targetFactory, targetArgs, {
     ref: targetRef,
     name: targetArgs.proto.constructor.name,
-    label: `class "${targetArgs.proto.constructor.name}"`,
+    label: `class ${targetArgs.proto.constructor.name}`,
   });
 }
 
@@ -158,9 +158,9 @@ function _createMethodAnnotationTarget<X = unknown>(
 
   return new MethodAnnotationTargetImpl<X>(targetFactory, targetArgs, {
     name: targetArgs.propertyKey!,
-    label: `method "${targetArgs.proto.constructor.name}.${String(
+    label: `method ${targetArgs.proto.constructor.name}.${String(
       targetArgs.propertyKey,
-    )}"`,
+    )}`,
     ref: targetRef,
   });
 }
@@ -180,9 +180,9 @@ function _createPropertyAnnotationTarget<X = unknown>(
 
   return new PropertyAnnotationTargetImpl(targetFactory, targetArgs, {
     name: targetArgs.propertyKey!,
-    label: `property "${targetArgs.proto.constructor.name}.${String(
+    label: `property ${targetArgs.proto.constructor.name}.${String(
       targetArgs.propertyKey,
-    )}"`,
+    )}`,
     descriptor,
     ref: targetRef,
   });
@@ -206,9 +206,9 @@ function _createParameterAnnotationTarget<X = unknown>(
 
   return new ParameterAnnotationTargetImpl<X>(targetFactory, targetArgs, {
     name,
-    label: `parameter "${targetArgs.proto.constructor.name}.${String(
+    label: `parameter ${targetArgs.proto.constructor.name}.${String(
       targetArgs.propertyKey,
-    )}(#${targetArgs.parameterIndex})"`,
+    )}(#${targetArgs.parameterIndex})`,
 
     descriptor,
     ref: targetRef,

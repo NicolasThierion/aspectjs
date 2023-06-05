@@ -113,6 +113,17 @@ export default function customTheme(): Theme {
           vPre: true,
           vuePlayground: true,
         },
+        prismjs: {
+          // light: 'one-dark',
+          // ateliersulphurpool-light
+          // coldark-cold
+          // coy
+          // duotone-light
+          // ghcolors
+          // gruvbox-light
+          // material-light
+          // one-light
+        },
 
         // uncomment these if you want a pwa
         // pwa: {

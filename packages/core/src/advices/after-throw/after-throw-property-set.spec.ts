@@ -229,7 +229,7 @@ describe('property advice', () => {
         } catch (e: any) {
           expect(e).toBeInstanceOf(AdviceError);
           expect(e.message).toContain(
-            'Error applying advice @AfterThrow(@test:AProperty) AAspect.applyAfterThrow() on property "A.labels": Returning from advice is not supported',
+            'Error applying advice @AfterThrow(@test:AProperty) AAspect.applyAfterThrow() on property A.labels: Returning from advice is not supported',
           );
         }
       });
