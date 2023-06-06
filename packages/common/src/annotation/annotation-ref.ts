@@ -6,6 +6,8 @@ import { Annotation } from './annotation.types';
  * An AnnotationRef represents the identity of an annotation.
  */
 export class AnnotationRef {
+  private static readonly registry = new Map<string, AnnotationRef>();
+
   /**
    * The value of the annotation reference.
    */
@@ -23,19 +25,19 @@ export class AnnotationRef {
    * @internal
    * @param ref
    */
-  constructor(ref: string);
+  private constructor(ref: string);
   /**
    * @internal
    * @param groupId
    * @param name
    */
-  constructor(groupId: string, name: string);
+  private constructor(groupId: string, name: string);
   /**
    * @internal
    * @param groupIdOrRef
    * @param name
    */
-  constructor(groupIdOrRef: string, name?: string) {
+  private constructor(groupIdOrRef: string, name?: string) {
     let _groupId: string | undefined;
     let _name: string | undefined;
     if (!name) {
@@ -67,7 +69,7 @@ export class AnnotationRef {
    * @returns The string representation of the annotation.
    */
   toString(): string {
-    return `@${this.groupId}:${this.name}`;
+    return `@${this.value}`;
   }
 
   /**
@@ -75,10 +77,42 @@ export class AnnotationRef {
    * @param obj
    * @returns
    */
-  static of(obj: Annotation<any, any> | AnnotationRef | string): AnnotationRef {
+  static of(groupId: string, name: string): AnnotationRef;
+  static of(
+    obj:
+      | Annotation<any, any>
+      | Pick<AnnotationRef, 'groupId' | 'name'>
+      | string,
+  ): AnnotationRef;
+  static of(
+    obj:
+      | Annotation<any, any>
+      | Pick<AnnotationRef, 'groupId' | 'name'>
+      | string,
+    name?: string,
+  ): AnnotationRef {
     if (typeof obj === 'string') {
-      return new AnnotationRef(obj);
+      const refStr = typeof name === 'string' ? `${obj}:${name}` : obj;
+      return AnnotationRef.get(refStr) ?? new AnnotationRef(refStr);
+    } else {
+      const ref = (obj as Annotation)?.ref ?? (obj as AnnotationRef);
+      assert(!!ref);
+      const refStr = `${ref.groupId}:${ref.name}`;
+      return AnnotationRef.get(refStr) ?? new AnnotationRef(refStr);
     }
-    return (obj as Annotation)?.ref ?? obj;
+  }
+
+  private static register(ref: AnnotationRef) {
+    AnnotationRef.registry.set(ref.value, ref);
+  }
+
+  private static get(ref: AnnotationRef | string): AnnotationRef {
+    let val = AnnotationRef.registry.get(ref.toString());
+    if (!val) {
+      val = typeof ref === 'string' ? new AnnotationRef(ref) : ref;
+      this.register(val);
+    }
+
+    return val;
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/common",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Aspectjs - commonly needed factories & utils",
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
-  "homepage": "https://github.com/NicolasThierion/aspectjs#readme",
+  "homepage": "https://aspectjs.gitlab.io/",
   "type": "module",
   "sideEffects": false,
   "types": "./index.d.ts",
@@ -27,18 +27,18 @@
       "types": "./utils/index.d.ts",
       "esm2020": "./esm2020/index.js",
       "es2020": "./fesm2020/utils.mjs",
-      "node": "./fesm2020/utils.mjs",
-      "require": "./utils.cjs",
-      "default": "./utils.cjs",
+      "node": "./cjs/utils.cjs",
+      "require": "./cjs/utils.cjs",
+      "default": "./cjs/utils.cjs",
       "unpkg": "./bundles/utils.umd.min.js"
     },
     ".": {
       "types": "./index.d.ts",
       "esm2020": "./esm2020/common.js",
       "es2020": "./fesm2020/common.mjs",
-      "node": "./fesm2020/common.mjs",
-      "require": "./common.cjs",
-      "default": "./common.cjs",
+      "node": "./cjs/common.cjs",
+      "require": "./cjs/common.cjs",
+      "default": "./cjs/common.cjs",
       "unpkg": "./bundles/common.umd.min.js"
     }
   },

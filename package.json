@@ -1,7 +1,7 @@
 {
   "name": "@aspectjs/parent",
   "private": true,
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "scripts": {
     "test": "lerna run test --stream",
@@ -10,7 +10,7 @@
     "build": "lerna run build --stream",
     "clean": "lerna run clean --stream",
     "typedoc": "lerna run typedoc --stream",
-    "docs": "cd packages/docs; npm run docs:build"
+    "docs:build": "cd packages/docs; npm run docs:build"
   },
   "repository": {
     "type": "git",
@@ -29,11 +29,15 @@
   },
   "homepage": "https://aspectjs.gitlab.io/",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.2",
+    "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.1",
     "@rollup/plugin-typescript": "^11.1.0",
     "@types/jest": "^29.5.1",
+    "@types/json-stable-stringify": "^1.0.34",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.59.2",
+    "cd": "^0.3.3",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
@@ -55,7 +59,9 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "tslib": "^2.5.0"
+    "json-stable-stringify": "^1.0.2",
+    "tslib": "^2.5.0",
+    "uid": "^2.0.2"
   },
   "type": "module",
   "engines": {

@@ -17,6 +17,7 @@ export * from './advices/around/around.type';
 export * from './advices/before/before.annotation';
 export * from './advices/before/before.context';
 export * from './advices/before/before.type';
+export * from './annotations/order.annotation';
 export * from './aspect/aspect-options.type';
 export * from './aspect/aspect.annotation';
 export * from './aspect/aspect.type';

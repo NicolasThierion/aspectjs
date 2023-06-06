@@ -270,7 +270,7 @@ describe('property setter advice', () => {
           }
 
           new A();
-          expect(labels).toEqual(['beforeB', 'beforeA', 'afterA', 'afterB']);
+          expect(labels).toEqual(['beforeA', 'beforeB', 'afterB', 'afterA']);
         });
       });
     });

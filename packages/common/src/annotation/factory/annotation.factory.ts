@@ -8,12 +8,13 @@ import {
   Decorator,
 } from '../annotation.types';
 import { annotationsContext } from '../context/annotations.context.global';
-import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
+import { DecoratorProviderRegistry } from './decorator-provider.registry';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
+import { reflectContext } from '../../reflect/reflect.context.global';
 import type { AnnotationStub } from '../annotation.types';
 let anonymousAnnotationId = 0;
 
@@ -58,9 +59,15 @@ export class AnnotationFactory {
   ) {}
 
   /**
-   * Creates a new annotation.
+   * Create with the given type and name.
    * @param type The type of annotation to create.
    * @param name The name of the annotation to create.
+   * @example
+   * ```ts
+   * const LogErrors = new AnnotationFactory('demo').create();
+   * // Or:
+   * const LogErrors = new AnnotationFactory('demo').create(AnnotationType.METHOD, 'LogErrors');
+   * ```
    */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
     type?: T,
@@ -68,21 +75,33 @@ export class AnnotationFactory {
   ): Annotation<T, S>;
 
   /**
-   * Creates a new annotation given a name and a type.
+   * Create a new annotation with the given name and type.
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
    * @param name The name of the annotation to create.
+   * @example
+   * ```ts
+   * const LogErrors = new AnnotationFactory('demo').create('LogErrors');
+   * ```
    */
   create<S extends AnnotationStub<AnnotationType.ANY>>(
     name?: string,
   ): Annotation<AnnotationType.ANY, S>;
 
   /**
-   * Creates a new annotation given a type a signature. The created annotation accepts the same parameters as the provided function.
+   * Create a new annotation wwith the given type and signature. The created annotation accepts the same parameters as with the the provid function.
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
    * @param type The type of annotation to create.
    * @param annotationStub The signature of the annotation to create.
+   * @example
+   * ```ts
+   * const LogErrors = new AnnotationFactory('demo').create(
+   *    AnnotationType.METHOD,
+   *    function Log(
+   *      level: 'info' | 'warn' | 'error' | 'debug' = 'error',
+   * ) {});
+   * ```
    */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
     type?: T,
@@ -90,18 +109,26 @@ export class AnnotationFactory {
   ): Annotation<T, S>;
 
   /**
-   * Creates a new annotation given a signature.
+   * Create a new annotation with the given signature.
    * The created annotation has the same name as the given function, and accepts the same parameters.
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
    * @param annotationStub The signature of the annotation to create.
+   * @example
+   * ```ts
+   * const LogErrors = new AnnotationFactory('demo').create(
+   *    AnnotationType.METHOD,
+   *    function Log(
+   *      level: 'info' | 'warn' | 'error' | 'debug' = 'error',
+   * ) {});
+   * ```
    */
   create<S extends AnnotationStub<AnnotationType.ANY>>(
     annotationStub?: S,
   ): Annotation<AnnotationType.ANY, S>;
 
   /**
-   * Creates a new annotation.
+   * Create with the a n annotation.
    * @param options The options for the annotation to create.
    */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
@@ -158,19 +185,23 @@ export class AnnotationFactory {
       this: any,
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
-      return [
-        ...annotationsContext().get(_AnnotationFactoryHookRegistry).values(),
-      ]
+      const context = reflectContext();
+      return [...annotationsContext().get(DecoratorProviderRegistry).values()]
         .sort(
           (c1, c2) =>
             (c1.order ?? Number.MAX_SAFE_INTEGER) -
             (c2.order ?? Number.MAX_SAFE_INTEGER - 1),
         )
-        .reduce((decoree, { name, decorator }) => {
+        .reduce((decoree, { name, createDecorator: decorator }) => {
           try {
             const newDecoree =
               (decorator as any)
-                .apply(this, [annotation, annotationArgs, annotationStub])
+                .apply(this, [
+                  context,
+                  annotation,
+                  annotationArgs,
+                  annotationStub,
+                ])
                 ?.apply(this, targetArgs) ?? decoree;
 
             if (newDecoree) {
@@ -193,7 +224,7 @@ export class AnnotationFactory {
   >(groupId: string, name: string, stub: S): Annotation<T, S> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _factory = this;
-    const annotationRef = new AnnotationRef(groupId, name);
+    const annotationRef = AnnotationRef.of(groupId, name);
     const annotation = function (...annotationArgs: any[]): Decorator {
       return _factory._createDecorator(annotation, stub, annotationArgs);
     } as any as Annotation<T, S>;

@@ -31,6 +31,7 @@ const pathsConfig = Object.entries(compilerOptions.paths ?? {}).reduce(
 export default {
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
+  verbose: true,
   preset: 'ts-jest',
   transform: {
     '^.+.tsx?$': [
@@ -41,11 +42,10 @@ export default {
     ],
   },
   // rootDir: module.parent.path,
-  modulePathIgnorePatterns: ['<rootDir>/dist/'],
-
+  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/.*/dist/'],
   moduleNameMapper: pathsToModuleNameMapper(pathsConfig),
   resolver: 'ts-jest-resolver',
-  verbose: true,
+
   coverageDirectory: join(__dirname, 'dist', 'coverage'),
   // collectCoverage: true,
 } satisfies JestConfigWithTsJest;

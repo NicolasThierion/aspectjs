@@ -7,10 +7,10 @@ heroText: AspectJS
 tagline: The AOP framework for Javascript, Typescript, Browser & Node.
 actions:
   - text: How to Use 💡
-    link: /00.guide/0.getting-started.html
+    link: /00.guide/001.getting-started.html
     type: primary
   - text: Why ❔
-    link: /10.intro/0.motivations.html
+    link: /00.guide/000.motivations.html
   - text: API documentation 📑
     link: /api/modules.html
 

@@ -33,4 +33,5 @@ export const on = {
   methods: new PointcutExpressionFactory(PointcutTargetType.METHOD),
   parameters: new PointcutExpressionFactory(PointcutTargetType.PARAMETER),
   properties: new PropertyPointcutFactory(),
+  any: new PointcutExpressionFactory(PointcutTargetType.ANY),
 };

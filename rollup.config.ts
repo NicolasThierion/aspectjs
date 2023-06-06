@@ -4,10 +4,11 @@ import findUp from 'find-up';
 import { existsSync, readFileSync } from 'fs';
 import json5 from 'json5';
 import { dirname, join, relative, resolve } from 'path';
-import type { OutputOptions, RollupOptions } from 'rollup';
+import type { OutputOptions, Plugin, RollupOptions } from 'rollup';
 import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import dts from 'rollup-plugin-dts';
+
 const { parse } = json5;
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
@@ -26,7 +27,12 @@ export interface CreateConfigOptions {
 
   rootDir?: string;
   input?: string;
+  output?: {
+    globals?: Record<string, string>;
+  };
+  plugins?: Plugin[];
   typesInput?: string;
+  external?: string[];
 }
 
 export const createConfig = (
@@ -75,6 +81,7 @@ export const createConfig = (
 
   const pkg = options.pkg!;
   const external = [
+    ...(options.external ?? []),
     '@aspectjs/common',
     '@aspectjs/common/testing',
     '@aspectjs/common/utils',
@@ -96,17 +103,20 @@ export const createConfig = (
 
   /**
    * Creates an output options object for Rollup.js.
-   * @param {import('rollup').OutputOptions} options
+   * @param {import('rollup').OutputOptions} outputOptions
    * @returns {import('rollup').OutputOptions}
    */
-  function createOutputOptions(options: Partial<OutputOptions>): OutputOptions {
+  function createOutputOptions(
+    outputOptions: Partial<OutputOptions>,
+  ): OutputOptions {
     return {
       banner,
       name,
       exports: 'named',
       sourcemap: true,
-      ...options,
+      ...outputOptions,
       globals: {
+        ...(options.output?.globals ?? {}),
         '@aspectjs/common': 'aspectjs-common',
         '@aspectjs/common/testing': 'aspectjs-common-testing',
         '@aspectjs/common/utils': 'aspectjs-common-utils',
@@ -152,6 +162,8 @@ export const createConfig = (
     ],
 
     plugins: [
+      ...(options.plugins ?? []),
+
       typescript({
         // cacheDir: '.rollup.tscache',
         tsconfig: options.tsconfig,
@@ -176,6 +188,8 @@ export const createConfig = (
     output: dtsOutput,
     // types
     plugins: [
+      ...(options.plugins ?? []),
+
       typescript({
         tsconfig: /*
           options.tsconfig ?? */ resolve(__dirname, './tsconfig.bundle.json'),
@@ -206,6 +220,8 @@ export const createConfig = (
       },
     ],
     plugins: [
+      ...(options.plugins ?? []),
+
       dts(),
       del({
         targets: 'dist/types',
@@ -223,5 +239,6 @@ export const createConfig = (
       }),
     );
   }
+
   return rollupDefineConfig([bundleOptions, dtsOptions, dtsBundleOptions]);
 };

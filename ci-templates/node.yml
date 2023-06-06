@@ -84,13 +84,29 @@
     # Compare the version in package.json to all published versions.
     # If the package.json version has not yet been published, run `npm publish`.
     - |
+      echo "publishing folder ${PACKAGE_DIR} as package ${NPM_PACKAGE_NAME}@${NPM_PACKAGE_VERSION}"
       if [[ $(npm view "${NPM_PACKAGE_NAME}" versions) != *"'${NPM_PACKAGE_VERSION}'"* ]]; then
-        npm publish ${PACKAGE_DIR} --no-workspaces
+        npm publish ./${PACKAGE_DIR} --no-workspaces
         echo "Successfully published version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} to GitLab's NPM registry: ${CI_PROJECT_URL}/-/packages"
       else
         echo "Version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} has already been published, so no new version has been published."
       fi
 
+.node:npm:publish:
+  variables:
+    CWD: .
+    PACKAGE_DIR: .
+  image: node:latest
+  script:
+    - cd ${CWD}
+    - npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN} --no-workspaces
+    - npm whoami
+    # Extract a few values from package.json
+    - npm publish ./${PACKAGE_DIR} --no-workspaces --access public
+    - NPM_PACKAGE_NAME=$(node -p "require('./package.json').name")
+    - NPM_PACKAGE_VERSION=$(node -p "require('./package.json').version")
+    - echo "Successfully published version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} to NPM registry"
+    - lerna publish -y from-git
 # publish:
 #   stage: deploy
 #   rules:
@@ -102,22 +118,3 @@
 #     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}">.npmrc
 #     - npm whoami
 #     - lerna publish -y from-git
-
-# docs:publish:
-#   stage: deploy
-#   rules:
-#     - if: '$CI_COMMIT_TAG =~ /^v(\d+\.)?(\d+\.)?(\*|\d+)$/'
-#   before_script:
-#     - apk add git openssh-client
-#     - mkdir -p ~/.ssh
-#     - cp $GITHUB_SSH_PRIVATE_KEY ~/.ssh/id_rsa
-#     - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-#     - chmod -R 600 ~/.ssh
-#     - git config --global user.email "nicolas.thierion+ci@outlook.com"
-#     - git config --global user.name "Gitlab Runner"
-#   script:
-#     - cd docs/.vuepress/dist
-#     - git init
-#     - git add . -A
-#     - git commit -m"deploy doc"
-#     - git push -f git@github.com:NicolasThierion/aspectjs.git master:gh-pages

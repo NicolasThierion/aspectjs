@@ -1,5 +1,4 @@
 import { configureTesting } from '@aspectjs/common/testing';
-import { Annotation } from '../annotation.types';
 import { annotationsContext } from '../context/annotations.context.global';
 import { AnnotationFactory } from '../factory/annotation.factory';
 import { AnnotationRegistry } from './annotation.registry';
@@ -7,8 +6,6 @@ import { annotations } from './annotations.global';
 
 describe('annotations()', () => {
   let annotationRegistry: AnnotationRegistry;
-
-  let AClassAnnotation: Annotation;
 
   let A = class A {};
 
@@ -83,11 +80,11 @@ describe('annotations()', () => {
       expect(annotationRegistry.select).toHaveBeenCalledWith();
     });
   });
-  describe('given the parameter "AClassAnnotation"', () => {
-    it('calls AnnotationRegistry.find(AClassAnnotation)', () => {
-      annotations(AClassAnnotation);
+  describe('given the parameter "A1ClassAnnotation"', () => {
+    it('calls AnnotationRegistry.find(A1ClassAnnotation)', () => {
+      annotations(A1ClassAnnotation);
       expect(annotationRegistry.select).toHaveBeenCalledTimes(1);
-      expect(annotationRegistry.select).toHaveBeenCalledWith(AClassAnnotation);
+      expect(annotationRegistry.select).toHaveBeenCalledWith(A1ClassAnnotation);
     });
   });
 });

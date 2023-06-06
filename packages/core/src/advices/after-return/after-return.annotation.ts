@@ -5,5 +5,7 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
 
 export const AfterReturn = _CORE_ANNOTATION_FACTORY.create(
   AnnotationType.METHOD,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   function AfterReturn(pointcutExp: PointcutExpression) {},
 );

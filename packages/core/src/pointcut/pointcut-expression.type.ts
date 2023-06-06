@@ -27,6 +27,9 @@ const POINTCUT_REGEXES = {
   [PointcutTargetType.PARAMETER]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+parameter\\s+${NAME_MATCH}\\s*$`,
   ),
+  [PointcutTargetType.ANY]: new RegExp(
+    `^\\s*${ANNOTATIONS_MATCH}\\s+any\\s+${NAME_MATCH}\\s*$`,
+  ),
 };
 
 export class PointcutExpression<
@@ -73,7 +76,7 @@ export class PointcutExpression<
       type: type as T,
       annotations: annotations!
         .split('|')!
-        .map((a) => new AnnotationRef(_trimSpaces(a))),
+        .map((a) => AnnotationRef.of(_trimSpaces(a))),
     });
   }
   [Symbol.toPrimitive] = this.toString;

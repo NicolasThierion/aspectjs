@@ -279,7 +279,7 @@ describe('property advice', () => {
           }
 
           new A().labels;
-          expect(labels).toEqual(['beforeB', 'beforeA', 'afterA', 'afterB']);
+          expect(labels).toEqual(['beforeA', 'beforeB', 'afterB', 'afterA']);
         });
       });
     });

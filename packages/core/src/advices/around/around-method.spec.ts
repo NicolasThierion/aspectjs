@@ -275,7 +275,7 @@ describe('method advice', () => {
           }
 
           new A().method();
-          expect(labels).toEqual(['beforeB', 'beforeA', 'afterA', 'afterB']);
+          expect(labels).toEqual(['beforeA', 'beforeB', 'afterB', 'afterA']);
         });
       });
     });

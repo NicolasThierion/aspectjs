@@ -133,7 +133,7 @@ export abstract class JitWeaverCanvasStrategy<
     const aroundContext = ctxt.asAroundContext();
     let jp = aroundContext.joinpoint;
     const jpFactory = this.weaverContext.get(JoinPointFactory);
-    advices.forEach((entry) => {
+    advices.reverse().forEach((entry) => {
       const originalJp = jp;
       const nextJp = jpFactory.create(
         entry.advice,

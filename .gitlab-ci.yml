@@ -19,17 +19,11 @@ node:prepare:
   script:
     - npm ci --cache .npm --prefer-offline  --include=dev
 
+### COMMON
+
 common:lint:
   variables:
     CWD: packages/common
-  extends: .node:lint
-  stage: test
-  needs:
-    - node:prepare
-
-core:lint:
-  variables:
-    CWD: packages/core
   extends: .node:lint
   stage: test
   needs:
@@ -43,19 +37,58 @@ common:unit:
   needs:
     - node:prepare
 
-core:unit:
-  extends: .node:test:unit
-  variables:
-    CWD: packages/core
-  stage: test
-  needs:
-    - node:prepare
-
 common:build:
   extends: .node:build
   variables:
     CWD: packages/common
   stage: compile
+  needs:
+    - node:prepare
+
+common:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: deploy
+  variables:
+    CWD: packages/common
+    PACKAGE_DIR: dist
+
+common:publish:npm:
+  extends: .node:npm:publish
+  stage: deploy
+  variables:
+    CWD: packages/common
+    PACKAGE_DIR: ./dist
+  needs:
+    - common:build
+    - common:publish:gitlab
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual
+
+  # needs:
+  #   - docs
+  #   - core:build
+  #   - common:build
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+  #     changes:
+  #       - package.json
+
+### CORE
+
+core:lint:
+  variables:
+    CWD: packages/core
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+core:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/core
+  stage: test
   needs:
     - node:prepare
 
@@ -67,6 +100,77 @@ core:build:
   needs:
     - node:prepare
 
+core:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: deploy
+  variables:
+    CWD: packages/core
+    PACKAGE_DIR: ./dist
+
+core:publish:npm:
+  extends: .node:npm:publish
+  stage: deploy
+  variables:
+    CWD: packages/core
+    PACKAGE_DIR: ./dist
+  needs:
+    - core:build
+    - core:publish:gitlab
+    - common:publish:gitlab
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual
+
+### MEMO
+
+memo:lint:
+  variables:
+    CWD: packages/memo
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+memo:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/memo
+  stage: test
+  needs:
+    - node:prepare
+
+memo:build:
+  extends: .node:build
+  variables:
+    CWD: packages/memo
+  stage: compile
+  needs:
+    - node:prepare
+
+memo:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: deploy
+  variables:
+    CWD: packages/memo
+    PACKAGE_DIR: ./dist
+
+memo:publish:npm:
+  extends: .node:npm:publish
+  stage: deploy
+  variables:
+    CWD: packages/memo
+    PACKAGE_DIR: ./dist
+  needs:
+    - memo:build
+    - memo:publish:gitlab
+    - core:publish:gitlab
+    - common:publish:gitlab
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual
+
+### DOCS
+
 docs:
   extends: .node:build
   variables:
@@ -76,36 +180,6 @@ docs:
     - node:prepare
   script:
     - npm run docs:build
-
-core:publish:gitlab:
-  extends: .node:gitlab:publish
-  stage: deploy
-  variables:
-    CWD: packages/core
-    PACKAGE_DIR: dist
-
-  # needs:
-  #   - docs
-  #   - core:build
-  #   - common:build
-  # rules:
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
-  #     changes:
-  #       - package.json
-common:publish:gitlab:
-  extends: .node:gitlab:publish
-  stage: deploy
-  variables:
-    CWD: packages/common
-    PACKAGE_DIR: dist
-  # needs:
-  #   - docs
-  #   - core:build
-  #   - common:build
-  # rules:
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
-  #     changes:
-  #       - package.json
 
 docs:publish:
   image: alpine

@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
-  "homepage": "https://aspectjs.gitlab.io/aspectjs/",
+  "homepage": "https://aspectjs.gitlab.io/",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -26,15 +26,15 @@
       "types": "./index.d.ts",
       "esm2020": "./esm2020/core.mjs",
       "es2020": "./fesm2020/core.mjs",
-      "es2015": "./fesm2015/core.mjs",
-      "node": "./fesm2015/core.mjs",
-      "require": "./core.cjs",
-      "default": "./core.cjs",
+      "es2015": "./fesm2020/core.mjs",
+      "node": "./cjs/core.cjs",
+      "require": "./cjs/core.cjs",
+      "default": "./cjs/core.cjs",
       "unpkg": "./bundles/core.umd.min.js"
     }
   },
   "main": "./bundles/core.umd.js",
   "peerDependencies": {
-    "@aspectjs/common": "^0.3.0"
+    "@aspectjs/common": "^0.3.2"
   }
 }

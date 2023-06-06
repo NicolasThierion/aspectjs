@@ -285,11 +285,11 @@ describe('class advice', () => {
 
           new A('ctor');
           expect(labels).toEqual([
-            'beforeB',
             'beforeA',
-            'A',
-            'afterA',
+            'beforeB',
+            'B',
             'afterB',
+            'afterA',
           ]);
         });
       });

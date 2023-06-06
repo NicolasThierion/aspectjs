@@ -70,6 +70,16 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "rollup memo",
+      "runtimeExecutable": "npm",
+      "cwd": "${workspaceFolder}/packages/memo",
+      "runtimeVersion": "18",
+      "runtimeArgs": ["run", "build"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "rollup common:testing",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/packages/common",

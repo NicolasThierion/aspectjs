@@ -58,7 +58,6 @@ export class AspectRegistry {
       .select(Aspect)
       .on({ target })
       .find({ searchParents: true })[0];
-
     if (!annotation) {
       throw new WeavingError(`${target.label} is not an aspect`);
     }
@@ -76,7 +75,11 @@ export class AspectRegistry {
     const as = this.aspectsMap.get(id) ?? [];
     as.push(aspect);
     this.aspectsMap.set(id, as);
-    defineMetadata(this._ASPECT_OPTIONS_REFLECT_KEY, aspectOptions, aspect);
+    defineMetadata(
+      this._ASPECT_OPTIONS_REFLECT_KEY,
+      aspectOptions,
+      getPrototype(aspect),
+    );
 
     this.registerAdvices(aspect);
   }
@@ -97,7 +100,7 @@ export class AspectRegistry {
     if (!aspect) {
       return;
     }
-    return getMetadata(this._ASPECT_OPTIONS_REFLECT_KEY, aspect);
+    return getMetadata(this._ASPECT_OPTIONS_REFLECT_KEY, getPrototype(aspect));
   }
 
   private _assertIsAspect(aspect: AspectType) {

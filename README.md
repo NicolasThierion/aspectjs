@@ -4,9 +4,9 @@
 
 ![logo]
 
-[![ci-status]](https://gitlab.com/NicolasThierion/aspectjs-next)
-[![coverage report]](https://gitlab.com/NicolasThierion/aspectjs-next/-/commits/main)
-[![Latest Release]](https://gitlab.com/NicolasThierion/aspectjs-next/-/releases)
+[![ci-status]](https://gitlab.com/aspectjs/aspectjs)
+[![coverage report]](https://gitlab.com/aspectjs/aspectjs/-/commits/main)
+[![Latest Release]](https://gitlab.com/aspectjs/aspectjs/-/releases)
 
 ## Abstract
 
@@ -18,7 +18,7 @@ aspect-oriented programming to Javascript and Typescript.
 
 ## Documentation
 
-The documentation is available at [https://aspectjs.gitlab.io/aspectjs/](https://aspectjs.gitlab.io/aspectjs/).
+The documentation is available at [https://aspectjs.gitlab.io/](https://aspectjs.gitlab.io/).
 
 MIT Licensed
 

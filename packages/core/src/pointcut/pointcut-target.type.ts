@@ -6,6 +6,7 @@ export enum PointcutTargetType {
   GET_PROPERTY = 'get property',
   SET_PROPERTY = 'set property',
   PARAMETER = 'parameter',
+  ANY = 'any',
 }
 
 export type ToTargetType<T extends PointcutTargetType | AnnotationType> =

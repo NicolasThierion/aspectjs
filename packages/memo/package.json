@@ -1,0 +1,44 @@
+{
+  "name": "@aspectjs/memo",
+  "version": "0.3.2",
+  "description": "Memoize methods with a simple annotation",
+  "scripts": {
+    "test": "npm run test:lint && npm run test:unit",
+    "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
+    "test:unit": "npm run clean && jest --runInBand",
+    "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
+    "build": "rollup --config ./rollup.config.cjs",
+    "clean": "rimraf ./dist && rimraf ./*.tgz"
+  },
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  },
+  "homepage": "https://aspectjs.gitlab.io/",
+  "type": "module",
+  "sideEffects": false,
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "esm2020": "./esm2020/memo.js",
+      "es2020": "./fesm2020/memo.mjs",
+      "node": "./cjs/memo.cjs",
+      "require": "./cjs/memo.cjs",
+      "default": "./cjs/memo.cjs",
+      "unpkg": "./bundles/memo.umd.min.js"
+    }
+  },
+  "main": "./bundles/memo.umd.js",
+  "dependencies": {
+    "@emotion/hash": "^0.9.1"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "peerDependencies": {
+    "@aspectjs/core": "0.3.2",
+    "@aspectjs/common": "0.3.2"
+  }
+}

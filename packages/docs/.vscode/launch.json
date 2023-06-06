@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Program",
+      "name": "npm start",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "request": "launch",
