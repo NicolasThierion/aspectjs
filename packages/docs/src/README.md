@@ -10,8 +10,8 @@ actions:
     link: /00.guide/0.getting-started.html
     type: primary
   - text: Why ❔
-    link: /10.intro/0.abstract.html
-  - text: API !documentation 📑
+    link: /10.intro/0.motivations.html
+  - text: API documentation 📑
     link: /api/modules.html
 
 features:

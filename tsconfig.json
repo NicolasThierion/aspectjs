@@ -32,7 +32,6 @@
     "lib": ["ES2020"],
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
-
     "paths": {
       "@aspectjs/common": ["packages/common/src/public_api.ts"],
       "@aspectjs/common/testing": [

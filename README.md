@@ -16,6 +16,10 @@ Inspired by the [AspectJ](https://www.eclipse.org/aspectj/) java framework,
 AspectJS Leverages [ES Decorators](https://github.com/tc39/proposal-decorators) to bring
 aspect-oriented programming to Javascript and Typescript.
 
+## Documentation
+
+The documentation is available at [https://aspectjs.gitlab.io/aspectjs/](https://aspectjs.gitlab.io/aspectjs/).
+
 MIT Licensed
 
 [coverage report]: https://gitlab.com/NicolasThierion/aspectjs-next/badges/main/coverage.svg
