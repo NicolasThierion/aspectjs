@@ -1,6 +1,6 @@
 import { AnnotationTarget } from '@aspectjs/common';
 
-import { AdviceType } from '../advice/advice.type';
+import { Advice } from '../advice/advice.type';
 import { AspectError } from './aspect.error';
 
 /**
@@ -11,7 +11,7 @@ export class AdviceError extends AspectError {
     /**
      * The advice that caused the error
      */
-    public readonly advice: AdviceType<any, any, any>,
+    public readonly advice: Advice<any, any, any>,
     /**
      * The target on which the advice was applied
      */

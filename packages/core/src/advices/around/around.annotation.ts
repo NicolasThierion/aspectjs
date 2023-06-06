@@ -20,7 +20,7 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
  *
  * class MyClass {
  *   @Around(on.classes.withAnnotations(SomeAnnotation))
- *   myMethod() {
+ *   applyAroundAdvice(ctxt: AroundContext) {
  *     // Method implementation
  *   }
  * }

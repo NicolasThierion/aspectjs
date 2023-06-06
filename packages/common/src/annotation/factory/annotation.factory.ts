@@ -43,6 +43,12 @@ export interface AnnotationCreateOptions<
  * Factory to create an {@link Annotation}.
  */
 export class AnnotationFactory {
+  /**
+   * Create a new AnnotationFactory with the given groupId.
+   * You generaly have to choose a groupId that identifies your project or is unique to your organisation.
+   * The groupId will be used as a part of the signature for the created annotations.
+   * @param groupId The groupId of this factory.
+   */
   constructor(
     /**
      * The group of this factory.
@@ -62,7 +68,9 @@ export class AnnotationFactory {
   ): Annotation<T, S>;
 
   /**
-   * Creates a new annotation.
+   * Creates a new annotation given a name and a type.
+   * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
+   *
    * @param name The name of the annotation to create.
    */
   create<S extends AnnotationStub<AnnotationType.ANY>>(
@@ -70,7 +78,9 @@ export class AnnotationFactory {
   ): Annotation<AnnotationType.ANY, S>;
 
   /**
-   * Creates a new annotation.
+   * Creates a new annotation given a type a signature. The created annotation accepts the same parameters as the provided function.
+   * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
+   *
    * @param type The type of annotation to create.
    * @param annotationStub The signature of the annotation to create.
    */
@@ -80,7 +90,10 @@ export class AnnotationFactory {
   ): Annotation<T, S>;
 
   /**
-   * Creates a new annotation.
+   * Creates a new annotation given a signature.
+   * The created annotation has the same name as the given function, and accepts the same parameters.
+   * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
+   *
    * @param annotationStub The signature of the annotation to create.
    */
   create<S extends AnnotationStub<AnnotationType.ANY>>(

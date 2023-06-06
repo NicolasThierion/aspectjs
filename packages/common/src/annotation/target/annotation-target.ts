@@ -1,10 +1,16 @@
 import type { TargetType } from '../annotation.types';
 
+/**
+ * @internal
+ */
 export type MethodPropertyDescriptor = PropertyDescriptor & {
   value: (...args: any[]) => any;
   get: never;
 };
 
+/**
+ * @internal
+ */
 export type Prototype<X = unknown> = Record<string, unknown> & {
   constructor: new (...args: unknown[]) => X;
 };
@@ -12,7 +18,7 @@ export type Prototype<X = unknown> = Record<string, unknown> & {
 /**
  * @internal
  */
-export class _AnnotationTargetRef {
+export class AnnotationTargetRef {
   constructor(public readonly value: string) {}
   toString() {
     return this.value;
@@ -22,15 +28,12 @@ export class _AnnotationTargetRef {
 /**
  * @internal
  */
-interface _BaseAnnotationTarget<
-  T extends TargetType = TargetType,
-  X = unknown,
-> {
+interface BaseAnnotationTarget<T extends TargetType = TargetType, X = unknown> {
   readonly type: T;
   readonly proto: Prototype<X>;
   readonly name: string;
   readonly label: string;
-  readonly ref: _AnnotationTargetRef;
+  readonly ref: AnnotationTargetRef;
   readonly declaringClass: ClassAnnotationTarget<X>;
   readonly parentClass: ClassAnnotationTarget<X> | undefined;
 }
@@ -40,7 +43,7 @@ interface _BaseAnnotationTarget<
  * @param X the type of the class
  */
 export interface ClassAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<TargetType.CLASS, X> {
+  extends BaseAnnotationTarget<TargetType.CLASS, X> {
   readonly parent?: ClassAnnotationTarget<unknown>;
 }
 
@@ -49,7 +52,7 @@ export interface ClassAnnotationTarget<X = unknown>
  * @param X the type of the property's class
  */
 export interface PropertyAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<TargetType.PROPERTY, X> {
+  extends BaseAnnotationTarget<TargetType.PROPERTY, X> {
   readonly propertyKey: string;
   readonly parent: ClassAnnotationTarget<unknown>;
   readonly descriptor: TypedPropertyDescriptor<unknown>;
@@ -60,7 +63,7 @@ export interface PropertyAnnotationTarget<X = unknown>
  * @param X the type of the method's class
  */
 export interface MethodAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<TargetType.METHOD, X> {
+  extends BaseAnnotationTarget<TargetType.METHOD, X> {
   readonly propertyKey: string;
   readonly descriptor: MethodPropertyDescriptor;
   readonly parent: ClassAnnotationTarget<X>;
@@ -71,7 +74,7 @@ export interface MethodAnnotationTarget<X = unknown>
  * @param X the type of the parameter's class
  */
 export interface ParameterAnnotationTarget<X = unknown>
-  extends _BaseAnnotationTarget<TargetType.PARAMETER, X> {
+  extends BaseAnnotationTarget<TargetType.PARAMETER, X> {
   readonly propertyKey: string;
   readonly parameterIndex: number;
   readonly descriptor: MethodPropertyDescriptor;

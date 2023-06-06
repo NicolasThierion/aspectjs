@@ -7,8 +7,8 @@ import { Before } from '../../advices/before/before.annotation';
 import { ASPECT_PROVIDERS } from '../../aspect/aspect.provider';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
-import { PointcutType } from '../../pointcut/pointcut.type';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
+import { AdviceType } from '../advice.type';
 import { AdviceEntry } from './advice-entry.model';
 import { AdviceRegistry } from './advice.registry';
 
@@ -188,7 +188,7 @@ describe('AdviceRegisrty', () => {
               .select({
                 aspects: [Aaspect, Baspect],
               })
-              .find(PointcutTargetType.CLASS, PointcutType.AFTER),
+              .find(PointcutTargetType.CLASS, AdviceType.AFTER),
           ]).toEqual(expected);
         });
       });

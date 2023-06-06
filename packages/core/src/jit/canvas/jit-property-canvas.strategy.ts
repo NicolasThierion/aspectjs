@@ -3,11 +3,11 @@ import { assert, getMetadata, isUndefined } from '@aspectjs/common/utils';
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
+import { AdviceType } from '../../advice/advice.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
-import { PointcutType } from '../../pointcut/pointcut.type';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { CompiledCanvas, JitWeaverCanvas } from './jit-canvas.type';
@@ -175,8 +175,8 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     }
 
     const conpileAdviceEntries = [
-      ...selection.find(PointcutTargetType.GET_PROPERTY, PointcutType.COMPILE),
-      ...selection.find(PointcutTargetType.SET_PROPERTY, PointcutType.COMPILE),
+      ...selection.find(PointcutTargetType.GET_PROPERTY, AdviceType.COMPILE),
+      ...selection.find(PointcutTargetType.SET_PROPERTY, AdviceType.COMPILE),
     ];
 
     const newDescriptor: PropertyDescriptor =

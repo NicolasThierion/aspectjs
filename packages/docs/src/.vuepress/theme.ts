@@ -5,9 +5,9 @@ import { customNavbar } from './navbar/navbar.plugin';
 import { createSidebar } from './sidebar/sidebar';
 
 import { searchProPlugin } from 'vuepress-plugin-search-pro';
+import { extendsMarkdown } from './custom-blocks/custom-md';
 import { sidebarSorter } from './sidebar/sidebar-sorter';
 import { typedocPluginConfig } from './typedoc/typedoc.plugin';
-import { extendsMarkdown } from './custom-blocks/custom-md';
 
 export default function customTheme(): Theme {
   const plugins: PluginConfig = [
@@ -48,8 +48,8 @@ export default function customTheme(): Theme {
 
       iconAssets: 'fontawesome-with-brands',
       logo: '/logo.png',
-      repo: 'vuepress-theme-hope/vuepress-theme-hope',
-      docsDir: 'demo/theme-docs/src',
+      repo: 'https://gitlab.com/aspectjs/aspectjs',
+      docsDir: 'packages/docs/src',
       locales: {
         '/': {
           // navbar
@@ -58,9 +58,9 @@ export default function customTheme(): Theme {
           sidebar: createSidebar('/'),
           displayFooter: true,
 
-          metaLocales: {
-            editLink: 'Edit this page on Gitlab',
-          },
+          // metaLocales: {
+          //   editLink: 'Edit this page on Gitlab',
+          // },
         },
         // '/fr/': {
         //   // navbar

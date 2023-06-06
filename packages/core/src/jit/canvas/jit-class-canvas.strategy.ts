@@ -1,10 +1,10 @@
 import { assert, ConstructorType, getMetadata } from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
-import { PointcutType } from '../../pointcut/pointcut.type';
 import { PointcutTargetType } from './../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
+import { AdviceType } from '../../advice/advice.type';
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
@@ -27,7 +27,7 @@ export class JitClassCanvasStrategy<
   ): ConstructorType<X> {
     //  if no class compile advices, return ctor as is
     const adviceEntries = [
-      ...selection.find(PointcutTargetType.CLASS, PointcutType.COMPILE),
+      ...selection.find(PointcutTargetType.CLASS, AdviceType.COMPILE),
     ];
 
     // if another @Compile advice has been applied

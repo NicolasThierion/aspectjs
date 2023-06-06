@@ -1,9 +1,9 @@
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
-import { PointcutType } from './../../pointcut/pointcut.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import { MethodPropertyDescriptor } from '@aspectjs/common';
 import { assert, getMetadata } from '@aspectjs/common/utils';
+import { AdviceType } from '../../advice/advice.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
@@ -19,7 +19,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
   T extends PointcutTargetType.METHOD | PointcutTargetType.PARAMETER,
   X = unknown,
 > extends JitWeaverCanvasStrategy<T, X> {
-  protected abstract getAdviceEntries<P extends PointcutType>(
+  protected abstract getAdviceEntries<P extends AdviceType>(
     selection: AdvicesSelection,
     pointcutType: P,
   ): AdviceEntry<T, X, P>[];
@@ -29,10 +29,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
     selection: AdvicesSelection,
   ): CompiledSymbol<T, X> {
     //  if no method compile advices, return method is
-    const adviceEntries = this.getAdviceEntries(
-      selection,
-      PointcutType.COMPILE,
-    );
+    const adviceEntries = this.getAdviceEntries(selection, AdviceType.COMPILE);
 
     assert(!!ctxt.target.propertyKey);
     if (!adviceEntries.length) {
@@ -94,7 +91,7 @@ export class JitMethodCanvasStrategy<
     super(weaverContext, PointcutTargetType.METHOD);
   }
 
-  protected override getAdviceEntries<P extends PointcutType>(
+  protected override getAdviceEntries<P extends AdviceType>(
     selection: AdvicesSelection,
     pointcutType: P,
   ): AdviceEntry<PointcutTargetType.METHOD, X, P>[] {

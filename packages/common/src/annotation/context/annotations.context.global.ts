@@ -17,6 +17,7 @@ export class AnnotationsReflectModule implements ReflectModule {
 }
 
 /**
+ * @internal
  *
  * @returns The current {@link ReflectContext}, configured to use with an {@link AnnotationsReflectModule}
  */

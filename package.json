@@ -9,7 +9,8 @@
     "lint": "lerna run test:lint --stream",
     "build": "lerna run build --stream",
     "clean": "lerna run clean --stream",
-    "docs": "cd packages/docs; npm run build"
+    "typedoc": "lerna run typedoc --stream",
+    "docs": "cd packages/docs; npm run docs:build"
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,7 @@
   "bugs": {
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
-  "homepage": "https://github.com/NicolasThierion/aspectjs#readme",
+  "homepage": "https://aspectjs.gitlab.io/",
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.1",
     "@rollup/plugin-typescript": "^11.1.0",

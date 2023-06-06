@@ -3,7 +3,6 @@ import { JoinPoint } from './../../advice/joinpoint';
 
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
-import { PointcutType } from '../../pointcut/pointcut.type';
 
 import type { AdviceContext } from './../../advice/advice.context';
 
@@ -12,6 +11,7 @@ import type {
   WeaverCanvasStrategy,
 } from '../../weaver/canvas/canvas-strategy.type';
 
+import { AdviceType } from '../../advice/advice.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
@@ -44,7 +44,7 @@ export abstract class JitWeaverCanvasStrategy<
     this._applyNotReturn(
       ctxt,
       () => ctxt.asBeforeContext(),
-      selection.find(this.targetType, PointcutType.BEFORE),
+      selection.find(this.targetType, AdviceType.BEFORE),
     );
   }
 
@@ -53,7 +53,7 @@ export abstract class JitWeaverCanvasStrategy<
       ctxt,
 
       () => ctxt.asAfterContext(),
-      selection.find(this.targetType, PointcutType.AFTER),
+      selection.find(this.targetType, AdviceType.AFTER),
     );
   }
 
@@ -62,7 +62,7 @@ export abstract class JitWeaverCanvasStrategy<
     selection: AdvicesSelection,
   ): T {
     const advices = [
-      ...selection.find(this.targetType, PointcutType.AFTER_RETURN),
+      ...selection.find(this.targetType, AdviceType.AFTER_RETURN),
     ];
     if (!advices.length) {
       return ctxt.value as T;
@@ -85,7 +85,7 @@ export abstract class JitWeaverCanvasStrategy<
     allowReturn = true,
   ): any {
     const adviceEntries = [
-      ...advicesSelection.find(this.targetType, PointcutType.AFTER_THROW),
+      ...advicesSelection.find(this.targetType, AdviceType.AFTER_THROW),
     ];
 
     if (!adviceEntries.length) {
@@ -125,7 +125,7 @@ export abstract class JitWeaverCanvasStrategy<
     allowReturn = true,
   ): JoinPoint {
     const advices = [
-      ...advicesEntries.find(this.targetType, PointcutType.AROUND),
+      ...advicesEntries.find(this.targetType, AdviceType.AROUND),
     ];
     if (!advices.length) {
       return ctxt.joinpoint!;

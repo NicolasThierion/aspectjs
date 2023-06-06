@@ -8,7 +8,9 @@ import type { ReflectProvider } from './reflect-provider.type';
 import type { ReflectModule } from './reflect.module';
 
 /**
- * The ReflectContext is a container for the global values and services of the framework.
+ * @internal
+ *
+ * @description The ReflectContext is a container for the global values and services of the framework.
  * The services are added to the context in the form of {@link ReflectProvider}s,
  * through the use of {@link ReflectModule}s.
  */

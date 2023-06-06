@@ -10,13 +10,14 @@ import { Before } from '../../advices/before/before.annotation';
 import { WeavingError } from '../../errors/weaving.error';
 import { Pointcut } from '../../pointcut/pointcut';
 import { PointcutExpression } from '../../pointcut/pointcut-expression.type';
-import { PointcutType } from '../../pointcut/pointcut.type';
 import { WeaverContext } from '../../weaver/context/weaver.context';
 import { AdvicesSelection } from './advices-selection.model';
 
+import { Order } from '../../annotations/order.annotation';
 import { Aspect } from '../../aspect/aspect.annotation';
 import type { AspectType } from '../../aspect/aspect.type';
-import type { AdviceType } from '../advice.type';
+import { AdviceSorter } from '../advice-sort';
+import { Advice, AdviceType } from '../advice.type';
 import type { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
 const KNOWN_ADVICE_ANNOTATION_REFS = new Set([
   Compile.ref,
@@ -28,12 +29,12 @@ const KNOWN_ADVICE_ANNOTATION_REFS = new Set([
 ]);
 
 const KNOWN_ADVICE_TYPES = {
-  [Compile.name]: PointcutType.COMPILE,
-  [Before.name]: PointcutType.BEFORE,
-  [Around.name]: PointcutType.AROUND,
-  [AfterReturn.name]: PointcutType.AFTER_RETURN,
-  [AfterThrow.name]: PointcutType.AFTER_THROW,
-  [After.name]: PointcutType.AFTER,
+  [Compile.name]: AdviceType.COMPILE,
+  [Before.name]: AdviceType.BEFORE,
+  [Around.name]: AdviceType.AROUND,
+  [AfterReturn.name]: AdviceType.AFTER_RETURN,
+  [AfterThrow.name]: AdviceType.AFTER_THROW,
+  [After.name]: AdviceType.AFTER,
 };
 
 export interface AdviceRegistryFilters {
@@ -47,14 +48,17 @@ export interface AdviceRegistryFilters {
 export class AdviceRegistry {
   private readonly buckets: AdviceRegBuckets = {};
 
-  constructor(private readonly weaverContext: WeaverContext) {}
+  constructor(
+    private readonly weaverContext: WeaverContext,
+    private readonly adviceSorter: AdviceSorter,
+  ) {}
 
   register(aspect: AspectType) {
     const aspectCtor = getPrototype(aspect).constructor;
 
     const pointcutAnnotations = new Set<AnnotationRef>();
 
-    const advices: AdviceType[] = [];
+    const advices: Advice[] = [];
     const processedAdvices = new Map<string, Pointcut[]>();
     // find advices annotations
     this.weaverContext
@@ -63,19 +67,8 @@ export class AdviceRegistry {
       .onMethod(aspectCtor)
       .find({ searchParents: true })
       .forEach((adviceAnnotation) => {
-        const advice: AdviceType = adviceAnnotation.target.descriptor
-          .value as AdviceType;
-
-        // const processedAndAssignablePointcut = processedAdvices.filter(
-        //   (pointcut) => pointcut.isAssignableFrom(advice.pointcut),
-        // )[0];
-        // if (processedAndAssignablePointcut) {
-        //   processedAndAssignablePointcut.merge(advice.pointcut);
-        //   return;
-        // }
-
-        // processedAdvices.push(advice.pointcut);
-        // processedAdvicesMap.set(advice.name, processedAdvices);
+        const advice: Advice = adviceAnnotation.target.descriptor
+          .value as Advice;
 
         const expression = adviceAnnotation.args[0] as PointcutExpression;
         const type = KNOWN_ADVICE_TYPES[adviceAnnotation.ref.name]!;
@@ -95,7 +88,7 @@ export class AdviceRegistry {
           Reflect.defineProperty(advice, Symbol.toPrimitive, {
             value: () =>
               [...advice.pointcuts]
-                .map((p) => `@${p.type}(${p.annotations.join(',')})`)
+                .map((p) => `@${p.adviceType}(${p.annotations.join(',')})`)
                 .join('|') +
               ` ${aspect.constructor.name}.${String(advice.name)}()`,
           });
@@ -126,15 +119,19 @@ export class AdviceRegistry {
     this.assertAnnotationsNotprocessed(aspect, [...pointcutAnnotations]);
   }
 
+  select(filters: AdviceRegistryFilters): AdvicesSelection {
+    return new AdvicesSelection(this.buckets, filters, this.adviceSorter);
+  }
+
   private registerAdvice(
     aspect: AspectType,
     pointcut: Pointcut,
-    advice: AdviceType,
+    advice: Advice,
   ) {
     const aspectCtor = getPrototype(aspect).constructor;
 
     const byTarget = (this.buckets[pointcut.targetType] ??= {});
-    const byPointcutType = (byTarget[pointcut.type] ??= new Map<
+    const byPointcutType = (byTarget[pointcut.adviceType] ??= new Map<
       ConstructorType<AspectType>,
       AdviceEntry[]
     >());
@@ -148,16 +145,12 @@ export class AdviceRegistry {
     });
   }
 
-  select(filters: AdviceRegistryFilters): AdvicesSelection {
-    return new AdvicesSelection(this.buckets, filters);
-  }
-
   private assertAnnotationsNotprocessed(
     aspect: AspectType,
     annotations: AnnotationRef[],
   ) {
-    const adviceEntries = [...this.select(aspect).find()];
-    if (!adviceEntries.length) {
+    const adviceEntries = this.select(aspect).find();
+    if (!adviceEntries.next()) {
       return;
     }
     const processedAnnotations = new Set(
@@ -171,7 +164,7 @@ export class AdviceRegistry {
 
     // Allow @Aspect a advice annotations to be processed already
     if (processedAnnotations.size) {
-      [Aspect.ref, ...KNOWN_ADVICE_ANNOTATION_REFS].forEach((ref) =>
+      [Aspect.ref, Order.ref, ...KNOWN_ADVICE_ANNOTATION_REFS].forEach((ref) =>
         processedAnnotations.delete(ref),
       );
     }

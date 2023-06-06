@@ -6,7 +6,8 @@ import type {
 } from '../annotation.types';
 
 /**
- * An AnnotationFactoryHook is a configuration for the {@link AnnotationFactory}
+ * @internal
+ * @description An AnnotationFactoryHook is a configuration for the {@link AnnotationFactory}
  * to create annotations baked by to some typescript decorators.
  */
 export type AnnotationFactoryHook<

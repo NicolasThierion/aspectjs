@@ -1,10 +1,10 @@
 import type { AdviceContext } from '../../advice/advice.context';
+import { AdviceType } from '../../advice/advice.type';
 import type { Pointcut } from '../../pointcut/pointcut';
 import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
-import type { PointcutType } from '../../pointcut/pointcut.type';
 
 export type CompilePointcut<T extends PointcutTargetType = PointcutTargetType> =
-  Pointcut<PointcutType.COMPILE, T>;
+  Pointcut<AdviceType.COMPILE, T>;
 
 export type CompileAdvice<
   T extends PointcutTargetType = PointcutTargetType,

@@ -3,10 +3,10 @@ import { MethodPropertyDescriptor } from '@aspectjs/common';
 import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
 
 import { assert, defineMetadata, getMetadata } from '@aspectjs/common/utils';
+import { AdviceType } from '../../advice/advice.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
-import { PointcutType } from '../../pointcut/pointcut.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { AbstractJitMethodCanvasStrategy } from './jit-method-canvas.strategy';
 
@@ -22,7 +22,7 @@ export class JitParameterCanvasStrategy<
     super(weaverContext, PointcutTargetType.PARAMETER);
   }
 
-  protected override getAdviceEntries<P extends PointcutType>(
+  protected override getAdviceEntries<P extends AdviceType>(
     selection: AdvicesSelection,
     pointcutType: P,
   ): AdviceEntry<PointcutTargetType.PARAMETER, X, P>[] {

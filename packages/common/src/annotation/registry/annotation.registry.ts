@@ -8,14 +8,14 @@ import {
   TargetType,
 } from '../annotation.types';
 import type {
-  _AnnotationTargetRef,
   AnnotationTarget,
+  AnnotationTargetRef,
 } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { AnnotationSelectionFilter } from './annotation-selection-filter';
 
 type ByAnnotationSet = {
-  byClassTargetRef: Map<_AnnotationTargetRef, AnnotationContext[]>;
+  byClassTargetRef: Map<AnnotationTargetRef, AnnotationContext[]>;
 };
 
 /**
@@ -34,40 +34,40 @@ class _AnnotationsSet {
   getAnnotations(
     decoratorTypes: TargetType[],
     annotationRefs?: Set<AnnotationRef>,
-    classTargetRef?: _AnnotationTargetRef | undefined,
+    classTargetRef?: AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
   ): AnnotationContext[] {
-    const annotationsInClass = decoratorTypes
-      .map((t) => this.buckets[t])
-      .flatMap((m) =>
+    return decoratorTypes.flatMap((t) => {
+      const _propertyKey = t === TargetType.CLASS ? undefined : propertyKey;
+      const m = this.buckets[t];
+      return (
         annotationRefs
           ? [...annotationRefs].map((ref) => m.get(AnnotationRef.of(ref)))
-          : [...m.values()],
+          : [...m.values()]
       )
-      .filter((set) => !!set)
-      .map((set) => set!.byClassTargetRef)
-      .flatMap((byClassTargetRef) => {
-        return classTargetRef
-          ? byClassTargetRef?.get(classTargetRef) ?? []
-          : [...byClassTargetRef.values()].flat();
-      });
-
-    if (propertyKey === undefined) {
-      return annotationsInClass;
-    } else {
-      return annotationsInClass.filter(
-        (annotation) =>
-          (annotation as AnnotationContext<TargetType.METHOD>).target
-            .propertyKey === propertyKey,
-      );
-    }
+        .filter((set) => !!set)
+        .map((set) => set!.byClassTargetRef)
+        .flatMap((byClassTargetRef) => {
+          return classTargetRef
+            ? byClassTargetRef?.get(classTargetRef) ?? []
+            : [...byClassTargetRef.values()].flat();
+        })
+        .filter(
+          (annotation) =>
+            // keep annotations if search for target = class
+            // keep annotations if does not search for specific property
+            _propertyKey === undefined ||
+            (annotation as AnnotationContext<TargetType.METHOD>).target
+              .propertyKey === propertyKey,
+        );
+    });
   }
 
   addAnnotation(ctxt: AnnotationContext) {
     const bucket = this.buckets[ctxt.target.type];
     assert(() => !!bucket);
     const byAnnotationSet = bucket.get(ctxt.ref) ?? {
-      byClassTargetRef: new Map<_AnnotationTargetRef, AnnotationContext[]>(),
+      byClassTargetRef: new Map<AnnotationTargetRef, AnnotationContext[]>(),
     };
 
     const contexts =
