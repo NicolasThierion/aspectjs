@@ -75,7 +75,7 @@ docs:
   needs:
     - node:prepare
   script:
-    - npm run docs
+    - npm run docs:build
 
 core:publish:gitlab:
   extends: .node:gitlab:publish
