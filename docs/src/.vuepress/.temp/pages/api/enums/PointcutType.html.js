@@ -1,0 +1,14 @@
+export const data = JSON.parse("{\"key\":\"v-25ca0b3c\",\"path\":\"/api/enums/PointcutType.html\",\"title\":\"Enumeration: PointcutType\",\"lang\":\"en-US\",\"frontmatter\":{\"description\":\"Table of contents Enumeration Members AFTER (PointcutType.md#after); AFTER\\\\_RETURN (PointcutType.md#after-return); AFTER\\\\_THROW (PointcutType.md#after-throw); AROUND (PointcutTy...\",\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://vuepress-theme-hope-docs-demo.netlify.app/api/enums/PointcutType.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"AspectJS documentation\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"Enumeration: PointcutType\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"Table of contents Enumeration Members AFTER (PointcutType.md#after); AFTER\\\\_RETURN (PointcutType.md#after-return); AFTER\\\\_THROW (PointcutType.md#after-throw); AROUND (PointcutTy...\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"en-US\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"Mr.Hope\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"Enumeration: PointcutType\\\",\\\"image\\\":[\\\"\\\"],\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"Mr.Hope\\\",\\\"url\\\":\\\"https://mrhope.site\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"Table of contents\",\"slug\":\"table-of-contents\",\"link\":\"#table-of-contents\",\"children\":[{\"level\":3,\"title\":\"Enumeration Members\",\"slug\":\"enumeration-members\",\"link\":\"#enumeration-members\",\"children\":[]}]},{\"level\":2,\"title\":\"Enumeration Members\",\"slug\":\"enumeration-members-1\",\"link\":\"#enumeration-members-1\",\"children\":[{\"level\":3,\"title\":\"AFTER\",\"slug\":\"after\",\"link\":\"#after\",\"children\":[]},{\"level\":3,\"title\":\"AFTER_RETURN\",\"slug\":\"after-return\",\"link\":\"#after-return\",\"children\":[]},{\"level\":3,\"title\":\"AFTER_THROW\",\"slug\":\"after-throw\",\"link\":\"#after-throw\",\"children\":[]},{\"level\":3,\"title\":\"AROUND\",\"slug\":\"around\",\"link\":\"#around\",\"children\":[]},{\"level\":3,\"title\":\"BEFORE\",\"slug\":\"before\",\"link\":\"#before\",\"children\":[]},{\"level\":3,\"title\":\"COMPILE\",\"slug\":\"compile\",\"link\":\"#compile\",\"children\":[]}]}],\"readingTime\":{\"minutes\":0.37,\"words\":112},\"filePathRelative\":\"api/enums/PointcutType.md\",\"autoDesc\":true}")
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}

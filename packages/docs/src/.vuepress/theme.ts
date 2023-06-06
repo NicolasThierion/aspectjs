@@ -7,6 +7,7 @@ import { createSidebar } from './sidebar/sidebar';
 import { searchProPlugin } from 'vuepress-plugin-search-pro';
 import { sidebarSorter } from './sidebar/sidebar-sorter';
 import { typedocPluginConfig } from './typedoc/typedoc.plugin';
+import { extendsMarkdown } from './custom-blocks/custom-md';
 
 export default function customTheme(): Theme {
   const plugins: PluginConfig = [
@@ -26,13 +27,19 @@ export default function customTheme(): Theme {
       ],
       // your options
     }),
+    {
+      name: 'custom-markdown',
+      extendsMarkdown: (md) => {
+        extendsMarkdown(md);
+      },
+    },
   ];
 
   return {
     name: 'custom',
     plugins,
     extends: hopeTheme({
-      hostname: 'https://vuepress-theme-hope-docs-demo.netlify.app',
+      hostname: 'https://aspectjs.gitlab.io/',
       sidebarSorter: sidebarSorter,
       author: {
         name: 'Nicolas T.',
@@ -40,13 +47,9 @@ export default function customTheme(): Theme {
       },
 
       iconAssets: 'fontawesome-with-brands',
-
       logo: '/logo.png',
-
       repo: 'vuepress-theme-hope/vuepress-theme-hope',
-
       docsDir: 'demo/theme-docs/src',
-
       locales: {
         '/': {
           // navbar
@@ -56,7 +59,7 @@ export default function customTheme(): Theme {
           displayFooter: true,
 
           metaLocales: {
-            editLink: 'Edit this page on GitHub',
+            editLink: 'Edit this page on Gitlab',
           },
         },
         // '/fr/': {

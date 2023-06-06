@@ -1,0 +1,14 @@
+export const data = JSON.parse("{\"key\":\"v-0039d1dd\",\"path\":\"/api/classes/AnnotationsReflectModule.html\",\"title\":\"Class: AnnotationsReflectModule\",\"lang\":\"en-US\",\"frontmatter\":{\"description\":\"Implements ReflectModule (../interfaces/ReflectModule.md); Table of contents Constructors constructor (AnnotationsReflectModule.md#constructor); Properties providers (Annotation...\",\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://vuepress-theme-hope-docs-demo.netlify.app/api/classes/AnnotationsReflectModule.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"AspectJS documentation\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"Class: AnnotationsReflectModule\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"Implements ReflectModule (../interfaces/ReflectModule.md); Table of contents Constructors constructor (AnnotationsReflectModule.md#constructor); Properties providers (Annotation...\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"en-US\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"Mr.Hope\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"Class: AnnotationsReflectModule\\\",\\\"image\\\":[\\\"\\\"],\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"Mr.Hope\\\",\\\"url\\\":\\\"https://mrhope.site\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"Implements\",\"slug\":\"implements\",\"link\":\"#implements\",\"children\":[]},{\"level\":2,\"title\":\"Table of contents\",\"slug\":\"table-of-contents\",\"link\":\"#table-of-contents\",\"children\":[{\"level\":3,\"title\":\"Constructors\",\"slug\":\"constructors\",\"link\":\"#constructors\",\"children\":[]},{\"level\":3,\"title\":\"Properties\",\"slug\":\"properties\",\"link\":\"#properties\",\"children\":[]}]},{\"level\":2,\"title\":\"Constructors\",\"slug\":\"constructors-1\",\"link\":\"#constructors-1\",\"children\":[{\"level\":3,\"title\":\"constructor\",\"slug\":\"constructor\",\"link\":\"#constructor\",\"children\":[]}]},{\"level\":2,\"title\":\"Properties\",\"slug\":\"properties-1\",\"link\":\"#properties-1\",\"children\":[{\"level\":3,\"title\":\"providers\",\"slug\":\"providers\",\"link\":\"#providers\",\"children\":[]}]}],\"readingTime\":{\"minutes\":0.14,\"words\":43},\"filePathRelative\":\"api/classes/AnnotationsReflectModule.md\",\"autoDesc\":true}")
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}

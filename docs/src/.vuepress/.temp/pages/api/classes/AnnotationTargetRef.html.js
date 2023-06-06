@@ -1,0 +1,14 @@
+export const data = JSON.parse("{\"key\":\"v-317840c6\",\"path\":\"/api/classes/AnnotationTargetRef.html\",\"title\":\"Class: AnnotationTargetRef\",\"lang\":\"en-US\",\"frontmatter\":{\"description\":\"Table of contents Constructors constructor (AnnotationTargetRef.md#constructor); Properties value (AnnotationTargetRef.md#value); Methods toString (AnnotationTargetRef.md#tostri...\",\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://vuepress-theme-hope-docs-demo.netlify.app/api/classes/AnnotationTargetRef.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"AspectJS documentation\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"Class: AnnotationTargetRef\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"Table of contents Constructors constructor (AnnotationTargetRef.md#constructor); Properties value (AnnotationTargetRef.md#value); Methods toString (AnnotationTargetRef.md#tostri...\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"en-US\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"Mr.Hope\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"Class: AnnotationTargetRef\\\",\\\"image\\\":[\\\"\\\"],\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"Mr.Hope\\\",\\\"url\\\":\\\"https://mrhope.site\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"Table of contents\",\"slug\":\"table-of-contents\",\"link\":\"#table-of-contents\",\"children\":[{\"level\":3,\"title\":\"Constructors\",\"slug\":\"constructors\",\"link\":\"#constructors\",\"children\":[]},{\"level\":3,\"title\":\"Properties\",\"slug\":\"properties\",\"link\":\"#properties\",\"children\":[]},{\"level\":3,\"title\":\"Methods\",\"slug\":\"methods\",\"link\":\"#methods\",\"children\":[]}]},{\"level\":2,\"title\":\"Constructors\",\"slug\":\"constructors-1\",\"link\":\"#constructors-1\",\"children\":[{\"level\":3,\"title\":\"constructor\",\"slug\":\"constructor\",\"link\":\"#constructor\",\"children\":[]}]},{\"level\":2,\"title\":\"Properties\",\"slug\":\"properties-1\",\"link\":\"#properties-1\",\"children\":[{\"level\":3,\"title\":\"value\",\"slug\":\"value\",\"link\":\"#value\",\"children\":[]}]},{\"level\":2,\"title\":\"Methods\",\"slug\":\"methods-1\",\"link\":\"#methods-1\",\"children\":[{\"level\":3,\"title\":\"toString\",\"slug\":\"tostring\",\"link\":\"#tostring\",\"children\":[]}]}],\"readingTime\":{\"minutes\":0.24,\"words\":71},\"filePathRelative\":\"api/classes/AnnotationTargetRef.md\",\"autoDesc\":true}")
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}
