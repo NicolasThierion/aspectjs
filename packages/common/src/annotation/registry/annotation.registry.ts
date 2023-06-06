@@ -282,9 +282,18 @@ export class AnnotationRegistry {
   register(annotationContext: AnnotationContext) {
     this.annotationSet.addAnnotation(annotationContext);
   }
-  select(...annotations: (AnnotationRef | Annotation)[]): AnnotationsSelection {
+
+  select(
+    ...annotations: (
+      | Pick<AnnotationRef, 'groupId' | 'name'>
+      | Annotation
+      | string
+    )[]
+  ): AnnotationsSelection {
     const annotationsFilter = annotations.length
-      ? new Set(annotations.map(AnnotationRef.of))
+      ? new Set(
+          annotations.filter((a) => a !== undefined).map(AnnotationRef.of),
+        )
       : undefined;
 
     return new AnnotationsSelection(

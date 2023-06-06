@@ -22,9 +22,6 @@ describe('JitWeaver', () => {
     context = configureTesting(weaverContext());
     weaver = context.get(JitWeaver);
   });
-  afterEach(() => {
-    context.reset();
-  });
 
   describe('.getAspects()', () => {
     it('returns the aspects that have been enabled', () => {
@@ -91,7 +88,7 @@ describe('JitWeaver', () => {
 
   describe('.enhance(<ClassAnnotationTarget>)', () => {
     let enhanced!: any;
-    let enhancable!: any;
+    let enhanceable!: any;
     let spy: () => void;
     beforeEach(() => {
       spy = jest.fn();
@@ -100,15 +97,15 @@ describe('JitWeaver', () => {
           spy();
         }
       }
-      enhancable = TestClass;
+      enhanceable = TestClass;
       const atf = context.get(AnnotationTargetFactory);
-      const target = atf.of(enhancable);
+      const target = atf.of(enhanceable);
 
       enhanced = weaver.enhance(target);
     });
 
     it('returns a class of the same type', () => {
-      expect(new enhanced()).toBeInstanceOf(enhancable);
+      expect(new enhanced()).toBeInstanceOf(enhanceable);
       expect(spy).toHaveBeenCalled();
     });
   });

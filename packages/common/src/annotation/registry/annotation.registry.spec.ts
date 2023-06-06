@@ -53,6 +53,7 @@ describe('AnnotationRegistry', () => {
   let B1ParameterAnnotation: any;
   let B2ParameterAnnotation: any;
   let XAnnotation: any;
+  let annotationFactory: AnnotationFactory;
   function setup() {
     A = class A {} as any;
     B = class B {} as any;
@@ -61,28 +62,28 @@ describe('AnnotationRegistry', () => {
       AnnotationRegistry,
     );
 
-    const af = new AnnotationFactory('test');
-    A1Annotation = af.create('A1Annotation');
-    A2Annotation = af.create('A2Annotation');
-    B1Annotation = af.create('B1Annotation');
-    B2Annotation = af.create('B2Annotation');
-    A1ClassAnnotation = af.create('A1ClassAnnotation');
-    A2ClassAnnotation = af.create('A2ClassAnnotation');
-    B1ClassAnnotation = af.create('B1ClassAnnotation');
-    B2ClassAnnotation = af.create('B2ClassAnnotation');
-    A1PropertyAnnotation = af.create('A1PropertyAnnotation');
-    A2PropertyAnnotation = af.create('A2PropertyAnnotation');
-    B1PropertyAnnotation = af.create('B1PropertyAnnotation');
-    B2PropertyAnnotation = af.create('B2PropertyAnnotation');
-    A1MethodAnnotation = af.create('A1MethodAnnotation');
-    A2MethodAnnotation = af.create('A2MethodAnnotation');
-    B1MethodAnnotation = af.create('B1MethodAnnotation');
-    B2MethodAnnotation = af.create('B2MethodAnnotation');
-    A1ParameterAnnotation = af.create('A1ParameterAnnotation');
-    A2ParameterAnnotation = af.create('A2ParameterAnnotation');
-    B1ParameterAnnotation = af.create('B1ParameterAnnotation');
-    B2ParameterAnnotation = af.create('B2ParameterAnnotation');
-    XAnnotation = af.create('XAnnotation');
+    annotationFactory = new AnnotationFactory('test');
+    A1Annotation = annotationFactory.create('A1Annotation');
+    A2Annotation = annotationFactory.create('A2Annotation');
+    B1Annotation = annotationFactory.create('B1Annotation');
+    B2Annotation = annotationFactory.create('B2Annotation');
+    A1ClassAnnotation = annotationFactory.create('A1ClassAnnotation');
+    A2ClassAnnotation = annotationFactory.create('A2ClassAnnotation');
+    B1ClassAnnotation = annotationFactory.create('B1ClassAnnotation');
+    B2ClassAnnotation = annotationFactory.create('B2ClassAnnotation');
+    A1PropertyAnnotation = annotationFactory.create('A1PropertyAnnotation');
+    A2PropertyAnnotation = annotationFactory.create('A2PropertyAnnotation');
+    B1PropertyAnnotation = annotationFactory.create('B1PropertyAnnotation');
+    B2PropertyAnnotation = annotationFactory.create('B2PropertyAnnotation');
+    A1MethodAnnotation = annotationFactory.create('A1MethodAnnotation');
+    A2MethodAnnotation = annotationFactory.create('A2MethodAnnotation');
+    B1MethodAnnotation = annotationFactory.create('B1MethodAnnotation');
+    B2MethodAnnotation = annotationFactory.create('B2MethodAnnotation');
+    A1ParameterAnnotation = annotationFactory.create('A1ParameterAnnotation');
+    A2ParameterAnnotation = annotationFactory.create('A2ParameterAnnotation');
+    B1ParameterAnnotation = annotationFactory.create('B1ParameterAnnotation');
+    B2ParameterAnnotation = annotationFactory.create('B2ParameterAnnotation');
+    XAnnotation = annotationFactory.create('XAnnotation');
 
     @A1Annotation('A1')
     @A2Annotation('A2')
@@ -745,6 +746,38 @@ describe('AnnotationRegistry', () => {
             );
           });
         });
+      });
+    });
+  });
+
+  describe('.select(ref: string)', () => {
+    describe('if ref is a represents an existing annotation ref', () => {
+      it('returns annotations registered with this ref', () => {
+        expect(
+          [
+            ...annotationRegistry
+              .select(`${annotationFactory.groupId}:${A1Annotation.name}`)
+              .all()
+              .find(),
+          ].map((a) => a.ref),
+        ).toContain(A1Annotation.ref);
+      });
+    });
+  });
+  describe('.select(ref: AnnotationRef)', () => {
+    describe('if ref is a represents an existing annotation ref', () => {
+      it('returns annotations registered with this ref', () => {
+        expect(
+          [
+            ...annotationRegistry
+              .select({
+                groupId: annotationFactory.groupId,
+                name: A1Annotation.name,
+              })
+              .all()
+              .find(),
+          ].map((a) => a.ref),
+        ).toContain(A1Annotation.ref);
       });
     });
   });

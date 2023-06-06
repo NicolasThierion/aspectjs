@@ -8,12 +8,13 @@ import {
   Decorator,
 } from '../annotation.types';
 import { annotationsContext } from '../context/annotations.context.global';
-import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
+import { DecoratorProviderRegistry } from './decorator-provider.registry';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
+import { reflectContext } from '../../reflect/reflect.context.global';
 import type { AnnotationStub } from '../annotation.types';
 let anonymousAnnotationId = 0;
 
@@ -158,19 +159,23 @@ export class AnnotationFactory {
       this: any,
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
-      return [
-        ...annotationsContext().get(_AnnotationFactoryHookRegistry).values(),
-      ]
+      const context = reflectContext();
+      return [...annotationsContext().get(DecoratorProviderRegistry).values()]
         .sort(
           (c1, c2) =>
             (c1.order ?? Number.MAX_SAFE_INTEGER) -
             (c2.order ?? Number.MAX_SAFE_INTEGER - 1),
         )
-        .reduce((decoree, { name, decorator }) => {
+        .reduce((decoree, { name, createDecorator: decorator }) => {
           try {
             const newDecoree =
               (decorator as any)
-                .apply(this, [annotation, annotationArgs, annotationStub])
+                .apply(this, [
+                  context,
+                  annotation,
+                  annotationArgs,
+                  annotationStub,
+                ])
                 ?.apply(this, targetArgs) ?? decoree;
 
             if (newDecoree) {
@@ -193,7 +198,7 @@ export class AnnotationFactory {
   >(groupId: string, name: string, stub: S): Annotation<T, S> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _factory = this;
-    const annotationRef = new AnnotationRef(groupId, name);
+    const annotationRef = AnnotationRef.of(groupId, name);
     const annotation = function (...annotationArgs: any[]): Decorator {
       return _factory._createDecorator(annotation, stub, annotationArgs);
     } as any as Annotation<T, S>;

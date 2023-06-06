@@ -7,8 +7,8 @@ describe('PointcutExpression', () => {
     let type: PointcutTargetType;
     const name = '*';
     const annotations = [
-      new AnnotationRef('test:Test'),
-      new AnnotationRef('test2:Test2'),
+      AnnotationRef.of('test:Test'),
+      AnnotationRef.of('test2:Test2'),
     ];
     let expression: string;
 
@@ -64,6 +64,16 @@ describe('PointcutExpression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 set property *';
         type = PointcutTargetType.SET_PROPERTY;
+      });
+      it('returns a class PointcutExpression with correct attributes', () => {
+        testAttributes(PointcutExpression.of(expression));
+      });
+    });
+
+    describe('when parameter is pointcut expression that targets any', () => {
+      beforeEach(() => {
+        expression = '@test:Test|@test2:Test2 any *';
+        type = PointcutTargetType.ANY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));

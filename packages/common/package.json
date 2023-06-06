@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
-  "homepage": "https://github.com/NicolasThierion/aspectjs#readme",
+  "homepage": "https://aspectjs.gitlab.io/",
   "type": "module",
   "sideEffects": false,
   "types": "./index.d.ts",

@@ -19,41 +19,44 @@ export class Pointcut<
   readonly targetType: T;
   readonly annotations: AnnotationRef[];
   readonly name: string;
-  readonly adviceType: AdviceType;
+  readonly type: AdviceType;
   private readonly _expr: PointcutExpression;
 
   constructor(pointcutInit: PointcutInit<P, T>) {
     this._expr = pointcutInit.expression;
-    this.adviceType = pointcutInit.type;
+    this.type = pointcutInit.type;
     this.targetType = this._expr.type as T;
     this.annotations = this._expr.annotations;
     this.name = this._expr.name;
   }
 
-  [Symbol.toPrimitive] = () => `${this.adviceType}(${this._expr})`;
+  [Symbol.toPrimitive] = () => `${this.type}(${this._expr})`;
 
   isAssignableFrom(pointcut: Pointcut): boolean {
     return (
-      pointcut.targetType === this.targetType &&
-      this.adviceType === pointcut.adviceType
+      pointcut.targetType === this.targetType && this.type === pointcut.type
     );
   }
 
-  merge(pointcut: Pointcut): void {
+  merge(pointcut: Pointcut): this {
     assert(this.isAssignableFrom(pointcut));
 
     if (!this.annotations.length) {
-      // pointcut already target all annotations
-      return;
+      // pointcut already targets all annotations
+      return this;
     } else if (!pointcut.annotations.length) {
+      // pointcut now targets all annotations
       this.annotations.splice(0, this.annotations.length);
-      return;
+      return this;
     }
+
     // merge annotations
     const annotations = [
       ...new Set([...this.annotations, ...pointcut.annotations]),
     ];
 
     this.annotations.push(...annotations.slice(annotations.length - 1));
+
+    return this;
   }
 }

@@ -1,4 +1,4 @@
-import { ConstructorType, assert } from '@aspectjs/common/utils';
+import { assert, ConstructorType } from '@aspectjs/common/utils';
 
 /**
  * Returns an object to store global values across the framework
@@ -15,23 +15,22 @@ import type { ReflectModule } from './reflect.module';
  * through the use of {@link ReflectModule}s.
  */
 export class ReflectContext {
-  private readonly providersToResolve: Map<
-    ReflectProvider['provide'],
-    ReflectProvider[]
-  > = new Map();
+  private readonly providersToResolve: Map<string, ReflectProvider[]> =
+    new Map();
 
   private readonly providersRegistry: Map<string, unknown> = new Map();
-  private readonly modules: Set<ConstructorType<ReflectModule>> = new Set();
-  private addedProviders: Set<ReflectProvider> = new Set();
+  private readonly addedProviders: Set<ReflectProvider> = new Set();
+  protected readonly modules: Set<ConstructorType<ReflectModule>> = new Set();
 
   /**
    * @internal
    * @param context
    */
   constructor(context?: ReflectContext) {
-    if (context?.modules) {
-      this.addModules(...context.modules.values());
-    }
+    this.providersToResolve = new Map(context?.providersToResolve);
+    this.providersRegistry = new Map(context?.providersRegistry);
+    this.addedProviders = new Set(context?.addedProviders);
+    this.modules = new Set(context?.modules);
   }
 
   /**
@@ -46,11 +45,6 @@ export class ReflectContext {
     );
 
     const moduleInstances = modules.map((m) => new m());
-
-    // dedupe providers. TODO: why ?
-    // const providers = [
-    //   ...new Set(moduleInstances.flatMap((m) => m.providers)).values(),
-    // ].filter((p) => !this.addedProviders.has(p));
 
     const providers = moduleInstances.flatMap((m) => m.providers);
 
@@ -108,16 +102,26 @@ export class ReflectContext {
     return !!this.get(providerType);
   }
 
-  /**
-   * @internal
-   */
-  protected _reset() {
+  protected reset() {
     this.modules.clear();
     this.addedProviders.clear();
     this.providersRegistry.clear();
     this.providersToResolve.clear();
   }
+  protected apply(context: ReflectContext) {
+    context.modules.forEach((m) => this.modules.add(m));
+    context.addedProviders.forEach((p) => this.addedProviders.add(p));
 
+    context.providersRegistry.forEach((provider, name) =>
+      this.providersRegistry.set(name, provider),
+    );
+
+    context.providersToResolve.forEach((p, n) => {
+      this.providersToResolve.set(n, [...p]);
+    });
+
+    return this;
+  }
   private _tryResolveProvider<T>(
     providerType: string,
     neededBy: string[] = [],
@@ -170,7 +174,7 @@ export class ReflectContext {
       }
     }
 
-    this.providersToResolve?.delete(providerName);
+    this.providersToResolve.delete(providerName);
     return component;
   }
 }

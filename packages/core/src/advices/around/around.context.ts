@@ -8,7 +8,7 @@ import type {
 
 export interface AroundContext<
   T extends PointcutTargetType = PointcutTargetType,
-  X = unknown,
+  X = object,
 > {
   /** The annotation contexts **/
   readonly annotations: AnnotationsByTypeSelection<ToTargetType<T>, X>;

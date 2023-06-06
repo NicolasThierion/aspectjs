@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "npm run docs:dev",
+    "clean": "rimraf ./src/.vuepress/.cache ./src/.vuepress/.temp",
     "docs:build": "npm run typedoc && vuepress build src --dest dist",
     "docs:clean-dev": "vuepress dev src --clean-cache",
     "typedoc": "node --loader ts-node/esm ./src/typedoc.ts src",

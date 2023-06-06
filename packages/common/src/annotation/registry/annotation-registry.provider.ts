@@ -1,7 +1,7 @@
+import { DecoratorProviderRegistry } from '../factory/decorator-provider.registry';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { _AnnotationFactoryHookRegistry } from './../factory/annotations-hooks.registry';
 import { AnnotationRegistry } from './annotation.registry';
-import { REGISTER_ANNOTATION_HOOK } from './hooks/register-annotation.hook';
+import { REGISTER_ANNOTATION_PROVIDER } from './hooks/register-annotation.provider';
 
 import type { ReflectProvider } from '../../reflect/reflect-provider.type';
 /**
@@ -16,20 +16,10 @@ export const ANNOTATION_REGISTRY_PROVIDERS: ReflectProvider[] = [
     },
   },
   {
-    provide: _AnnotationFactoryHookRegistry,
-    deps: [
-      AnnotationRegistry,
-      AnnotationTargetFactory,
-      _AnnotationFactoryHookRegistry,
-    ],
-    factory: (
-      annotationRegistry: AnnotationRegistry,
-      targetFactory: AnnotationTargetFactory,
-      annotationFactoryHookRegistry: _AnnotationFactoryHookRegistry,
-    ) => {
-      return annotationFactoryHookRegistry.add(
-        REGISTER_ANNOTATION_HOOK(targetFactory, annotationRegistry),
-      );
+    provide: DecoratorProviderRegistry,
+    deps: [DecoratorProviderRegistry],
+    factory: (decoratorProviderRegistry: DecoratorProviderRegistry) => {
+      return decoratorProviderRegistry.add(REGISTER_ANNOTATION_PROVIDER);
     },
   },
 ];

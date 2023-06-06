@@ -32,6 +32,7 @@
     "@rollup/plugin-terser": "^0.4.1",
     "@rollup/plugin-typescript": "^11.1.0",
     "@types/jest": "^29.5.1",
+    "@types/json-stable-stringify": "^1.0.34",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.59.2",
     "eslint": "^8.39.0",
@@ -55,7 +56,9 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "tslib": "^2.5.0"
+    "json-stable-stringify": "^1.0.2",
+    "tslib": "^2.5.0",
+    "uid": "^2.0.2"
   },
   "type": "module",
   "engines": {

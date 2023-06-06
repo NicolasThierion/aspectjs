@@ -8,8 +8,6 @@ import { annotations } from './annotations.global';
 describe('annotations()', () => {
   let annotationRegistry: AnnotationRegistry;
 
-  let AClassAnnotation: Annotation;
-
   let A = class A {};
 
   let A1Annotation: any;
@@ -83,11 +81,11 @@ describe('annotations()', () => {
       expect(annotationRegistry.select).toHaveBeenCalledWith();
     });
   });
-  describe('given the parameter "AClassAnnotation"', () => {
-    it('calls AnnotationRegistry.find(AClassAnnotation)', () => {
-      annotations(AClassAnnotation);
+  describe('given the parameter "A1ClassAnnotation"', () => {
+    it('calls AnnotationRegistry.find(A1ClassAnnotation)', () => {
+      annotations(A1ClassAnnotation);
       expect(annotationRegistry.select).toHaveBeenCalledTimes(1);
-      expect(annotationRegistry.select).toHaveBeenCalledWith(AClassAnnotation);
+      expect(annotationRegistry.select).toHaveBeenCalledWith(A1ClassAnnotation);
     });
   });
 });

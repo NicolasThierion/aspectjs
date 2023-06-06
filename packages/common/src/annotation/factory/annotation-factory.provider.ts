@@ -1,5 +1,5 @@
-import { _AnnotationFactoryHookRegistry } from './annotations-hooks.registry';
-import { CALL_ANNOTATION_STUB } from './hooks/call-annotation-stub.hook';
+import { DecoratorProviderRegistry } from './decorator-provider.registry';
+import { CALL_ANNOTATION_STUB } from './hooks/call-annotation-stub.provider';
 
 import type { ReflectProvider } from '../../reflect/reflect-provider.type';
 /**
@@ -7,9 +7,9 @@ import type { ReflectProvider } from '../../reflect/reflect-provider.type';
  */
 export const ANNOTATION_HOOK_REGISTRY_PROVIDERS: ReflectProvider[] = [
   {
-    provide: _AnnotationFactoryHookRegistry,
+    provide: DecoratorProviderRegistry,
     factory: () => {
-      return new _AnnotationFactoryHookRegistry().add(CALL_ANNOTATION_STUB);
+      return new DecoratorProviderRegistry().add(CALL_ANNOTATION_STUB);
     },
   },
 ];
