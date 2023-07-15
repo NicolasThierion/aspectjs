@@ -61,24 +61,23 @@ export const createConfig = (
       ? localTsConfig
       : resolve(__dirname, './tsconfig.json'));
 
-  let name!: string;
-  let subExportsPath!: string;
   const packageJsonPath = findUp.sync('package.json', {
     cwd: options.rootDir,
   })!;
 
-  if (!options.pkg) {
-    name = relative(dirname(packageJsonPath), options.rootDir);
-    subExportsPath = name;
+  const subExportsPath = relative(dirname(packageJsonPath), options.rootDir);
 
-    options.pkg = parse(readFileSync(packageJsonPath).toString());
-  }
+  options.pkg = options.pkg ?? parse(readFileSync(packageJsonPath).toString());
 
-  if (!name) {
-    name = options.pkg!.name.split('/').splice(-1)[0]!;
-    subExportsPath = '';
-  }
+  const baseName =
+    subExportsPath || options.pkg!.name.split('/').splice(-1)[0]!;
 
+  const name = options
+    .pkg!.name.replace(/^@/, '')
+    .split('/')
+    .concat(subExportsPath)
+    .filter((p) => !!p)
+    .join('.');
   const pkg = options.pkg!;
   const external = [
     ...(options.external ?? []),
@@ -117,10 +116,10 @@ export const createConfig = (
       ...outputOptions,
       globals: {
         ...(options.output?.globals ?? {}),
-        '@aspectjs/common': 'aspectjs-common',
-        '@aspectjs/common/testing': 'aspectjs-common-testing',
-        '@aspectjs/common/utils': 'aspectjs-common-utils',
-        '@aspectjs/core': 'aspectjs-core',
+        '@aspectjs/common': 'aspectjs.common',
+        '@aspectjs/common/testing': 'aspectjs.common.testing',
+        '@aspectjs/common/utils': 'aspectjs.common.utils',
+        '@aspectjs/core': 'aspectjs.core',
       },
     };
   }
@@ -133,7 +132,7 @@ export const createConfig = (
     output: [
       // CommonJS
       createOutputOptions({
-        file: `./dist/cjs/${name}.cjs`,
+        file: `./dist/cjs/${baseName}.cjs`,
         format: 'cjs',
       }),
       // ES 2020
@@ -144,18 +143,18 @@ export const createConfig = (
       }),
       // FESM2020
       createOutputOptions({
-        file: `./dist/fesm2020/${name}.mjs`,
+        file: `./dist/fesm2020/${baseName}.mjs`,
         format: 'esm',
         preserveModules: false,
       }),
       // UMD
       createOutputOptions({
-        file: `./dist/bundles/${name}.umd.js`,
+        file: `./dist/umd/${baseName}.umd.js`,
         format: 'umd',
       }),
       // UMD min
       createOutputOptions({
-        file: `./dist/bundles/${name}.umd.min.js`,
+        file: `./dist/umd/${baseName}.umd.min.js`,
         format: 'umd',
         plugins: [terser()],
       }),

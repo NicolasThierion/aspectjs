@@ -32,9 +32,11 @@
       "node": "./cjs/memo.cjs",
       "require": "./cjs/memo.cjs",
       "default": "./cjs/memo.cjs",
-      "unpkg": "./bundles/memo.umd.min.js"
+      "unpkg": "./umd/memo.umd.min.js"
     }
   },
+  "module": "./fesm2020/memo.mjs",
+  "main": "./umd/memo.umd.min.js",
   "dependencies": {
     "@emotion/hash": "^0.9.1"
   },

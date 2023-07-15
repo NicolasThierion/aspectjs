@@ -38,7 +38,16 @@
       "node": "./cjs/utils.cjs",
       "require": "./cjs/utils.cjs",
       "default": "./cjs/utils.cjs",
-      "unpkg": "./bundles/utils.umd.min.js"
+      "unpkg": "./umd/utils.umd.min.js"
+    },
+    "./testing": {
+      "types": "./testing/index.d.ts",
+      "esm2020": "./esm2020/index.js",
+      "es2020": "./fesm2020/testing.mjs",
+      "node": "./cjs/testing.cjs",
+      "require": "./cjs/testing.cjs",
+      "default": "./cjs/testing.cjs",
+      "unpkg": "./umd/testing.umd.min.js"
     },
     ".": {
       "types": "./index.d.ts",
@@ -47,7 +56,9 @@
       "node": "./cjs/common.cjs",
       "require": "./cjs/common.cjs",
       "default": "./cjs/common.cjs",
-      "unpkg": "./bundles/common.umd.min.js"
+      "unpkg": "./umd/common.umd.min.js"
     }
-  }
+  },
+  "module": "./fesm2020/common.mjs",
+  "main": "./umd/common.umd.min.js"
 }

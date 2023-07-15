@@ -5,7 +5,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",
-    "directory": "packages/core"
+    "directory": "packages/memo"
   },
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
@@ -34,9 +34,11 @@
       "node": "./cjs/core.cjs",
       "require": "./cjs/core.cjs",
       "default": "./cjs/core.cjs",
-      "unpkg": "./bundles/core.umd.min.js"
+      "unpkg": "./umd/core.umd.min.js"
     }
   },
+  "module": "./fesm2020/core.mjs",
+  "main": "./umd/core.umd.min.js",
   "peerDependencies": {
     "@aspectjs/common": "^0.3.2"
   }
