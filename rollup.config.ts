@@ -235,7 +235,14 @@ export const createConfig = (
   if (!subExportsPath) {
     bundleOptions.plugins.push(
       copy({
-        targets: [{ src: packageJsonPath, dest: 'dist/' }],
+        targets: [
+          { src: packageJsonPath, dest: 'dist/' },
+          {
+            src: 'README.md',
+            dest: 'dist/',
+            caseSensitiveMatch: false,
+          },
+        ],
       }),
     );
   }

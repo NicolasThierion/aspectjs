@@ -48,7 +48,7 @@ export default function customTheme(): Theme {
 
       iconAssets: 'fontawesome-with-brands',
       logo: '/logo.png',
-      repo: 'https://gitlab.com/aspectjs/aspectjs',
+      repo: 'https://github.com/NicolasThierion/aspectjs',
       docsDir: 'packages/docs/src',
       locales: {
         '/': {

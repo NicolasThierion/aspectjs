@@ -60,7 +60,7 @@ common:publish:npm:
     CWD: packages/common
     PACKAGE_DIR: ./dist
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
       when: manual
 
   # needs:
@@ -68,7 +68,7 @@ common:publish:npm:
   #   - core:build
   #   - common:build
   # rules:
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+  #   - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
   #     changes:
   #       - package.json
 
@@ -112,7 +112,7 @@ core:publish:npm:
     CWD: packages/core
     PACKAGE_DIR: ./dist
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
       when: manual
 
 ### MEMO
@@ -155,7 +155,7 @@ memo:publish:npm:
     CWD: packages/memo
     PACKAGE_DIR: ./dist
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
       when: manual
 
 ### DOCS
@@ -197,9 +197,7 @@ docs:publish:
     - git push -f git@gitlab.com:aspectjs/aspectjs.gitlab.io.git main
 
   rules:
-    - if: '$CI_COMMIT_REF_PROTECTED == "true"'
-  # - when: manual
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+    - if: $CI_COMMIT_REF_PROTECTED == "true" && $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
 
 release_job:
   stage: release
@@ -210,7 +208,7 @@ release_job:
     tag_name: '$CI_COMMIT_REF_NAME'
     description: '$CI_COMMIT_REF_NAME'
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
       when: manual
 
 coverage:
