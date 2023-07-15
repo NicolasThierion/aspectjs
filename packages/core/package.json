@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/core",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "repository": {
     "type": "git",
