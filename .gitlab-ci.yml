@@ -50,7 +50,7 @@ common:publish:gitlab:
   stage: deploy
   variables:
     CWD: packages/common
-    PACKAGE_DIR: dist
+    PACKAGE_DIR: ./dist
 
 common:publish:npm:
   extends: .node:npm:publish
@@ -180,6 +180,9 @@ docs:
     - node:prepare
   script:
     - npm run docs:build
+  artifacts:
+    untracked: true
+    expire_in: 1 days
 
 docs:publish:
   image: alpine

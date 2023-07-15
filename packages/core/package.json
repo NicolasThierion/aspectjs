@@ -26,7 +26,6 @@
       "types": "./index.d.ts",
       "esm2020": "./esm2020/core.mjs",
       "es2020": "./fesm2020/core.mjs",
-      "es2015": "./fesm2020/core.mjs",
       "node": "./cjs/core.cjs",
       "require": "./cjs/core.cjs",
       "default": "./cjs/core.cjs",

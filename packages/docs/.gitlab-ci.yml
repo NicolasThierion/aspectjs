@@ -5,6 +5,6 @@ pages:
   artifacts:
     untracked: true
     when: on_success
-    expire_in: 30 days
+    expire_in: 1 days
     paths:
       - 'public'

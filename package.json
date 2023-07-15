@@ -12,7 +12,7 @@
     "typedoc": "lerna run typedoc --stream",
     "docs:build": "cd packages/docs; npm run docs:build",
     "release": "npm run release:bump && git push --all --tag",
-    "release:bump": "bumpp -r --execute=\"commit-and-tag-version && git add CHANGELOG.md\" --commit \"chore(release): publish v%s\""
+    "release:bump": "commit-and-tag-version && git add CHANGELOG.md"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,6 @@
     "@types/json-stable-stringify": "^1.0.34",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "bumpp": "^9.1.1",
     "cd": "^0.3.3",
     "commit-and-tag-version": "^11.2.2",
     "eslint": "^8.39.0",

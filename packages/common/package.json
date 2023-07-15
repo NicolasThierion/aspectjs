@@ -23,6 +23,9 @@
   "sideEffects": false,
   "types": "./index.d.ts",
   "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
     "./utils": {
       "types": "./utils/index.d.ts",
       "esm2020": "./esm2020/index.js",

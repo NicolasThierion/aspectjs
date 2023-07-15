@@ -26,7 +26,7 @@ features:
     details: Install, and start using aspects in any existing codebase
   - title: Light
     icon: bolt
-    details: Only 4kb minified
+    details: Only 6kb minified
 
 copyright: false
 footer: Theme by <a href="https://theme-hope.vuejs.press/" target="_blank">VuePress Theme Hope</a> | MIT Licensed
