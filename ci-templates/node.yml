@@ -106,7 +106,6 @@
     - NPM_PACKAGE_NAME=$(node -p "require('./package.json').name")
     - NPM_PACKAGE_VERSION=$(node -p "require('./package.json').version")
     - echo "Successfully published version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} to NPM registry"
-    - lerna publish -y from-git
 # publish:
 #   stage: deploy
 #   rules:

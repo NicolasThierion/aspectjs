@@ -192,29 +192,34 @@ export class AnnotationFactory {
             (c1.order ?? Number.MAX_SAFE_INTEGER) -
             (c2.order ?? Number.MAX_SAFE_INTEGER - 1),
         )
-        .reduce((decoree, { name, createDecorator: decorator }) => {
-          try {
-            const newDecoree =
-              (decorator as any)
-                .apply(this, [
-                  context,
-                  annotation,
-                  annotationArgs,
-                  annotationStub,
-                ])
-                ?.apply(this, targetArgs) ?? decoree;
+        .reduce(
+          (decoree, { name, createDecorator: decorator }) => {
+            try {
+              const newDecoree =
+                (decorator as any)
+                  .apply(this, [
+                    context,
+                    annotation,
+                    annotationArgs,
+                    annotationStub,
+                  ])
+                  ?.apply(this, targetArgs) ?? decoree;
 
-            if (newDecoree) {
-              Object.assign(newDecoree, decoree); // copy static props
+              if (newDecoree) {
+                Object.assign(newDecoree, decoree); // copy static props
+              }
+              return newDecoree;
+            } catch (e) {
+              console.error(
+                `Error applying annotation hook ${name}: ${
+                  (e as Error).message
+                }`,
+              );
+              throw e;
             }
-            return newDecoree;
-          } catch (e) {
-            console.error(
-              `Error applying annotation hook ${name}: ${(e as Error).message}`,
-            );
-            throw e;
-          }
-        }, noopDecorator.apply(this, targetArgs as any)) as any;
+          },
+          noopDecorator.apply(this, targetArgs as any),
+        ) as any;
     };
   }
 

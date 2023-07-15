@@ -64,9 +64,8 @@ export class AspectRegistry {
 
     if (this.isAspect(aspect)) {
       throw new WeavingError(
-        `Aspect "${
-          getPrototype(aspect)?.constructor?.name
-        }" has already been registered`,
+        `Aspect "${getPrototype(aspect)?.constructor
+          ?.name}" has already been registered`,
       );
     }
 
