@@ -47,5 +47,5 @@ export default {
   resolver: 'ts-jest-resolver',
 
   coverageDirectory: join(__dirname, 'dist', 'coverage'),
-  // collectCoverage: true,
+  collectCoverage: true,
 } satisfies JestConfigWithTsJest;

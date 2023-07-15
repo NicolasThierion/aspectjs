@@ -32,7 +32,6 @@
       "unpkg": "./bundles/core.umd.min.js"
     }
   },
-  "main": "./bundles/core.umd.js",
   "peerDependencies": {
     "@aspectjs/common": "^0.3.2"
   }

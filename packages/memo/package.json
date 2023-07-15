@@ -30,7 +30,6 @@
       "unpkg": "./bundles/memo.umd.min.js"
     }
   },
-  "main": "./bundles/memo.umd.js",
   "dependencies": {
     "@emotion/hash": "^0.9.1"
   },

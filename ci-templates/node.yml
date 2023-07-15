@@ -33,13 +33,14 @@
   extends: .node:npm-command
   variables:
     NPM_COMMAND: test:unit
-    ARTIFACT_PATH: $CWD/dist/coverage
+    COVERAGE_PATH: $CWD/dist/coverage
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     untracked: false
     expire_in: 30 days
     paths:
-      - $COVERAGE_PATY
+      - $COVERAGE_PATH
+
 .node:build:
   extends: .node:npm-command
   variables:
@@ -106,14 +107,3 @@
     - NPM_PACKAGE_NAME=$(node -p "require('./package.json').name")
     - NPM_PACKAGE_VERSION=$(node -p "require('./package.json').version")
     - echo "Successfully published version ${NPM_PACKAGE_VERSION} of ${NPM_PACKAGE_NAME} to NPM registry"
-# publish:
-#   stage: deploy
-#   rules:
-#     - if: '$CI_COMMIT_TAG =~ /^v(\d+\.)?(\d+\.)?(\*|\d+)$/'
-#   before_script:
-#     - apk add git
-#     - yarn global add lerna
-#   script:
-#     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}">.npmrc
-#     - npm whoami
-#     - lerna publish -y from-git

@@ -6,13 +6,14 @@
   "scripts": {
     "test": "lerna run test --stream",
     "test:unit": "lerna run test:unit --stream",
+    "test:coverage": "jest --collectCoverage",
     "lint": "lerna run test:lint --stream",
     "build": "lerna run build --stream",
     "clean": "lerna run clean --stream",
     "typedoc": "lerna run typedoc --stream",
     "docs:build": "cd packages/docs; npm run docs:build",
     "release": "npm run release:bump && git push --all --tag",
-    "release:bump": "commit-and-tag-version && git add CHANGELOG.md"
+    "release:bump": "commit-and-tag-version --bumpFiles package.json ./packages/*/package.json"
   },
   "repository": {
     "type": "git",

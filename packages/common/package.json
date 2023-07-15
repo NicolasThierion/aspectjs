@@ -44,6 +44,5 @@
       "default": "./cjs/common.cjs",
       "unpkg": "./bundles/common.umd.min.js"
     }
-  },
-  "main": "./bundles/common.umd.js"
+  }
 }

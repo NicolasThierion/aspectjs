@@ -8,7 +8,7 @@ stages:
   - test
   - compile
   - doc
-  - deploy
+  - release
 
 ## install node dependencies
 node:prepare:
@@ -47,14 +47,14 @@ common:build:
 
 common:publish:gitlab:
   extends: .node:gitlab:publish
-  stage: deploy
+  stage: release
   variables:
     CWD: packages/common
     PACKAGE_DIR: ./dist
 
 common:publish:npm:
   extends: .node:npm:publish
-  stage: deploy
+  stage: release
   variables:
     CWD: packages/common
     PACKAGE_DIR: ./dist
@@ -102,14 +102,14 @@ core:build:
 
 core:publish:gitlab:
   extends: .node:gitlab:publish
-  stage: deploy
+  stage: release
   variables:
     CWD: packages/core
     PACKAGE_DIR: ./dist
 
 core:publish:npm:
   extends: .node:npm:publish
-  stage: deploy
+  stage: release
   variables:
     CWD: packages/core
     PACKAGE_DIR: ./dist
@@ -149,14 +149,14 @@ memo:build:
 
 memo:publish:gitlab:
   extends: .node:gitlab:publish
-  stage: deploy
+  stage: release
   variables:
     CWD: packages/memo
     PACKAGE_DIR: ./dist
 
 memo:publish:npm:
   extends: .node:npm:publish
-  stage: deploy
+  stage: release
   variables:
     CWD: packages/memo
     PACKAGE_DIR: ./dist
@@ -186,7 +186,7 @@ docs:
 
 docs:publish:
   image: alpine
-  stage: deploy
+  stage: release
   before_script:
     - apk add git openssh-client
     - mkdir -p ~/.ssh
@@ -211,3 +211,23 @@ docs:publish:
     - if: '$CI_COMMIT_REF_PROTECTED == "true"'
   # - when: manual
   #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+
+release_job:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "running release_job"
+  release: # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
+    tag_name: '$CI_COMMIT_REF_NAME'
+    description: '$CI_COMMIT_REF_NAME'
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual
+
+coverage:
+  extends: .node:test:unit
+  stage: test
+  needs:
+    - node:prepare
+  script:
+    - npm run test:coverage
