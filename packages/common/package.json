@@ -2,6 +2,11 @@
   "name": "@aspectjs/common",
   "version": "0.3.2",
   "description": "Aspectjs - commonly needed factories & utils",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git",
+    "directory": "packages/common"
+  },
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
