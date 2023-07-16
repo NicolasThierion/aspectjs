@@ -1,0 +1,31 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "test http client",
+      "runtimeExecutable": "npm",
+      "runtimeVersion": "18",
+      "outputCapture": "std",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "runtimeArgs": ["run", "test:unit"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "test",
+      "runtimeExecutable": "tsx",
+      // "runtimeArgs": ["-r", "ts-node/register"],
+      // "runtimeArgs": ["--loader", "ts-node/esm"],
+      "console": "integratedTerminal",
+      "outputCapture": "console",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/test/main.ts"
+    }
+  ]
+}
