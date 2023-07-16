@@ -1,7 +1,7 @@
 ---
-title: Advanced usage
+title: Examples
 icon: certificate
 index: false
 ---
 
-# Advanced Usage
+# Examples

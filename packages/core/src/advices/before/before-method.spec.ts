@@ -37,10 +37,10 @@ describe('method advice', () => {
     mImpl = jest.fn();
   });
 
-  function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
+  function setupAspects(aannotations: any[] = [], bannotations: any[] = []) {
     @Aspect('AMethodLabel')
     class AAspect {
-      @Before(on.methods.withAnnotations(...aanotations))
+      @Before(on.methods.withAnnotations(...aannotations))
       applyBefore(
         ctxt: BeforeContext<PointcutTargetType.METHOD>,
         ...args: unknown[]

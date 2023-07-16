@@ -50,6 +50,8 @@ export default function customTheme(): Theme {
       logo: '/logo.png',
       repo: 'https://github.com/NicolasThierion/aspectjs',
       docsDir: 'packages/docs/src',
+      editLinkPattern:
+        'https://gitlab.com/aspectjs/aspectjs/-/blob/:branch/:path',
       locales: {
         '/': {
           // navbar
