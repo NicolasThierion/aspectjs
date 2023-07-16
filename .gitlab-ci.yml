@@ -170,8 +170,7 @@ docs:
   script:
     - npm run docs:build
   artifacts:
-    untracked: true
-    expire_in: 1 days
+    expire_in: 20 min
 
 docs:publish:
   image: alpine
