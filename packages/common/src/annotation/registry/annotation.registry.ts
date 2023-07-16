@@ -84,6 +84,9 @@ class _AnnotationsSet {
 }
 
 interface AnnotationsByTypeSelectionOptions {
+  /**
+   * Search for the annotation in parent classes.
+   */
   searchParents: boolean;
 }
 /**
@@ -158,9 +161,10 @@ export class AnnotationsByTypeSelection<
     }
 
     // search extends the search to parent types ?
-    const classTargets = options?.searchParents
-      ? [classTarget, ...getAncestors(classTarget)]
-      : [classTarget];
+    const classTargets =
+      options?.searchParents ?? true
+        ? [classTarget, ...getAncestors(classTarget)]
+        : [classTarget];
 
     return classTargets
       .map((target) => target.ref)

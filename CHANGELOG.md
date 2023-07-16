@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.8](https://github.com/NicolasThierion/aspectjs/compare/v0.3.7...v0.3.8) (2023-07-16)
+
+
+### Features
+
+* ability to set several join point per pointcut ([c4bd963](https://github.com/NicolasThierion/aspectjs/commit/c4bd963cd0158bdcbc6ddcb235f7d1cde68635b0))
+
 ## [0.3.7](https://github.com/NicolasThierion/aspectjs/compare/v0.3.5...v0.3.7) (2023-07-16)
 
 
