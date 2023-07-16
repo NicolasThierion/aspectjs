@@ -2,6 +2,7 @@ import {
   ConstructorType,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
@@ -25,6 +26,16 @@ export class _PropertyAnnotationTargetImpl<X>
   extends _AnnotationTargetImpl<AnnotationType.PROPERTY, X>
   implements PropertyAnnotationTarget<X>
 {
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto, this.propertyKey);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, this.propertyKey, defaultvalue);
+  }
+
   readonly propertyKey: string | symbol;
   readonly descriptor: PropertyDescriptor;
   override [BOUND_INSTANCE_SYMBOL]?: X;

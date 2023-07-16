@@ -34,6 +34,9 @@ describe('property get advice', () => {
     advice = jest.fn();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
   function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
     @Aspect('APropertyAspect')
     class AAspect {
@@ -64,6 +67,9 @@ describe('property get advice', () => {
 
   describe('on pointcut @Before(on.properties.withAnnotations()', () => {
     beforeEach(() => setupAspects());
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
     it('has a "this"  bound to the aspect instance', () => {
       class A {

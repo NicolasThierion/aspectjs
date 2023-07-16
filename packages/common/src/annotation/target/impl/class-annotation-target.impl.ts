@@ -2,6 +2,7 @@ import {
   ConstructorType,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
@@ -39,6 +40,16 @@ export class _ClassAnnotationTargetImpl<X = unknown>
 
   get value() {
     return this.proto;
+  }
+
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, defaultvalue);
   }
 
   static of<X>(decoree: ConstructorType<X>) {

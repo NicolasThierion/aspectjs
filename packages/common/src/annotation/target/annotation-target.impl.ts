@@ -46,6 +46,12 @@ export abstract class _AnnotationTargetImpl<
   ) {
     this['static'] = staticAttribute;
   }
+  abstract defineMetadata(key: string, value: any): void;
+  abstract getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T;
+
   toString() {
     return (this as any as AnnotationTarget).label;
   }

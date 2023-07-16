@@ -5,13 +5,13 @@ declare let Reflect: {
   getOwnMetadata(
     key: string | symbol,
     target: object,
-    propertyKey?: string,
+    propertyKey?: string | symbol,
   ): any;
   defineMetadata(
     key: string | symbol,
     value: any,
     target: object,
-    propertyKey?: string,
+    propertyKey?: string | symbol,
   ): void;
 };
 
@@ -48,7 +48,14 @@ export function defineMetadata(
   key: string,
   value: any,
   target: object,
-  propertyKey?: string,
+  propertyKey?: string | symbol,
+): void;
+
+export function defineMetadata(
+  key: string,
+  value: any,
+  target: object,
+  propertyKey?: string | symbol,
 ) {
   return Reflect.defineMetadata(key, value, target, propertyKey);
 }

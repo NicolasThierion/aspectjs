@@ -1,6 +1,6 @@
 import { PointcutType } from '../../pointcut/pointcut-target.type';
 
-import { getMetadata, MethodPropertyDescriptor } from '@aspectjs/common/utils';
+import { MethodPropertyDescriptor } from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
@@ -54,17 +54,12 @@ function preventRevertMethodDescriptor<X>(
   // save original descriptor.
   // Used later to prevent Reflect.decorate to restore this descriptor
   // and cancel the enhanced parameter
-  getMetadata(
-    'aspectjs:originalDescriptor',
-    ctxt.target.proto,
-    ctxt.target.propertyKey,
-    () => {
-      return Reflect.getOwnPropertyDescriptor(
-        ctxt.target.proto,
-        ctxt.target.propertyKey,
-      );
-    },
-  );
+  ctxt.target.getMetadata('aspectjs:originalDescriptor', () => {
+    return Reflect.getOwnPropertyDescriptor(
+      ctxt.target.proto,
+      ctxt.target.propertyKey,
+    );
+  });
 
   // Override method descriptor from parameter decorator is not allowed because return value of parameter decorators are ignored.
   // Moreover, Reflect.decorate will overwrite any changes made on proto[propertyKey]
@@ -75,10 +70,8 @@ function preventRevertMethodDescriptor<X>(
     propertyDescriptor: PropertyDescriptor & ThisType<any>,
   ) {
     if (target === ctxt.target.proto && property === ctxt.target.propertyKey) {
-      const originalDescriptor = getMetadata(
+      const originalDescriptor = ctxt.target.getMetadata(
         'aspectjs:originalDescriptor',
-        ctxt.target.proto,
-        ctxt.target.propertyKey,
       );
       // prevent writing back old descriptor
       if (equals(originalDescriptor, propertyDescriptor)) {

@@ -9,6 +9,7 @@ import {
   defineMetadata,
   getMetadata,
   getPrototype,
+  isClassInstance,
 } from '@aspectjs/common/utils';
 
 import { AdviceRegistry } from '../advice/registry/advice.registry';
@@ -50,13 +51,20 @@ export class AspectRegistry {
 
   register(aspect: AspectType, aspectOptions: AspectOptions = {}) {
     const target = this.annotationTargetFactory.of<AspectType>(aspect);
-    const annotation = this.weaverContext
+    const [annotation] = this.weaverContext
       .get(AnnotationRegistry)
       .select(Aspect)
       .on({ target })
-      .find({ searchParents: true })[0];
+      .find({ searchParents: true });
+
     if (!annotation) {
       throw new WeavingError(`${target.label} is not an aspect`);
+    } else if (!isClassInstance(aspect)) {
+      throw new TypeError(
+        `${
+          (aspect as any).name ?? aspect
+        } is not an aspect instance. Did you forget to call new ? `,
+      );
     }
 
     if (this.isAspect(aspect)) {

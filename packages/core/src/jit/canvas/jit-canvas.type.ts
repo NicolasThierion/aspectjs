@@ -1,4 +1,4 @@
-import { assert, getMetadata } from '@aspectjs/common/utils';
+import { assert } from '@aspectjs/common/utils';
 
 import { WeavingError } from '../../errors/weaving.error';
 
@@ -49,7 +49,7 @@ export class JitWeaverCanvas<
         ctxt.instance = instance;
         ctxt.bind(instance);
       }
-      if (getMetadata('@ajs:defuseAdvices', ctxt.target.ref)) {
+      if (ctxt.target.getMetadata('@ajs:defuseAdvices')) {
         return this.strategy.callJoinpoint(ctxt, compiledSymbol);
       }
 

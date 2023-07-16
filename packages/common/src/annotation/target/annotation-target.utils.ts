@@ -1,8 +1,4 @@
-import {
-  ConstructorType,
-  defineMetadata,
-  Prototype,
-} from '@aspectjs/common/utils';
+import { ConstructorType, Prototype } from '@aspectjs/common/utils';
 import { AnnotationTarget } from './annotation-target';
 
 /**
@@ -28,9 +24,9 @@ export function defuseAdvices<R = unknown>(
   fn: () => R,
 ) {
   try {
-    defineMetadata('@ajs:defuseAdvices', true, target.ref);
+    target.defineMetadata('@ajs:defuseAdvices', true);
     return fn();
   } finally {
-    defineMetadata('@ajs:defuseAdvices', false, target.ref);
+    target.defineMetadata('@ajs:defuseAdvices', false);
   }
 }

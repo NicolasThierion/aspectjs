@@ -1,9 +1,4 @@
-import {
-  assert,
-  ConstructorType,
-  defineMetadata,
-  getMetadata,
-} from '@aspectjs/common/utils';
+import { assert, ConstructorType } from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
 import { PointcutType } from './../../pointcut/pointcut-target.type';
@@ -33,11 +28,9 @@ export class JitClassCanvasStrategy<
   ): ConstructorType<X> {
     // if class already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
-    let constructor = getMetadata(
+    let constructor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
-      ctxt.target.ref,
       () => ctxt.target.proto.constructor,
-      true,
     ) as ConstructorType<X>;
 
     const adviceEntries = [
@@ -50,7 +43,7 @@ export class JitClassCanvasStrategy<
 
     adviceEntries
       //  prevent calling them twice.
-      .filter((e) => !getMetadata('compiled', e, () => false))
+      .filter((e) => !ctxt.target.getMetadata(`compiled_${e.id}`, () => false))
       .forEach((entry) => {
         assert(typeof entry.advice === 'function');
         ctxt.target.proto.constructor = constructor;
@@ -67,10 +60,10 @@ export class JitClassCanvasStrategy<
             'should return void or a class constructor',
           );
         }
-        defineMetadata('compiled', true, entry);
+        ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
       });
 
-    defineMetadata('@ajs:compiledSymbol', constructor, ctxt.target.ref);
+    ctxt.target.defineMetadata('@ajs:compiledSymbol', constructor);
     return constructor;
   }
 

@@ -19,12 +19,18 @@ export const CALL_JIT_WEAVER_HOOK: DecoratorProvider = {
     _annotationStub: AnnotationStub<AnnotationType>,
   ) {
     const weaver = reflect.get(JitWeaver);
-
     const targetFactory = reflect.get(AnnotationTargetFactory);
-    return function (...args: any) {
-      const target = targetFactory.of(...args) as _BindableAnnotationTarget;
-      assert(typeof target._bind === 'function');
-      return weaver.enhance(target);
-    };
+    return createJitWeaverDecorator(weaver, targetFactory);
   },
+};
+
+export const createJitWeaverDecorator = (
+  weaver: JitWeaver,
+  targetFactory: AnnotationTargetFactory,
+) => {
+  return function (...args: any) {
+    const target = targetFactory.of(...args) as _BindableAnnotationTarget;
+    assert(typeof target._bind === 'function');
+    return weaver.enhance(target);
+  };
 };

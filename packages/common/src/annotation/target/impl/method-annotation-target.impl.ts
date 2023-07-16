@@ -3,6 +3,7 @@ import {
   MethodPropertyDescriptor,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
@@ -51,6 +52,16 @@ export class _MethodAnnotationTargetImpl<X>
     );
     this.propertyKey = propertyKey;
     this.descriptor = descriptor;
+  }
+
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto, this.propertyKey);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, this.propertyKey, defaultvalue);
   }
 
   static of<X>(

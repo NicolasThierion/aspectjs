@@ -1,11 +1,14 @@
 import {
+  _AnnotationTargetImpl,
   AnnotationRegistry,
   AnnotationTarget,
+  AnnotationTargetFactory,
+  AnnotationTargetRef,
   AnnotationType,
   BindableAnnotationsByTypeSelection,
-  _AnnotationTargetImpl,
 } from '@aspectjs/common';
 import {
+  assert,
   ConstructorType,
   MethodPropertyDescriptor,
 } from '@aspectjs/common/utils';
@@ -24,6 +27,7 @@ import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
 import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
+import { createJitWeaverDecorator } from './jit-weaver-decorator.provider';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
@@ -38,6 +42,11 @@ export class JitWeaver implements Weaver {
     this.weaverContext.get(AnnotationRegistry);
   private readonly aspectRegistry = this.weaverContext.get(AspectRegistry);
   private readonly adviceRegistry = this.weaverContext.get(AdviceRegistry);
+  private readonly enhancedTargets = new WeakMap<
+    AnnotationTargetRef,
+    AnnotationTarget
+  >();
+  private lastAnnotationsCount = 0;
 
   constructor(private readonly weaverContext: WeaverContext) {}
 
@@ -45,6 +54,10 @@ export class JitWeaver implements Weaver {
     aspects.forEach((aspect) => {
       this.aspectRegistry.register(aspect);
     });
+
+    // try to enhance targets that already have been declared
+
+    this.enhanceEarlyAnnotationDeclarations();
 
     return this;
   }
@@ -58,6 +71,7 @@ export class JitWeaver implements Weaver {
   enhance<T extends AnnotationType, X = unknown>(
     target: _AnnotationTargetImpl<T, X> & AnnotationTarget<T, X>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
+    this.enhancedTargets.set(target.ref, target);
     const annotations = new BindableAnnotationsByTypeSelection(
       this.annotationRegistry.select().on({
         target,
@@ -190,5 +204,36 @@ export class JitWeaver implements Weaver {
     )
       .compile(ctxt, advicesSelection)
       .link();
+  }
+
+  private enhanceEarlyAnnotationDeclarations() {
+    const allAnnotations = this.annotationRegistry.select().all().find();
+    const lastAnnotationsCount = allAnnotations.length;
+    if (lastAnnotationsCount !== this.lastAnnotationsCount) {
+      // new annotation since last enhance ?
+      this.lastAnnotationsCount = lastAnnotationsCount;
+      allAnnotations
+        .filter((a) => !this.enhancedTargets.has(a.target.ref))
+        .forEach((a) => {
+          const decorator = createJitWeaverDecorator(
+            this,
+            this.weaverContext.get(AnnotationTargetFactory),
+          );
+
+          const decoree = decorator.apply(null, a.target.asDecoratorArgs());
+          if (decoree) {
+            if (a.target.type === AnnotationType.CLASS) {
+              assert(typeof decoree === 'function');
+              a.target.proto['constructor'] = decoree as ConstructorType;
+            } else {
+              Object.defineProperty(
+                a.target.proto,
+                a.target.propertyKey,
+                decoree,
+              );
+            }
+          }
+        });
+    }
   }
 }
