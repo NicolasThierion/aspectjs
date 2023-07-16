@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/common",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Aspectjs - commonly needed factories & utils",
   "repository": {
     "type": "git",
