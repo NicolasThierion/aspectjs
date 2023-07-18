@@ -1,7 +1,6 @@
 import { ANNOTATION_HOOK_REGISTRY_PROVIDERS } from '../factory/annotation-factory.provider';
 import { ANNOTATION_REGISTRY_PROVIDERS } from '../registry/annotation-registry.provider';
 import { ANNOTATION_TARGET_FACTORY_PROVIDERS } from '../target/annotation-target-factory.provider';
-import { ANNOTATION_TRIGGER_PROVIDERS } from '../trigger/annotation-trigger.provider';
 import { ReflectContext } from './../../reflect/reflect.context';
 
 import type { ReflectProvider } from '../../reflect/reflect-provider.type';
@@ -13,7 +12,7 @@ export class AnnotationsReflectModule implements ReflectModule {
     ...ANNOTATION_REGISTRY_PROVIDERS,
     ...ANNOTATION_HOOK_REGISTRY_PROVIDERS,
     ...ANNOTATION_TARGET_FACTORY_PROVIDERS,
-    ...ANNOTATION_TRIGGER_PROVIDERS,
+    // ...ANNOTATION_TRIGGER_PROVIDERS,
   ];
 }
 
