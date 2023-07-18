@@ -11,7 +11,7 @@ import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import type { BeforeContext } from './before.context';
 
 describe('parameter advice', () => {
@@ -43,7 +43,7 @@ describe('parameter advice', () => {
     class AAspect {
       @Before(on.parameters.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.PARAMETER>,
+        ctxt: BeforeContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -54,7 +54,7 @@ describe('parameter advice', () => {
     class BAspect {
       @Before(on.parameters.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.PARAMETER>,
+        ctxt: BeforeContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -99,6 +99,29 @@ describe('parameter advice', () => {
       new A().m('a', 'b');
       expect(advice).toHaveBeenCalledTimes(2);
       expect(mImpl).toHaveBeenCalledTimes(1);
+    });
+
+    describe('when used together with a method decorator', () => {
+      it('calls each matching advice once', () => {
+        const AMethod = new AnnotationFactory('test').create(
+          AnnotationType.METHOD,
+          'AMethod',
+        );
+        const mImpl = jest.fn();
+        class A {
+          @AMethod()
+          m(@AParameter() arg1: any) {
+            mImpl(this, arg1);
+          }
+        }
+
+        expect(advice).not.toHaveBeenCalled();
+        advice = jest.fn(function (this: any) {});
+
+        new A().m('a');
+        expect(advice).toHaveBeenCalledTimes(2);
+        expect(mImpl).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -227,18 +250,12 @@ describe('parameter advice', () => {
             mImpl(this, arg1, arg2);
           }
         }
-        advice = jest.fn(
-          (ctxt: BeforeContext<PointcutTargetType.PARAMETER>) => {
-            expect(ctxt.annotations.find().length).toEqual(3);
-            expect(ctxt.annotations.filter(AParameter).find().length).toEqual(
-              2,
-            );
+        advice = jest.fn((ctxt: BeforeContext<JoinpointType.PARAMETER>) => {
+          expect(ctxt.annotations.find().length).toEqual(3);
+          expect(ctxt.annotations.filter(AParameter).find().length).toEqual(2);
 
-            expect(ctxt.annotations.filter(BParameter).find().length).toEqual(
-              1,
-            );
-          },
-        );
+          expect(ctxt.annotations.filter(BParameter).find().length).toEqual(1);
+        });
         new A().m('a', 'b');
 
         expect(advice).toHaveBeenCalled();

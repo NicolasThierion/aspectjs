@@ -1,10 +1,10 @@
 import { AnnotationRef } from '@aspectjs/common';
 import { PointcutExpression } from './pointcut-expression.type';
-import { PointcutTargetType } from './pointcut-target.type';
+import { JoinpointType } from './pointcut-target.type';
 
 describe('PointcutExpression', () => {
   describe('.of(exp: string)', () => {
-    let type: PointcutTargetType;
+    let type: JoinpointType;
     const name = '*';
     const annotations = [
       AnnotationRef.of('test:Test'),
@@ -21,7 +21,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid class pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 class *';
-        type = PointcutTargetType.CLASS;
+        type = JoinpointType.CLASS;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -31,7 +31,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid method pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 method *';
-        type = PointcutTargetType.METHOD;
+        type = JoinpointType.METHOD;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -41,7 +41,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid parameter pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 parameter *';
-        type = PointcutTargetType.PARAMETER;
+        type = JoinpointType.PARAMETER;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -51,7 +51,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid property pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 property *';
-        type = PointcutTargetType.GET_PROPERTY;
+        type = JoinpointType.GET_PROPERTY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(
@@ -63,7 +63,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid property setter pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 set property *';
-        type = PointcutTargetType.SET_PROPERTY;
+        type = JoinpointType.SET_PROPERTY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -73,7 +73,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is pointcut expression that targets any', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 any *';
-        type = PointcutTargetType.ANY;
+        type = JoinpointType.ANY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));

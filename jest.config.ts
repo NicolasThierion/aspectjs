@@ -47,5 +47,5 @@ export default {
   resolver: 'ts-jest-resolver',
 
   coverageDirectory: join(__dirname, 'dist', 'coverage'),
-  collectCoverage: true,
+  // collectCoverage: true, // disabled, as it slows down running test with vscode-jest extension
 } satisfies JestConfigWithTsJest;

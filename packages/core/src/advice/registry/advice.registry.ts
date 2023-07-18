@@ -16,10 +16,11 @@ import { AdvicesSelection } from './advices-selection.model';
 import { Order } from '../../annotations/order.annotation';
 import { Aspect } from '../../aspect/aspect.annotation';
 import type { AspectType } from '../../aspect/aspect.type';
-import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
 import { Advice, AdviceType } from '../advice.type';
-import type { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
+import type { AdviceRegBuckets } from './advice-entry.model';
+import { AdviceEntry } from './advice-entry.model';
 const KNOWN_POINTCUT_ANNOTATION_REFS = new Set([
   Compile.ref,
   Before.ref,
@@ -136,13 +137,13 @@ export class AdviceRegistry {
     const aspectCtor = getPrototype(aspect).constructor;
 
     const targetTypes =
-      pointcut.targetType === PointcutTargetType.ANY
+      pointcut.targetType === JoinpointType.ANY
         ? [
-            PointcutTargetType.CLASS,
-            PointcutTargetType.GET_PROPERTY,
-            PointcutTargetType.SET_PROPERTY,
-            PointcutTargetType.METHOD,
-            PointcutTargetType.PARAMETER,
+            JoinpointType.CLASS,
+            JoinpointType.GET_PROPERTY,
+            JoinpointType.SET_PROPERTY,
+            JoinpointType.METHOD,
+            JoinpointType.PARAMETER,
           ]
         : [pointcut.targetType];
 
@@ -157,10 +158,12 @@ export class AdviceRegistry {
         const byAspect = byPointcutType.get(aspectCtor) ?? [];
         byPointcutType.set(aspectCtor, byAspect);
 
-        byAspect.push({
-          advice,
-          aspect,
-        });
+        byAspect.push(
+          AdviceEntry.of({
+            advice,
+            aspect,
+          }),
+        );
       });
   }
 

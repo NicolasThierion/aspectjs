@@ -1,20 +1,32 @@
-import { ConstructorType } from '@aspectjs/common/utils';
+import { ConstructorType, getMetadata } from '@aspectjs/common/utils';
 
 import type { AspectType } from '../../aspect/aspect.type';
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import type { Advice, AdviceType } from '../advice.type';
 
 export type AdviceRegBuckets = {
-  [t in PointcutTargetType]?: {
+  [t in JoinpointType]?: {
     [p in AdviceType]?: Map<ConstructorType<AspectType>, AdviceEntry[]>;
   };
 };
 
 export type AdviceEntry<
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
   X = unknown,
   P extends AdviceType = AdviceType,
 > = {
   advice: Advice<T, X, P>;
   aspect: AspectType;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace AdviceEntry {
+  export function of(entry: AdviceEntry) {
+    return getMetadata(
+      'advice-entry',
+      entry.aspect,
+      entry.advice.name,
+      () => entry,
+    );
+  }
+}

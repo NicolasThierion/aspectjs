@@ -11,7 +11,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { JoinPoint } from '../../public_api';
 import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
@@ -46,7 +46,7 @@ describe('method advice', () => {
     class AAspect {
       @Around(on.methods.withAnnotations(...aanotations))
       applyAround(
-        ctxt: AroundContext<PointcutTargetType.CLASS>,
+        ctxt: AroundContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA.bind(this)(ctxt, ...args);
@@ -54,7 +54,7 @@ describe('method advice', () => {
 
       @Around(on.methods.withAnnotations(...aanotations))
       applyAround2(
-        ctxt: AroundContext<PointcutTargetType.CLASS>,
+        ctxt: AroundContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceB.bind(this)(ctxt, ...args);
@@ -62,7 +62,7 @@ describe('method advice', () => {
 
       @Before(on.methods.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: AroundContext<PointcutTargetType.CLASS>,
+        ctxt: AroundContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
         return beforeAdvice.bind(this)(ctxt, ...args);
@@ -73,7 +73,7 @@ describe('method advice', () => {
     class BAspect {
       @Around(on.methods.withAnnotations(...bannotations))
       applyAround(
-        ctxt: AroundContext<PointcutTargetType.CLASS>,
+        ctxt: AroundContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA.bind(this)(ctxt, ...args);
@@ -185,7 +185,7 @@ describe('method advice', () => {
       describe('once', () => {
         beforeEach(() => {
           aroundAdviceA = jest.fn(
-            (ctxt: AroundContext<PointcutTargetType.CLASS>) => {
+            (ctxt: AroundContext<JoinpointType.CLASS>) => {
               return ctxt.joinpoint(...ctxt.args);
             },
           );

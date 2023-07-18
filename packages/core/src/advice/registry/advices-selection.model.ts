@@ -2,7 +2,7 @@ import { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 
 import { Pointcut } from '../../pointcut/pointcut';
-import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
 import { AdviceType } from '../advice.type';
 import { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
@@ -27,9 +27,9 @@ export class AdvicesSelection {
     );
   }
 
-  find<T extends PointcutTargetType, P extends AdviceType>(
-    targetType?: T,
-    pointcutType?: P,
+  find<T extends JoinpointType, P extends AdviceType>(
+    targetTypes?: T[],
+    pointcutTypes?: P[],
   ): IterableIterator<AdviceEntry<T, unknown, P>> {
     const buckets = this.buckets;
     const filters = this.filters;
@@ -38,18 +38,23 @@ export class AdvicesSelection {
       (this.filters.annotations ?? []).map((a) => AnnotationRef.of(a)),
     );
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const targetTypes: PointcutTargetType[] = targetType
-      ? [targetType]
-      : (Object.keys(buckets) as PointcutTargetType[]);
+    const _targetTypes: JoinpointType[] = targetTypes?.length
+      ? targetTypes
+      : (Object.keys(buckets) as JoinpointType[]);
 
     function* generator() {
-      for (const targetType of targetTypes) {
+      // advice that are applied to multiple pointcuts are merged into a single entry.
+      // In this case, the same entry is registered multiple times in the map.
+      // We have to remember what entries are generated to avoir generating the same entry twice
+      const generatedEntrySet = new Set();
+
+      for (const targetType of _targetTypes) {
         const byTargetType = buckets[targetType] ?? {};
-        const pointcutTypes = pointcutType
-          ? [pointcutType]
+        const _pointcutTypes = pointcutTypes?.length
+          ? pointcutTypes
           : (Object.keys(byTargetType) as AdviceType[]);
 
-        for (const pointcutType of pointcutTypes) {
+        for (const pointcutType of _pointcutTypes) {
           const map = byTargetType[pointcutType];
           if (map) {
             const adviceEntries = (
@@ -67,9 +72,12 @@ export class AdvicesSelection {
                 annotationFilterMatches(
                   annotationsRefFilter,
                   entry.advice.pointcuts,
-                )
-              )
+                ) &&
+                !generatedEntrySet.has(entry)
+              ) {
+                generatedEntrySet.add(entry);
                 yield entry as any as AdviceEntry<T, unknown, P>;
+              }
             }
           }
         }

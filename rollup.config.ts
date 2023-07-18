@@ -1,6 +1,5 @@
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
-import findUp from 'find-up';
 import { existsSync, readFileSync } from 'fs';
 import json5 from 'json5';
 import { dirname, join, relative, resolve } from 'path';
@@ -61,11 +60,9 @@ export const createConfig = (
       ? localTsConfig
       : resolve(__dirname, './tsconfig.json'));
 
-  const packageJsonPath = findUp.sync('package.json', {
-    cwd: options.rootDir,
-  })!;
+  const packageJsonPath = join(options.rootDir, 'package.json');
 
-  const subExportsPath = relative(dirname(packageJsonPath), options.rootDir);
+  const subExportsPath = relative(process.cwd(), dirname(packageJsonPath));
 
   options.pkg = options.pkg ?? parse(readFileSync(packageJsonPath).toString());
 
@@ -137,7 +134,7 @@ export const createConfig = (
       }),
       // ES 2020
       createOutputOptions({
-        dir: `./dist/esm2020/`,
+        dir: join(`./dist/esm2020/`, subExportsPath),
         format: 'esm',
         preserveModules: true,
       }),
@@ -231,20 +228,19 @@ export const createConfig = (
   };
 
   // building the main bundle
-  if (!subExportsPath) {
-    bundleOptions.plugins.push(
-      copy({
-        targets: [
-          { src: packageJsonPath, dest: 'dist/' },
-          {
-            src: 'README.md',
-            dest: 'dist/',
-            caseSensitiveMatch: false,
-          },
-        ],
-      }),
-    );
-  }
+  // if (!subExportsPath) {
+  bundleOptions.plugins.push(
+    copy({
+      targets: [
+        { src: packageJsonPath, dest: `dist/${subExportsPath}` },
+        {
+          src: join(subExportsPath, 'README.md'),
+          dest: `dist/${subExportsPath}`,
+          caseSensitiveMatch: false,
+        },
+      ],
+    }),
+  );
 
   return rollupDefineConfig([bundleOptions, dtsOptions, dtsBundleOptions]);
 };

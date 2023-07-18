@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "npm run clean && jest --runInBand",
+    "test:unit": "npm run clean && jest --runInBand --collectCoverage",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "build:common": "rollup --config ./rollup.config.cjs",
     "build:utils": "rollup --config ./utils/rollup.config.cjs",
@@ -38,7 +38,7 @@
       "node": "./cjs/utils.cjs",
       "require": "./cjs/utils.cjs",
       "default": "./cjs/utils.cjs",
-      "unpkg": "./umd/utils.umd.min.js"
+      "unpkg": "./umd/utils.umd.js"
     },
     "./testing": {
       "types": "./testing/index.d.ts",
@@ -47,7 +47,7 @@
       "node": "./cjs/testing.cjs",
       "require": "./cjs/testing.cjs",
       "default": "./cjs/testing.cjs",
-      "unpkg": "./umd/testing.umd.min.js"
+      "unpkg": "./umd/testing.umd.js"
     },
     ".": {
       "types": "./index.d.ts",
@@ -56,9 +56,9 @@
       "node": "./cjs/common.cjs",
       "require": "./cjs/common.cjs",
       "default": "./cjs/common.cjs",
-      "unpkg": "./umd/common.umd.min.js"
+      "unpkg": "./umd/common.umd.js"
     }
   },
   "module": "./fesm2020/common.mjs",
-  "main": "./umd/common.umd.min.js"
+  "main": "./umd/common.umd.js"
 }

@@ -1,5 +1,4 @@
 import { assert } from '@aspectjs/common/utils';
-import { Annotation } from './annotation.types';
 
 /**
  * An annotation is identified by its name and its group id.
@@ -79,23 +78,17 @@ export class AnnotationRef {
    */
   static of(groupId: string, name: string): AnnotationRef;
   static of(
-    obj:
-      | Annotation<any, any>
-      | Pick<AnnotationRef, 'groupId' | 'name'>
-      | string,
+    obj: Pick<AnnotationRef, 'groupId' | 'name'> | string,
   ): AnnotationRef;
   static of(
-    obj:
-      | Annotation<any, any>
-      | Pick<AnnotationRef, 'groupId' | 'name'>
-      | string,
+    obj: Pick<AnnotationRef, 'groupId' | 'name'> | string,
     name?: string,
   ): AnnotationRef {
     if (typeof obj === 'string') {
       const refStr = typeof name === 'string' ? `${obj}:${name}` : obj;
       return AnnotationRef.get(refStr) ?? new AnnotationRef(refStr);
     } else {
-      const ref = (obj as Annotation)?.ref ?? (obj as AnnotationRef);
+      const ref = obj as AnnotationRef;
       assert(!!ref);
       const refStr = `${ref.groupId}:${ref.name}`;
       return AnnotationRef.get(refStr) ?? new AnnotationRef(refStr);

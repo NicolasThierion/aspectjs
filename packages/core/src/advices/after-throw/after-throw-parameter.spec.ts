@@ -11,7 +11,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AfterThrow } from '../../public_api';
 
 describe('parameter advice', () => {
@@ -69,7 +69,7 @@ describe('parameter advice', () => {
     class BAspect {
       @AfterThrow(on.parameters.withAnnotations(...bannotations))
       applyAfterThrow(
-        ctxt: AfterThrowContext<PointcutTargetType.CLASS>,
+        ctxt: AfterThrowContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
         return afterThrowAdviceB.bind(this)(ctxt, ...args);

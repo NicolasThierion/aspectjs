@@ -5,7 +5,7 @@ import { JoinPoint } from './joinpoint';
 
 import type { AfterContext } from '../advices/after/after.context';
 import type {
-  PointcutTargetType,
+  JoinpointType,
   ToTargetType,
 } from '../pointcut/pointcut-target.type';
 
@@ -16,7 +16,7 @@ import type { BeforeContext } from '../advices/before/before.context';
 import type { CompileContext } from '../advices/compile/compile.context';
 
 export class MutableAdviceContext<
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
   X = unknown,
 > {
   /** The annotations contexts **/

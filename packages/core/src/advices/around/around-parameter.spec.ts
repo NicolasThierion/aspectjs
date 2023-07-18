@@ -11,7 +11,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { JoinPoint } from '../../public_api';
 import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
@@ -48,7 +48,7 @@ describe('parameter advice', () => {
     class AAspect {
       @Around(on.parameters.withAnnotations(...aanotations))
       applyAround(
-        ctxt: AroundContext<PointcutTargetType.PARAMETER>,
+        ctxt: AroundContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA1.bind(this)(ctxt, ...args);
@@ -56,7 +56,7 @@ describe('parameter advice', () => {
 
       @Around(on.parameters.withAnnotations(...aanotations))
       applyAround2(
-        ctxt: AroundContext<PointcutTargetType.PARAMETER>,
+        ctxt: AroundContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA2.bind(this)(ctxt, ...args);
@@ -64,7 +64,7 @@ describe('parameter advice', () => {
 
       @Before(on.parameters.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: AroundContext<PointcutTargetType.PARAMETER>,
+        ctxt: AroundContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return beforeAdvice.bind(this)(ctxt, ...args);
@@ -75,7 +75,7 @@ describe('parameter advice', () => {
     class BAspect {
       @Around(on.parameters.withAnnotations(...bannotations))
       applyAround(
-        ctxt: AroundContext<PointcutTargetType.PARAMETER>,
+        ctxt: AroundContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return aroundAdviceB.bind(this)(ctxt, ...args);
@@ -200,7 +200,7 @@ describe('parameter advice', () => {
       describe('once', () => {
         beforeEach(() => {
           aroundAdviceA1 = jest.fn(
-            (ctxt: AroundContext<PointcutTargetType.PARAMETER>) => {
+            (ctxt: AroundContext<JoinpointType.PARAMETER>) => {
               return ctxt.joinpoint(...ctxt.args);
             },
           );

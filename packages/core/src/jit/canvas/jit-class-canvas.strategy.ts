@@ -1,7 +1,7 @@
 import { assert, ConstructorType, getMetadata } from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
-import { PointcutTargetType } from './../../pointcut/pointcut-target.type';
+import { JoinpointType } from './../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import { AdviceType } from '../../advice/advice.type';
@@ -16,18 +16,18 @@ import { renameFunction } from './canvas.utils';
  */
 export class JitClassCanvasStrategy<
   X = unknown,
-> extends JitWeaverCanvasStrategy<PointcutTargetType.CLASS, X> {
+> extends JitWeaverCanvasStrategy<JoinpointType.CLASS, X> {
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, PointcutTargetType.CLASS);
+    super(weaverContext, [JoinpointType.CLASS]);
   }
 
   compile(
-    ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
     selection: AdvicesSelection,
   ): ConstructorType<X> {
     //  if no class compile advices, return ctor as is
     const adviceEntries = [
-      ...selection.find(PointcutTargetType.CLASS, AdviceType.COMPILE),
+      ...selection.find([JoinpointType.CLASS], [AdviceType.COMPILE]),
     ];
 
     // if another @Compile advice has been applied
@@ -52,7 +52,7 @@ export class JitClassCanvasStrategy<
   }
 
   override before(
-    ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
     selection: AdvicesSelection,
   ): void {
     super.before(withNullInstance(ctxt), selection);
@@ -67,7 +67,7 @@ export class JitClassCanvasStrategy<
   // }
 
   override callJoinpoint(
-    ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
     originalSymbol: ConstructorType<X>,
   ): unknown {
     assert(!!ctxt.args);
@@ -78,8 +78,8 @@ export class JitClassCanvasStrategy<
   }
 
   override link(
-    ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
-    compiledConstructor: CompiledSymbol<PointcutTargetType.CLASS, X>,
+    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
+    compiledConstructor: CompiledSymbol<JoinpointType.CLASS, X>,
     joinpoint: (...args: any[]) => unknown,
   ): ConstructorType<X> {
     assert(!!ctxt.target?.proto);
@@ -98,8 +98,8 @@ export class JitClassCanvasStrategy<
   }
 
   protected override callAdvice(
-    adviceEntry: AdviceEntry<PointcutTargetType.CLASS>,
-    ctxt: MutableAdviceContext<PointcutTargetType.CLASS>,
+    adviceEntry: AdviceEntry<JoinpointType.CLASS>,
+    ctxt: MutableAdviceContext<JoinpointType.CLASS>,
     args: unknown[],
     allowReturn = true,
   ): unknown {
@@ -116,9 +116,9 @@ export class JitClassCanvasStrategy<
  * Void instance, as instance is not reliable before the actual call of the constructor
  */
 function withNullInstance<X>(
-  ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
-): MutableAdviceContext<PointcutTargetType.CLASS, X> {
-  return new MutableAdviceContext<PointcutTargetType.CLASS, X>({
+  ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
+): MutableAdviceContext<JoinpointType.CLASS, X> {
+  return new MutableAdviceContext<JoinpointType.CLASS, X>({
     ...ctxt,
     instance: null,
   });

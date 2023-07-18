@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "npm run clean && jest --runInBand",
+    "test:unit": "npm run clean && jest --runInBand --collectCoverage",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf ./dist && rimraf ./*.tgz"
@@ -32,11 +32,11 @@
       "node": "./cjs/memo.cjs",
       "require": "./cjs/memo.cjs",
       "default": "./cjs/memo.cjs",
-      "unpkg": "./umd/memo.umd.min.js"
+      "unpkg": "./umd/memo.umd.js"
     }
   },
   "module": "./fesm2020/memo.mjs",
-  "main": "./umd/memo.umd.min.js",
+  "main": "./umd/memo.umd.js",
   "dependencies": {
     "@emotion/hash": "^0.9.1"
   },

@@ -2,7 +2,7 @@ import { assert } from '@aspectjs/common/utils';
 
 import { WeavingError } from '../../errors/weaving.error';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
@@ -10,14 +10,14 @@ import type { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 export interface CompiledCanvas<
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
   X = unknown,
 > {
   compiledSymbol: CompiledSymbol<T, X> | undefined;
   link: () => CompiledSymbol<T, X> | undefined | void;
 }
 export class JitWeaverCanvas<
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
   X = unknown,
 > {
   private compiled = false;

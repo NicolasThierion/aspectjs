@@ -11,7 +11,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AfterReturn } from '../../public_api';
 
 describe('method advice', () => {
@@ -211,7 +211,7 @@ describe('method advice', () => {
             }
           }
           afterReturnA1 = jest.fn(function (
-            ctxt: AfterReturnContext<PointcutTargetType.CLASS, A>,
+            ctxt: AfterReturnContext<JoinpointType.CLASS, A>,
           ) {
             ctxt.instance.labels = ctxt.instance.labels?.concat(['B']);
           });

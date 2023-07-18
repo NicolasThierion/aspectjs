@@ -1,0 +1,20 @@
+{
+  "name": "@aspectjs/common/utils",
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
+  "typings": "./index.d.ts",
+  "main": "../umd/utils.umd.js",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./index.d.ts",
+      "esm2020": "../esm2020/utils/index.js",
+      "es2020": "../fesm2020/utils.mjs",
+      "node": "../cjs/utils.cjs",
+      "require": "../cjs/utils.cjs",
+      "default": "../cjs/utils.cjs",
+      "unpkg": "../umd/utils.umd.js"
+    }
+  }
+}

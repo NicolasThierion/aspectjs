@@ -3,31 +3,37 @@ import {
   AnnotationFactory,
   AnnotationType,
 } from '@aspectjs/common';
+import { configureTesting } from '@aspectjs/common/testing';
 import {
   AfterThrow,
   AfterThrowContext,
   Around,
   AroundContext,
   Aspect,
+  Before,
   JoinPoint,
   getWeaver,
   on,
 } from '@aspectjs/core';
 
-describe('registering multiple advices aspects', () => {
+describe('registering multiple advices', () => {
   describe('with advices that triggers on different annotations', () => {
     describe('calling an annotated method', () => {
       const af = new AnnotationFactory('test');
       let AAnnotation: Annotation<AnnotationType.ANY>;
       let BAnnotation: Annotation<AnnotationType.ANY>;
+      let CAnnotation: Annotation<AnnotationType.ANY>;
 
       let aroundAimpl = jest.fn();
       let afterThrowBimpl = jest.fn();
+      let beforeCimpl = jest.fn();
       let mImpl = jest.fn();
 
       beforeEach(() => {
         AAnnotation = af.create('AAnnotation');
         BAnnotation = af.create('BAnnotation');
+        CAnnotation = af.create('CAnnotation');
+        configureTesting();
 
         aroundAimpl = jest.fn(
           (context: AroundContext, joinpoint: JoinPoint, args: unknown[]) => {
@@ -40,6 +46,7 @@ describe('registering multiple advices aspects', () => {
           },
         );
         mImpl = jest.fn();
+        beforeCimpl = jest.fn();
 
         @Aspect()
         class AAspect {
@@ -62,14 +69,23 @@ describe('registering multiple advices aspects', () => {
           }
         }
 
-        getWeaver().enable(new AAspect(), new BAspect());
+        @Aspect()
+        class CAspect {
+          @Before(on.parameters.withAnnotations(CAnnotation))
+          applyBeforeC(context: AfterThrowContext, error: Error) {
+            beforeCimpl(context, error);
+          }
+        }
+
+        getWeaver().enable(new AAspect(), new BAspect(), new CAspect());
       });
 
-      it('should call only the advices that matches the annotation', () => {
+      it('should call the advices that matches the annotation', () => {
         @BAnnotation()
         class X {
+          @AAnnotation()
           @BAnnotation()
-          m() {
+          m(@CAnnotation() _arg: string) {
             mImpl();
           }
         }
@@ -79,11 +95,34 @@ describe('registering multiple advices aspects', () => {
         });
 
         expect(() => {
-          new X().m();
+          new X().m('arg');
+        }).toThrow(new Error('error'));
+
+        expect(aroundAimpl).toHaveBeenCalled();
+        expect(afterThrowBimpl).toHaveBeenCalledTimes(1);
+        expect(beforeCimpl).toHaveBeenCalledTimes(1);
+      });
+
+      it('should call only the advices that matches the annotation', () => {
+        @BAnnotation()
+        class X {
+          @BAnnotation()
+          m(@CAnnotation() _arg: string) {
+            mImpl();
+          }
+        }
+
+        mImpl = jest.fn(() => {
+          throw new Error('error');
+        });
+
+        expect(() => {
+          new X().m('arg');
         }).toThrow(new Error('error'));
 
         expect(aroundAimpl).not.toHaveBeenCalled();
         expect(afterThrowBimpl).toHaveBeenCalledTimes(1);
+        expect(beforeCimpl).toHaveBeenCalledTimes(1);
       });
     });
   });

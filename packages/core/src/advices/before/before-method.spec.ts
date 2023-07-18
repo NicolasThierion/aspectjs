@@ -11,7 +11,7 @@ import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import type { BeforeContext } from './before.context';
 
 describe('method advice', () => {
@@ -42,7 +42,7 @@ describe('method advice', () => {
     class AAspect {
       @Before(on.methods.withAnnotations(...aannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.METHOD>,
+        ctxt: BeforeContext<JoinpointType.METHOD>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -53,7 +53,7 @@ describe('method advice', () => {
     class BAspect {
       @Before(on.methods.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.METHOD>,
+        ctxt: BeforeContext<JoinpointType.METHOD>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);

@@ -14,7 +14,7 @@ import { AspectType } from '../aspect/aspect.type';
 import { JitWeaverCanvas } from './canvas/jit-canvas.type';
 import { JitClassCanvasStrategy } from './canvas/jit-class-canvas.strategy';
 
-import type { PointcutTargetType } from '../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../pointcut/pointcut-target.type';
 import type { WeaverContext } from './../weaver/context/weaver.context';
 
 import type { Weaver } from '../weaver/weaver';
@@ -68,7 +68,7 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceClass<X>(
-    ctxt: MutableAdviceContext<PointcutTargetType.CLASS, X>,
+    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
   ): (new (...args: any[]) => X) | void {
     const annotations = ctxt.annotations.find();
 
@@ -83,7 +83,7 @@ export class JitWeaver implements Weaver {
       annotations: annotations.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<PointcutTargetType.CLASS, X>(
+    return new JitWeaverCanvas<JoinpointType.CLASS, X>(
       new JitClassCanvasStrategy<X>(this.weaverContext),
     )
       .compile(ctxt, advicesSelection)
@@ -92,7 +92,7 @@ export class JitWeaver implements Weaver {
 
   private enhanceProperty<X>(
     ctxt: MutableAdviceContext<
-      PointcutTargetType.GET_PROPERTY | PointcutTargetType.SET_PROPERTY,
+      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
       X
     >,
   ): PropertyDescriptor | void {
@@ -110,7 +110,7 @@ export class JitWeaver implements Weaver {
     });
 
     return new JitWeaverCanvas<
-      PointcutTargetType.GET_PROPERTY | PointcutTargetType.SET_PROPERTY,
+      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
       X
     >(new JitPropertyCanvasStrategy<X>(this.weaverContext))
       .compile(ctxt, advicesSelection)
@@ -118,7 +118,7 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceMethod<X>(
-    ctxt: MutableAdviceContext<PointcutTargetType.METHOD, X>,
+    ctxt: MutableAdviceContext<JoinpointType.METHOD, X>,
   ): MethodPropertyDescriptor | void {
     const annotations = ctxt.annotations.find();
 
@@ -134,15 +134,16 @@ export class JitWeaver implements Weaver {
       annotations: annotations.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<PointcutTargetType.METHOD, X>(
-      new JitMethodCanvasStrategy<X>(this.weaverContext),
-    )
+    return new JitWeaverCanvas<
+      JoinpointType.METHOD | JoinpointType.PARAMETER,
+      X
+    >(new JitMethodCanvasStrategy<X>(this.weaverContext))
       .compile(ctxt, advicesSelection)
       .link();
   }
 
   private enhanceParameter<X>(
-    ctxt: MutableAdviceContext<PointcutTargetType.PARAMETER, X>,
+    ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
     const annotations = ctxt.annotations.find();
     if (!annotations.length) {
@@ -156,7 +157,7 @@ export class JitWeaver implements Weaver {
       annotations: annotations.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<PointcutTargetType.PARAMETER, X>(
+    return new JitWeaverCanvas<JoinpointType.PARAMETER, X>(
       new JitParameterCanvasStrategy<X>(this.weaverContext),
     )
       .compile(ctxt, advicesSelection)

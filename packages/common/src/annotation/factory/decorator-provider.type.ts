@@ -1,4 +1,4 @@
-import { ReflectContext } from '../../public_api';
+import type { ReflectContext } from '../../reflect/reflect.context';
 import type {
   Annotation,
   AnnotationStub,

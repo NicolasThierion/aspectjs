@@ -1,4 +1,4 @@
-import { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import { MethodPropertyDescriptor } from '@aspectjs/common';
@@ -16,7 +16,7 @@ import { renameFunction } from './canvas.utils';
  * Canvas to advise method and parameters
  */
 export abstract class AbstractJitMethodCanvasStrategy<
-  T extends PointcutTargetType.METHOD | PointcutTargetType.PARAMETER,
+  T extends JoinpointType.METHOD | JoinpointType.PARAMETER,
   X = unknown,
 > extends JitWeaverCanvasStrategy<T, X> {
   protected abstract getAdviceEntries<P extends AdviceType>(
@@ -86,27 +86,41 @@ export abstract class AbstractJitMethodCanvasStrategy<
 
 export class JitMethodCanvasStrategy<
   X = unknown,
-> extends AbstractJitMethodCanvasStrategy<PointcutTargetType.METHOD, X> {
+> extends AbstractJitMethodCanvasStrategy<
+  JoinpointType.METHOD | JoinpointType.PARAMETER,
+  X
+> {
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, PointcutTargetType.METHOD);
+    super(weaverContext, [JoinpointType.METHOD, JoinpointType.PARAMETER]);
   }
 
   protected override getAdviceEntries<P extends AdviceType>(
     selection: AdvicesSelection,
     pointcutType: P,
-  ): AdviceEntry<PointcutTargetType.METHOD, X, P>[] {
-    return [...selection.find(PointcutTargetType.METHOD, pointcutType)];
+  ): AdviceEntry<JoinpointType.METHOD | JoinpointType.PARAMETER, X, P>[] {
+    return [
+      ...selection.find(
+        [JoinpointType.METHOD, JoinpointType.PARAMETER],
+        [pointcutType],
+      ),
+    ];
   }
 
   override compile(
-    ctxt: MutableAdviceContext<PointcutTargetType.METHOD, X>,
+    ctxt: MutableAdviceContext<
+      JoinpointType.METHOD | JoinpointType.PARAMETER,
+      X
+    >,
     selection: AdvicesSelection,
   ): MethodPropertyDescriptor {
     return super.compile(ctxt, selection) as MethodPropertyDescriptor;
   }
 
   override link(
-    ctxt: MutableAdviceContext<PointcutTargetType.METHOD, X>,
+    ctxt: MutableAdviceContext<
+      JoinpointType.METHOD | JoinpointType.PARAMETER,
+      X
+    >,
     compiledSymbol: MethodPropertyDescriptor,
     joinpoint: (...args: any[]) => unknown,
   ): MethodPropertyDescriptor {
@@ -119,13 +133,10 @@ export class JitMethodCanvasStrategy<
 }
 
 function wrapMethodDescriptor<X>(
-  ctxt: MutableAdviceContext<
-    PointcutTargetType.METHOD | PointcutTargetType.PARAMETER,
-    X
-  >,
+  ctxt: MutableAdviceContext<JoinpointType.METHOD | JoinpointType.PARAMETER, X>,
   descriptor: MethodPropertyDescriptor,
   joinpoint: JoinPoint,
-): CompiledSymbol<PointcutTargetType.METHOD | PointcutTargetType.PARAMETER, X> {
+): CompiledSymbol<JoinpointType.METHOD | JoinpointType.PARAMETER, X> {
   return {
     ...descriptor,
     value: renameFunction(

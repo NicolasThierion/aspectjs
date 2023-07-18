@@ -4,11 +4,12 @@ import { ANNOTATION_TARGET_FACTORY_PROVIDERS } from '../target/annotation-target
 import { ANNOTATION_TRIGGER_PROVIDERS } from '../trigger/annotation-trigger.provider';
 import { ReflectContext } from './../../reflect/reflect.context';
 
+import type { ReflectProvider } from '../../reflect/reflect-provider.type';
 import { reflectContext } from '../../reflect/reflect.context.global';
 import type { ReflectModule } from '../../reflect/reflect.module';
 
 export class AnnotationsReflectModule implements ReflectModule {
-  providers = [
+  providers: ReflectProvider[] = [
     ...ANNOTATION_REGISTRY_PROVIDERS,
     ...ANNOTATION_HOOK_REGISTRY_PROVIDERS,
     ...ANNOTATION_TARGET_FACTORY_PROVIDERS,

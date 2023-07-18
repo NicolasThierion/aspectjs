@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "npm run clean && jest --runInBand",
+    "test:unit": "npm run clean && jest --runInBand --collectCoverage",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
     "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf dist && rimraf ./*.tgz"
@@ -34,11 +34,11 @@
       "node": "./cjs/core.cjs",
       "require": "./cjs/core.cjs",
       "default": "./cjs/core.cjs",
-      "unpkg": "./umd/core.umd.min.js"
+      "unpkg": "./umd/core.umd.js"
     }
   },
   "module": "./fesm2020/core.mjs",
-  "main": "./umd/core.umd.min.js",
+  "main": "./umd/core.umd.js",
   "peerDependencies": {
     "@aspectjs/common": "^0.3.2"
   }

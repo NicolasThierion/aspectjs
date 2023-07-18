@@ -1,18 +1,18 @@
 import { AnnotationsByTypeSelection } from '@aspectjs/common';
 import type { AdviceTarget } from './../../advice/advice.type';
 import type {
-  PointcutTargetType,
+  JoinpointType,
   ToTargetType,
 } from './../../pointcut/pointcut-target.type';
 
 export interface AfterContext<
-  T extends PointcutTargetType = PointcutTargetType,
-  X = unknown,
+  T extends JoinpointType = JoinpointType,
+  X = object,
 > {
   /** The annotations contexts **/
   readonly annotations: AnnotationsByTypeSelection<ToTargetType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
-  readonly instance: T;
+  readonly instance: X;
   /** the arguments originally passed to the joinpoint **/
   readonly args: any[];
   /** The symbol targeted by this advice (class, method, property or parameter **/

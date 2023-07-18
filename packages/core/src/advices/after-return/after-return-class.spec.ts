@@ -11,7 +11,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AfterReturn } from './after-return.annotation';
 
 describe('class advice', () => {
@@ -186,7 +186,7 @@ describe('class advice', () => {
             constructor(public labels = ['A']) {}
           }
           afterReturnA1 = jest.fn(function (
-            ctxt: AfterReturnContext<PointcutTargetType.CLASS, A>,
+            ctxt: AfterReturnContext<JoinpointType.CLASS, A>,
           ) {
             ctxt.instance.labels = ['B'];
           });

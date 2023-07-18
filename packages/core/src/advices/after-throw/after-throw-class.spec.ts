@@ -11,7 +11,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AfterThrow } from '../../public_api';
 
 describe('class advice', () => {
@@ -210,7 +210,7 @@ describe('class advice', () => {
             }
           }
           afterThrowAdviceA1 = jest.fn(function (
-            ctxt: AfterThrowContext<PointcutTargetType.CLASS, A>,
+            ctxt: AfterThrowContext<JoinpointType.CLASS, A>,
           ) {
             ctxt.instance.labels = ['B'];
           });

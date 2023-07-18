@@ -4,21 +4,21 @@ import { AdvicesSelection } from '../../advice/registry/advices-selection.model'
 
 import { MethodPropertyDescriptor } from '@aspectjs/common';
 import type { JoinPoint } from '../../advice/joinpoint';
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 
 export type CompiledSymbol<
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
   X = unknown,
-> = T extends PointcutTargetType.CLASS
+> = T extends JoinpointType.CLASS
   ? ConstructorType<X>
-  : T extends PointcutTargetType.METHOD | PointcutTargetType.PARAMETER
+  : T extends JoinpointType.METHOD | JoinpointType.PARAMETER
   ? MethodPropertyDescriptor
-  : T extends PointcutTargetType.GET_PROPERTY | PointcutTargetType.SET_PROPERTY
+  : T extends JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY
   ? PropertyDescriptor
   : never;
 
 export interface WeaverCanvasStrategy<
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
   X = unknown,
 > {
   compile(

@@ -10,7 +10,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { Before } from './before.annotation';
 
-import type { PointcutTargetType } from '../../pointcut/pointcut-target.type';
+import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceError } from '../../public_api';
 import type { BeforeContext } from './before.context';
 
@@ -38,7 +38,7 @@ describe('property get advice', () => {
     class AAspect {
       @Before(on.properties.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.GET_PROPERTY>,
+        ctxt: BeforeContext<JoinpointType.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -48,7 +48,7 @@ describe('property get advice', () => {
     class BAspect {
       @Before(on.properties.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutTargetType.GET_PROPERTY>,
+        ctxt: BeforeContext<JoinpointType.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -88,7 +88,7 @@ describe('property get advice', () => {
       class AAspect {
         @Before(on.properties.withAnnotations(AProperty))
         applyBefore(
-          ctxt: BeforeContext<PointcutTargetType.GET_PROPERTY>,
+          ctxt: BeforeContext<JoinpointType.GET_PROPERTY>,
           ...args: unknown[]
         ): void {
           return advice.bind(this)(ctxt, ...args);

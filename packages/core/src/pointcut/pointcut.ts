@@ -2,11 +2,11 @@ import type { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 import { AdviceType } from '../advice/advice.type';
 import type { PointcutExpression } from './pointcut-expression.type';
-import type { PointcutTargetType } from './pointcut-target.type';
+import type { JoinpointType } from './pointcut-target.type';
 
 interface PointcutInit<
   P extends AdviceType,
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
 > {
   readonly type: P;
   readonly expression: PointcutExpression<T>;
@@ -14,7 +14,7 @@ interface PointcutInit<
 
 export class Pointcut<
   P extends AdviceType = AdviceType,
-  T extends PointcutTargetType = PointcutTargetType,
+  T extends JoinpointType = JoinpointType,
 > {
   readonly targetType: T;
   readonly annotations: AnnotationRef[];

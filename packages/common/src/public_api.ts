@@ -6,6 +6,7 @@ export * from './annotation/factory/annotation.factory';
 export * from './annotation/factory/decorator-provider.registry';
 export * from './annotation/factory/decorator-provider.type';
 export * from './annotation/registry/annotation.registry';
+export * from './annotation/registry/annotations.global';
 export * from './annotation/target/annotation-target';
 export * from './annotation/target/annotation-target.factory';
 export * from './annotation/target/target-args';
