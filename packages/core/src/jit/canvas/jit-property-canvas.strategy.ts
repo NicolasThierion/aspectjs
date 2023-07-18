@@ -55,8 +55,8 @@ export class JitPropertyCanvasStrategy<
     assert(!!ctxt.args);
 
     assert(
-      this.targetTypes.includes(JoinpointType.GET_PROPERTY) ||
-        this.targetTypes.includes(JoinpointType.SET_PROPERTY),
+      this.joinpointTypes.includes(JoinpointType.GET_PROPERTY) ||
+        this.joinpointTypes.includes(JoinpointType.SET_PROPERTY),
     );
     assert(!ctxt.args?.length);
     ctxt.value =

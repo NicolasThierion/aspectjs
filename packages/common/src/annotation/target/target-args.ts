@@ -5,7 +5,7 @@ import {
   isObject,
   isUndefined,
 } from '@aspectjs/common/utils';
-import { TargetType } from '../annotation.types';
+import { AnnotationType } from '../annotation.types';
 import type { Prototype } from './annotation-target';
 
 export interface DecoratorLocation<X = unknown> {
@@ -18,7 +18,7 @@ export interface DecoratorLocation<X = unknown> {
  * Represents ts decorator arguments, used for creating the {@link AnnotationTarget}
  */
 export abstract class DecoratorTargetArgs<
-  T extends TargetType = TargetType,
+  T extends AnnotationType = AnnotationType,
   X = unknown,
 > implements DecoratorLocation
 {
@@ -28,7 +28,7 @@ export abstract class DecoratorTargetArgs<
   readonly parameterIndex?: number;
   readonly descriptor?: PropertyDescriptor;
 
-  static of<T extends TargetType = TargetType>(
+  static of<T extends AnnotationType = AnnotationType>(
     decoratorArgs: any[],
   ): DecoratorTargetArgs<T> {
     // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
@@ -71,18 +71,18 @@ function inferTypeFromArgs(
   propertyKey?: string,
   parameterIndex?: number,
   descriptor?: PropertyDescriptor,
-): TargetType {
-  let type: TargetType;
+): AnnotationType {
+  let type: AnnotationType;
   if (isNumber(parameterIndex)) {
-    type = TargetType.PARAMETER;
+    type = AnnotationType.PARAMETER;
   } else if (!isUndefined(propertyKey)) {
     if (isObject(descriptor) && isFunction(descriptor.value)) {
-      type = TargetType.METHOD;
+      type = AnnotationType.METHOD;
     } else {
-      type = TargetType.PROPERTY;
+      type = AnnotationType.PROPERTY;
     }
   } else {
-    type = TargetType.CLASS;
+    type = AnnotationType.CLASS;
   }
 
   return type;

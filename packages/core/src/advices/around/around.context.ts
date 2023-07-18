@@ -3,7 +3,7 @@ import type { AdviceTarget } from './../../advice/advice.type';
 import type { JoinPoint } from './../../advice/joinpoint';
 import type {
   JoinpointType,
-  ToTargetType,
+  ToAnnotationType,
 } from './../../pointcut/pointcut-target.type';
 
 export interface AroundContext<
@@ -11,7 +11,7 @@ export interface AroundContext<
   X = object,
 > {
   /** The annotation contexts **/
-  readonly annotations: AnnotationsByTypeSelection<ToTargetType<T>, X>;
+  readonly annotations: AnnotationsByTypeSelection<ToAnnotationType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

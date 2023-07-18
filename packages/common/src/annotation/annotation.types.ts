@@ -1,15 +1,6 @@
 import type { AnnotationRef } from './annotation-ref';
 
 /* eslint-disable @typescript-eslint/ban-types */
-/**
- * Represents the type of the target of an annotation
- */
-export enum TargetType {
-  CLASS = 0b0001,
-  PROPERTY = 0b0010,
-  METHOD = 0b0100,
-  PARAMETER = 0b1000,
-}
 
 /**
  * Type of an annotation.

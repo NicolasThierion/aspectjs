@@ -3,11 +3,11 @@ import { PointcutExpression } from './pointcut-expression.type';
 import { JoinpointType } from './pointcut-target.type';
 
 class PointcutExpressionFactory<T extends JoinpointType> {
-  constructor(private readonly targetType: T) {}
+  constructor(private readonly joinpointType: T) {}
 
   withAnnotations(...annotations: Annotation[]): PointcutExpression<T> {
     return new PointcutExpression({
-      type: this.targetType,
+      type: this.joinpointType,
       annotations,
     });
   }

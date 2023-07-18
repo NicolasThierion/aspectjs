@@ -5,7 +5,6 @@ import {
   Annotation,
   AnnotationStub,
   AnnotationType,
-  TargetType,
 } from '../annotation.types';
 import type {
   AnnotationTarget,
@@ -23,22 +22,22 @@ type ByAnnotationSet = {
  */
 class _AnnotationsSet {
   private buckets: {
-    [k in TargetType]: Map<AnnotationRef, ByAnnotationSet>;
+    [k in AnnotationType]: Map<AnnotationRef, ByAnnotationSet>;
   } = {
-    [TargetType.CLASS]: new Map(),
-    [TargetType.PROPERTY]: new Map(),
-    [TargetType.METHOD]: new Map(),
-    [TargetType.PARAMETER]: new Map(),
+    [AnnotationType.CLASS]: new Map(),
+    [AnnotationType.PROPERTY]: new Map(),
+    [AnnotationType.METHOD]: new Map(),
+    [AnnotationType.PARAMETER]: new Map(),
   };
 
   getAnnotations(
-    decoratorTypes: TargetType[],
+    decoratorTypes: AnnotationType[],
     annotationRefs?: Set<AnnotationRef>,
     classTargetRef?: AnnotationTargetRef | undefined,
     propertyKey?: string | number | symbol | undefined,
   ): AnnotationContext[] {
     return decoratorTypes.flatMap((t) => {
-      const _propertyKey = t === TargetType.CLASS ? undefined : propertyKey;
+      const _propertyKey = t === AnnotationType.CLASS ? undefined : propertyKey;
       const m = this.buckets[t];
       return (
         annotationRefs
@@ -57,7 +56,7 @@ class _AnnotationsSet {
             // keep annotations if search for target = class
             // keep annotations if does not search for specific property
             _propertyKey === undefined ||
-            (annotation as AnnotationContext<TargetType.METHOD>).target
+            (annotation as AnnotationContext<AnnotationType.METHOD>).target
               .propertyKey === propertyKey,
         );
     });
@@ -93,7 +92,7 @@ interface AnnotationsByTypeSelectionOptions {
  * @internal
  */
 export class AnnotationsByTypeSelection<
-  T extends TargetType = TargetType,
+  T extends AnnotationType = AnnotationType,
   X = unknown,
   P extends keyof X = any,
   S extends AnnotationStub = AnnotationStub,
@@ -191,40 +190,40 @@ export class AnnotationsSelection {
 
   all<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationsByTypeSelection<TargetType, X> {
-    return new AnnotationsByTypeSelection<TargetType, X>(
+  ): AnnotationsByTypeSelection<AnnotationType, X> {
+    return new AnnotationsByTypeSelection<AnnotationType, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
       [
-        TargetType.CLASS,
-        TargetType.METHOD,
-        TargetType.PROPERTY,
-        TargetType.PARAMETER,
+        AnnotationType.CLASS,
+        AnnotationType.METHOD,
+        AnnotationType.PROPERTY,
+        AnnotationType.PARAMETER,
       ],
       type,
     );
   }
   onClass<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationsByTypeSelection<TargetType.CLASS, X> {
-    return new AnnotationsByTypeSelection<TargetType.CLASS, X>(
+  ): AnnotationsByTypeSelection<AnnotationType.CLASS, X> {
+    return new AnnotationsByTypeSelection<AnnotationType.CLASS, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
-      [TargetType.CLASS],
+      [AnnotationType.CLASS],
       type,
     );
   }
   onMethod<X = any, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<TargetType.METHOD, X> {
-    return new AnnotationsByTypeSelection<TargetType.METHOD, X>(
+  ): AnnotationsByTypeSelection<AnnotationType.METHOD, X> {
+    return new AnnotationsByTypeSelection<AnnotationType.METHOD, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
-      [TargetType.METHOD],
+      [AnnotationType.METHOD],
       type,
       propertyKey,
     );
@@ -232,12 +231,12 @@ export class AnnotationsSelection {
   onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<TargetType.PROPERTY, X> {
-    return new AnnotationsByTypeSelection<TargetType.PROPERTY, X>(
+  ): AnnotationsByTypeSelection<AnnotationType.PROPERTY, X> {
+    return new AnnotationsByTypeSelection<AnnotationType.PROPERTY, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
-      [TargetType.PROPERTY],
+      [AnnotationType.PROPERTY],
       type,
       propertyKey,
     );
@@ -245,12 +244,12 @@ export class AnnotationsSelection {
   onArgs<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<TargetType.PARAMETER, X> {
-    return new AnnotationsByTypeSelection<TargetType.PARAMETER, X>(
+  ): AnnotationsByTypeSelection<AnnotationType.PARAMETER, X> {
+    return new AnnotationsByTypeSelection<AnnotationType.PARAMETER, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
-      [TargetType.PARAMETER],
+      [AnnotationType.PARAMETER],
       type,
       propertyKey,
     );
@@ -258,20 +257,20 @@ export class AnnotationsSelection {
 
   on<X>(
     filter: AnnotationSelectionFilter,
-  ): AnnotationsByTypeSelection<TargetType, X> {
+  ): AnnotationsByTypeSelection<AnnotationType, X> {
     const { target, types } = filter;
     assert(isObject(target));
 
-    return new AnnotationsByTypeSelection<TargetType, X>(
+    return new AnnotationsByTypeSelection<AnnotationType, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
       types ??
-        (Object.values(TargetType).filter(
+        (Object.values(AnnotationType).filter(
           (x: any) => !isNaN(x),
-        ) as TargetType[]),
+        ) as AnnotationType[]),
       target.proto?.constructor,
-      (target as AnnotationTarget<TargetType.METHOD>).propertyKey as any,
+      (target as AnnotationTarget<AnnotationType.METHOD>).propertyKey as any,
     );
   }
 }
@@ -308,7 +307,7 @@ export class AnnotationRegistry {
   }
 }
 
-function getAncestors<T extends TargetType>(
+function getAncestors<T extends AnnotationType>(
   target: AnnotationTarget<T, any>,
 ): Array<AnnotationTarget<T, any>> {
   if (!target.parent) {

@@ -7,7 +7,7 @@ import type { BeforeAdvice } from '../advices/before/before.type';
 import type { CompileAdvice } from '../advices/compile/compile.type';
 import type {
   JoinpointType,
-  ToTargetType,
+  ToAnnotationType,
 } from './../pointcut/pointcut-target.type';
 
 export enum AdviceType {
@@ -22,7 +22,7 @@ export enum AdviceType {
 export type AdviceTarget<
   T extends JoinpointType = JoinpointType,
   X = unknown,
-> = AnnotationTarget<ToTargetType<T>, X>;
+> = AnnotationTarget<ToAnnotationType<T>, X>;
 
 export type Advice<
   T extends JoinpointType = JoinpointType,

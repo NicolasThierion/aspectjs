@@ -1,12 +1,12 @@
 import { AnnotationRef } from './annotation-ref';
-import { Annotation, AnnotationStub, TargetType } from './annotation.types';
+import { Annotation, AnnotationStub, AnnotationType } from './annotation.types';
 import type { AnnotationTarget } from './target/annotation-target';
 
 /**
  * Holds data about the execution context where the annotation is being invoked.
  */
 export class AnnotationContext<
-  T extends TargetType = TargetType,
+  T extends AnnotationType = AnnotationType,
   X = unknown,
   S extends AnnotationStub = AnnotationStub,
 > {

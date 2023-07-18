@@ -2,7 +2,7 @@ import {
   AnnotationRegistry,
   AnnotationTarget,
   AnnotationTargetFactory,
-  TargetType,
+  AnnotationType,
 } from '@aspectjs/common';
 import {
   ConstructorType,
@@ -50,7 +50,7 @@ export class AspectRegistry {
 
   register(aspect: AspectType, aspectOptions: AspectOptions = {}) {
     const target = this.annotationTargetFactory.of<
-      TargetType.CLASS,
+      AnnotationType.CLASS,
       AspectType
     >(getPrototype(aspect));
     const annotation = this.weaverContext
@@ -115,7 +115,7 @@ export class AspectRegistry {
 let _globalAspectId = 0;
 
 function coerceAspectOptions(
-  aspectTarget: AnnotationTarget<TargetType.CLASS, AspectType>,
+  aspectTarget: AnnotationTarget<AnnotationType.CLASS, AspectType>,
   idOrOptions: unknown,
 ): Required<AspectOptions> {
   const options: AspectOptions =

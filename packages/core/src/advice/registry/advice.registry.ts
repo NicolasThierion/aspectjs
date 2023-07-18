@@ -136,8 +136,8 @@ export class AdviceRegistry {
   ) {
     const aspectCtor = getPrototype(aspect).constructor;
 
-    const targetTypes =
-      pointcut.targetType === JoinpointType.ANY
+    const joinpointTypes =
+      pointcut.joinpointType === JoinpointType.ANY
         ? [
             JoinpointType.CLASS,
             JoinpointType.GET_PROPERTY,
@@ -145,10 +145,10 @@ export class AdviceRegistry {
             JoinpointType.METHOD,
             JoinpointType.PARAMETER,
           ]
-        : [pointcut.targetType];
+        : [pointcut.joinpointType];
 
-    targetTypes
-      .map((targetType) => (this.buckets[targetType] ??= {}))
+    joinpointTypes
+      .map((joinpointType) => (this.buckets[joinpointType] ??= {}))
       .forEach((byTarget) => {
         const byPointcutType = (byTarget[pointcut.type] ??= new Map<
           ConstructorType<AspectType>,

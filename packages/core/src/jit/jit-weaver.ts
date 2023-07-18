@@ -3,7 +3,6 @@ import {
   AnnotationTarget,
   AnnotationType,
   MethodPropertyDescriptor,
-  TargetType,
 } from '@aspectjs/common';
 import { ConstructorType } from '@aspectjs/common/utils';
 
@@ -51,7 +50,7 @@ export class JitWeaver implements Weaver {
     return this.aspectRegistry.getAspects(aspect);
   }
 
-  enhance<T extends TargetType, X = unknown>(
+  enhance<T extends AnnotationType, X = unknown>(
     target: AnnotationTarget<T>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
     // TODO: remove

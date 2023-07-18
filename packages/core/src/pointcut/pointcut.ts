@@ -16,7 +16,7 @@ export class Pointcut<
   P extends AdviceType = AdviceType,
   T extends JoinpointType = JoinpointType,
 > {
-  readonly targetType: T;
+  readonly joinpointType: T;
   readonly annotations: AnnotationRef[];
   readonly name: string;
   readonly type: AdviceType;
@@ -25,7 +25,7 @@ export class Pointcut<
   constructor(pointcutInit: PointcutInit<P, T>) {
     this._expr = pointcutInit.expression;
     this.type = pointcutInit.type;
-    this.targetType = this._expr.type as T;
+    this.joinpointType = this._expr.type as T;
     this.annotations = this._expr.annotations;
     this.name = this._expr.name;
   }
@@ -34,7 +34,8 @@ export class Pointcut<
 
   isAssignableFrom(pointcut: Pointcut): boolean {
     return (
-      pointcut.targetType === this.targetType && this.type === pointcut.type
+      pointcut.joinpointType === this.joinpointType &&
+      this.type === pointcut.type
     );
   }
 

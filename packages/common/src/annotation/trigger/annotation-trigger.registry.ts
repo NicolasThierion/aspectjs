@@ -5,7 +5,7 @@ import {
   isObject,
 } from '@aspectjs/common/utils';
 
-import { AnnotationType, TargetType } from '../annotation.types';
+import { AnnotationType } from '../annotation.types';
 
 import type { AnnotationContext } from '../annotation-context';
 import { AnnotationRef } from '../annotation-ref';
@@ -92,7 +92,7 @@ export class AnnotationTriggerRegistry {
    * Calls all the {@link AnnotationTrigger} found for that context
    * @param context
    */
-  call(context: AnnotationContext<TargetType, unknown>) {
+  call(context: AnnotationContext<AnnotationType, unknown>) {
     const foundTriggers = this.get(context.target);
     foundTriggers
       .get(context.ref)
@@ -107,7 +107,7 @@ export class AnnotationTriggerRegistry {
   }
 
   private get(
-    target: AnnotationTarget | TargetType,
+    target: AnnotationTarget | AnnotationType,
   ): Map<AnnotationRef, AnnotationTrigger[]> {
     // find triggers for given target
     const triggers = getMetadata<Map<AnnotationRef, AnnotationTrigger[]>>(
@@ -146,7 +146,9 @@ const TARGET_REFS_TOKENS = {
   [AnnotationType.PROPERTY]: {},
 };
 
-function getTargetRef(target: AnnotationTarget | AnnotationType | TargetType) {
+function getTargetRef(
+  target: AnnotationTarget | AnnotationType | AnnotationType,
+) {
   if (typeof target === 'object') {
     return target.ref;
   }

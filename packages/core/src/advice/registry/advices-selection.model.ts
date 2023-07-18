@@ -28,7 +28,7 @@ export class AdvicesSelection {
   }
 
   find<T extends JoinpointType, P extends AdviceType>(
-    targetTypes?: T[],
+    joinpointTypes?: T[],
     pointcutTypes?: P[],
   ): IterableIterator<AdviceEntry<T, unknown, P>> {
     const buckets = this.buckets;
@@ -38,8 +38,8 @@ export class AdvicesSelection {
       (this.filters.annotations ?? []).map((a) => AnnotationRef.of(a)),
     );
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const _targetTypes: JoinpointType[] = targetTypes?.length
-      ? targetTypes
+    const _joinpointTypes: JoinpointType[] = joinpointTypes?.length
+      ? joinpointTypes
       : (Object.keys(buckets) as JoinpointType[]);
 
     function* generator() {
@@ -48,14 +48,14 @@ export class AdvicesSelection {
       // We have to remember what entries are generated to avoir generating the same entry twice
       const generatedEntrySet = new Set();
 
-      for (const targetType of _targetTypes) {
-        const byTargetType = buckets[targetType] ?? {};
+      for (const joinpointType of _joinpointTypes) {
+        const byJoinpointType = buckets[joinpointType] ?? {};
         const _pointcutTypes = pointcutTypes?.length
           ? pointcutTypes
-          : (Object.keys(byTargetType) as AdviceType[]);
+          : (Object.keys(byJoinpointType) as AdviceType[]);
 
         for (const pointcutType of _pointcutTypes) {
-          const map = byTargetType[pointcutType];
+          const map = byJoinpointType[pointcutType];
           if (map) {
             const adviceEntries = (
               filters.aspects?.length

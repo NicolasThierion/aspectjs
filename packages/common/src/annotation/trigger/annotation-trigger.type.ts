@@ -1,6 +1,6 @@
 import type { AnnotationContext } from '../annotation-context';
 import type { AnnotationRef } from '../annotation-ref';
-import type { Annotation, TargetType } from '../annotation.types';
+import type { Annotation, AnnotationType } from '../annotation.types';
 import type { AnnotationTarget } from '../target/annotation-target';
 
 /**
@@ -20,7 +20,7 @@ export type AnnotationTriggerFn = (
  *
  */
 export interface AnnotationTrigger {
-  targets: (AnnotationTarget | TargetType)[];
+  targets: (AnnotationTarget | AnnotationType)[];
   annotations: (AnnotationRef | Annotation)[];
   order?: number;
   fn: AnnotationTriggerFn;

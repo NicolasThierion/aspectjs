@@ -6,7 +6,7 @@ import { JoinPoint } from './joinpoint';
 import type { AfterContext } from '../advices/after/after.context';
 import type {
   JoinpointType,
-  ToTargetType,
+  ToAnnotationType,
 } from '../pointcut/pointcut-target.type';
 
 import type { AfterReturnContext } from '../advices/after-return/after-return.context';
@@ -20,7 +20,7 @@ export class MutableAdviceContext<
   X = unknown,
 > {
   /** The annotations contexts **/
-  annotations: AnnotationsByTypeSelection<ToTargetType<T>, X>;
+  annotations: AnnotationsByTypeSelection<ToAnnotationType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/

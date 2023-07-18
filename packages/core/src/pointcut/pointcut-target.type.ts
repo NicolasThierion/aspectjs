@@ -1,4 +1,4 @@
-import type { AnnotationType, TargetType } from '@aspectjs/common';
+import type { AnnotationType } from '@aspectjs/common';
 
 export enum JoinpointType {
   CLASS = 'class',
@@ -9,15 +9,14 @@ export enum JoinpointType {
   ANY = 'any',
 }
 
-export type ToTargetType<T extends JoinpointType | AnnotationType> = T extends
+export type ToAnnotationType<T extends JoinpointType> = T extends
   | JoinpointType.GET_PROPERTY
   | JoinpointType.SET_PROPERTY
-  | AnnotationType.PROPERTY
-  ? TargetType.PROPERTY
-  : T extends JoinpointType.CLASS | AnnotationType.CLASS
-  ? TargetType.CLASS
-  : T extends JoinpointType.METHOD | AnnotationType.METHOD
-  ? TargetType.METHOD
-  : T extends JoinpointType.PARAMETER | AnnotationType.PARAMETER
-  ? TargetType.PARAMETER
+  ? AnnotationType.PROPERTY
+  : T extends JoinpointType.CLASS
+  ? AnnotationType.CLASS
+  : T extends JoinpointType.METHOD
+  ? AnnotationType.METHOD
+  : T extends JoinpointType.PARAMETER
+  ? AnnotationType.PARAMETER
   : any;

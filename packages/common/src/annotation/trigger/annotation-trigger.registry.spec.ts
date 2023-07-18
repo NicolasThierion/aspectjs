@@ -1,7 +1,7 @@
 import { configureTesting } from '@aspectjs/common/testing';
 import type { ReflectContext } from '../../reflect/reflect.context';
 import { AnnotationContext } from '../annotation-context';
-import { Annotation, TargetType } from '../annotation.types';
+import { Annotation, AnnotationType } from '../annotation.types';
 import { annotationsContext } from '../context/annotations.context.global';
 import { AnnotationFactory } from '../factory/annotation.factory';
 import type { AnnotationTarget } from '../target/annotation-target';
@@ -85,9 +85,9 @@ describe('AnnotationTriggerRegistry', () => {
             expect(trigger.fn).not.toHaveBeenCalled();
           });
         });
-        describe('and <trigger.targets> contains TargetType.CLASS', () => {
+        describe('and <trigger.targets> contains AnnotationType.CLASS', () => {
           beforeEach(() => {
-            trigger.targets = [TargetType.CLASS];
+            trigger.targets = [AnnotationType.CLASS];
             annotationTriggerRegistry.add(trigger);
           });
 
