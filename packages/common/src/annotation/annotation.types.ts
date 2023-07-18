@@ -19,7 +19,6 @@ export enum AnnotationType {
   PROPERTY = 0b0010,
   METHOD = 0b0100,
   PARAMETER = 0b1000,
-  ANY = 0b1111,
 }
 
 /**
@@ -45,14 +44,6 @@ export type AnnotationStub<T extends AnnotationType = AnnotationType> = (
 ) => Decorator<T> | void;
 
 /**
- * @internal
- */
-export type DecoratorFactory<
-  S extends AnnotationStub,
-  T extends AnnotationType = AnnotationType,
-> = (...args: Parameters<S>) => Decorator<T>;
-
-/**
  * @description An Annotation is an EcmaScript decorator with no behavior.
  * It is identified by a name and a group ID.
  *
@@ -60,7 +51,7 @@ export type DecoratorFactory<
  * @typeparam S - The type of the annotation stub, derived from `AnnotationStub<T>`.
  */
 export type Annotation<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationType = any,
   S extends AnnotationStub<T> = AnnotationStub<T>,
 > = {
   /**
@@ -90,7 +81,7 @@ export type Decorator<T extends AnnotationType = AnnotationType> =
     ? ParameterDecorator
     : T extends AnnotationType.PROPERTY
     ? PropertyDecorator
-    : AnyDecorator;
+    : any;
 
 /**
  * @internal

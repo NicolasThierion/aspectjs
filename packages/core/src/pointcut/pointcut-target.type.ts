@@ -20,6 +20,4 @@ export type ToTargetType<T extends JoinpointType | AnnotationType> = T extends
   ? TargetType.METHOD
   : T extends JoinpointType.PARAMETER | AnnotationType.PARAMETER
   ? TargetType.PARAMETER
-  : T extends AnnotationType.ANY
-  ? any
-  : never;
+  : any;

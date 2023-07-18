@@ -1,8 +1,4 @@
-import {
-  Annotation,
-  AnnotationFactory,
-  AnnotationType,
-} from '@aspectjs/common';
+import { Annotation, AnnotationFactory } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import {
   AfterThrow,
@@ -20,9 +16,9 @@ describe('registering multiple advices', () => {
   describe('with advices that triggers on different annotations', () => {
     describe('calling an annotated method', () => {
       const af = new AnnotationFactory('test');
-      let AAnnotation: Annotation<AnnotationType.ANY>;
-      let BAnnotation: Annotation<AnnotationType.ANY>;
-      let CAnnotation: Annotation<AnnotationType.ANY>;
+      let AAnnotation: Annotation;
+      let BAnnotation: Annotation;
+      let CAnnotation: Annotation;
 
       let aroundAimpl = jest.fn();
       let afterThrowBimpl = jest.fn();

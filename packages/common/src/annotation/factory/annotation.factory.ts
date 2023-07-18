@@ -84,9 +84,7 @@ export class AnnotationFactory {
    * const LogErrors = new AnnotationFactory('demo').create('LogErrors');
    * ```
    */
-  create<S extends AnnotationStub<AnnotationType.ANY>>(
-    name?: string,
-  ): Annotation<AnnotationType.ANY, S>;
+  create<S extends AnnotationStub>(name?: string): Annotation<any, S>;
 
   /**
    * Create a new annotation wwith the given type and signature. The created annotation accepts the same parameters as with the the provid function.
@@ -123,9 +121,7 @@ export class AnnotationFactory {
    * ) {});
    * ```
    */
-  create<S extends AnnotationStub<AnnotationType.ANY>>(
-    annotationStub?: S,
-  ): Annotation<AnnotationType.ANY, S>;
+  create<S extends AnnotationStub>(annotationStub?: S): Annotation<any, S>;
 
   /**
    * Create with the a n annotation.

@@ -18,6 +18,7 @@ let _globalId = 0;
 /**
  * Registry for the {@link AnnotationTrigger}.
  */
+// TODO: remove AnnotationTriggerRegistry
 export class AnnotationTriggerRegistry {
   private readonly _ANNOTATION_TRIGGER_REFLECT_KEY = `@aspectjs/core:AnnotationTriggerRegistry@${_globalId++}`;
 
@@ -139,7 +140,6 @@ export class AnnotationTriggerRegistry {
 }
 
 const TARGET_REFS_TOKENS = {
-  [AnnotationType.ANY]: {},
   [AnnotationType.CLASS]: {},
   [AnnotationType.METHOD]: {},
   [AnnotationType.PARAMETER]: {},
