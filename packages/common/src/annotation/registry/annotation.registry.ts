@@ -140,7 +140,7 @@ export class AnnotationsByTypeSelection<
 
   find(
     options?: AnnotationsByTypeSelectionOptions,
-  ): AnnotationContext<T, X, S>[] {
+  ): AnnotationContext<T, S, X>[] {
     if (!this.type) {
       assert(!options?.searchParents);
 
@@ -149,7 +149,7 @@ export class AnnotationsByTypeSelection<
         this.annotationsRefs,
         undefined,
         this.propertyKey,
-      ) as AnnotationContext<T, X>[];
+      ) as AnnotationContext<T, S, X>[];
     }
     // search annotations on given type
     const classTarget = this.targetFactory.of(this.type);
@@ -174,7 +174,7 @@ export class AnnotationsByTypeSelection<
           ref,
           this.propertyKey,
         ),
-      ) as AnnotationContext<T, X>[];
+      ) as AnnotationContext<T, S, X>[];
   }
 }
 

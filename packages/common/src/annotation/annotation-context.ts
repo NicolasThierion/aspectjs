@@ -7,8 +7,8 @@ import type { AnnotationTarget } from './target/annotation-target';
  */
 export class AnnotationContext<
   T extends AnnotationType = AnnotationType,
-  X = unknown,
   S extends AnnotationStub = AnnotationStub,
+  X = unknown,
 > {
   /**
    * The reference to the annotation being invked.
