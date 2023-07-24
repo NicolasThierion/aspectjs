@@ -49,10 +49,9 @@ export class AspectRegistry {
   }
 
   register(aspect: AspectType, aspectOptions: AspectOptions = {}) {
-    const target = this.annotationTargetFactory.of<
-      AnnotationType.CLASS,
-      AspectType
-    >(getPrototype(aspect));
+    const target = this.annotationTargetFactory.of<AspectType>(
+      getPrototype(aspect),
+    );
     const annotation = this.weaverContext
       .get(AnnotationRegistry)
       .select(Aspect)

@@ -14,6 +14,7 @@ export * from './advices/around/around.annotation';
 export * from './advices/around/around.context';
 export * from './advices/around/around.type';
 // export * from './advices/around/compile.annotation';
+export * from './advice/advice-type.type';
 export * from './advices/before/before.annotation';
 export * from './advices/before/before.context';
 export * from './advices/before/before.type';

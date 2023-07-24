@@ -1,9 +1,12 @@
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
-import { MethodPropertyDescriptor } from '@aspectjs/common';
-import { assert, getMetadata } from '@aspectjs/common/utils';
-import { AdviceType } from '../../advice/advice.type';
+import {
+  MethodPropertyDescriptor,
+  assert,
+  getMetadata,
+} from '@aspectjs/common/utils';
+import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';

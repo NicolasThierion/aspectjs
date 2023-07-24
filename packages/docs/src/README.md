@@ -23,13 +23,20 @@ features:
   #   details: Works on both node and browser
   - title: Plug and play
     icon: plug
-    details: Install the packages, and add aspects in your existing codebase
+    details: Install the packages, and add aspects to your existing codebase
   - title: Light
     icon: bolt
     details: Only 6kb minified
 
 copyright: false
 footer: Theme by <a href="https://theme-hope.vuejs.press/" target="_blank">VuePress Theme Hope</a> | MIT Licensed
+
+head:
+  - - meta
+    - name: keywords
+      content: AOP
+    - name: keywords
+      content: documentation
 ---
 
 ## <i class="fa fa-download"></i> Installation

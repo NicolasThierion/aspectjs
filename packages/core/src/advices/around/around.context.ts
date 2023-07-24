@@ -1,5 +1,5 @@
-import type { AnnotationsByTypeSelection } from '@aspectjs/common';
-import type { AdviceTarget } from './../../advice/advice.type';
+import { BoundAnnotationsByTypeSelection } from '../../advice/bindable-annotation-selection';
+import type { AdviceTarget } from './../../advice/advice-target.type';
 import type { JoinPoint } from './../../advice/joinpoint';
 import type {
   JoinpointType,
@@ -11,7 +11,7 @@ export interface AroundContext<
   X = object,
 > {
   /** The annotation contexts **/
-  readonly annotations: AnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/
@@ -20,6 +20,4 @@ export interface AroundContext<
   readonly joinpoint: JoinPoint;
   /** The symbol targeted by this advice (class, method, property or parameter **/
   readonly target: AdviceTarget<T, X>;
-  /** The value originally returned by the joinpoint **/
-  readonly value: unknown;
 }

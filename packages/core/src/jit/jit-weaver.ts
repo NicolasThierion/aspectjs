@@ -2,9 +2,11 @@ import {
   AnnotationRegistry,
   AnnotationTarget,
   AnnotationType,
-  MethodPropertyDescriptor,
 } from '@aspectjs/common';
-import { ConstructorType } from '@aspectjs/common/utils';
+import {
+  ConstructorType,
+  MethodPropertyDescriptor,
+} from '@aspectjs/common/utils';
 
 import { MutableAdviceContext } from '../advice/mutable-advice.context';
 import { AdviceRegistry } from '../advice/registry/advice.registry';
@@ -20,6 +22,7 @@ import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
 import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
+import { BindableAnnotationsByTypeSelection } from '../advice/bindable-annotation-selection';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
@@ -58,9 +61,12 @@ export class JitWeaver implements Weaver {
     //   searchParents: true,
     // });
 
+    const annotations = new BindableAnnotationsByTypeSelection(
+      this.annotationRegistry.select().on({ target }),
+    );
     const ctxt = new MutableAdviceContext({
       target,
-      annotations: this.annotationRegistry.select().on({ target }),
+      annotations,
     });
 
     return this.enhancers[target.type](ctxt as any);

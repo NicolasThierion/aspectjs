@@ -82,7 +82,7 @@ class _AnnotationsSet {
   }
 }
 
-interface AnnotationsByTypeSelectionOptions {
+export interface AnnotationsByTypeSelectionOptions {
   /**
    * Search for the annotation in parent classes.
    */
@@ -94,22 +94,56 @@ interface AnnotationsByTypeSelectionOptions {
 export class AnnotationsByTypeSelection<
   T extends AnnotationType = AnnotationType,
   X = unknown,
-  P extends keyof X = any,
   S extends AnnotationStub = AnnotationStub,
 > {
+  private readonly targetFactory: AnnotationTargetFactory;
+  private readonly annotationSet: _AnnotationsSet;
+  private readonly annotationsRefs: Set<AnnotationRef> | undefined;
+  private readonly decoratorTypes: T[];
+  private readonly type?: ConstructorType<X>;
+  private readonly propertyKey?: string | symbol;
+
+  constructor(selection: AnnotationsByTypeSelection<T, X, S>);
   constructor(
-    private readonly targetFactory: AnnotationTargetFactory,
-    private readonly annotationSet: _AnnotationsSet,
-    private readonly annotationsRefs: Set<AnnotationRef> | undefined,
-    private readonly decoratorTypes: T[],
-    private readonly type?: ConstructorType<X>,
-    private readonly propertyKey?: P,
-  ) {}
+    targetFactory: AnnotationTargetFactory,
+    annotationSet: _AnnotationsSet,
+    annotationsRefs: Set<AnnotationRef> | undefined,
+    decoratorTypes: T[],
+    type?: ConstructorType<X>,
+    propertyKey?: string | symbol,
+  );
+  constructor(
+    targetFactory:
+      | AnnotationTargetFactory
+      | AnnotationsByTypeSelection<T, X, S>,
+    annotationSet?: _AnnotationsSet,
+    annotationsRefs?: Set<AnnotationRef> | undefined,
+    decoratorTypes?: T[],
+    type?: ConstructorType<X>,
+    propertyKey?: string | symbol,
+  ) {
+    if (targetFactory instanceof AnnotationsByTypeSelection) {
+      const selection = targetFactory;
+      this.targetFactory = selection.targetFactory;
+      this.annotationSet = selection.annotationSet;
+      this.annotationsRefs = selection.annotationsRefs;
+      this.decoratorTypes = selection.decoratorTypes;
+      this.type = selection.type;
+      this.propertyKey = selection.propertyKey;
+    } else {
+      this.targetFactory = targetFactory;
+      this.annotationSet = annotationSet!;
+      this.annotationsRefs = annotationsRefs;
+      this.decoratorTypes = decoratorTypes!;
+      this.type = type;
+      this.propertyKey = propertyKey;
+    }
+  }
   filter<S2 extends AnnotationStub>(
     annotation: Annotation<AnnotationType, S2>,
-  ): AnnotationsByTypeSelection<T, X, P, S2>;
-  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X, P>;
-  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X, P> {
+  ): AnnotationsByTypeSelection<T, X, S2>;
+  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X>;
+  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X> {
     let annotationRefs = this.annotationsRefs;
     if (annotations.length) {
       if (!annotationRefs) {
@@ -131,11 +165,6 @@ export class AnnotationsByTypeSelection<
       this.type,
       this.propertyKey,
     );
-    // return new AnnotationSelection(
-    //   this.targetFactory,
-    //   this.annotationSet,
-    //   annotations.map(AnnotationRef.of),
-    // );
   }
 
   find(
@@ -225,7 +254,7 @@ export class AnnotationsSelection {
       this.annotationsRefs,
       [AnnotationType.METHOD],
       type,
-      propertyKey,
+      propertyKey as string | symbol,
     );
   }
   onProperty<X, K extends keyof X = keyof X>(
@@ -238,7 +267,7 @@ export class AnnotationsSelection {
       this.annotationsRefs,
       [AnnotationType.PROPERTY],
       type,
-      propertyKey,
+      propertyKey as string | symbol,
     );
   }
   onArgs<X, K extends keyof X = keyof X>(
@@ -251,7 +280,7 @@ export class AnnotationsSelection {
       this.annotationsRefs,
       [AnnotationType.PARAMETER],
       type,
-      propertyKey,
+      propertyKey as string | symbol,
     );
   }
 

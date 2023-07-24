@@ -242,7 +242,7 @@ describe('parameter advice', () => {
 
           expect(() => new A().method()).toThrow(
             new WeavingError(
-              'Error applying advice @Around(@test:AParameter) AAspect.applyAround() on parameter A.method(#0): joinPoint already proceeded',
+              'Error applying advice @Around(@test:AParameter) AAspect.applyAround() on parameter arg1 of method A.method: joinPoint already proceeded',
             ),
           );
         });

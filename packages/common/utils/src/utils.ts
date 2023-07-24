@@ -10,7 +10,8 @@ export function getPrototype(
     return target as any;
   }
   // eslint-disable-next-line no-prototype-builtins
-  return target.hasOwnProperty('constructor')
+  return Object.getOwnPropertyDescriptor(target, 'constructor')?.enumerable ===
+    false
     ? target
     : Object.getPrototypeOf(target);
 }

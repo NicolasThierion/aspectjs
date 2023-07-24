@@ -7,7 +7,7 @@ import type { OutputOptions, Plugin, RollupOptions } from 'rollup';
 import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import dts from 'rollup-plugin-dts';
-
+import findUp from 'find-up';
 const { parse } = json5;
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
@@ -229,12 +229,13 @@ export const createConfig = (
 
   // building the main bundle
   // if (!subExportsPath) {
+  const readme = findUp.sync('README.md') ?? 'README.md';
   bundleOptions.plugins.push(
     copy({
       targets: [
         { src: packageJsonPath, dest: `dist/${subExportsPath}` },
         {
-          src: join(subExportsPath, 'README.md'),
+          src: join(subExportsPath, readme),
           dest: `dist/${subExportsPath}`,
           caseSensitiveMatch: false,
         },

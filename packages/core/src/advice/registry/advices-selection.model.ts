@@ -4,7 +4,7 @@ import { assert } from '@aspectjs/common/utils';
 import { Pointcut } from '../../pointcut/pointcut';
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
-import { AdviceType } from '../advice.type';
+import { AdviceType } from '../advice-type.type';
 import { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
 import { AdviceRegistryFilters } from './advice.registry';
 

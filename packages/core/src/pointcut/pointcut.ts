@@ -1,6 +1,6 @@
 import type { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
-import { AdviceType } from '../advice/advice.type';
+import { AdviceType } from '../advice/advice-type.type';
 import type { PointcutExpression } from './pointcut-expression.type';
 import type { JoinpointType } from './pointcut-target.type';
 

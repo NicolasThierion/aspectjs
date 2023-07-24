@@ -9,6 +9,8 @@ export * from './annotation/registry/annotation.registry';
 export * from './annotation/registry/annotations.global';
 export * from './annotation/target/annotation-target';
 export * from './annotation/target/annotation-target.factory';
+export * from './annotation/target/bound-annotation-target';
+export * from './annotation/target/annotation-target.impl';
 export * from './annotation/target/target-args';
 // export * from './annotation/trigger/annotation-trigger.registry';
 // export * from './annotation/trigger/annotation-trigger.type';

@@ -3,7 +3,7 @@ import { assert, getMetadata, isUndefined } from '@aspectjs/common/utils';
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
-import { AdviceType } from '../../advice/advice.type';
+import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';

@@ -244,17 +244,27 @@ describe('parameter advice', () => {
         expect(thisInstance).toBe(a);
       });
 
-      it('has context.annotations that contains the proper annotations context', () => {
+      it('has context.annotations that contains the annotations for that joinpoint', () => {
         class A {
           m(@AParameter() @BParameter() arg1?: any, @AParameter() arg2?: any) {
             mImpl(this, arg1, arg2);
           }
         }
         advice = jest.fn((ctxt: BeforeContext<JoinpointType.PARAMETER>) => {
-          expect(ctxt.annotations.find().length).toEqual(3);
-          expect(ctxt.annotations.filter(AParameter).find().length).toEqual(2);
+          const aParameterAnnotations = ctxt.annotations
+            .filter(AParameter)
+            .find();
+          const bParameterAnnotations = ctxt.annotations
+            .filter(BParameter)
+            .find();
 
-          expect(ctxt.annotations.filter(BParameter).find().length).toEqual(1);
+          expect(ctxt.annotations.find().length).toEqual(3);
+          expect(aParameterAnnotations.length).toEqual(2);
+
+          expect(bParameterAnnotations.length).toEqual(1);
+          expect(aParameterAnnotations[0]?.target.value).toEqual('b');
+          expect(bParameterAnnotations[0]?.target.value).toEqual('a');
+          expect(aParameterAnnotations[1]?.target.value).toEqual('a');
         });
         new A().m('a', 'b');
 

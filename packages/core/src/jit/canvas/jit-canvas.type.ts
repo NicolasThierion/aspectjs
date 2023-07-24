@@ -65,6 +65,7 @@ export class JitWeaverCanvas<
       // create the joinpoint for the original method
       const joinpoint = (...args: any[]) => {
         ctxt.args = args;
+
         try {
           this.strategy.before(ctxt, selection);
 

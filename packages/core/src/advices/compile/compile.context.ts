@@ -1,5 +1,5 @@
 import type { AnnotationsByTypeSelection } from '@aspectjs/common';
-import type { AdviceTarget } from './../../advice/advice.type';
+import type { AdviceTarget } from './../../advice/advice-target.type';
 import type {
   JoinpointType,
   ToAnnotationType,

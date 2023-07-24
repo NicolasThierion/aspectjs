@@ -1,28 +1,11 @@
-import type { AnnotationTarget } from '@aspectjs/common';
 import type { AfterReturnAdvice } from '../advices/after-return/after-return.type';
 import type { AfterThrowAdvice } from '../advices/after-throw/after-throw.type';
 import type { AfterAdvice } from '../advices/after/after.type';
 import type { AroundAdvice } from '../advices/around/around.type';
 import type { BeforeAdvice } from '../advices/before/before.type';
 import type { CompileAdvice } from '../advices/compile/compile.type';
-import type {
-  JoinpointType,
-  ToAnnotationType,
-} from './../pointcut/pointcut-target.type';
-
-export enum AdviceType {
-  COMPILE = 'Compile',
-  BEFORE = 'Before',
-  AROUND = 'Around',
-  AFTER_RETURN = 'AfterReturn',
-  AFTER_THROW = 'AfterThrow',
-  AFTER = 'After',
-}
-
-export type AdviceTarget<
-  T extends JoinpointType = JoinpointType,
-  X = unknown,
-> = AnnotationTarget<ToAnnotationType<T>, X>;
+import type { JoinpointType } from './../pointcut/pointcut-target.type';
+import { AdviceType } from './advice-type.type';
 
 export type Advice<
   T extends JoinpointType = JoinpointType,

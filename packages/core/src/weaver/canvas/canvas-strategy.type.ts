@@ -1,8 +1,10 @@
-import type { ConstructorType } from '@aspectjs/common/utils';
+import type {
+  ConstructorType,
+  MethodPropertyDescriptor,
+} from '@aspectjs/common/utils';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 
-import { MethodPropertyDescriptor } from '@aspectjs/common';
 import type { JoinPoint } from '../../advice/joinpoint';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 

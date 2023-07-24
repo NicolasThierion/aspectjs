@@ -219,13 +219,15 @@ describe('class advice', () => {
         new A();
       });
 
-      it('has context.annotation.ref = the annotation that invoked that aspect', () => {
+      it('has context.annotations that contains the annotations for that joinpoint', () => {
         @AClass()
         class A {
           constructor(public labels = ['X']) {}
         }
         aadvice = jest.fn((ctxt: BeforeContext) => {
-          expect(ctxt.annotations.find()[0]?.ref).toBe(AClass.ref);
+          const annotation = ctxt.annotations.find()[0];
+          expect(annotation?.ref).toBe(AClass.ref);
+          expect(annotation?.target?.value).toBe(null);
         });
         new A();
 

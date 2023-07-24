@@ -18,7 +18,8 @@ import { Aspect } from '../../aspect/aspect.annotation';
 import type { AspectType } from '../../aspect/aspect.type';
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
-import { Advice, AdviceType } from '../advice.type';
+import { AdviceType } from '../advice-type.type';
+import { Advice } from '../advice.type';
 import type { AdviceRegBuckets } from './advice-entry.model';
 import { AdviceEntry } from './advice-entry.model';
 const KNOWN_POINTCUT_ANNOTATION_REFS = new Set([

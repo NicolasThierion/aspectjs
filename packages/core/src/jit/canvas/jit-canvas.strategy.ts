@@ -11,7 +11,7 @@ import type {
   WeaverCanvasStrategy,
 } from '../../weaver/canvas/canvas-strategy.type';
 
-import { AdviceType } from '../../advice/advice.type';
+import { AdviceType } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
@@ -70,6 +70,7 @@ export abstract class JitWeaverCanvasStrategy<
 
     advices.forEach((advice) => {
       const afterReturnContext = ctxt.asAfterReturnContext();
+
       ctxt.value = this.callAdvice(advice, ctxt, [
         afterReturnContext,
         ctxt.value,

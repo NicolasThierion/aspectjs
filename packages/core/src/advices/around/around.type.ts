@@ -1,5 +1,5 @@
+import { AdviceType } from '../../advice/advice-type.type';
 import type { AdviceContext } from '../../advice/advice.context';
-import { AdviceType } from '../../advice/advice.type';
 import type { JoinPoint } from '../../advice/joinpoint';
 import { Pointcut } from '../../pointcut/pointcut';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';

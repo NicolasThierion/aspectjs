@@ -1,5 +1,5 @@
-import { AnnotationsByTypeSelection } from '@aspectjs/common';
-import type { AdviceTarget } from './../../advice/advice.type';
+import { BoundAnnotationsByTypeSelection } from '../../advice/bindable-annotation-selection';
+import type { AdviceTarget } from './../../advice/advice-target.type';
 import type {
   JoinpointType,
   ToAnnotationType,
@@ -10,7 +10,7 @@ export interface AfterThrowContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: AnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

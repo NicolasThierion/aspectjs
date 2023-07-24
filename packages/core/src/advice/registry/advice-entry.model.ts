@@ -2,7 +2,8 @@ import { ConstructorType, getMetadata } from '@aspectjs/common/utils';
 
 import type { AspectType } from '../../aspect/aspect.type';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
-import type { Advice, AdviceType } from '../advice.type';
+import { AdviceType } from '../advice-type.type';
+import type { Advice } from '../advice.type';
 
 export type AdviceRegBuckets = {
   [t in JoinpointType]?: {

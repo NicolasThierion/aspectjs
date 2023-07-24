@@ -1,6 +1,4 @@
-import { AnnotationsByTypeSelection } from '@aspectjs/common';
-
-import { AdviceTarget } from './advice.type';
+import { AdviceTarget } from './advice-target.type';
 import { JoinPoint } from './joinpoint';
 
 import type { AfterContext } from '../advices/after/after.context';
@@ -14,13 +12,15 @@ import type { AfterThrowContext } from '../advices/after-throw/after-throw.conte
 import type { AroundContext } from '../advices/around/around.context';
 import type { BeforeContext } from '../advices/before/before.context';
 import type { CompileContext } from '../advices/compile/compile.context';
+import { AdviceContext } from './advice.context';
+import { BindableAnnotationsByTypeSelection } from './bindable-annotation-selection';
 
 export class MutableAdviceContext<
   T extends JoinpointType = JoinpointType,
   X = unknown,
 > {
   /** The annotations contexts **/
-  annotations: AnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  annotations: BindableAnnotationsByTypeSelection<ToAnnotationType<T>, X>;
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/
@@ -123,17 +123,16 @@ export class MutableAdviceContext<
       'args',
       'target',
       'joinpoint',
-      'value',
     );
   }
 }
 
-function copyProps<A>(
+function copyProps<A extends AdviceContext>(
   ctxt: MutableAdviceContext,
-  overrides: Partial<MutableAdviceContext> = {},
+  overrides: Partial<MutableAdviceContext | AdviceContext> = {},
   ...keys: (keyof A)[]
 ) {
-  return keys
+  const newContext = keys
     .map((prop) => {
       const value =
         typeof (overrides as any)[prop] !== 'undefined'
@@ -148,4 +147,11 @@ function copyProps<A>(
       res[prop] = value as any;
       return res;
     }, {} as A);
+
+  const instance = ctxt.instance;
+
+  (newContext.annotations as any) = (
+    newContext.annotations as BindableAnnotationsByTypeSelection
+  ).bind(instance, ctxt.args);
+  return newContext;
 }

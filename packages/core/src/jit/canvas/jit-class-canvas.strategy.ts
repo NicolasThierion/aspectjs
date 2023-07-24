@@ -4,7 +4,7 @@ import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 import { JoinpointType } from './../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
-import { AdviceType } from '../../advice/advice.type';
+import { AdviceType } from '../../advice/advice-type.type';
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';

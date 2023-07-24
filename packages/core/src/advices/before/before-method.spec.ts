@@ -227,7 +227,7 @@ describe('method advice', () => {
         expect(thisInstance).toBe(a);
       });
 
-      it('has context.annotations that contains the proper annotation contexts', () => {
+      it('has context.annotations that contains the annotations for that joinpoint', () => {
         class A {
           @AMethod('annotationArg')
           @BMethod()
@@ -237,11 +237,12 @@ describe('method advice', () => {
         }
         advice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.annotations.find().length).toEqual(2);
-          const AMethodAnnotationContext = ctxt.annotations
+          const aMethodAnnotationContext = ctxt.annotations
             .filter(AMethod)
             .find()[0];
-          expect(AMethodAnnotationContext).toBeTruthy();
-          expect(AMethodAnnotationContext?.args).toEqual(['annotationArg']);
+          expect(aMethodAnnotationContext).toBeTruthy();
+          expect(aMethodAnnotationContext?.args).toEqual(['annotationArg']);
+          expect(aMethodAnnotationContext?.target.value).toBe(A.prototype.m);
         });
         new A().m();
 

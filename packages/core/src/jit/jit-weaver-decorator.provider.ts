@@ -4,8 +4,10 @@ import {
   AnnotationTargetFactory,
   AnnotationType,
   DecoratorProvider,
+  DecoratorTargetArgs,
 } from '@aspectjs/common';
 import { JitWeaver } from './jit-weaver';
+
 export const CALL_JIT_WEAVER_HOOK: DecoratorProvider = {
   name: '@aspectjs::weaver.enhance',
   order: 200,
@@ -19,7 +21,7 @@ export const CALL_JIT_WEAVER_HOOK: DecoratorProvider = {
 
     const targetFactory = reflect.get(AnnotationTargetFactory);
     return function (...args: any) {
-      const target = targetFactory.of(...args);
+      const target = targetFactory.of(DecoratorTargetArgs.of(args));
 
       return weaver.enhance(target);
     };

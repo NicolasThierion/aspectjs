@@ -12,7 +12,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
 
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
-import { AfterThrow } from '../../public_api';
+import { AfterThrow } from './after-throw.annotation';
 
 describe('property advice', () => {
   let afterThrowAdviceA1: ReturnType<typeof jest.fn>;

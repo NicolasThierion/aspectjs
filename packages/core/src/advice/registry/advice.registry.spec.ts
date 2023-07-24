@@ -1,6 +1,7 @@
 import { AnnotationFactory, ReflectModule } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '@aspectjs/core';
+import { AdviceType } from './../advice-type.type';
 
 import { After } from '../../advices/after/after.annotation';
 import { Before } from '../../advices/before/before.annotation';
@@ -8,7 +9,6 @@ import { ASPECT_PROVIDERS } from '../../aspect/aspect.provider';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { weaverContext } from '../../weaver/context/weaver.context.global';
-import { AdviceType } from '../advice.type';
 import { AdviceEntry } from './advice-entry.model';
 import { AdviceRegistry } from './advice.registry';
 

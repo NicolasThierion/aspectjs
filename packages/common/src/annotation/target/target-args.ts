@@ -1,4 +1,6 @@
 import {
+  ConstructorType,
+  Prototype,
   getPrototype,
   isFunction,
   isNumber,
@@ -6,7 +8,6 @@ import {
   isUndefined,
 } from '@aspectjs/common/utils';
 import { AnnotationType } from '../annotation.types';
-import type { Prototype } from './annotation-target';
 
 export interface DecoratorLocation<X = unknown> {
   proto: Prototype<X>;
@@ -27,10 +28,11 @@ export abstract class DecoratorTargetArgs<
   readonly propertyKey?: string;
   readonly parameterIndex?: number;
   readonly descriptor?: PropertyDescriptor;
+  readonly value?: X extends Prototype | ConstructorType ? never : X;
 
-  static of<T extends AnnotationType = AnnotationType>(
+  static of<T extends AnnotationType = AnnotationType, X = unknown>(
     decoratorArgs: any[],
-  ): DecoratorTargetArgs<T> {
+  ): DecoratorTargetArgs<T, X> {
     // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
     // PropertyAnnotation = (target: Object, propertyKey: string | symbol) => void;
     // MethodAnnotation = <A>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<A>) => TypedPropertyDescriptor<A> | void;
@@ -57,13 +59,16 @@ export abstract class DecoratorTargetArgs<
       descriptor,
     ) as T;
 
-    return {
+    const targetArgs = {
       proto,
       propertyKey,
       parameterIndex,
       descriptor,
       type,
     };
+    Reflect.setPrototypeOf(targetArgs, DecoratorTargetArgs.prototype);
+
+    return targetArgs;
   }
 }
 

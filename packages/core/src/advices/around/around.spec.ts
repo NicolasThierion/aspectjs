@@ -14,7 +14,7 @@ import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
 
 describe('@Around advice', () => {
-  describe('when combined on multiple pointcuts', () => {
+  describe('when combined on multiple joinpoints', () => {
     let aroundAdvice: ReturnType<typeof jest.fn>;
     let aaspect: any;
     const AAnnotation = new AnnotationFactory('test').create('AAnnotation');
@@ -28,8 +28,10 @@ describe('@Around advice', () => {
 
       @Aspect('AClassLabel')
       class AAspect {
-        @Around(on.classes.withAnnotations(BAnnotation, AAnnotation))
-        @Around(on.classes.withAnnotations(AAnnotation))
+        @Around(
+          on.classes.withAnnotations(BAnnotation, AAnnotation),
+          on.classes.withAnnotations(AAnnotation),
+        )
         applyAround(
           ctxt: AroundContext<JoinpointType.CLASS>,
           ...args: unknown[]

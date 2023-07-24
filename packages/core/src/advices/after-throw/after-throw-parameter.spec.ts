@@ -276,7 +276,7 @@ describe('parameter advice', () => {
           expect(AParameterAnnotationContext).toBeTruthy();
           expect(AParameterAnnotationContext?.args).toEqual(['annotationArg']);
         });
-        new A().m();
+        new A().m('x', 'y');
         expect(afterThrowAdviceA1).toHaveBeenCalled();
       });
 

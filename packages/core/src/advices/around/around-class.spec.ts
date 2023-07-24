@@ -315,17 +315,26 @@ describe('class advice', () => {
         @AClass('annotationArg')
         @BClass()
         class A {
+          prop = 'A';
           constructor() {}
         }
-        aroundAdviceA = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aclassAnnotationContext = ctxt.annotations
-            .filter(AClass)
-            .find()[0];
-          expect(aclassAnnotationContext).toBeTruthy();
-          expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
-        });
-        new A();
+        aroundAdviceA = jest.fn(
+          (ctxt: AroundContext<JoinpointType.CLASS, A>) => {
+            expect(ctxt.annotations.find().length).toEqual(2);
+            const aclassAnnotationContext = ctxt.annotations
+              .filter(AClass)
+              .find()[0];
+            console.log(aclassAnnotationContext?.target.value);
+            expect(aclassAnnotationContext).toBeTruthy();
+            expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
+            expect(
+              (aclassAnnotationContext?.target as any).value,
+            ).toBeInstanceOf(A);
+            ctxt.instance.prop = 'B';
+          },
+        );
+        const a = new A();
+        expect(a.prop).toEqual('B');
       });
     });
   });

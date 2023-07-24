@@ -1,19 +1,5 @@
+import { MethodPropertyDescriptor, Prototype } from '@aspectjs/common/utils';
 import type { AnnotationType } from '../annotation.types';
-
-/**
- * @internal
- */
-export type MethodPropertyDescriptor = PropertyDescriptor & {
-  value: (...args: any[]) => any;
-  get: never;
-};
-
-/**
- * @internal
- */
-export type Prototype<X = unknown> = Record<string, unknown> & {
-  constructor: new (...args: unknown[]) => X;
-};
 
 /**
  * @internal
@@ -28,7 +14,7 @@ export class AnnotationTargetRef {
 /**
  * @internal
  */
-interface BaseAnnotationTarget<
+export interface BaseAnnotationTarget<
   T extends AnnotationType = AnnotationType,
   X = unknown,
 > {
@@ -38,7 +24,7 @@ interface BaseAnnotationTarget<
   readonly label: string;
   readonly ref: AnnotationTargetRef;
   readonly declaringClass: ClassAnnotationTarget<X>;
-  readonly parentClass: ClassAnnotationTarget<X> | undefined;
+  readonly parentClass: ClassAnnotationTarget<unknown> | undefined;
 }
 
 /**

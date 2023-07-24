@@ -1,5 +1,4 @@
 import { ReflectContext } from '../../src/reflect/reflect.context';
-import { reflectContext } from '../../src/reflect/reflect.context.global';
 import { ReflectModule } from '../../src/reflect/reflect.module';
 import { configureTesting, ReflectTestingContext } from './setup';
 
