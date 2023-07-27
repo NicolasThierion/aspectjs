@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.8](https://github.com/NicolasThierion/aspectjs/compare/v0.3.7...v0.3.8) (2023-07-27)
+
+
+### Features
+
+* ability to set several join point per pointcut ([a9ed9a7](https://github.com/NicolasThierion/aspectjs/commit/a9ed9a7df242ba77ba05d60e89e2e03c6d2051fc))
+* **core:** target in AdviceContext has now a value. ([b3bd349](https://github.com/NicolasThierion/aspectjs/commit/b3bd349d4bfde7166f8c0310a185f72aa84c8709))
+
+
+### Bug Fixes
+
+* **core:** fix parameter aspects not being applied when a method has method decorators ([3dee5b7](https://github.com/NicolasThierion/aspectjs/commit/3dee5b7ec0e6de8a59311e8d95c94a4927294ae1))
+
 ## [0.3.8](https://github.com/NicolasThierion/aspectjs/compare/v0.3.7...v0.3.8) (2023-07-16)
 
 
