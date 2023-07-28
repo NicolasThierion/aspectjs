@@ -6,8 +6,21 @@ import json5 from 'json5';
 import { dirname, join } from 'path';
 import * as url from 'url';
 import { PluginFunction, PluginObject } from 'vuepress';
+import { TypeDocOptions, ReflectionKind } from 'typedoc';
 import { typedocPlugin } from 'vuepress-plugin-typedoc/next';
 const { parse } = json5;
+import Handlebars from 'handlebars';
+
+export interface PluginOptions extends TypeDocOptions {
+  sidebar?: SidebarOptions;
+  hideBreadcrumbs?: boolean;
+  hideInPageTOC?: boolean;
+}
+export interface SidebarOptions {
+  fullNames: boolean;
+  parentCategory: string;
+  autoConfiguration: boolean;
+}
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
@@ -15,7 +28,7 @@ export function typedocPluginConfig(): PluginFunction {
   const entryPoints = findEntrypoints();
 
   return (...args) => {
-    const plugin = typedocPlugin({
+    const pluginFn = typedocPlugin({
       // plugin options
       entryPoints,
       tsconfig: `${__dirname}/tsconfig.json`,
@@ -26,20 +39,58 @@ export function typedocPluginConfig(): PluginFunction {
       excludePrivate: true,
       excludeExternals: true,
       groupOrder: ['Modules', 'Variables', 'Functions', '*'],
+      excludeNotDocumented: true,
+      categorizeByGroup: false,
+      hideParameterTypesInTitle: true,
 
-      // categorizeByGroup: false,
-      // navigation: {
-      //   includeCategories: false,
-      //   includeGroups: false,
-      // },
+      navigation: {
+        includeCategories: false,
+        includeGroups: false,
+      },
       // Plugin options
       out: 'api',
+
       sidebar: {
-        fullNames: true,
+        fullNames: false,
         autoConfiguration: true,
         parentCategory: 'API',
       },
-    })(...args);
+    } satisfies Partial<PluginOptions>);
+
+    // override helper to exclude ReflectionKind from sidebar
+    const _registerHelper = Handlebars.registerHelper;
+    Handlebars.registerHelper = function (...args): void {
+      if (args[0] === 'reflectionTitle') {
+        return _registerHelper.call(
+          this,
+          'reflectionTitle',
+          function (shouldEscape = true) {
+            const title = [''];
+            title.push(
+              shouldEscape ? escapeChars(this.model.name) : this.model.name,
+            );
+            if (this.model.typeParameters) {
+              const typeParameters = this.model.typeParameters
+                .map((typeParameter) => typeParameter.name)
+                .join(', ');
+              title.push(`<${typeParameters}${shouldEscape ? '\\>' : '>'}`);
+            }
+            return title.join('');
+          },
+        );
+      }
+
+      return _registerHelper.apply(this, args);
+    };
+
+    function escapeChars(str) {
+      return str
+        .replace(/>/g, '\\>')
+        .replace(/_/g, '\\_')
+        .replace(/`/g, '\\`')
+        .replace(/\|/g, '\\|');
+    }
+    const plugin = pluginFn(...args);
 
     (plugin as PluginObject).onWatched = (app, watchers, reload) => {
       const pagesWatcher = chokidar.watch(

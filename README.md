@@ -29,9 +29,13 @@ Aspect Oriented Programming to Javascript and Typescript.
 
 AOP is a core concept of popular frameworks such as [Angular](https://angular.io/), [Nest.js](https://nestjs.com/) or [TypeORM](https://github.com/typeorm/typeorm). All these frameworks use [ECMAScript Decorators](https://github.com/tc39/proposal-decorators) to add behavior to classes and methods with a simple `@` sign, and it works fairly well; However, a decorator ships with the additional behavior built-in, making it hard to extend and impossible to seamlessly integrate with other third party libs.
 
+![without-aspectjs]
+
 _AspectJS_ introduces the concept of annotations for Javascript. Simply put, an _AspectJS annotation_ is an _ECMAScript decorator_ with no implementation. The actual behavior is added later through the introduction of _Aspects_.
 
-## ⚙️ Installation:
+![with-aspectjs]
+
+## ⚙️ Usage:
 
 - Install the package
   ```bash
@@ -99,4 +103,6 @@ MIT Licensed
 [npm version]: https://img.shields.io/npm/v/@aspectjs/core.svg
 [license]: https://img.shields.io/npm/l/@aspectjs/core.svg
 [NPM Downloads]: https://img.shields.io/npm/dm/@aspectjs/common.svg
-[demo-gif]: ./assets/demo.gif
+[demo-gif]: ./.assets/demo.gif
+[with-aspectjs]: ./.assets/with-aspectjs.png
+[without-aspectjs]: ./.assets/without-aspectjs.png

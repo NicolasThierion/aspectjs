@@ -9,7 +9,7 @@ import type { AspectOptions } from './aspect-options.type';
 
 /**
  * Use the `@Aspect()` annotation on a class to mark that class as an aspect.
- * The aspect could then be enablew with the {@link Weaver.enable} method.
+ * The aspect could then be enabled with the {@link Weaver.enable} method.
  *
  * @example
  * ```ts

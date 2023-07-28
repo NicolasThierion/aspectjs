@@ -14,6 +14,7 @@ export default function customTheme(): Theme {
     customNavbar(),
     typedocPluginConfig(),
     searchProPlugin({
+      autoSuggestions: false,
       indexContent: true,
       customFields: [
         {

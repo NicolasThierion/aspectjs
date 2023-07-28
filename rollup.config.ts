@@ -228,22 +228,30 @@ export const createConfig = (
   };
 
   // building the main bundle
-  // if (!subExportsPath) {
-  const readme = findUp.sync('README.md') ?? 'README.md';
-  const assetsDir = findUp.sync('.assets') ?? '.assets';
-  bundleOptions.plugins.push(
-    copy({
-      targets: [
-        { src: packageJsonPath, dest: `dist/${subExportsPath}` },
-        { src: assetsDir, dest: `dist/.assets` },
-        {
-          src: join(subExportsPath, readme),
-          dest: `dist/${subExportsPath}`,
-          caseSensitiveMatch: false,
-        },
-      ],
-    }),
-  );
+  if (!subExportsPath) {
+    const readme =
+      findUp.sync('README.md') ??
+      findUp.sync('readme.md') ??
+      findUp.sync('Readme.md') ??
+      'README.md';
+    const assetsDir =
+      findUp.sync('.assets', {
+        type: 'directory',
+      }) ?? '.assets';
+    bundleOptions.plugins.push(
+      copy({
+        targets: [
+          { src: packageJsonPath, dest: `dist/` },
+          { src: assetsDir, dest: `dist/` },
+          {
+            src: readme,
+            dest: `dist/${subExportsPath}`,
+            caseSensitiveMatch: false,
+          },
+        ],
+      }),
+    );
+  }
 
   return rollupDefineConfig([bundleOptions, dtsOptions, dtsBundleOptions]);
 };
