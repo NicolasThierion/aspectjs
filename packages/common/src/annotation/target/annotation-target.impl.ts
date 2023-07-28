@@ -22,7 +22,10 @@ export abstract class _AnnotationTargetImpl<
     | undefined;
 
   protected readonly [BOUND_INSTANCE_SYMBOL]?: X;
-  public readonly value?: unknown;
+
+  get value(): unknown {
+    throw new Error('AnnotationTarget is not bound to a value');
+  }
 
   constructor(
     public readonly type: T,

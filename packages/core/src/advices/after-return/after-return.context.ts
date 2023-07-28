@@ -1,4 +1,4 @@
-import { BoundAnnotationsByTypeSelection } from '../../advice/bindable-annotation-selection';
+import { BoundAnnotationsByTypeSelection } from '@aspectjs/common';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type { ToAnnotationType } from './../../pointcut/pointcut-target.type';

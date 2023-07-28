@@ -230,10 +230,12 @@ export const createConfig = (
   // building the main bundle
   // if (!subExportsPath) {
   const readme = findUp.sync('README.md') ?? 'README.md';
+  const assetsDir = findUp.sync('.assets') ?? '.assets';
   bundleOptions.plugins.push(
     copy({
       targets: [
         { src: packageJsonPath, dest: `dist/${subExportsPath}` },
+        { src: assetsDir, dest: `dist/.assets` },
         {
           src: join(subExportsPath, readme),
           dest: `dist/${subExportsPath}`,

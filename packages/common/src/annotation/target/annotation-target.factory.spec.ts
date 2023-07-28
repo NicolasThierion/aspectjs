@@ -31,11 +31,6 @@ describe('AnnotationTargetFactory', () => {
       const target = targetFactory.of(X);
       expect(target.declaringClass).toBe(target);
     });
-
-    it('.value is not defined', () => {
-      const target = targetFactory.of(X);
-      expect((target as any).value).toBeUndefined();
-    });
   });
   describe('.of(Prototype<CLASS>)', () => {
     it('.type === AnnotationType.CLASS', () => {
@@ -289,7 +284,6 @@ describe('AnnotationTargetFactory', () => {
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.hasOwnProperty('value')).toBe(true);
       expect(target.value).toBe(x.method);
     });
   });

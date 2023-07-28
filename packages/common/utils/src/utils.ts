@@ -2,7 +2,7 @@ import type { Annotation } from '../../src/annotation/annotation.types';
 
 export function getPrototype(
   // eslint-disable-next-line @typescript-eslint/ban-types
-  target: Record<string, any> | Function,
+  target: Record<string, any> | Function | undefined,
 ): Record<string, any> & { constructor?: new (...args: any[]) => any } {
   if (isFunction(target)) {
     return target.prototype;

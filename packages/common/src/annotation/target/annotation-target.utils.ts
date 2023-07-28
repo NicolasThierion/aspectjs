@@ -226,7 +226,6 @@ function _createClassAnnotationTarget<X = unknown>(
     implements ClassAnnotationTarget<X>
   {
     override [BOUND_INSTANCE_SYMBOL]?: X;
-    override value?: X;
     private _parentClass?: ClassAnnotationTarget<X>;
 
     constructor() {
@@ -265,11 +264,13 @@ function _createClassAnnotationTarget<X = unknown>(
 
     override bind(value: X): ClassAnnotationTarget<X> {
       if (!this[BOUND_INSTANCE_SYMBOL]) {
-        this.value = value;
+        Object.defineProperty(Object.getPrototypeOf(this), 'value', {
+          get: () => value,
+        });
         this[BOUND_INSTANCE_SYMBOL] = value;
       }
 
-      return Object.setPrototypeOf({ ...this }, Object.getPrototypeOf(this));
+      return this;
     }
   })();
 }
@@ -290,7 +291,6 @@ function _createMethodAnnotationTarget<X = unknown>(
     readonly propertyKey: string;
     readonly descriptor: MethodPropertyDescriptor;
     override [BOUND_INSTANCE_SYMBOL]?: X;
-    override value?: unknown;
 
     private _declaringClassTarget?: ClassAnnotationTarget<X>;
     private _parentClassTarget?: ClassAnnotationTarget<X> | undefined;
@@ -337,7 +337,9 @@ function _createMethodAnnotationTarget<X = unknown>(
     override bind(value: X): MethodAnnotationTarget<X> {
       if (!this[BOUND_INSTANCE_SYMBOL]) {
         this[BOUND_INSTANCE_SYMBOL] = value;
-        this.value = this.proto[this.propertyKey];
+        Object.defineProperty(Object.getPrototypeOf(this), 'value', {
+          get: () => this.proto[this.propertyKey],
+        });
       }
       return this;
     }
@@ -375,7 +377,6 @@ function _createParameterAnnotationTarget<X = unknown>(
     readonly parameterIndex!: number;
     readonly descriptor!: MethodPropertyDescriptor;
     override [BOUND_INSTANCE_SYMBOL]?: X;
-    override value?: unknown;
 
     private _parentClassTarget: ClassAnnotationTarget<X> | undefined;
     private _declaringClassTarget!: ClassAnnotationTarget<X>;
@@ -438,8 +439,13 @@ function _createParameterAnnotationTarget<X = unknown>(
     override bind(instance: X, args: unknown[]): ParameterAnnotationTarget<X> {
       if (!this[BOUND_INSTANCE_SYMBOL]) {
         this[BOUND_INSTANCE_SYMBOL] = instance;
-        assert(args!.length > this.parameterIndex);
-        this.value = args[this.parameterIndex];
+
+        if (args) {
+          assert(args!.length > this.parameterIndex);
+          Object.defineProperty(Object.getPrototypeOf(this), 'value', {
+            get: () => args[this.parameterIndex],
+          });
+        }
       }
 
       return this;
@@ -482,7 +488,6 @@ function _createPropertyAnnotationTarget<X = unknown>(
     readonly propertyKey!: string;
     readonly descriptor: TypedPropertyDescriptor<unknown>;
     override [BOUND_INSTANCE_SYMBOL]?: X;
-    override value?: unknown;
 
     private _declaringClassTarget?: ClassAnnotationTarget<X>;
     private _parentClassTarget?: ClassAnnotationTarget<X> | undefined;
@@ -531,7 +536,7 @@ function _createPropertyAnnotationTarget<X = unknown>(
     override bind(instance: X): PropertyAnnotationTarget<X> {
       if (!this[BOUND_INSTANCE_SYMBOL]) {
         this[BOUND_INSTANCE_SYMBOL] = instance;
-        Object.defineProperty(this, 'value', {
+        Object.defineProperty(Object.getPrototypeOf(this), 'value', {
           get: () => (instance as any)[this.propertyKey],
         });
       }

@@ -13,7 +13,7 @@ import type { AroundContext } from '../advices/around/around.context';
 import type { BeforeContext } from '../advices/before/before.context';
 import type { CompileContext } from '../advices/compile/compile.context';
 import { AdviceContext } from './advice.context';
-import { BindableAnnotationsByTypeSelection } from './bindable-annotation-selection';
+import { BindableAnnotationsByTypeSelection } from '@aspectjs/common';
 
 export class MutableAdviceContext<
   T extends JoinpointType = JoinpointType,

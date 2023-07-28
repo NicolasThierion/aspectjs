@@ -2,6 +2,7 @@ import {
   AnnotationRegistry,
   AnnotationTarget,
   AnnotationType,
+  BindableAnnotationsByTypeSelection,
 } from '@aspectjs/common';
 import {
   ConstructorType,
@@ -22,7 +23,6 @@ import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
 import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
-import { BindableAnnotationsByTypeSelection } from '../advice/bindable-annotation-selection';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 

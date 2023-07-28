@@ -1,13 +1,15 @@
+import { AnnotationContext } from '../annotation-context';
 import {
+  AnnotationType,
+  AnnotationStub,
   Annotation,
-  AnnotationContext,
+} from '../annotation.types';
+import { _AnnotationTargetImpl } from '../target/annotation-target.impl';
+import { BoundAnnotationTarget } from '../target/bound-annotation-target';
+import {
   AnnotationsByTypeSelection,
   AnnotationsByTypeSelectionOptions,
-  AnnotationStub,
-  AnnotationType,
-  BoundAnnotationTarget,
-  _AnnotationTargetImpl,
-} from '@aspectjs/common';
+} from './by-type-selection';
 
 export interface BoundAnnotationContext<
   T extends AnnotationType = AnnotationType,

@@ -1,11 +1,12 @@
-import { AnnotationFactory, AnnotationRef } from '@aspectjs/common';
+import {
+  AnnotationFactory,
+  AnnotationRef,
+  AnnotationsSelection,
+} from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { annotationsContext } from './../context/annotations.context.global';
-import {
-  AnnotationRegistry,
-  AnnotationsSelection,
-} from './annotation.registry';
+import { AnnotationRegistry } from './annotation.registry';
 
 describe('AnnotationRegistry', () => {
   let annotationRegistry: AnnotationRegistry;
@@ -92,11 +93,11 @@ describe('AnnotationRegistry', () => {
     class _A extends A {
       @A1Annotation('A1')
       @A1PropertyAnnotation('A1prop')
-      override prop1!: string;
+      override prop1 = 'propA1';
 
       @A2Annotation('A2')
       @A2PropertyAnnotation('A2prop')
-      override prop2!: string;
+      override prop2 = 'propA2';
 
       @A1Annotation('A1')
       @A1MethodAnnotation('A1method')
@@ -157,11 +158,11 @@ describe('AnnotationRegistry', () => {
     class _B extends B {
       @B1Annotation('B1')
       @B1PropertyAnnotation('B1prop')
-      prop1!: string;
+      prop1: string = 'propB1';
 
       @B2Annotation('B2')
       @B2PropertyAnnotation('B2prop')
-      prop2!: string;
+      prop2: string = 'propB2';
 
       @B1Annotation('B1')
       @B1MethodAnnotation('B1method')
@@ -263,21 +264,6 @@ describe('AnnotationRegistry', () => {
       });
     });
 
-    describe(`.all(someClassInstance).find();`, () => {
-      describe(`if "SomeClass" has annotations`, () => {
-        it('returns all annotations found within class SomeClass', () => {
-          expect(s.all(new A()).map((a) => a.annotation)).toEqual(
-            expect.arrayContaining(A_ANNOTATIONS),
-          );
-        });
-      });
-      xdescribe(`if "SomeClass" has no annotation`, () => {
-        xit('returns empty array', () => {
-          // expect(s.all(new X())).toEqual([]);
-        });
-      });
-    });
-
     describe(`.onClass()`, () => {
       describe('.find()', () => {
         it('returns all annotations found on all classes', () => {
@@ -315,6 +301,21 @@ describe('AnnotationRegistry', () => {
               .map((a) => a.args),
           ).toEqual(
             expect.arrayContaining([['A1'], ['A2'], ['A1class'], ['A2class']]),
+          );
+        });
+      });
+    });
+
+    describe(`.onClass(someClassInstance).find();`, () => {
+      describe(`if "someClassInstance" has annotations`, () => {
+        it('returns annotations that bound to someClassInstance', () => {
+          const a = new A();
+          const annotations = s.onClass(a).find();
+          expect(annotations.map((a) => a.ref)).toEqual(
+            expect.arrayContaining(A_CLASS_ANNOTATIONS),
+          );
+          expect(annotations.map((a) => a.target.value)).toEqual(
+            expect.arrayContaining(A_CLASS_ANNOTATIONS.map(() => a)),
           );
         });
       });
@@ -423,6 +424,25 @@ describe('AnnotationRegistry', () => {
         });
       });
     });
+    describe(`.onProperty(classInstance).find()`, () => {
+      describe('if properties on classInstance have annotations', () => {
+        it('returns annotations bound to classInstance["property"]', () => {
+          expect(
+            s
+              .onProperty(new A())
+              .find()
+              .map((a) => a.target.value),
+          ).toEqual(expect.arrayContaining(['propA1', 'propA2']));
+        });
+      });
+
+      describe('if properties on A do not have annotations', () => {
+        it('returns empty array', () => {
+          expect(s.onProperty(X).find()).toEqual([]);
+        });
+      });
+    });
+
     describe(`.onProperty(A, 'prop')`, () => {
       describe('.find()', () => {
         describe('if "prop" property exists', () => {
