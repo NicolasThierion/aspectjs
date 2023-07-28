@@ -50,3 +50,9 @@ export function isEmpty(value: unknown[]): boolean {
 export function isPromise(obj: any): obj is Promise<unknown> {
   return isFunction(obj?.then);
 }
+
+export function isClassInstance(obj: any): boolean {
+  return (
+    typeof obj === 'object' && getPrototype(obj) === Object.getPrototypeOf(obj)
+  );
+}

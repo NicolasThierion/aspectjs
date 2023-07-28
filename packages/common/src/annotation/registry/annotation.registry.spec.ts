@@ -263,12 +263,12 @@ describe('AnnotationRegistry', () => {
       });
     });
 
-    xdescribe(`.all(someClassInstance).find();`, () => {
-      xdescribe(`if "SomeClass" has annotations`, () => {
-        xit('returns all annotations found within class SomeClass', () => {
-          // expect(s.all(new A()).map((a) => a.annotation)).toEqual(
-          //   expect.arrayContaining(A_ANNOTATIONS),
-          // );
+    describe(`.all(someClassInstance).find();`, () => {
+      describe(`if "SomeClass" has annotations`, () => {
+        it('returns all annotations found within class SomeClass', () => {
+          expect(s.all(new A()).map((a) => a.annotation)).toEqual(
+            expect.arrayContaining(A_ANNOTATIONS),
+          );
         });
       });
       xdescribe(`if "SomeClass" has no annotation`, () => {

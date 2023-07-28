@@ -1,4 +1,9 @@
-import { assert, ConstructorType, isObject } from '@aspectjs/common/utils';
+import {
+  assert,
+  ConstructorType,
+  isClassInstance,
+  isObject,
+} from '@aspectjs/common/utils';
 import { AnnotationContext } from '../annotation-context';
 import { AnnotationRef } from '../annotation-ref';
 import {
@@ -11,6 +16,7 @@ import type {
   AnnotationTargetRef,
 } from '../target/annotation-target';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
+import { BoundAnnotationsByTypeSelection } from './../../../../core/src/advice/bindable-annotation-selection';
 import { AnnotationSelectionFilter } from './annotation-selection-filter';
 
 type ByAnnotationSet = {
@@ -219,8 +225,14 @@ export class AnnotationsSelection {
 
   all<X = unknown>(
     type?: ConstructorType<X>,
+  ): AnnotationsByTypeSelection<AnnotationType, X>;
+  all<X = unknown>(
+    type?: X,
+  ): BoundAnnotationsByTypeSelection<AnnotationType, X>;
+  all<X = unknown>(
+    type?: X | ConstructorType<X>,
   ): AnnotationsByTypeSelection<AnnotationType, X> {
-    return new AnnotationsByTypeSelection<AnnotationType, X>(
+    const selection = new AnnotationsByTypeSelection<AnnotationType, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -232,6 +244,15 @@ export class AnnotationsSelection {
       ],
       type,
     );
+
+    if (isClassInstance(type)) {
+      return new BoundAnnotationsByTypeSelection<AnnotationType, X>(
+        selection,
+        type,
+      );
+    }
+
+    return selection;
   }
   onClass<X = unknown>(
     type?: ConstructorType<X>,

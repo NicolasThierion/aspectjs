@@ -1,4 +1,4 @@
-import { ConstructorType, getPrototype } from '@aspectjs/common/utils';
+import { ConstructorType, isClassInstance } from '@aspectjs/common/utils';
 import { BoundAnnotationTarget } from './bound-annotation-target';
 
 import { AnnotationType } from '../annotation.types';
@@ -84,11 +84,7 @@ export class AnnotationTargetFactory {
     return target;
   }
 }
-function isClassInstance(obj: any): boolean {
-  return (
-    typeof obj === 'object' && getPrototype(obj) === Object.getPrototypeOf(obj)
-  );
-}
+
 function coerce<T extends AnnotationType, X = unknown>(
   targetArgs: DecoratorTargetArgs<T, X>,
 ) {
