@@ -1,7 +1,7 @@
 {
   "name": "@aspectjs/parent",
   "private": true,
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Aspect Oriented Programming based on decorators, for browser & node",
   "scripts": {
     "test": "lerna run test --stream",

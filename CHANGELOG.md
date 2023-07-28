@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.9](https://github.com/NicolasThierion/aspectjs/compare/v0.3.8...v0.3.9) (2023-07-28)
+
+
+### Features
+
+* **common:** AnnotationRegistry can now return BoundAnnotationContexts ([7eae6d4](https://github.com/NicolasThierion/aspectjs/commit/7eae6d482237772adf48b59c3bddc7b3371de95d))
+
+
+### Bug Fixes
+
+* BoundAnnotationContext type is aware of used annotationStub ([bc6317f](https://github.com/NicolasThierion/aspectjs/commit/bc6317fde1ed4de2a472660ff876e3d3936aa1b0))
+
 ## [0.3.8](https://github.com/NicolasThierion/aspectjs/compare/v0.3.7...v0.3.8) (2023-07-27)
 
 
