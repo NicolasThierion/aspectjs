@@ -1,23 +1,23 @@
 import {
   ConstructorType,
-  isClassInstance,
   assert,
-  isObject,
   getPrototype,
+  isClassInstance,
+  isObject,
 } from '@aspectjs/common/utils';
 import { AnnotationRef } from '../annotation-ref';
-import { AnnotationType } from '../annotation.types';
+import { AnnotationStub, AnnotationType } from '../annotation.types';
 import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { AnnotationSelectionFilter } from './selection-filter';
+import { _AnnotationsSet } from './annotation-set';
 import { BoundAnnotationsByTypeSelection } from './bindable-selection';
 import { AnnotationsByTypeSelection } from './by-type-selection';
-import { _AnnotationsSet } from './annotation-set';
+import { AnnotationSelectionFilter } from './selection-filter';
 
 /**
  * Selects annotations based on their type or target.
  */
-export class AnnotationsSelection {
+export class AnnotationsSelection<S extends AnnotationStub = AnnotationStub> {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
     private readonly annotationSet: _AnnotationsSet,
@@ -26,13 +26,13 @@ export class AnnotationsSelection {
 
   all<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationsByTypeSelection<AnnotationType, X>;
+  ): AnnotationsByTypeSelection<AnnotationType, S, X>;
   all<X = unknown>(
     type?: X,
-  ): BoundAnnotationsByTypeSelection<AnnotationType, X>;
+  ): BoundAnnotationsByTypeSelection<AnnotationType, S, X>;
   all<X = unknown>(
     type?: X | ConstructorType<X>,
-  ): AnnotationsByTypeSelection<AnnotationType, X> {
+  ): AnnotationsByTypeSelection<AnnotationType, S, X> {
     return this.createSelection(
       [
         AnnotationType.CLASS,
@@ -46,20 +46,20 @@ export class AnnotationsSelection {
 
   onClass<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationsByTypeSelection<AnnotationType.CLASS, X>;
+  ): AnnotationsByTypeSelection<AnnotationType.CLASS, S, X>;
   onClass<X = unknown>(
     type?: X,
-  ): BoundAnnotationsByTypeSelection<AnnotationType.CLASS, X>;
+  ): BoundAnnotationsByTypeSelection<AnnotationType.CLASS, S, X>;
   onClass<X = unknown>(
     type?: ConstructorType<X> | X,
-  ): AnnotationsByTypeSelection<AnnotationType.CLASS, X> {
+  ): AnnotationsByTypeSelection<AnnotationType.CLASS, S, X> {
     return this.createSelection([AnnotationType.CLASS], type);
   }
 
   onMethod<X = any, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<AnnotationType.METHOD, X> {
+  ): AnnotationsByTypeSelection<AnnotationType.METHOD, S, X> {
     return this.createSelection(
       [AnnotationType.METHOD],
       type ? getPrototype(type).constructor : undefined,
@@ -69,22 +69,22 @@ export class AnnotationsSelection {
   onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<AnnotationType.PROPERTY, X>;
+  ): AnnotationsByTypeSelection<AnnotationType.PROPERTY, S, X>;
   onProperty<X, K extends keyof X = keyof X>(
     type?: X,
     propertyKey?: K,
-  ): BoundAnnotationsByTypeSelection<AnnotationType.PROPERTY, X>;
+  ): BoundAnnotationsByTypeSelection<AnnotationType.PROPERTY, S, X>;
   onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<AnnotationType.PROPERTY, X> {
+  ): AnnotationsByTypeSelection<AnnotationType.PROPERTY, S, X> {
     return this.createSelection([AnnotationType.PROPERTY], type, propertyKey);
   }
 
   onArgs<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<AnnotationType.PARAMETER, X> {
+  ): AnnotationsByTypeSelection<AnnotationType.PARAMETER, S, X> {
     return this.createSelection(
       [AnnotationType.PARAMETER],
       type ? getPrototype(type).constructor : undefined,
@@ -100,8 +100,8 @@ export class AnnotationsSelection {
     annotationTypes: T[],
     targetType?: X | ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationsByTypeSelection<T, X> {
-    const selection = new AnnotationsByTypeSelection<T, X>(
+  ): AnnotationsByTypeSelection<T, S, X> {
+    const selection = new AnnotationsByTypeSelection<T, S, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
@@ -110,7 +110,10 @@ export class AnnotationsSelection {
       propertyKey as string | symbol,
     );
     if (isClassInstance(targetType)) {
-      return new BoundAnnotationsByTypeSelection<T, X>(selection, targetType);
+      return new BoundAnnotationsByTypeSelection<T, S, X>(
+        selection,
+        targetType,
+      );
     }
 
     return selection;
@@ -118,11 +121,11 @@ export class AnnotationsSelection {
 
   on<X>(
     filter: AnnotationSelectionFilter,
-  ): AnnotationsByTypeSelection<AnnotationType, X> {
+  ): AnnotationsByTypeSelection<AnnotationType, S, X> {
     const { target, types } = filter;
     assert(isObject(target));
 
-    return new AnnotationsByTypeSelection<AnnotationType, X>(
+    return new AnnotationsByTypeSelection<AnnotationType, S, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,

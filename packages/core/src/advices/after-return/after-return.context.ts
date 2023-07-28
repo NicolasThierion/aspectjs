@@ -8,7 +8,7 @@ export interface AfterReturnContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>>;
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

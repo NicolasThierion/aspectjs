@@ -2,9 +2,9 @@ import { ConstructorType, assert } from '@aspectjs/common/utils';
 import { AnnotationContext } from '../annotation-context';
 import { AnnotationRef } from '../annotation-ref';
 import {
-  AnnotationType,
-  AnnotationStub,
   Annotation,
+  AnnotationStub,
+  AnnotationType,
 } from '../annotation.types';
 import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
@@ -19,8 +19,8 @@ export interface AnnotationsByTypeSelectionOptions {
 
 export class AnnotationsByTypeSelection<
   T extends AnnotationType = AnnotationType,
-  X = unknown,
   S extends AnnotationStub = AnnotationStub,
+  X = unknown,
 > {
   private readonly targetFactory: AnnotationTargetFactory;
   private readonly annotationSet: _AnnotationsSet;
@@ -29,7 +29,7 @@ export class AnnotationsByTypeSelection<
   private readonly type?: ConstructorType<X>;
   private readonly propertyKey?: string | symbol;
 
-  constructor(selection: AnnotationsByTypeSelection<T, X, S>);
+  constructor(selection: AnnotationsByTypeSelection<T, S, X>);
   constructor(
     targetFactory: AnnotationTargetFactory,
     annotationSet: _AnnotationsSet,
@@ -41,7 +41,7 @@ export class AnnotationsByTypeSelection<
   constructor(
     targetFactory:
       | AnnotationTargetFactory
-      | AnnotationsByTypeSelection<T, X, S>,
+      | AnnotationsByTypeSelection<T, S, X>,
     annotationSet?: _AnnotationsSet,
     annotationsRefs?: Set<AnnotationRef> | undefined,
     decoratorTypes?: T[],
@@ -67,9 +67,9 @@ export class AnnotationsByTypeSelection<
   }
   filter<S2 extends AnnotationStub>(
     annotation: Annotation<AnnotationType, S2>,
-  ): AnnotationsByTypeSelection<T, X, S2>;
-  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X>;
-  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, X> {
+  ): AnnotationsByTypeSelection<T, S2, X>;
+  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, S, X>;
+  filter(...annotations: Annotation[]): AnnotationsByTypeSelection<T, S, X> {
     let annotationRefs = this.annotationsRefs;
     if (annotations.length) {
       if (!annotationRefs) {

@@ -90,13 +90,11 @@ describe('AnnotationTargetFactory', () => {
     it('.declaringClass === <class target>', () => {
       const target = targetFactory.of(new X(), 'prop');
       expect(target.declaringClass).toEqual(targetFactory.of(new X()));
-      expect(target.declaringClass).toEqual(targetFactory.of(X));
     });
 
     it('.parent === <class target>', () => {
       const target = targetFactory.of(new X(), 'prop');
       expect(target.parent).toEqual(targetFactory.of(new X()));
-      expect(target.parent).toEqual(targetFactory.of(X));
     });
 
     it('.value === x', () => {
@@ -123,7 +121,7 @@ describe('AnnotationTargetFactory', () => {
 
     it('.parent === <class target>', () => {
       const target = targetFactory.of(new X(), 'prop');
-      expect(target.parent).toEqual(targetFactory.of(X));
+      expect(target.parent).toEqual(targetFactory.of(new X()));
     });
 
     it('.value === x', () => {
@@ -145,12 +143,11 @@ describe('AnnotationTargetFactory', () => {
     it('.declaringClass === <class target>', () => {
       const target = targetFactory.of(new X(), 'prop');
       expect(target.declaringClass).toEqual(targetFactory.of(new X()));
-      expect(target.declaringClass).toEqual(targetFactory.of(X));
     });
 
     it('.parent === <class target>', () => {
       const target = targetFactory.of(new X(), 'prop');
-      expect(target.parent).toEqual(targetFactory.of(X));
+      expect(target.parent).toEqual(targetFactory.of(new X()));
     });
 
     it('.value === x', () => {
@@ -263,7 +260,7 @@ describe('AnnotationTargetFactory', () => {
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.declaringClass).toEqual(targetFactory.of(X.prototype));
+      expect(target.declaringClass).toEqual(targetFactory.of(new X()));
     });
 
     it('.parent === <class target>', () => {
@@ -273,7 +270,7 @@ describe('AnnotationTargetFactory', () => {
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.parent).toEqual(targetFactory.of(X));
+      expect(target.parent).toEqual(targetFactory.of(new X()));
     });
 
     it('.value === x', () => {

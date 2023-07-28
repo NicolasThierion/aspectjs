@@ -1,8 +1,8 @@
 import { AnnotationContext } from '../annotation-context';
 import {
-  AnnotationType,
-  AnnotationStub,
   Annotation,
+  AnnotationStub,
+  AnnotationType,
 } from '../annotation.types';
 import { _AnnotationTargetImpl } from '../target/annotation-target.impl';
 import { BoundAnnotationTarget } from '../target/bound-annotation-target';
@@ -20,11 +20,11 @@ export interface BoundAnnotationContext<
 }
 export class BoundAnnotationsByTypeSelection<
   T extends AnnotationType = AnnotationType,
-  X = unknown,
   S extends AnnotationStub = AnnotationStub,
-> extends AnnotationsByTypeSelection<T, X, S> {
+  X = unknown,
+> extends AnnotationsByTypeSelection<T, S, X> {
   constructor(
-    selection: AnnotationsByTypeSelection<T, X, S>,
+    selection: AnnotationsByTypeSelection<T, S, X>,
     private instance: unknown,
     private args?: unknown[],
   ) {
@@ -48,13 +48,13 @@ export class BoundAnnotationsByTypeSelection<
   }
   override filter<S2 extends AnnotationStub>(
     annotation: Annotation<AnnotationType, S2>,
-  ): BoundAnnotationsByTypeSelection<T, X, S2>;
+  ): BoundAnnotationsByTypeSelection<T, S2, X>;
   override filter(
     ...annotations: Annotation[]
-  ): BoundAnnotationsByTypeSelection<T, X>;
+  ): BoundAnnotationsByTypeSelection<T, S, X>;
   override filter(
     ...annotations: Annotation[]
-  ): BoundAnnotationsByTypeSelection<T, X> {
+  ): BoundAnnotationsByTypeSelection<T, S, X> {
     return new BoundAnnotationsByTypeSelection(
       super.filter(...annotations),
       this.instance,
@@ -66,11 +66,11 @@ export class BindableAnnotationsByTypeSelection<
   T extends AnnotationType = AnnotationType,
   X = unknown,
   S extends AnnotationStub = AnnotationStub,
-> extends AnnotationsByTypeSelection<T, X, S> {
+> extends AnnotationsByTypeSelection<T, S, X> {
   bind(
     instance: unknown,
     args?: unknown[],
-  ): BoundAnnotationsByTypeSelection<T, X, S> {
+  ): BoundAnnotationsByTypeSelection<T, S, X> {
     return new BoundAnnotationsByTypeSelection(this, instance, args);
   }
 

@@ -263,14 +263,15 @@ function _createClassAnnotationTarget<X = unknown>(
     }
 
     override bind(value: X): ClassAnnotationTarget<X> {
-      if (!this[BOUND_INSTANCE_SYMBOL]) {
-        Object.defineProperty(Object.getPrototypeOf(this), 'value', {
+      const bound = new ClassAnnotationTargetImpl();
+      if (!bound[BOUND_INSTANCE_SYMBOL]) {
+        Object.defineProperty(bound, 'value', {
           get: () => value,
         });
-        this[BOUND_INSTANCE_SYMBOL] = value;
+        bound[BOUND_INSTANCE_SYMBOL] = value;
       }
 
-      return this;
+      return bound;
     }
   })();
 }
@@ -335,13 +336,15 @@ function _createMethodAnnotationTarget<X = unknown>(
     }
 
     override bind(value: X): MethodAnnotationTarget<X> {
-      if (!this[BOUND_INSTANCE_SYMBOL]) {
-        this[BOUND_INSTANCE_SYMBOL] = value;
-        Object.defineProperty(Object.getPrototypeOf(this), 'value', {
-          get: () => this.proto[this.propertyKey],
+      const bound = new MethodAnnotationTargetImpl();
+
+      if (!bound[BOUND_INSTANCE_SYMBOL]) {
+        bound[BOUND_INSTANCE_SYMBOL] = value;
+        Object.defineProperty(bound, 'value', {
+          get: () => bound.proto[bound.propertyKey],
         });
       }
-      return this;
+      return bound;
     }
   })();
 }
@@ -437,18 +440,20 @@ function _createParameterAnnotationTarget<X = unknown>(
     }
 
     override bind(instance: X, args: unknown[]): ParameterAnnotationTarget<X> {
-      if (!this[BOUND_INSTANCE_SYMBOL]) {
-        this[BOUND_INSTANCE_SYMBOL] = instance;
+      const bound = new ParameterAnnotationTargetImpl();
+
+      if (!bound[BOUND_INSTANCE_SYMBOL]) {
+        bound[BOUND_INSTANCE_SYMBOL] = instance;
 
         if (args) {
-          assert(args!.length > this.parameterIndex);
-          Object.defineProperty(Object.getPrototypeOf(this), 'value', {
-            get: () => args[this.parameterIndex],
+          assert(args!.length > bound.parameterIndex);
+          Object.defineProperty(bound, 'value', {
+            get: () => args[bound.parameterIndex],
           });
         }
       }
 
-      return this;
+      return bound;
     }
   })();
 }
@@ -534,13 +539,15 @@ function _createPropertyAnnotationTarget<X = unknown>(
     }
 
     override bind(instance: X): PropertyAnnotationTarget<X> {
-      if (!this[BOUND_INSTANCE_SYMBOL]) {
-        this[BOUND_INSTANCE_SYMBOL] = instance;
-        Object.defineProperty(Object.getPrototypeOf(this), 'value', {
-          get: () => (instance as any)[this.propertyKey],
+      const bound = new PropertyAnnotationTargetImpl();
+
+      if (!bound[BOUND_INSTANCE_SYMBOL]) {
+        bound[BOUND_INSTANCE_SYMBOL] = instance;
+        Object.defineProperty(bound, 'value', {
+          get: () => (instance as any)[bound.propertyKey],
         });
       }
-      return this;
+      return bound;
     }
   })();
 }

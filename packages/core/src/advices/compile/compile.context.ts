@@ -10,7 +10,7 @@ export interface CompileContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: AnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  readonly annotations: AnnotationsByTypeSelection<ToAnnotationType<T>>;
   /** The symbol targeted by this advice (class, method, property or parameter **/
   readonly target: AdviceTarget<T, X>;
 
