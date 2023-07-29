@@ -29,3 +29,4 @@ pnpmfile.js
 *.log
 *.log.*
 dist/
+*.tgz

@@ -42,7 +42,7 @@ export class BoundAnnotationsByTypeSelection<
             this.args,
           ),
         },
-        AnnotationContext,
+        Object.getPrototypeOf(ctxt),
       );
     });
   }

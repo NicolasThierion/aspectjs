@@ -5,7 +5,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",
-    "directory": "packages/memo"
+    "directory": "packages/core"
   },
   "scripts": {
     "test": "npm run test:lint && npm run test:unit",
