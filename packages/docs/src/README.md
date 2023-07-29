@@ -65,3 +65,8 @@ Benefits of using _AOP_
 - **Consistency**: Provides a consistent and centralized approach to applying behaviors and policies across your application.
 - **Dynamic Behavior**: Supports dynamic behavior by allowing aspects to be applied at runtime, enabling flexibility and adaptability.
 - **Maintainability**: Makes it easier to maintain your codebase by isolating boilerplate code and making the codebase more concise and clean.
+
+
+## 🎉 Demo:
+
+<iframe src="https://stackblitz.com/edit/aspectjs-demo?file=index.ts" width="100%" height="540px" border="none"></iframe>

@@ -84,11 +84,9 @@ _AspectJS_ introduces the concept of annotations for Javascript. Simply put, an 
   getWeaver().enable(new ToastedAspect());
   ```
 
-## Demo:
-
 ## 🎉 Use cases.
 
-- Define annotations to validate a data structure (eg: `@Type(Date)`, `@MinLength(10)`), that enforce runtime type checking for the development but is excluded from the production build.
+- Define annotations to validate a data structure (eg: `@Type(Date)`, `@MinLength(10)`), that enforces runtime type checking for the development but is excluded from the production build.
 - Have a `@Transactional()` annotation that is not tight to a specific _ORM_ implementation.
 
 ## 🔗 Documentation
@@ -103,6 +101,6 @@ MIT Licensed
 [npm version]: https://img.shields.io/npm/v/@aspectjs/core.svg
 [license]: https://img.shields.io/npm/l/@aspectjs/core.svg
 [NPM Downloads]: https://img.shields.io/npm/dm/@aspectjs/common.svg
-[demo-gif]: ./.assets/demo.gif
-[with-aspectjs]: ./.assets/with-aspectjs.png
-[without-aspectjs]: ./.assets/without-aspectjs.png
+[demo-gif]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/demo.gif
+[with-aspectjs]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/with-aspectjs.png
+[without-aspectjs]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/without-aspectjs.png
