@@ -19,22 +19,22 @@ export function renameFunction<T, F extends (...args: any[]) => T>(
   const name = typeof nameOrStub === 'string' ? nameOrStub : nameOrStub.name;
   const args =
     typeof nameOrStub === 'string' ? ['...args'] : getParamNames(nameOrStub);
-  // const map = new Map<string, F>();
-  // map.set(name, function (...args: any[]) {
-  //   fn(null, ...args);
-  // } as F);
-  // const newFn = map.get(name)!;
+
   let newFn: F = function (this: any, ...args: any[]) {
     return fn(this, ...args);
   } as any;
   try {
     // try to rename thr function.
-    newFn = new Function(
+    const renamedNewFn = new Function(
       'fn',
-      `return function ${name}(${args}) { return fn.call(${['this']
-        .concat(args)
+      `return function ${name}(${args}) { return fn.apply(${['this']
+        // `return function ${name}(${args}) { return fn.call(${['this']
+        // .concat(args)
+        .concat('arguments')
         .join(', ')}) };`,
     )(newFn);
+    renamedNewFn.prototype = newFn.prototype;
+    newFn = renamedNewFn;
   } catch (e) {
     assert(false);
     // won't work if name is a keyword (eg: delete). Let newFn as is.

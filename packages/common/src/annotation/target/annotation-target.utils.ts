@@ -444,9 +444,9 @@ function _createParameterAnnotationTarget<X = unknown>(
 
       if (!bound[BOUND_INSTANCE_SYMBOL]) {
         bound[BOUND_INSTANCE_SYMBOL] = instance;
+        assert(!!args);
 
         if (args) {
-          assert(args!.length > bound.parameterIndex);
           Object.defineProperty(bound, 'value', {
             get: () => args[bound.parameterIndex],
           });

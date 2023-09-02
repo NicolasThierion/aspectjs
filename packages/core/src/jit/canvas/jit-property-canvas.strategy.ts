@@ -1,4 +1,4 @@
-import { assert, getMetadata, isUndefined } from '@aspectjs/common/utils';
+import { assert, defineMetadata, getMetadata } from '@aspectjs/common/utils';
 
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
@@ -21,7 +21,7 @@ export class JitPropertyCanvasStrategy<
   X
 > {
   private propertySetterStrategy: JitPropertySetCanvasStrategy<X>;
-  propertyCanvas!: CompiledCanvas<
+  propertySetterCanvas?: CompiledCanvas<
     JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
     X
   >;
@@ -38,11 +38,11 @@ export class JitPropertyCanvasStrategy<
     >,
     selection: AdvicesSelection,
   ): PropertyDescriptor | undefined {
-    this.propertyCanvas = new JitWeaverCanvas(
+    this.propertySetterCanvas = new JitWeaverCanvas(
       this.propertySetterStrategy,
     ).compile(new MutableAdviceContext<any, any>(ctxt), selection);
 
-    return this.propertyCanvas.compiledSymbol!;
+    return this.propertySetterCanvas.compiledSymbol!;
   }
 
   override callJoinpoint(
@@ -77,16 +77,22 @@ export class JitPropertyCanvasStrategy<
   ): PropertyDescriptor {
     assert(!!ctxt.target?.proto);
 
+    const configurable = getMetadata(
+      '@aspectjs:configurable',
+      compiledSymbol,
+    ) as boolean;
     compiledSymbol = {
       ...compiledSymbol,
       get() {
         return getterJoinpoint(this);
       },
-      set: this.propertyCanvas.link()!.set,
+      set: this.propertySetterCanvas!.link()!.set,
     };
 
     delete compiledSymbol.value;
     delete compiledSymbol.writable;
+    compiledSymbol.configurable = configurable;
+
     return compiledSymbol;
   }
 
@@ -150,62 +156,69 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
     X
   > {
-    // leave descriptor as compiler by getter strategy
-    assert(!!ctxt.target.propertyKey);
-    const target = ctxt.target;
-    // if (this.compiledDescriptor) {
-    //   return this.compiledDescriptor;
-    // }
-
-    // if another @Compile advice has been applied
-    // replace advised descriptor by original descriptor before it gets advised again
-    const oldDescriptor = getMetadata(
-      '@aspectjs:jitPropertyCanvas',
+    // if property already compiled, it might also be linked.
+    // Use the last known compiled symbol as a reference to avoid linking twice.
+    let propertyDescriptor = getMetadata(
+      '@aspectjs:compiledSymbol',
       ctxt.target.proto,
       ctxt.target.propertyKey,
       () =>
         ctxt.target.descriptor ??
+        Object.getOwnPropertyDescriptor(
+          ctxt.target.proto,
+          ctxt.target.propertyKey,
+        ) ??
         this.createPropertyDescriptor(ctxt.target.propertyKey),
       true,
     );
 
-    //  if no prop advices, return descriptor as is
-    if (selection.find().next().done) {
-      return oldDescriptor;
-    }
+    assert(!!ctxt.target.propertyKey);
+    const target = ctxt.target;
 
-    const conpileAdviceEntries = [
+    const adviceEntries = [
       ...selection.find([JoinpointType.GET_PROPERTY], [AdviceType.COMPILE]),
       ...selection.find([JoinpointType.SET_PROPERTY], [AdviceType.COMPILE]),
     ];
 
-    const newDescriptor: PropertyDescriptor =
-      conpileAdviceEntries
-        .map((entry) => {
-          assert(typeof entry === 'function');
-          // TODO: do not call all @Compile advices. Only the one with highest precedence
-          const descriptor = entry.advice.call(
-            entry.aspect,
-            ctxt.asCompileContext(),
-          );
+    adviceEntries
+      //  prevent calling them twice.
+      .filter((e) => !getMetadata('compiled', e, () => false))
+      .forEach((entry) => {
+        assert(typeof entry.advice === 'function');
+        const descriptor = entry.advice.call(
+          entry.aspect,
+          ctxt.asCompileContext(),
+        );
 
-          if (descriptor && oldDescriptor.configurable === false) {
+        if (descriptor) {
+          if (typeof descriptor !== 'object') {
+            throw new AdviceError(
+              entry.advice,
+              ctxt.target,
+              'should return void or a property descriptor',
+            );
+          }
+
+          if (propertyDescriptor.configurable === false) {
             throw new AdviceError(
               entry.advice,
               ctxt.target,
               `${target.label} is not configurable`,
             );
           }
+          propertyDescriptor = this.normalizeDescriptor(descriptor);
+          Reflect.defineProperty(
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+            propertyDescriptor,
+          );
+        }
+        defineMetadata('compiled', true, entry);
 
-          return descriptor;
-        })
-        .filter((descriptor) => !!descriptor)
-        .map((descriptor) => this.normalizeDescriptor(descriptor))
-        .reverse()[0] ?? oldDescriptor;
+        return descriptor;
+      });
 
-    Reflect.defineProperty(target.proto, target.propertyKey, newDescriptor);
-
-    return newDescriptor;
+    return propertyDescriptor;
   }
 
   override afterThrow(
@@ -225,18 +238,21 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     // test property validity
     const surrogate = { prop: undefined };
     const surrogateProp = Reflect.getOwnPropertyDescriptor(surrogate, 'prop')!;
-    if (isUndefined(descriptor.enumerable)) {
-      descriptor.enumerable = surrogateProp.enumerable;
-    }
-
-    if (isUndefined(descriptor.configurable)) {
-      descriptor.configurable = surrogateProp.configurable;
-    }
+    descriptor.enumerable ??= surrogateProp.enumerable;
 
     Object.defineProperty(surrogate, 'newProp', descriptor);
 
     // normalize the descriptor
     descriptor = Object.getOwnPropertyDescriptor(surrogate, 'newProp')!;
+
+    // descriptor should be configurable to later link the canvas.
+    // move the configurable attribute so the canvas can restore it later
+    defineMetadata(
+      '@aspectjs:configurable',
+      descriptor.configurable,
+      descriptor,
+    );
+    descriptor.configurable = true;
 
     return descriptor;
   }

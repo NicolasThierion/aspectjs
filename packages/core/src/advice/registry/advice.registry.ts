@@ -5,7 +5,7 @@ import { AfterReturn } from '../../advices/after-return/after-return.annotation'
 import { AfterThrow } from '../../advices/after-throw/after-throw.annotation';
 import { After } from '../../advices/after/after.annotation';
 import { Around } from '../../advices/around/around.annotation';
-import { Compile } from '../../advices/around/compile.annotation';
+import { Compile } from '../../advices/compile/compile.annotation';
 import { Before } from '../../advices/before/before.annotation';
 import { WeavingError } from '../../errors/weaving.error';
 import { Pointcut } from '../../pointcut/pointcut';

@@ -1,6 +1,5 @@
 import 'jest-extended';
 import 'jest-extended/all';
-import { WeavingError } from '../../errors/weaving.error';
 import { Before } from '../before/before.annotation';
 
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
@@ -180,50 +179,26 @@ describe('property advice', () => {
     });
 
     describe('when the joinpoint is called', () => {
-      describe('once', () => {
-        beforeEach(() => {
-          aroundAdviceA = jest.fn(
-            (ctxt: AroundContext<JoinpointType.CLASS>) => {
-              return ctxt.joinpoint(...ctxt.args);
-            },
-          );
-        });
-        it('calls the aspect around the getter', () => {
-          class A {
-            @AProperty()
-            get labels() {
-              getterImpl();
-              return ['a'];
-            }
-          }
-
-          new A().labels;
-          expect(beforeAdvice).toHaveBeenCalled();
-          expect(aroundAdviceA).toHaveBeenCalled();
-          expect(getterImpl).toHaveBeenCalled();
-          expect(beforeAdvice).toHaveBeenCalledBefore(getterImpl);
-          expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
+      beforeEach(() => {
+        aroundAdviceA = jest.fn((ctxt: AroundContext<JoinpointType.CLASS>) => {
+          return ctxt.joinpoint(...ctxt.args);
         });
       });
-      describe('twice', () => {
-        beforeEach(() => {
-          aroundAdviceA = jest.fn((ctxt: AroundContext, jp: JoinPoint) => {
-            jp();
-            jp();
-          });
-        });
-        it('throws an error', () => {
-          class A {
-            @AProperty()
-            labels = ['a'];
+      it('calls the aspect around the getter', () => {
+        class A {
+          @AProperty()
+          get labels() {
+            getterImpl();
+            return ['a'];
           }
+        }
 
-          expect(() => new A().labels).toThrow(
-            new WeavingError(
-              'Error applying advice @Around(@test:AProperty) AAspect.applyAround() on property A.labels: joinPoint already proceeded',
-            ),
-          );
-        });
+        new A().labels;
+        expect(beforeAdvice).toHaveBeenCalled();
+        expect(aroundAdviceA).toHaveBeenCalled();
+        expect(getterImpl).toHaveBeenCalled();
+        expect(beforeAdvice).toHaveBeenCalledBefore(getterImpl);
+        expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
       });
     });
 

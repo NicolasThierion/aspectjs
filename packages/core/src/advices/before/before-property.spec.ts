@@ -13,6 +13,7 @@ import { Before } from './before.annotation';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceError } from '../../public_api';
 import type { BeforeContext } from './before.context';
+// eslint-disable @typescript-eslint/no-unused-vars
 
 describe('property get advice', () => {
   let advice: ReturnType<typeof jest.fn>;
@@ -75,7 +76,6 @@ describe('property get advice', () => {
         expect(this === aaspect || this === baspect).toBeTrue();
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const p = new A().prop;
       expect(advice).toBeCalledTimes(2);
       expect(p).toEqual('p');
@@ -110,7 +110,6 @@ describe('property get advice', () => {
         expect(this).toEqual(aaspect);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const p = new A().prop;
       expect(advice).toBeCalled();
       expect(p).toEqual('p');
@@ -132,7 +131,6 @@ describe('property get advice', () => {
         expect(this).toBe(aaspect);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
       const p = a.prop;
       expect(advice).toBeCalled();
@@ -171,7 +169,6 @@ describe('property get advice', () => {
         labels = ['a'];
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
       advice = jest.fn(function (this: any) {
         expect(this).toBe(aaspect);

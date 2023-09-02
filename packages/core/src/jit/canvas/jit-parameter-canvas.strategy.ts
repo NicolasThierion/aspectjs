@@ -1,10 +1,6 @@
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 
-import {
-  defineMetadata,
-  getMetadata,
-  MethodPropertyDescriptor,
-} from '@aspectjs/common/utils';
+import { getMetadata, MethodPropertyDescriptor } from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
@@ -33,17 +29,18 @@ export class JitParameterCanvasStrategy<
     // save original descriptor.
     // Used later to prevent Reflect.decorate to restore this descriptor
     // and cancel the enhanced parameter
-    const originalDescriptor = Reflect.getOwnPropertyDescriptor(
+    getMetadata(
+      'aspectjs:originalDescriptor',
       ctxt.target.proto,
       ctxt.target.propertyKey,
+      () => {
+        return Reflect.getOwnPropertyDescriptor(
+          ctxt.target.proto,
+          ctxt.target.propertyKey,
+        );
+      },
     );
 
-    defineMetadata(
-      'aspectjs:originalDescriptor',
-      originalDescriptor,
-      ctxt.target.proto,
-      ctxt.target.propertyKey,
-    );
     return compiledDescriptor;
   }
 
@@ -61,11 +58,11 @@ export class JitParameterCanvasStrategy<
   ): MethodPropertyDescriptor {
     const methodDescriptor = super.link(ctxt, compiledSymbol, joinpoint);
 
-    preventResetMethodDescriptor(ctxt, methodDescriptor);
+    preventRevertMethodDescriptor(ctxt, methodDescriptor);
     return methodDescriptor as any;
   }
 }
-function preventResetMethodDescriptor<X>(
+function preventRevertMethodDescriptor<X>(
   ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
   methodDescriptor: PropertyDescriptor,
 ) {
@@ -73,26 +70,26 @@ function preventResetMethodDescriptor<X>(
   // Moreover, Reflect.decorate will overwrite any changes made on proto[propertyKey]
   // To prevent this, we monkey patch Object.defineProperty;
   Object.defineProperty = function (
-    o: any,
-    p: PropertyKey,
-    attributes: PropertyDescriptor & ThisType<any>,
+    target: any,
+    property: PropertyKey,
+    propertyDescriptor: PropertyDescriptor & ThisType<any>,
   ) {
-    if (o === ctxt.target.proto && p === ctxt.target.propertyKey) {
+    if (target === ctxt.target.proto && property === ctxt.target.propertyKey) {
       const originalDescriptor = getMetadata(
         'aspectjs:originalDescriptor',
         ctxt.target.proto,
         ctxt.target.propertyKey,
       );
       // prevent writing back old descriptor
-      if (equals(originalDescriptor, attributes)) {
+      if (equals(originalDescriptor, propertyDescriptor)) {
         // restore original defineProperty method
         Object.defineProperty = _defineProperty;
-        return Object.defineProperty(o, p, methodDescriptor);
+        return Object.defineProperty(target, property, methodDescriptor);
       } else {
-        return _defineProperty(o, p, attributes);
+        return _defineProperty(target, property, propertyDescriptor);
       }
     }
-    return _defineProperty(o, p, attributes);
+    return _defineProperty(target, property, propertyDescriptor);
   };
 }
 

@@ -12,6 +12,8 @@ import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { AdviceEntry } from './advice-entry.model';
 import { AdviceRegistry } from './advice.registry';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 describe('AdviceRegisrty', () => {
   let adviceReg: AdviceRegistry;
   beforeEach(() => {
@@ -32,9 +34,7 @@ describe('AdviceRegisrty', () => {
 
   let aaspect: any;
   let baspect: any;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let xaspect: any;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let yaspect: any;
   let subAaaspect: any;
   let Aannotation: any;
@@ -85,18 +85,13 @@ describe('AdviceRegisrty', () => {
       afterClassSubA1() {}
     }
     Aaspect = _AAspect;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Baspect = _BAspect;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Xaspect = _XAspect;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Yaspect = _YAspect;
     SubAaspect = _SubAaspect;
     aaspect = new Aaspect();
     baspect = new Baspect();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     xaspect = new Xaspect();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     yaspect = new Yaspect();
     subAaaspect = new SubAaspect();
 

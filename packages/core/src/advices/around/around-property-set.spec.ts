@@ -1,6 +1,5 @@
 import 'jest-extended';
 import 'jest-extended/all';
-import { WeavingError } from '../../errors/weaving.error';
 import { Before } from '../before/before.annotation';
 
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
@@ -18,6 +17,7 @@ import { AroundContext } from './around.context';
 
 describe('property setter advice', () => {
   let aroundAdviceA: ReturnType<typeof jest.fn>;
+  let aroundAdviceA2: ReturnType<typeof jest.fn>;
   let aroundAdviceB: ReturnType<typeof jest.fn>;
   let beforeAdvice: ReturnType<typeof jest.fn>;
   let aaspect: any;
@@ -37,6 +37,9 @@ describe('property setter advice', () => {
     weaver = context.get(JitWeaver);
 
     aroundAdviceA = jest.fn((c: AroundContext) => {
+      return c.joinpoint(...c.args);
+    });
+    aroundAdviceA2 = jest.fn((c: AroundContext) => {
       return c.joinpoint(...c.args);
     });
     aroundAdviceB = jest.fn((c: AroundContext) => {
@@ -61,7 +64,7 @@ describe('property setter advice', () => {
         ctxt: AroundContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
-        return aroundAdviceB.bind(this)(ctxt, ...args);
+        return aroundAdviceA2.bind(this)(ctxt, ...args);
       }
 
       @Before(on.properties.setter.withAnnotations(...aanotations))
@@ -80,7 +83,7 @@ describe('property setter advice', () => {
         ctxt: AroundContext<JoinpointType.CLASS>,
         ...args: unknown[]
       ): void {
-        return aroundAdviceA.bind(this)(ctxt, ...args);
+        return aroundAdviceB.bind(this)(ctxt, ...args);
       }
     }
 
@@ -102,21 +105,20 @@ describe('property setter advice', () => {
         labels = ['a'];
       }
 
-      expect(aroundAdviceA).not.toHaveBeenCalled();
-      aroundAdviceA = jest.fn(function (this: any, _ctxt: AroundContext<any>) {
-        expect(this === aaspect || this === baspect).toBeTrue();
+      aroundAdviceA = jest.fn(function (this: any) {
+        expect(this === aaspect).toBeTrue();
       });
 
-      new A().labels;
-      expect(aroundAdviceA).toBeCalled();
+      expect(aroundAdviceA).not.toHaveBeenCalled();
+
+      new A();
+      expect(aroundAdviceA).toBeCalledTimes(1);
     });
 
     it('calls through each matching advice once', () => {
       class A {
         @AProperty()
-        set labels(a: string[]) {
-          setterImpl(a);
-        }
+        labels: any;
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
@@ -129,9 +131,12 @@ describe('property setter advice', () => {
         return jp(...jpArgs);
       });
 
-      new A().labels = ['a'];
+      const a = new A();
+      a.labels = ['a'];
+      a.labels = a.labels.concat('b');
+      expect(a.labels).toEqual(['a', 'b']);
       expect(aroundAdviceA).toHaveBeenCalledTimes(2);
-      expect(setterImpl).toHaveBeenCalledTimes(1);
+      expect(aroundAdviceB).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -189,49 +194,25 @@ describe('property setter advice', () => {
     });
 
     describe('when the joinpoint is called', () => {
-      describe('once', () => {
-        beforeEach(() => {
-          aroundAdviceA = jest.fn(
-            (ctxt: AroundContext<JoinpointType.CLASS>) => {
-              return ctxt.joinpoint(...ctxt.args);
-            },
-          );
-        });
-        it('calls the aspect around the getter', () => {
-          class A {
-            @AProperty()
-            set labels(val: string[]) {
-              setterImpl(val);
-            }
-          }
-
-          new A().labels = ['a'];
-          expect(beforeAdvice).toHaveBeenCalled();
-          expect(aroundAdviceA).toHaveBeenCalled();
-          expect(setterImpl).toHaveBeenCalled();
-          expect(beforeAdvice).toHaveBeenCalledBefore(setterImpl);
-          expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
+      beforeEach(() => {
+        aroundAdviceA = jest.fn((ctxt: AroundContext<JoinpointType.CLASS>) => {
+          return ctxt.joinpoint(...ctxt.args);
         });
       });
-      describe('twice', () => {
-        beforeEach(() => {
-          aroundAdviceA = jest.fn((ctxt: AroundContext, jp: JoinPoint) => {
-            jp(['a']);
-            jp(['b']);
-          });
-        });
-        it('throws an error', () => {
-          class A {
-            @AProperty()
-            labels = ['a'];
+      it('calls the aspect around the getter', () => {
+        class A {
+          @AProperty()
+          set labels(val: string[]) {
+            setterImpl(val);
           }
+        }
 
-          expect(() => new A()).toThrow(
-            new WeavingError(
-              'Error applying advice @Around(@test:AProperty) AAspect.applyAround() on property A.labels: joinPoint already proceeded',
-            ),
-          );
-        });
+        new A().labels = ['a'];
+        expect(beforeAdvice).toHaveBeenCalled();
+        expect(aroundAdviceA).toHaveBeenCalled();
+        expect(setterImpl).toHaveBeenCalled();
+        expect(beforeAdvice).toHaveBeenCalledBefore(setterImpl);
+        expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
       });
     });
 
@@ -266,6 +247,7 @@ describe('property setter advice', () => {
         it('should call them nested, in declaration order', () => {
           class A {
             @AProperty()
+            @BProperty()
             labels = ['a'];
           }
 

@@ -13,6 +13,7 @@ import { Before } from './before.annotation';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceError } from '../../public_api';
 import type { BeforeContext } from './before.context';
+// eslint-disable @typescript-eslint/no-unused-vars
 
 describe('property set advice', () => {
   let advice: ReturnType<typeof jest.fn>;
@@ -75,7 +76,6 @@ describe('property set advice', () => {
         expect(this === aaspect || this === baspect).toBeTrue();
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
       a.labels = a.labels.concat('b');
       expect(advice).toBeCalledTimes(4);
@@ -97,7 +97,6 @@ describe('property set advice', () => {
         expect(this).toBe(aaspect);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
       expect(advice).toBeCalledTimes(1);
       expect(a.labels).toEqual(['a']);
@@ -118,7 +117,6 @@ describe('property set advice', () => {
       });
 
       a.labels = a.labels.concat('b');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       expect(advice).toBeCalled();
       expect(a.labels).toEqual(['a', 'b']);
     });
@@ -153,7 +151,6 @@ describe('property set advice', () => {
         labels = ['a'];
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const a = new A();
       advice = jest.fn(function (this: any) {
         expect(this).toEqual(aaspect);

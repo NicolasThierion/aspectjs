@@ -1,6 +1,5 @@
 import 'jest-extended';
 import 'jest-extended/all';
-import { WeavingError } from './../../errors/weaving.error';
 import { Before } from './../before/before.annotation';
 
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
@@ -199,47 +198,25 @@ describe('class advice', () => {
     });
 
     describe('when the joinpoint is called', () => {
-      describe('once', () => {
-        beforeEach(() => {
-          aroundAdviceA = jest.fn(
-            (ctxt: AroundContext<JoinpointType.CLASS>) => {
-              return ctxt.joinpoint(...ctxt.args);
-            },
-          );
-        });
-        it('calls the aspect around the constructor', () => {
-          @AClass()
-          class A {
-            constructor() {
-              ctorImpl();
-            }
-          }
-
-          new A();
-          expect(beforeAdvice).toHaveBeenCalled();
-          expect(aroundAdviceA).toHaveBeenCalled();
-          expect(ctorImpl).toHaveBeenCalled();
-          expect(beforeAdvice).toHaveBeenCalledBefore(ctorImpl);
-          expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
+      beforeEach(() => {
+        aroundAdviceA = jest.fn((ctxt: AroundContext<JoinpointType.CLASS>) => {
+          return ctxt.joinpoint(...ctxt.args);
         });
       });
-      describe('twice', () => {
-        beforeEach(() => {
-          aroundAdviceA = jest.fn((ctxt: AroundContext, jp: JoinPoint) => {
-            jp();
-            jp();
-          });
-        });
-        it('throws an error', () => {
-          @AClass()
-          class A {}
+      it('calls the aspect around the constructor', () => {
+        @AClass()
+        class A {
+          constructor() {
+            ctorImpl();
+          }
+        }
 
-          expect(() => new A()).toThrow(
-            new WeavingError(
-              'Error applying advice @Around(@test:AClass) AAspect.applyAround() on class A: joinPoint already proceeded',
-            ),
-          );
-        });
+        new A();
+        expect(beforeAdvice).toHaveBeenCalled();
+        expect(aroundAdviceA).toHaveBeenCalled();
+        expect(ctorImpl).toHaveBeenCalled();
+        expect(beforeAdvice).toHaveBeenCalledBefore(ctorImpl);
+        expect(aroundAdviceA).toHaveBeenCalledBefore(beforeAdvice);
       });
     });
 

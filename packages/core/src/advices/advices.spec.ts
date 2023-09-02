@@ -76,7 +76,7 @@ describe('registering multiple advices', () => {
         getWeaver().enable(new AAspect(), new BAspect(), new CAspect());
       });
 
-      it('should call the advices that matches the annotation', () => {
+      it('calls the advices that matches the annotation', () => {
         @BAnnotation()
         class X {
           @AAnnotation()
@@ -99,7 +99,7 @@ describe('registering multiple advices', () => {
         expect(beforeCimpl).toHaveBeenCalledTimes(1);
       });
 
-      it('should call only the advices that matches the annotation', () => {
+      it('calls only the advices that matches the annotation', () => {
         @BAnnotation()
         class X {
           @BAnnotation()

@@ -24,21 +24,13 @@ export abstract class JitWeaverCanvasStrategy<
 {
   constructor(
     protected readonly weaverContext: WeaverContext,
-    protected readonly joinpointTypes: T[],
+    public readonly joinpointTypes: T[],
   ) {}
 
   abstract compile(
     ctxt: MutableAdviceContext<T, X>,
     selection: AdvicesSelection,
   ): CompiledSymbol<T, X> | undefined;
-  // TODO: remove ?
-  // advices.forEach((a) => {
-  //     if (Reflect.getOwnMetadata('@aspectjs::isCompiled', a, ctxt.target.ref)) {
-  //         // prevent @Compile advices to be called twice
-  //         throw new AdviceError(a, `Advice already applied`);
-  //     }
-  //     Reflect.defineMetadata('@aspectjs::isCompiled', true, a, ctxt.target.ref);
-  // });
 
   before(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
     this._applyNotReturn(

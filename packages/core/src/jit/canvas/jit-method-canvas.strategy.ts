@@ -4,6 +4,7 @@ import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 import {
   MethodPropertyDescriptor,
   assert,
+  defineMetadata,
   getMetadata,
 } from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
@@ -11,6 +12,7 @@ import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
+import { AdviceError } from '../../errors/advice.error';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { renameFunction } from './canvas.utils';
@@ -31,19 +33,10 @@ export abstract class AbstractJitMethodCanvasStrategy<
     ctxt: MutableAdviceContext<T, X>,
     selection: AdvicesSelection,
   ): CompiledSymbol<T, X> {
-    //  if no method compile advices, return method is
-    const adviceEntries = this.getAdviceEntries(selection, AdviceType.COMPILE);
-
-    assert(!!ctxt.target.propertyKey);
-    if (!adviceEntries.length) {
-      return Reflect.getOwnPropertyDescriptor(
-        ctxt.target.proto,
-        ctxt.target.propertyKey,
-      ) as CompiledSymbol<T, X>;
-    }
-
+    // if method already compiled, it might also be linked.
+    // Use the last known compiled symbol as a reference to avoid linking twice.
     let methodDescriptor = getMetadata(
-      '@aspectjs:jitMethodCanvas',
+      '@aspectjs:compiledSymbol',
       ctxt.target.proto,
       ctxt.target.propertyKey,
       () =>
@@ -54,13 +47,62 @@ export abstract class AbstractJitMethodCanvasStrategy<
       true,
     );
 
-    adviceEntries.forEach((entry) => {
-      assert(typeof entry === 'function');
-      methodDescriptor = (entry.advice.call(
-        entry.aspect,
-        ctxt.asCompileContext(),
-      ) ?? methodDescriptor) as CompiledSymbol<T, X>;
-    });
+    //  if no method compile advices, return method is
+    const adviceEntries = this.getAdviceEntries(selection, AdviceType.COMPILE);
+    if (!adviceEntries.length) {
+      return methodDescriptor;
+    }
+
+    assert(!!ctxt.target.propertyKey);
+    if (!adviceEntries.length) {
+      return Reflect.getOwnPropertyDescriptor(
+        ctxt.target.proto,
+        ctxt.target.propertyKey,
+      ) as CompiledSymbol<T, X>;
+    }
+
+    adviceEntries
+      //  prevent calling them twice.
+      .filter((e) => !getMetadata('compiled', e, () => false))
+      .forEach((entry) => {
+        assert(typeof entry.advice === 'function');
+        Object.defineProperty(
+          ctxt.target.proto,
+          ctxt.target.propertyKey,
+          methodDescriptor,
+        );
+
+        methodDescriptor = (entry.advice.call(
+          entry.aspect,
+          ctxt.asCompileContext(),
+        ) ?? methodDescriptor) as CompiledSymbol<T, X>;
+
+        if (typeof methodDescriptor === 'function') {
+          const surrogate = {
+            fn: methodDescriptor,
+          };
+          methodDescriptor = Object.getOwnPropertyDescriptor(
+            surrogate,
+            'fn',
+          )! as CompiledSymbol<T, X>;
+        }
+
+        if (typeof methodDescriptor.value !== 'function') {
+          throw new AdviceError(
+            entry.advice,
+            ctxt.target,
+            'should return void, a function, or a Method property descriptor',
+          );
+        }
+
+        defineMetadata('compiled', true, entry);
+      });
+    defineMetadata(
+      '@aspectjs:compiledSymbol',
+      methodDescriptor,
+      ctxt.target.proto,
+      ctxt.target.propertyKey,
+    );
     return methodDescriptor;
   }
 
@@ -79,11 +121,9 @@ export abstract class AbstractJitMethodCanvasStrategy<
     compiledSymbol: MethodPropertyDescriptor,
     joinpoint: (...args: any[]) => unknown,
   ): CompiledSymbol<T, X> {
-    return wrapMethodDescriptor(
-      ctxt,
-      compiledSymbol,
-      joinpoint,
-    ) as CompiledSymbol<T, X>;
+    compiledSymbol = wrapMethodDescriptor(ctxt, compiledSymbol, joinpoint);
+
+    return compiledSymbol as CompiledSymbol<T, X>;
   }
 }
 

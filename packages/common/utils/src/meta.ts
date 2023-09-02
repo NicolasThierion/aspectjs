@@ -2,9 +2,13 @@ import { assert } from './assert';
 import { isUndefined } from './utils';
 
 declare let Reflect: {
-  getOwnMetadata(key: string, target: object, propertyKey?: string): any;
+  getOwnMetadata(
+    key: string | symbol,
+    target: object,
+    propertyKey?: string,
+  ): any;
   defineMetadata(
-    key: string,
+    key: string | symbol,
     value: any,
     target: object,
     propertyKey?: string,
@@ -50,23 +54,23 @@ export function defineMetadata(
 }
 
 export function getMetadata<T>(
-  key: string,
+  key: string | symbol,
   target: object,
   valueGenerator?: () => T,
   save?: boolean,
 ): T;
 
 export function getMetadata<T>(
-  key: string,
+  key: string | symbol,
   target: object,
-  propertyKey: string,
+  propertyKey: string | symbol,
   valueGenerator?: () => T,
   save?: boolean,
 ): T;
 export function getMetadata<T>(
-  key: string,
+  key: string | symbol,
   target: object,
-  propertyKey?: string | (() => T),
+  propertyKey?: string | symbol | (() => T),
   valueGenerator?: (() => T) | boolean,
   save = true,
 ): T {

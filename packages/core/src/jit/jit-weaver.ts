@@ -56,15 +56,14 @@ export class JitWeaver implements Weaver {
   enhance<T extends AnnotationType, X = unknown>(
     target: AnnotationTarget<T>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
-    // TODO: remove
-    // const annotations = this.annotationRegistry.select().on({ target }).find({
-    //   searchParents: true,
-    // });
-
     const annotations = new BindableAnnotationsByTypeSelection(
-      this.annotationRegistry.select().on({ target }),
+      this.annotationRegistry.select().on({
+        target,
+        // types: [target.type]
+      }),
     );
-    const ctxt = new MutableAdviceContext({
+
+    const ctxt = new MutableAdviceContext<any, any>({
       target,
       annotations,
     });
@@ -75,9 +74,15 @@ export class JitWeaver implements Weaver {
   private enhanceClass<X>(
     ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
   ): (new (...args: any[]) => X) | void {
-    const annotations = ctxt.annotations.find();
+    const { target } = ctxt;
+    const annotationsForType = new BindableAnnotationsByTypeSelection(
+      this.annotationRegistry.select().on({
+        target,
+        types: [target.type],
+      }),
+    ).find();
 
-    if (!annotations.length) {
+    if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this class has to be enhanced.
       return ctxt.target.proto.constructor;
@@ -85,7 +90,7 @@ export class JitWeaver implements Weaver {
 
     // find all class advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: annotations.map((a) => a.ref),
+      annotations: annotationsForType.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<JoinpointType.CLASS, X>(
@@ -101,9 +106,15 @@ export class JitWeaver implements Weaver {
       X
     >,
   ): PropertyDescriptor | void {
-    const annotations = ctxt.annotations.find();
+    const { target } = ctxt;
+    const annotationsForType = new BindableAnnotationsByTypeSelection(
+      this.annotationRegistry.select().on({
+        target,
+        types: [target.type],
+      }),
+    ).find();
 
-    if (!annotations.length) {
+    if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
       return ctxt.target.descriptor;
@@ -111,7 +122,7 @@ export class JitWeaver implements Weaver {
 
     // find all property getter | setter advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: annotations.map((a) => a.ref),
+      annotations: annotationsForType.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<
@@ -125,10 +136,14 @@ export class JitWeaver implements Weaver {
   private enhanceMethod<X>(
     ctxt: MutableAdviceContext<JoinpointType.METHOD, X>,
   ): MethodPropertyDescriptor | void {
-    const annotations = ctxt.annotations.find();
-
-    // TODO: test when 2 advices & 2 annotations on the same method
-    if (!annotations.length) {
+    const { target } = ctxt;
+    const annotationsForType = new BindableAnnotationsByTypeSelection(
+      this.annotationRegistry.select().on({
+        target,
+        types: [AnnotationType.METHOD, AnnotationType.PARAMETER],
+      }),
+    ).find();
+    if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
       return ctxt.target.descriptor;
@@ -136,7 +151,7 @@ export class JitWeaver implements Weaver {
 
     // find all method advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: annotations.map((a) => a.ref),
+      annotations: annotationsForType.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<
@@ -150,8 +165,15 @@ export class JitWeaver implements Weaver {
   private enhanceParameter<X>(
     ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
-    const annotations = ctxt.annotations.find();
-    if (!annotations.length) {
+    const { target } = ctxt;
+    const annotationsForType = new BindableAnnotationsByTypeSelection(
+      this.annotationRegistry.select().on({
+        target,
+        types: [target.type],
+      }),
+    ).find();
+
+    if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
       return ctxt.target.descriptor;
@@ -159,7 +181,7 @@ export class JitWeaver implements Weaver {
 
     // find all parameter advices for enabled aspects
     const advicesSelection = this.adviceRegistry.select({
-      annotations: annotations.map((a) => a.ref),
+      annotations: annotationsForType.map((a) => a.ref),
     });
 
     return new JitWeaverCanvas<JoinpointType.PARAMETER, X>(

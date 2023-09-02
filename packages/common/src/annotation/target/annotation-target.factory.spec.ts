@@ -4,12 +4,12 @@ import { AnnotationType } from '../annotation.types';
 import { AnnotationsReflectModule } from '../context/annotations.context.global';
 import { AnnotationTargetFactory } from './annotation-target.factory';
 
+// eslint-disable  @typescript-eslint/no-unused-vars
 describe('AnnotationTargetFactory', () => {
   class X {
     prop?: string = 'propValue';
     method(..._args: any[]) {}
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let targetFactory: AnnotationTargetFactory;
   beforeEach(() => {
     targetFactory = configureTesting()

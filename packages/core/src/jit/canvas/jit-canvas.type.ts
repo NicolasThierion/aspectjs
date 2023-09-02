@@ -20,20 +20,13 @@ export class JitWeaverCanvas<
   T extends JoinpointType = JoinpointType,
   X = unknown,
 > {
-  private compiled = false;
-
   constructor(private readonly strategy: JitWeaverCanvasStrategy<T, X>) {}
 
   compile<C extends MutableAdviceContext<T, X>>(
     ctxt: C,
     selection: AdvicesSelection,
   ): CompiledCanvas<T, X> {
-    if (this.compiled) {
-      throw new WeavingError(
-        `Canvas for ${ctxt.target.proto.constructor.name} already compiled`,
-      );
-    }
-
+    //  if no advices, do not compile.
     if (selection.find().next().done) {
       return {
         compiledSymbol: undefined,
@@ -42,14 +35,8 @@ export class JitWeaverCanvas<
     }
 
     const compiledSymbol = this.strategy.compile(ctxt, selection);
-    this.compiled = true;
     if (!compiledSymbol) {
       assert(false);
-      throw new WeavingError(
-        `${
-          Reflect.getPrototypeOf(this.strategy)!.constructor.name
-        }.compile() did not returned a symbol`,
-      );
     }
 
     let withinAdviceSafeguard = false; // toggled to true before running joinpoint to avoid advice calling back itself

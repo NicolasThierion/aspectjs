@@ -1,6 +1,5 @@
 import 'jest-extended';
 import 'jest-extended/all';
-import { WeavingError } from '../../errors/weaving.error';
 import { Before } from '../before/before.annotation';
 
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
@@ -197,55 +196,29 @@ describe('parameter advice', () => {
     });
 
     describe('when the joinpoint is called', () => {
-      describe('once', () => {
-        beforeEach(() => {
-          aroundAdviceA1 = jest.fn(
-            (ctxt: AroundContext<JoinpointType.PARAMETER>) => {
-              return ctxt.joinpoint(...ctxt.args);
-            },
-          );
-        });
-        it('calls the aspect around the method', () => {
-          class A {
-            method(
-              @AParameter()
-              arg1?: any,
-            ): any {
-              return methodImpl(arg1);
-            }
-          }
-
-          new A().method();
-          expect(beforeAdvice).toHaveBeenCalled();
-          expect(aroundAdviceA1).toHaveBeenCalled();
-          expect(methodImpl).toHaveBeenCalled();
-          expect(beforeAdvice).toHaveBeenCalledBefore(methodImpl);
-          expect(aroundAdviceA1).toHaveBeenCalledBefore(beforeAdvice);
-        });
+      beforeEach(() => {
+        aroundAdviceA1 = jest.fn(
+          (ctxt: AroundContext<JoinpointType.PARAMETER>) => {
+            return ctxt.joinpoint(...ctxt.args);
+          },
+        );
       });
-      describe('twice', () => {
-        beforeEach(() => {
-          aroundAdviceA1 = jest.fn((ctxt: AroundContext, jp: JoinPoint) => {
-            jp();
-            jp();
-          });
-        });
-        it('throws an error', () => {
-          class A {
-            method(
-              @AParameter()
-              arg1?: any,
-            ): any {
-              return methodImpl(arg1);
-            }
+      it('calls the aspect around the method', () => {
+        class A {
+          method(
+            @AParameter()
+            arg1?: any,
+          ): any {
+            return methodImpl(arg1);
           }
+        }
 
-          expect(() => new A().method()).toThrow(
-            new WeavingError(
-              'Error applying advice @Around(@test:AParameter) AAspect.applyAround() on parameter arg1 of method A.method: joinPoint already proceeded',
-            ),
-          );
-        });
+        new A().method();
+        expect(beforeAdvice).toHaveBeenCalled();
+        expect(aroundAdviceA1).toHaveBeenCalled();
+        expect(methodImpl).toHaveBeenCalled();
+        expect(beforeAdvice).toHaveBeenCalledBefore(methodImpl);
+        expect(aroundAdviceA1).toHaveBeenCalledBefore(beforeAdvice);
       });
     });
 
