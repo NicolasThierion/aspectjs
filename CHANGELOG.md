@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.12](https://github.com/NicolasThierion/aspectjs/compare/v0.3.11...v0.3.12) (2023-09-14)
+
+
+### Features
+
+* **core:** added support for `@ Compile` advices ([e279a39](https://github.com/NicolasThierion/aspectjs/commit/e279a39b65b34e6742c521451666e8dabb818fa5))
+
 ## [0.3.11](https://github.com/NicolasThierion/aspectjs/compare/v0.3.10...v0.3.11) (2023-07-29)
 
 ## [0.3.10](https://github.com/NicolasThierion/aspectjs/compare/v0.3.9...v0.3.10) (2023-07-29)
