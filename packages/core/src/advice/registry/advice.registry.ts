@@ -5,16 +5,15 @@ import { AfterReturn } from '../../advices/after-return/after-return.annotation'
 import { AfterThrow } from '../../advices/after-throw/after-throw.annotation';
 import { After } from '../../advices/after/after.annotation';
 import { Around } from '../../advices/around/around.annotation';
-import { Compile } from '../../advices/compile/compile.annotation';
 import { Before } from '../../advices/before/before.annotation';
+import { Compile } from '../../advices/compile/compile.annotation';
 import { WeavingError } from '../../errors/weaving.error';
 import { Pointcut } from '../../pointcut/pointcut';
 import { PointcutExpression } from '../../pointcut/pointcut-expression.type';
 import { WeaverContext } from '../../weaver/context/weaver.context';
 import { AdvicesSelection } from './advices-selection.model';
 
-import { Order } from '../../annotations/order.annotation';
-import { Aspect } from '../../aspect/aspect.annotation';
+import { CompileAdvice } from '../../advices/compile/compile.type';
 import type { AspectType } from '../../aspect/aspect.type';
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
@@ -58,8 +57,6 @@ export class AdviceRegistry {
 
   register(aspect: AspectType) {
     const aspectCtor = getPrototype(aspect).constructor;
-
-    const pointcutAnnotations = new Set<AnnotationRef>();
 
     const advices: Advice[] = [];
     const processedAdvices = new Map<string, Pointcut[]>();
@@ -117,13 +114,16 @@ export class AdviceRegistry {
             this.registerAdvice(aspect, pointcut, advice);
           }
 
-          pointcut.annotations.forEach((a) => pointcutAnnotations.add(a));
+          if (type === AdviceType.COMPILE) {
+            this.assertAnnotationNotProcessedBeforeCompileAdvice(
+              aspect,
+              advice as CompileAdvice,
+            );
+          }
         });
       });
 
     advices.forEach(Object.seal);
-
-    this.assertAnnotationsProcessed(aspect, [...pointcutAnnotations]);
   }
 
   select(filters: AdviceRegistryFilters): AdvicesSelection {
@@ -168,14 +168,18 @@ export class AdviceRegistry {
       });
   }
 
-  private assertAnnotationsProcessed(
+  private assertAnnotationNotProcessedBeforeCompileAdvice(
     aspect: AspectType,
-    annotations: AnnotationRef[],
+    advice: CompileAdvice,
   ) {
-    const adviceEntries = this.select(aspect).find();
-    if (!adviceEntries.next()) {
+    const annotations = new Set(
+      advice.pointcuts.flatMap((a) => a.annotations).map((a) => a),
+    );
+
+    if (!annotations.size) {
       return;
     }
+
     const processedAnnotations = new Set(
       this.weaverContext
         .get(AnnotationRegistry)
@@ -183,14 +187,15 @@ export class AdviceRegistry {
         .all()
         .find()
         .map((a) => a.ref),
+      // .filter((r) => annotations.has(r)),
     );
 
     // Allow @Aspect a advice annotations to be processed already
-    if (processedAnnotations.size) {
-      [Aspect.ref, Order.ref, ...KNOWN_POINTCUT_ANNOTATION_REFS].forEach(
-        (ref) => processedAnnotations.delete(ref),
-      );
-    }
+    // if (processedAnnotations.size) {
+    //   [Aspect.ref, Order.ref, ...KNOWN_POINTCUT_ANNOTATION_REFS].forEach(
+    //     (ref) => processedAnnotations.delete(ref),
+    //   );
+    // }
 
     if (processedAnnotations.size) {
       throw new WeavingError(

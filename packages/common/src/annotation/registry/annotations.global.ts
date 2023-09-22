@@ -1,6 +1,6 @@
-import { annotationsContext } from '../context/annotations.context.global';
 import { AnnotationRegistry } from './annotation.registry';
 
+import { reflectContext } from '../../public_api';
 import type { Annotation, AnnotationStub } from '../annotation.types';
 import { AnnotationsSelection } from './selection';
 
@@ -13,7 +13,7 @@ export function getAnnotations<S extends AnnotationStub>(
 export function getAnnotations(
   ...annotations: Annotation[]
 ): AnnotationsSelection {
-  return annotationsContext()
+  return reflectContext()
     .get(AnnotationRegistry)
     .select(...annotations);
 }

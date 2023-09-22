@@ -2,7 +2,7 @@ import { configureTesting } from '@aspectjs/common/testing';
 
 import { AspectError } from '../errors/aspect.error';
 import { JitWeaver } from '../jit/jit-weaver';
-import { weaverContext } from '../weaver/context/weaver.context.global';
+import { WeaverModule } from '../weaver/weaver.module';
 import { Aspect } from './aspect.annotation';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -10,7 +10,7 @@ import { Aspect } from './aspect.annotation';
 describe('@Aspect annotation', () => {
   let weaver: JitWeaver;
   beforeEach(() => {
-    weaver = configureTesting(weaverContext()).get(JitWeaver);
+    weaver = configureTesting(WeaverModule).get(JitWeaver);
     jest.spyOn(weaver as JitWeaver, 'enhance');
   });
 

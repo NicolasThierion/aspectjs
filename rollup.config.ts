@@ -1,5 +1,6 @@
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
+import findUp from 'find-up';
 import { existsSync, readFileSync } from 'fs';
 import json5 from 'json5';
 import { dirname, join, relative, resolve } from 'path';
@@ -7,7 +8,6 @@ import type { OutputOptions, Plugin, RollupOptions } from 'rollup';
 import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import dts from 'rollup-plugin-dts';
-import findUp from 'find-up';
 const { parse } = json5;
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
@@ -131,6 +131,7 @@ export const createConfig = (
       createOutputOptions({
         file: `./dist/cjs/${baseName}.cjs`,
         format: 'cjs',
+        preserveModules: false,
       }),
       // ES 2020
       createOutputOptions({
@@ -148,18 +149,20 @@ export const createConfig = (
       createOutputOptions({
         file: `./dist/umd/${baseName}.umd.js`,
         format: 'umd',
+        preserveModules: false,
       }),
       // UMD min
       createOutputOptions({
         file: `./dist/umd/${baseName}.umd.min.js`,
         format: 'umd',
         plugins: [terser()],
+        preserveModules: false,
       }),
     ],
 
     plugins: [
+      // sourcemaps(),
       ...(options.plugins ?? []),
-
       typescript({
         // cacheDir: '.rollup.tscache',
         tsconfig: options.tsconfig,
@@ -167,6 +170,8 @@ export const createConfig = (
         declaration: false,
         declarationDir: undefined,
         declarationMap: undefined,
+        sourceMap: true,
+        inlineSources: true,
         module: 'esnext',
       }),
     ],

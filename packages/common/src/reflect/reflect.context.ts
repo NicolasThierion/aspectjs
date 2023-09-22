@@ -4,23 +4,40 @@ import { assert, ConstructorType } from '@aspectjs/common/utils';
  * Returns an object to store global values across the framework
  */
 
+import { getProviderName, getProviders } from '../../utils/src/module.utils';
+import { ANNOTATION_HOOK_REGISTRY_PROVIDERS } from '../annotation/factory/annotation-factory.provider';
+import { ANNOTATION_REGISTRY_PROVIDERS } from '../annotation/registry/annotation-registry.provider';
+import { ANNOTATION_TARGET_FACTORY_PROVIDERS } from '../annotation/target/annotation-target-factory.provider';
+import { ReflectModule } from './module/reflect-module.type';
 import type { ReflectProvider } from './reflect-provider.type';
-import type { ReflectModule } from './reflect.module';
 
+@ReflectModule({
+  providers: [
+    ...ANNOTATION_REGISTRY_PROVIDERS,
+    ...ANNOTATION_HOOK_REGISTRY_PROVIDERS,
+    ...ANNOTATION_TARGET_FACTORY_PROVIDERS,
+  ],
+})
+class AnnotationsModule {}
+
+const DEFAULT_MODULES = [AnnotationsModule];
 /**
  * @internal
  *
  * @description The ReflectContext is a container for the global values and services of the framework.
  * The services are added to the context in the form of {@link ReflectProvider}s,
- * through the use of {@link ReflectModule}s.
+ * through the use of {@link ReflectModuleConfiguration}s.
  */
 export class ReflectContext {
-  private readonly providersToResolve: Map<string, ReflectProvider[]> =
+  protected readonly providersToResolve: Map<string, ReflectProvider[]> =
     new Map();
 
-  private readonly providersRegistry: Map<string, unknown> = new Map();
-  private readonly addedProviders: Set<ReflectProvider> = new Set();
-  protected readonly modules: Set<ConstructorType<ReflectModule>> = new Set();
+  protected readonly providersRegistry: Map<
+    string,
+    { component: unknown; provider: ReflectProvider }[]
+  > = new Map();
+  protected readonly addedProviders: Set<ReflectProvider> = new Set();
+  protected readonly modules: Set<ConstructorType> = new Set();
 
   /**
    * @internal
@@ -31,6 +48,7 @@ export class ReflectContext {
     this.providersRegistry = new Map(context?.providersRegistry);
     this.addedProviders = new Set(context?.addedProviders);
     this.modules = new Set(context?.modules);
+    this.registerModules(...DEFAULT_MODULES);
   }
 
   /**
@@ -38,16 +56,23 @@ export class ReflectContext {
    * Adding the same module twice has no effect.
    * @param module The module to add
    */
-  addModules(...modules: ConstructorType<ReflectModule>[]): ReflectContext {
+  registerModules(...modules: ConstructorType<unknown>[]): ReflectContext {
     // dedupe modules
     modules = [...new Set(modules).values()].filter(
       (m) => !this.modules.has(m),
     );
+    if (!modules.length) {
+      return this;
+    }
 
-    const moduleInstances = modules.map((m) => new m());
+    const providers = modules.flatMap((m) => getProviders(m));
 
-    const providers = moduleInstances.flatMap((m) => m.providers);
+    this.addProviders(providers);
+    modules.forEach((m) => this.modules.add(m));
+    return this;
+  }
 
+  private addProviders(providers: ReflectProvider[]) {
     providers.forEach((p) => {
       const providerName = getProviderName(p.provide);
       this.addedProviders.add(p);
@@ -55,12 +80,8 @@ export class ReflectContext {
         providerName,
         (this.providersToResolve.get(providerName) ?? []).concat(p),
       );
-    }, new Map<string, ReflectProvider[]>());
-
-    Object.values(modules).forEach((m) => !this.modules.add(m));
-    return this;
+    });
   }
-
   /**
    * Get a provider by its name or type.
    * @param provider The provider name or type.
@@ -71,14 +92,10 @@ export class ReflectContext {
     return this._get(getProviderName(providerType));
   }
 
-  private _get<T>(
-    providerName: string,
-    neededBy: string[] = [],
-    resolveFirst = false,
-  ): T {
-    const provider =
-      this._tryResolveProvider(providerName, neededBy, resolveFirst) ??
-      (this.providersRegistry.get(providerName) as T);
+  private _get<T>(providerName: string, neededBy: string[] = []): T {
+    this._tryResolveProvider(providerName, neededBy);
+    const candidates = this.providersRegistry.get(providerName);
+    const provider = candidates?.[candidates?.length - 1]?.component;
 
     // if provider not found
     if (!provider) {
@@ -102,13 +119,8 @@ export class ReflectContext {
     return !!this.get(providerType);
   }
 
-  protected reset() {
-    this.modules.clear();
-    this.addedProviders.clear();
-    this.providersRegistry.clear();
-    this.providersToResolve.clear();
-  }
   protected apply(context: ReflectContext) {
+    assert(!!context);
     context.modules.forEach((m) => this.modules.add(m));
     context.addedProviders.forEach((p) => this.addedProviders.add(p));
 
@@ -122,68 +134,44 @@ export class ReflectContext {
 
     return this;
   }
-  private _tryResolveProvider<T>(
+  private _tryResolveProvider(
     providerType: string,
     neededBy: string[] = [],
-    resolveFirst = false,
-  ): T {
+  ): void {
     const providerName = getProviderName(providerType);
     const providers = this.providersToResolve.get(providerName);
 
-    let component: any;
+    let component: unknown;
 
     while (providers?.length) {
       const provider = providers.shift()!; // remove p from the resolution list
       // if provider has no deps
       if (!provider.deps?.length) {
         component = provider.factory();
-        this.providersRegistry.set(providerName, component);
+      } else {
+        const deps: any[] = provider.deps.map((dep) => {
+          // provider already resolved ?
+          const depName = getProviderName(dep);
 
-        if (resolveFirst) {
-          return component;
-        }
-        continue;
+          try {
+            neededBy.push(providerName);
+            return this._get(depName, neededBy);
+          } finally {
+            neededBy.pop();
+          }
+        });
+
+        component = provider.factory(...deps);
       }
-
-      const deps: any[] = provider.deps.map((dep) => {
-        // provider already resolved ?
-        const depName = getProviderName(dep);
-        if (this.providersRegistry.get(depName)) {
-          return this.providersRegistry.get(depName);
-        }
-
-        try {
-          neededBy.push(providerName);
-          const dependencyComponent = this._get(
-            depName,
-            neededBy,
-            depName === providerName, // if a provider depends on itself, only resolve the first matching provider
-          );
-          this.providersRegistry.set(depName, dependencyComponent);
-          return dependencyComponent;
-        } finally {
-          neededBy.pop();
-        }
-      });
-
-      component = provider.factory(...deps);
-      this.providersRegistry.set(providerName, component);
-
-      if (resolveFirst) {
-        return component;
-      }
+      this.providersRegistry.set(
+        providerName,
+        (this.providersRegistry.get(providerName) ?? []).concat({
+          component,
+          provider,
+        }),
+      );
     }
 
     this.providersToResolve.delete(providerName);
-    return component;
   }
-}
-
-function getProviderName<T>(
-  providerType: ReflectProvider<T>['provide'],
-): string {
-  assert(!!providerType);
-  return typeof providerType === 'string'
-    ? providerType
-    : providerType.__providerName ?? providerType.name;
 }

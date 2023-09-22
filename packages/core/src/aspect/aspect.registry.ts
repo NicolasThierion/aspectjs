@@ -17,7 +17,7 @@ import { WeaverContext } from '../weaver/context/weaver.context';
 import { Aspect } from './aspect.annotation';
 
 import type { AspectOptions } from './aspect-options.type';
-import type { AspectType } from './aspect.type';
+import { AspectType, ASPECT_ID_SYMBOL } from './aspect.type';
 let _globalRegId = 0;
 
 export class AspectRegistry {
@@ -78,6 +78,7 @@ export class AspectRegistry {
       aspectOptions,
       getPrototype(aspect),
     );
+    aspect[ASPECT_ID_SYMBOL] = id;
 
     this.registerAdvices(aspect);
   }

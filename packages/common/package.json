@@ -60,5 +60,8 @@
     }
   },
   "module": "./fesm2020/common.mjs",
-  "main": "./umd/common.umd.js"
+  "main": "./umd/common.umd.js",
+  "devDependencies": {
+    "rollup-plugin-sourcemaps": "^0.6.3"
+  }
 }

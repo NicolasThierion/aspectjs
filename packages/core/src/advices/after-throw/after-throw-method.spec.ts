@@ -9,9 +9,9 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { weaverContext } from '../../weaver/context/weaver.context.global';
 
 import { AfterThrow } from '../../public_api';
+import { WeaverModule } from '../../weaver/weaver.module';
 
 describe('method advice', () => {
   let afterThrowAdviceA1: ReturnType<typeof jest.fn>;
@@ -30,7 +30,7 @@ describe('method advice', () => {
   );
   let weaver: JitWeaver;
   beforeEach(() => {
-    const context = configureTesting(weaverContext());
+    const context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
 
     afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {

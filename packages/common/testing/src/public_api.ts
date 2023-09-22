@@ -1,1 +1,1 @@
-export * from './setup';
+export * from './testing-context.global';

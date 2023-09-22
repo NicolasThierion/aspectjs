@@ -7,11 +7,11 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { Aspect } from './../../aspect/aspect.annotation';
 import { on } from './../../pointcut/pointcut-expression.factory';
-import { weaverContext } from './../../weaver/context/weaver.context.global';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
 describe('class advice', () => {
@@ -29,7 +29,7 @@ describe('class advice', () => {
   );
   let weaver: JitWeaver;
   beforeEach(() => {
-    const context = configureTesting(weaverContext());
+    const context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
 
     aadvice = jest.fn();

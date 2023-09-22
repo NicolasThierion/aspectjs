@@ -5,7 +5,6 @@ import {
 } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
-import { annotationsContext } from './../context/annotations.context.global';
 import { AnnotationRegistry } from './annotation.registry';
 
 describe('AnnotationRegistry', () => {
@@ -59,9 +58,7 @@ describe('AnnotationRegistry', () => {
     A = class A {} as any;
     B = class B {} as any;
     X = class X {} as any;
-    annotationRegistry = configureTesting(annotationsContext()).get(
-      AnnotationRegistry,
-    );
+    annotationRegistry = configureTesting().get(AnnotationRegistry);
 
     annotationFactory = new AnnotationFactory('test');
     A1Annotation = annotationFactory.create('A1Annotation');

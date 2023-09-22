@@ -7,7 +7,6 @@ import {
   AnyDecorator,
   Decorator,
 } from '../annotation.types';
-import { annotationsContext } from '../context/annotations.context.global';
 import { DecoratorProviderRegistry } from './decorator-provider.registry';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -182,7 +181,7 @@ export class AnnotationFactory {
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
       const context = reflectContext();
-      return [...annotationsContext().get(DecoratorProviderRegistry).values()]
+      return [...reflectContext().get(DecoratorProviderRegistry).values()]
         .sort(
           (c1, c2) =>
             (c1.order ?? Number.MAX_SAFE_INTEGER) -

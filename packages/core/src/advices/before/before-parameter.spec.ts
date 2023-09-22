@@ -7,15 +7,16 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
 describe('parameter advice', () => {
-  let advice: ReturnType<typeof jest.fn>;
+  let aadvice: ReturnType<typeof jest.fn>;
+  let badvice: ReturnType<typeof jest.fn>;
   let aaspect: any;
   let baspect: any;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -31,10 +32,11 @@ describe('parameter advice', () => {
   );
   let weaver: JitWeaver;
   beforeEach(() => {
-    const context = configureTesting(weaverContext());
+    const context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
 
-    advice = jest.fn();
+    aadvice = jest.fn();
+    badvice = jest.fn();
     mImpl = jest.fn();
   });
 
@@ -46,7 +48,7 @@ describe('parameter advice', () => {
         ctxt: BeforeContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
-        return advice.bind(this)(ctxt, ...args);
+        return aadvice.bind(this)(ctxt, ...args);
       }
     }
 
@@ -57,7 +59,7 @@ describe('parameter advice', () => {
         ctxt: BeforeContext<JoinpointType.PARAMETER>,
         ...args: unknown[]
       ): void {
-        return advice.bind(this)(ctxt, ...args);
+        return badvice.bind(this)(ctxt, ...args);
       }
     }
 
@@ -76,13 +78,18 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
+      expect(aadvice).not.toHaveBeenCalled();
+      expect(badvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {
         expect(this).toEqual(aaspect);
+      });
+      badvice = jest.fn(function (this: any) {
+        expect(this).toEqual(baspect);
       });
 
       new A().m('a', 'b');
-      expect(advice).toBeCalled();
+      expect(aadvice).toBeCalled();
+      expect(badvice).toBeCalled();
     });
 
     it('calls each matching advice once', () => {
@@ -93,11 +100,13 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {});
+      expect(aadvice).not.toHaveBeenCalled();
+      expect(badvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {});
 
       new A().m('a', 'b');
-      expect(advice).toHaveBeenCalledTimes(2);
+      expect(aadvice).toHaveBeenCalledTimes(1);
+      expect(badvice).toHaveBeenCalledTimes(1);
       expect(mImpl).toHaveBeenCalledTimes(1);
     });
 
@@ -115,11 +124,12 @@ describe('parameter advice', () => {
           }
         }
 
-        expect(advice).not.toHaveBeenCalled();
-        advice = jest.fn(function (this: any) {});
+        expect(aadvice).not.toHaveBeenCalled();
+        aadvice = jest.fn(function (this: any) {});
 
         new A().m('a');
-        expect(advice).toHaveBeenCalledTimes(2);
+        expect(aadvice).toHaveBeenCalledTimes(1);
+        expect(badvice).toHaveBeenCalledTimes(1);
         expect(mImpl).toHaveBeenCalledTimes(1);
       });
     });
@@ -136,13 +146,16 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {
         expect(this).toEqual(aaspect);
+      });
+      badvice = jest.fn(function (this: any) {
+        expect(this).toEqual(baspect);
       });
 
       new A().m('a', 'b');
-      expect(advice).toBeCalled();
+      expect(aadvice).toBeCalled();
     });
 
     it('calls through the method once', () => {
@@ -153,11 +166,11 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {});
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {});
 
       new A().m('a', 'b');
-      expect(advice).toHaveBeenCalledTimes(1);
+      expect(aadvice).toHaveBeenCalledTimes(1);
       expect(mImpl).toHaveBeenCalledTimes(1);
     });
     it('receives method arguments', () => {
@@ -174,8 +187,8 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (
         this: any,
         ctxt: BeforeContext,
         args: unknown[],
@@ -197,10 +210,10 @@ describe('parameter advice', () => {
       }
 
       const a = new A();
-      expect(advice).not.toHaveBeenCalled();
+      expect(aadvice).not.toHaveBeenCalled();
       a.m();
       expect(mImpl).toHaveBeenCalled();
-      expect(advice).toHaveBeenCalledBefore(mImpl);
+      expect(aadvice).toHaveBeenCalledBefore(mImpl);
     });
 
     it('is not allowed to return', () => {
@@ -210,8 +223,8 @@ describe('parameter advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {
         return 'x';
       });
 
@@ -235,12 +248,12 @@ describe('parameter advice', () => {
             mImpl(this, arg1, arg2);
           }
         }
-        advice = jest.fn((ctxt) => {
+        aadvice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
         });
         const a = new A();
         a.m();
-        expect(advice).toHaveBeenCalled();
+        expect(aadvice).toHaveBeenCalled();
         expect(thisInstance).toBe(a);
       });
 
@@ -250,7 +263,7 @@ describe('parameter advice', () => {
             mImpl(this, arg1, arg2);
           }
         }
-        advice = jest.fn((ctxt: BeforeContext<JoinpointType.PARAMETER>) => {
+        aadvice = jest.fn((ctxt: BeforeContext<JoinpointType.PARAMETER>) => {
           const aParameterAnnotations = ctxt.annotations
             .filter(AParameter)
             .find();
@@ -268,7 +281,7 @@ describe('parameter advice', () => {
         });
         new A().m('a', 'b');
 
-        expect(advice).toHaveBeenCalled();
+        expect(aadvice).toHaveBeenCalled();
       });
     });
   });

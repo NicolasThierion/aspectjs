@@ -96,6 +96,16 @@
       "runtimeVersion": "18",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "rollup persistence",
+      "runtimeExecutable": "npm",
+      "cwd": "${workspaceFolder}/packages/persistence",
+      "runtimeVersion": "18",
+      "runtimeArgs": ["run", "build"],
+      "console": "integratedTerminal"
     }
   ]
 }

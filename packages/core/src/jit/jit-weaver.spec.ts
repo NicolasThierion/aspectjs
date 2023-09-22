@@ -8,18 +8,18 @@ import {
   configureTesting,
 } from '@aspectjs/common/testing';
 
-import { Before } from '../advices/before/before.annotation';
 import { Aspect } from '../aspect/aspect.annotation';
 import { WeavingError } from '../errors/weaving.error';
 import { on } from '../pointcut/pointcut-expression.factory';
-import { weaverContext } from '../weaver/context/weaver.context.global';
+import { Before, Compile } from '../public_api';
+import { WeaverModule } from '../weaver/weaver.module';
 import { JitWeaver } from './jit-weaver';
 
 describe('JitWeaver', () => {
   let context!: ReflectTestingContext;
   let weaver!: JitWeaver;
   beforeEach(() => {
-    context = configureTesting(weaverContext());
+    context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
   });
 
@@ -38,7 +38,7 @@ describe('JitWeaver', () => {
   });
 
   describe('.enable(<CLASS>)', () => {
-    describe('after any annotation has been applied already', () => {
+    describe('after a compile annotation has been applied already', () => {
       it('throws an error', () => {
         const AClass = new AnnotationFactory('tests').create(
           AnnotationType.CLASS,
@@ -50,7 +50,7 @@ describe('JitWeaver', () => {
 
         @Aspect()
         class LateAspectA {
-          @Before(on.classes.withAnnotations(AClass))
+          @Compile(on.classes.withAnnotations(AClass))
           shouldThrow() {}
         }
 
@@ -61,6 +61,50 @@ describe('JitWeaver', () => {
             'Could not enable aspect LateAspectA: Annotations have already been processed: @tests:AClass',
           ),
         );
+      });
+      describe('after a before annotation has been applied already', () => {
+        it('does not throw an error', () => {
+          const AClass = new AnnotationFactory('tests').create(
+            AnnotationType.CLASS,
+            'AClass',
+          );
+          @AClass()
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          class A {}
+
+          @Aspect()
+          class LateAspectA {
+            @Before(on.classes.withAnnotations(AClass))
+            shouldNotThrow() {}
+          }
+
+          expect(() => {
+            weaver.enable(new LateAspectA());
+          }).not.toThrow();
+        });
+
+        it('calls the before advice', () => {
+          const adviceImpl = jest.fn();
+          const AClass = new AnnotationFactory('tests').create(
+            AnnotationType.CLASS,
+            'AClass',
+          );
+          @AClass()
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          class A {}
+
+          @Aspect()
+          class LateAspectA {
+            @Before(on.classes.withAnnotations(AClass))
+            shouldNotThrow() {
+              adviceImpl();
+            }
+          }
+
+          weaver.enable(new LateAspectA());
+          new A();
+          expect(adviceImpl).toHaveBeenCalled();
+        });
       });
     });
 

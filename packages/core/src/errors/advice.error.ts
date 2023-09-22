@@ -1,6 +1,7 @@
 import { AnnotationTarget } from '@aspectjs/common';
 
 import { Advice } from '../advice/advice.type';
+import { AspectType } from '../aspect/aspect.type';
 import { AspectError } from './aspect.error';
 
 /**
@@ -8,6 +9,10 @@ import { AspectError } from './aspect.error';
  */
 export class AdviceError extends AspectError {
   constructor(
+    /**
+     * The aspect that caused the error
+     */
+    public readonly aspect: AspectType,
     /**
      * The advice that caused the error
      */
@@ -21,6 +26,9 @@ export class AdviceError extends AspectError {
      */
     message: string,
   ) {
-    super(`Error applying advice ${advice} on ${target.label}: ${message}`);
+    super(
+      aspect,
+      `Error applying advice ${advice} on ${target.label}: ${message}`,
+    );
   }
 }

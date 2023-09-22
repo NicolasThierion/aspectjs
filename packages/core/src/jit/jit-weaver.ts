@@ -44,6 +44,7 @@ export class JitWeaver implements Weaver {
     aspects.forEach((aspect) => {
       this.aspectRegistry.register(aspect);
     });
+
     return this;
   }
 

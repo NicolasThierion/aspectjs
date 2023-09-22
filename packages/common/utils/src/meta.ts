@@ -16,7 +16,7 @@ declare let Reflect: {
 };
 
 // rough Reflect polyfill
-if (!Reflect.getOwnMetadata) {
+if (!Reflect.getOwnMetadata || !Reflect.defineMetadata) {
   const _meta = new Map<object, Map<string, Map<string, any>>>();
 
   Reflect.getOwnMetadata = function (
@@ -75,7 +75,7 @@ export function getMetadata<T>(
   save = true,
 ): T {
   let _propertyKey = propertyKey as string;
-  let _valueGenerator = valueGenerator as () => T;
+  let _valueGenerator = valueGenerator as () => T | void;
   if (typeof valueGenerator === 'boolean') {
     save = valueGenerator;
   }

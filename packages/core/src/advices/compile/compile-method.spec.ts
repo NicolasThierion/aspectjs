@@ -8,7 +8,7 @@ import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { AdviceError, JoinpointType } from '../../public_api';
-import { weaverContext } from '../../weaver/context/weaver.context.global';
+import { WeaverModule } from '../../weaver/weaver.module';
 import { Compile } from './compile.annotation';
 import { CompileContext } from './compile.context';
 
@@ -29,7 +29,7 @@ describe('method advice', () => {
   );
   let weaver: JitWeaver;
   beforeEach(() => {
-    const context = configureTesting(weaverContext());
+    const context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
 
     compileAdviceA = jest.fn((c: CompileContext) => {});

@@ -10,7 +10,7 @@
     "importHelpers": true,
 
     // Module settings.
-    "allowSyntheticDefaultImports": true,
+    // "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "resolveJsonModule": true,

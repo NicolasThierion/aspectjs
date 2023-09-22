@@ -5,12 +5,12 @@ import {
 
 import { AdviceRegistry } from '../../advice/registry/advice.registry';
 import { AspectRegistry } from '../../aspect/aspect.registry';
-import { weaverContext } from './weaver.context.global';
+import { WeaverModule } from '../weaver.module';
 
 describe('weaverContext()', () => {
   let context!: ReflectTestingContext;
   beforeEach(() => {
-    context = configureTesting(weaverContext());
+    context = configureTesting(WeaverModule);
   });
   it('registers a reflect provider for AspectRegistry', () => {
     expect(context.has(AspectRegistry)).toBeTruthy();

@@ -1,0 +1,58 @@
+{
+  "name": "@aspectjs/persistence",
+  "version": "0.3.12",
+  "description": "ORM annotations",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git",
+    "directory": "packages/persistence"
+  },
+  "scripts": {
+    "test": "npm run test:lint && npm run test:unit",
+    "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
+    "test:unit": "npm run clean && jest --runInBand --collectCoverage",
+    "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
+    "build:typeorm": "rollup --config ./typeorm/rollup.config.cjs",
+    "build": "rollup --config ./rollup.config.cjs && npm run build:typeorm",
+    "clean": "rimraf dist && rimraf ./*.tgz"
+  },
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  },
+  "homepage": "https://aspectjs.gitlab.io/",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./index.d.ts",
+      "esm2020": "./esm2020/persistence.mjs",
+      "es2020": "./fesm2020/persistence.mjs",
+      "node": "./cjs/persistence.cjs",
+      "require": "./cjs/persistence.cjs",
+      "default": "./cjs/persistence.cjs",
+      "unpkg": "./umd/persistence.umd.js"
+    },
+    "./typeorm": {
+      "types": "./typeorm/index.d.ts",
+      "esm2020": "./esm2020/index.js",
+      "es2020": "./fesm2020/typeorm.mjs",
+      "node": "./cjs/typeorm.cjs",
+      "require": "./cjs/typeorm.cjs",
+      "default": "./cjs/typeorm.cjs",
+      "unpkg": "./umd/typeorm.umd.js"
+    }
+  },
+  "module": "./fesm2020/persistence.mjs",
+  "main": "./umd/persistence.umd.js",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "pg": "^8.11.2",
+    "portfinder": "^1.0.32",
+    "typeorm": "^0.3.17"
+  }
+}

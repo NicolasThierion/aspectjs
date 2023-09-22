@@ -193,6 +193,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
         if (descriptor) {
           if (typeof descriptor !== 'object') {
             throw new AdviceError(
+              entry.aspect,
               entry.advice,
               ctxt.target,
               'should return void or a property descriptor',
@@ -201,6 +202,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
           if (propertyDescriptor.configurable === false) {
             throw new AdviceError(
+              entry.aspect,
               entry.advice,
               ctxt.target,
               `${target.label} is not configurable`,

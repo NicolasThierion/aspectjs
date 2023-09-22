@@ -7,15 +7,16 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { weaverContext } from '../../weaver/context/weaver.context.global';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
 describe('method advice', () => {
-  let advice: ReturnType<typeof jest.fn>;
+  let aadvice: ReturnType<typeof jest.fn>;
+  let badvice: ReturnType<typeof jest.fn>;
   let aaspect: any;
   let baspect: any;
   let mImpl: any;
@@ -30,10 +31,11 @@ describe('method advice', () => {
   );
   let weaver: JitWeaver;
   beforeEach(() => {
-    const context = configureTesting(weaverContext());
+    const context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
 
-    advice = jest.fn();
+    aadvice = jest.fn();
+    badvice = jest.fn();
     mImpl = jest.fn();
   });
 
@@ -45,7 +47,7 @@ describe('method advice', () => {
         ctxt: BeforeContext<JoinpointType.METHOD>,
         ...args: unknown[]
       ): void {
-        return advice.bind(this)(ctxt, ...args);
+        return aadvice.bind(this)(ctxt, ...args);
       }
     }
 
@@ -56,7 +58,7 @@ describe('method advice', () => {
         ctxt: BeforeContext<JoinpointType.METHOD>,
         ...args: unknown[]
       ): void {
-        return advice.bind(this)(ctxt, ...args);
+        return badvice.bind(this)(ctxt, ...args);
       }
     }
 
@@ -77,13 +79,13 @@ describe('method advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {
         expect(this).toEqual(aaspect);
       });
 
       new A().m();
-      expect(advice).toBeCalled();
+      expect(aadvice).toBeCalled();
     });
 
     it('calls each matching advice once', () => {
@@ -96,11 +98,13 @@ describe('method advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {});
+      expect(aadvice).not.toHaveBeenCalled();
+      expect(badvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {});
 
       new A().m();
-      expect(advice).toHaveBeenCalledTimes(2);
+      expect(aadvice).toHaveBeenCalledTimes(1);
+      expect(badvice).toHaveBeenCalledTimes(1);
       expect(mImpl).toHaveBeenCalledTimes(1);
     });
   });
@@ -117,13 +121,13 @@ describe('method advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {
         expect(this).toEqual(aaspect);
       });
 
       new A().m();
-      expect(advice).toBeCalled();
+      expect(aadvice).toBeCalled();
     });
 
     it('calls through the method once', () => {
@@ -135,11 +139,11 @@ describe('method advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {});
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {});
 
       new A().m();
-      expect(advice).toHaveBeenCalledTimes(1);
+      expect(aadvice).toHaveBeenCalledTimes(1);
       expect(mImpl).toHaveBeenCalledTimes(1);
     });
     it('receives method arguments', () => {
@@ -154,8 +158,8 @@ describe('method advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (
         this: any,
         ctxt: BeforeContext,
         args: unknown[],
@@ -178,10 +182,10 @@ describe('method advice', () => {
       }
 
       const a = new A();
-      expect(advice).not.toHaveBeenCalled();
+      expect(aadvice).not.toHaveBeenCalled();
       a.m();
       expect(mImpl).toHaveBeenCalled();
-      expect(advice).toHaveBeenCalledBefore(mImpl);
+      expect(aadvice).toHaveBeenCalledBefore(mImpl);
     });
 
     it('is not allowed to return', () => {
@@ -192,8 +196,8 @@ describe('method advice', () => {
         }
       }
 
-      expect(advice).not.toHaveBeenCalled();
-      advice = jest.fn(function (this: any) {
+      expect(aadvice).not.toHaveBeenCalled();
+      aadvice = jest.fn(function (this: any) {
         return 'x';
       });
 
@@ -218,12 +222,12 @@ describe('method advice', () => {
             mImpl(this, ...args);
           }
         }
-        advice = jest.fn((ctxt) => {
+        aadvice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
         });
         const a = new A();
         a.m();
-        expect(advice).toHaveBeenCalled();
+        expect(aadvice).toHaveBeenCalled();
         expect(thisInstance).toBe(a);
       });
 
@@ -235,7 +239,7 @@ describe('method advice', () => {
             mImpl(this, ...args);
           }
         }
-        advice = jest.fn((ctxt: BeforeContext) => {
+        aadvice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.annotations.find().length).toEqual(2);
           const aMethodAnnotationContext = ctxt.annotations
             .filter(AMethod)
@@ -246,7 +250,7 @@ describe('method advice', () => {
         });
         new A().m();
 
-        expect(advice).toHaveBeenCalled();
+        expect(aadvice).toHaveBeenCalled();
       });
     });
   });

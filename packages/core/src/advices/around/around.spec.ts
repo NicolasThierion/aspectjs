@@ -7,9 +7,9 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { weaverContext } from '../../weaver/context/weaver.context.global';
 
 import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { WeaverModule } from '../../weaver/weaver.module';
 import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
 
@@ -21,7 +21,7 @@ describe('@Around advice', () => {
     const BAnnotation = new AnnotationFactory('test').create('BAnnotation');
     let weaver: JitWeaver;
     beforeEach(() => {
-      const context = configureTesting(weaverContext());
+      const context = configureTesting(WeaverModule);
       weaver = context.get(JitWeaver);
 
       aroundAdvice = jest.fn((c: AroundContext) => c.joinpoint(...c.args));

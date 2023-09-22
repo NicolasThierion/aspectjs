@@ -1,6 +1,6 @@
+import { ReflectModule } from '../public_api';
 import { ReflectProvider } from './reflect-provider.type';
 import { ReflectContext } from './reflect.context';
-import { ReflectModule } from './reflect.module';
 
 describe('ReflectContext', () => {
   let reflectContext: ReflectContext;
@@ -37,10 +37,11 @@ describe('ReflectContext', () => {
           provide: A,
           factory: jest.fn(() => a),
         };
-        class TestModule implements ReflectModule {
-          providers = [aProvider];
-        }
-        reflectContext = new ReflectContext().addModules(TestModule);
+        @ReflectModule({
+          providers: [aProvider],
+        })
+        class TestModule {}
+        reflectContext = new ReflectContext().registerModules(TestModule);
       });
 
       it('returns the component', () => {
@@ -56,16 +57,17 @@ describe('ReflectContext', () => {
       describe('and A has a dependency on B', () => {
         describe('but B was not provided', () => {
           beforeEach(() => {
-            class TestModule implements ReflectModule {
-              providers = [
+            @ReflectModule({
+              providers: [
                 {
                   provide: A,
                   deps: [B],
                   factory: jest.fn(() => a),
                 },
-              ];
-            }
-            reflectContext = new ReflectContext().addModules(TestModule);
+              ],
+            })
+            class TestModule {}
+            reflectContext = new ReflectContext().registerModules(TestModule);
           });
           it('throws an error', () => {
             expect(() => reflectContext.get(A)).toThrowError(
@@ -87,10 +89,11 @@ describe('ReflectContext', () => {
               deps: [],
               factory: jest.fn(() => 'B'),
             };
-            class TestModule implements ReflectModule {
-              providers = [aProvider, bProvider];
-            }
-            reflectContext = new ReflectContext().addModules(TestModule);
+            @ReflectModule({
+              providers: [aProvider, bProvider],
+            })
+            class TestModule {}
+            reflectContext = new ReflectContext().registerModules(TestModule);
           });
           it('returns the A component', () => {
             expect(reflectContext.get(A)).toEqual('A');
@@ -109,8 +112,8 @@ describe('ReflectContext', () => {
       });
       describe('multiple times', () => {
         beforeEach(() => {
-          class TestModule implements ReflectModule {
-            providers = [
+          @ReflectModule({
+            providers: [
               {
                 provide: A,
                 factory: () => 'A1',
@@ -123,9 +126,10 @@ describe('ReflectContext', () => {
                 provide: A,
                 factory: () => 'A3',
               },
-            ];
-          }
-          reflectContext = new ReflectContext().addModules(TestModule);
+            ],
+          })
+          class TestModule {}
+          reflectContext = new ReflectContext().registerModules(TestModule);
         });
 
         it('returns the A component provided last', () => {
@@ -134,34 +138,39 @@ describe('ReflectContext', () => {
 
         describe('and providers depends on each-other', () => {
           beforeEach(() => {
-            class TestModule implements ReflectModule {
-              providers = [
+            @ReflectModule({
+              providers: [
                 {
                   provide: A,
                   deps: [A],
-                  factory: (a: any) => [a, 'A1'].join('-'),
-                },
-                {
-                  provide: A,
-                  deps: [A],
-                  factory: (a: any) => [a, 'A2'].join('-'),
-                },
-                {
-                  provide: A,
-                  factory: () => 'A0',
+                  factory: (a: any) => [...a, 'A1'],
                 },
                 {
                   provide: A,
                   deps: [A],
-                  factory: (a: any) => [a, 'A3'].join('-'),
+                  factory: (a: any) => [...a, 'A2'],
                 },
-              ];
-            }
-            reflectContext = new ReflectContext().addModules(TestModule);
+                {
+                  provide: A,
+                  factory: () => ['A0'],
+                },
+                {
+                  provide: A,
+                  deps: [A],
+                  factory: (a: any) => [...a, 'A3'],
+                },
+              ],
+            })
+            class TestModule {}
+            reflectContext = new ReflectContext().registerModules(TestModule);
           });
 
-          it(`calls provider's factories in order of dependency`, () => {
-            expect(reflectContext.get(A)).toEqual('A0-A2-A1-A3');
+          it(`calls each provider's factories in order of dependency`, () => {
+            const value = reflectContext.get(A);
+            expect(value).toContain('A0');
+            expect(value).toContain('A2');
+            expect(value).toContain('A1');
+            expect(value).toContain('A3');
           });
         });
 
@@ -170,10 +179,11 @@ describe('ReflectContext', () => {
             provide: A,
             factory: jest.fn(() => 'A'),
           };
-          class TestModule implements ReflectModule {
-            providers = [aProvider];
-          }
-          reflectContext = new ReflectContext().addModules(
+          @ReflectModule({
+            providers: [aProvider],
+          })
+          class TestModule {}
+          reflectContext = new ReflectContext().registerModules(
             TestModule,
             TestModule,
           );

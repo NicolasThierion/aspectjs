@@ -61,6 +61,7 @@ export class JitClassCanvasStrategy<
         ) ?? constructor) as ConstructorType<X>;
         if (typeof constructor !== 'function') {
           throw new AdviceError(
+            entry.aspect,
             entry.advice,
             ctxt.target,
             'should return void or a class constructor',

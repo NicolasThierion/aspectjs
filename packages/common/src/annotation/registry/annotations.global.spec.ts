@@ -1,10 +1,9 @@
 import { configureTesting } from '@aspectjs/common/testing';
-import { annotationsContext } from '../context/annotations.context.global';
 import { AnnotationFactory } from '../factory/annotation.factory';
 import { AnnotationRegistry } from './annotation.registry';
 import { getAnnotations } from './annotations.global';
 
-describe('annotations()', () => {
+describe('getAnnotations()', () => {
   let annotationRegistry: AnnotationRegistry;
 
   let A = class A {};
@@ -21,9 +20,7 @@ describe('annotations()', () => {
   let A2ParameterAnnotation: any;
   function setup() {
     A = class A {};
-    annotationRegistry = configureTesting(annotationsContext()).get(
-      AnnotationRegistry,
-    );
+    annotationRegistry = configureTesting().get(AnnotationRegistry);
 
     const af = new AnnotationFactory('test');
     A1Annotation = af.create('A1Annotation');

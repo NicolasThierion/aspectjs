@@ -1,5 +1,5 @@
 import { configureTesting } from '@aspectjs/common/testing';
-import { getWeaver, weaverContext } from '@aspectjs/core';
+import { getWeaver, WeaverModule } from '@aspectjs/core';
 import { Memo } from './memo.annotation';
 import { MemoAspect } from './memo.aspect';
 
@@ -9,7 +9,7 @@ describe('Memo aspect', () => {
     m(..._args: any[]) {}
   };
   beforeEach(() => {
-    configureTesting(weaverContext());
+    configureTesting(WeaverModule);
     getWeaver().enable(new MemoAspect());
     mImpl = jest.fn();
     class _A {

@@ -1,15 +1,13 @@
-import { AnnotationFactory, ReflectModule } from '@aspectjs/common';
+import { AnnotationFactory } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '@aspectjs/core';
 import { AdviceType } from './../advice-type.type';
 
 import { After } from '../../advices/after/after.annotation';
 import { Before } from '../../advices/before/before.annotation';
-import { ASPECT_PROVIDERS } from '../../aspect/aspect.provider';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { JoinpointType } from '../../pointcut/pointcut-target.type';
-import { weaverContext } from '../../weaver/context/weaver.context.global';
-import { AdviceEntry } from './advice-entry.model';
+import { WeaverModule } from '../../weaver/weaver.module';
 import { AdviceRegistry } from './advice.registry';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -17,13 +15,7 @@ import { AdviceRegistry } from './advice.registry';
 describe('AdviceRegisrty', () => {
   let adviceReg: AdviceRegistry;
   beforeEach(() => {
-    adviceReg = configureTesting(
-      weaverContext().addModules(
-        class TestModule implements ReflectModule {
-          providers = ASPECT_PROVIDERS;
-        },
-      ),
-    ).get(AdviceRegistry);
+    adviceReg = configureTesting(WeaverModule).get(AdviceRegistry);
   });
 
   let Aaspect: any;
@@ -117,38 +109,52 @@ describe('AdviceRegisrty', () => {
       describe('given <...ASPECTS> are registered aspects', () => {
         describe('and <...ASPECTS> have some advices', () => {
           it('returns an iterator of advices', () => {
-            const expected: AdviceEntry[] = [
-              { aspect: aaspect, advice: aaspect.beforeClassA1 },
-              { aspect: aaspect, advice: aaspect.afterClassA1 },
-              { aspect: baspect, advice: baspect.beforeMethodB1 },
-              { aspect: baspect, advice: baspect.afterMethodB1 },
+            const expected = [
+              { aspect: aaspect, advice: 'beforeClassA1' },
+              { aspect: aaspect, advice: 'afterClassA1' },
+              { aspect: baspect, advice: 'beforeMethodB1' },
+              { aspect: baspect, advice: 'afterMethodB1' },
             ];
 
-            expect([
-              ...adviceReg
-                .select({
-                  aspects: [Aaspect, Baspect],
-                })
-                .find(),
-            ]).toEqual(expected);
+            expect(
+              [
+                ...adviceReg
+                  .select({
+                    aspects: [Aaspect, Baspect],
+                  })
+                  .find(),
+              ].map(({ aspect, advice }) => {
+                return {
+                  aspect,
+                  advice: advice.name,
+                };
+              }),
+            ).toEqual(expected);
           });
         });
 
         describe('and <...ASPECTS> have a parent class that declares some advices', () => {
           it('returns an iterator of advices', () => {
-            const expected: AdviceEntry[] = [
-              { aspect: subAaaspect, advice: subAaaspect.beforeClassA1 },
-              { aspect: subAaaspect, advice: subAaaspect.afterClassA1 },
-              { aspect: subAaaspect, advice: subAaaspect.afterClassSubA1 },
+            const expected = [
+              { aspect: subAaaspect, advice: 'beforeClassA1' },
+              { aspect: subAaaspect, advice: 'afterClassA1' },
+              { aspect: subAaaspect, advice: 'afterClassSubA1' },
             ];
 
-            expect([
-              ...adviceReg
-                .select({
-                  aspects: [SubAaspect],
-                })
-                .find(),
-            ]).toEqual(expected);
+            expect(
+              [
+                ...adviceReg
+                  .select({
+                    aspects: [SubAaspect],
+                  })
+                  .find(),
+              ].map(({ aspect, advice }) => {
+                return {
+                  aspect,
+                  advice: advice.name,
+                };
+              }),
+            ).toEqual(expected);
           });
         });
       });
@@ -157,34 +163,46 @@ describe('AdviceRegisrty', () => {
     describe('.find(<TARGET_TYPE>)', () => {
       describe('given <...ASPECTS> have some <TARGET_TYPE> advices', () => {
         it('returns the iterator of advices', () => {
-          const expected: AdviceEntry[] = [
-            { aspect: aaspect, advice: aaspect.beforeClassA1 },
-            { aspect: aaspect, advice: aaspect.afterClassA1 },
+          const expected = [
+            { aspect: aaspect, advice: 'beforeClassA1' },
+            { aspect: aaspect, advice: 'afterClassA1' },
           ];
-          expect([
-            ...adviceReg
-              .select({
-                aspects: [Aaspect, Baspect],
-              })
-              .find([JoinpointType.CLASS]),
-          ]).toEqual(expected);
+          expect(
+            [
+              ...adviceReg
+                .select({
+                  aspects: [Aaspect, Baspect],
+                })
+                .find([JoinpointType.CLASS]),
+            ].map(({ aspect, advice }) => {
+              return {
+                aspect,
+                advice: advice.name,
+              };
+            }),
+          ).toEqual(expected);
         });
       });
     });
     describe('.find(<TARGET_TYPE>, <POINTCUT_TYPE>)', () => {
       describe('given <...ASPECTS> have some <TARGET_TYPE> advices', () => {
         it('returns the iterator of advices', () => {
-          const expected: AdviceEntry[] = [
-            { aspect: aaspect, advice: aaspect.afterClassA1 },
-          ];
+          const expected = [{ aspect: aaspect, advice: 'afterClassA1' }];
 
-          expect([
-            ...adviceReg
-              .select({
-                aspects: [Aaspect, Baspect],
-              })
-              .find([JoinpointType.CLASS], [AdviceType.AFTER]),
-          ]).toEqual(expected);
+          expect(
+            [
+              ...adviceReg
+                .select({
+                  aspects: [Aaspect, Baspect],
+                })
+                .find([JoinpointType.CLASS], [AdviceType.AFTER]),
+            ].map(({ aspect, advice }) => {
+              return {
+                aspect,
+                advice: advice.name,
+              };
+            }),
+          ).toEqual(expected);
         });
       });
     });
@@ -194,38 +212,52 @@ describe('AdviceRegisrty', () => {
     describe('.find()', () => {
       describe('given <...ASPECTS> defines no advices with <...ANNOTATIONS>', () => {
         it('returns only advices with pointcut on all annotations', () => {
-          expect([
-            ...adviceReg
-              .select({
-                aspects: [Aaspect],
-                annotations: [Xannotation],
-              })
-              .find(),
-          ]).toEqual([
+          expect(
+            [
+              ...adviceReg
+                .select({
+                  aspects: [Aaspect],
+                  annotations: [Xannotation],
+                })
+                .find(),
+            ].map(({ aspect, advice }) => {
+              return {
+                aspect,
+                advice: advice.name,
+              };
+            }),
+          ).toEqual([
             {
               aspect: aaspect,
-              advice: aaspect.afterClassA1,
+              advice: 'afterClassA1',
             },
-          ] satisfies AdviceEntry[]);
+          ]);
         });
       });
       describe('given <...ASPECTS> defines some advices with <...ANNOTATIONS>', () => {
         it('returns advices with pointcut on those annotations', () => {
-          expect([
-            ...adviceReg
-              .select({
-                aspects: [Aaspect, Baspect],
-                annotations: [Aannotation, Xannotation],
-              })
-              .find(),
-          ]).toEqual([
+          expect(
+            [
+              ...adviceReg
+                .select({
+                  aspects: [Aaspect, Baspect],
+                  annotations: [Aannotation, Xannotation],
+                })
+                .find(),
+            ].map(({ aspect, advice }) => {
+              return {
+                aspect,
+                advice: advice.name,
+              };
+            }),
+          ).toEqual([
             {
               aspect: aaspect,
-              advice: aaspect.beforeClassA1,
+              advice: 'beforeClassA1',
             },
-            { aspect: aaspect, advice: aaspect.afterClassA1 },
-            { aspect: baspect, advice: baspect.afterMethodB1 },
-          ] satisfies AdviceEntry[]);
+            { aspect: aaspect, advice: 'afterClassA1' },
+            { aspect: baspect, advice: 'afterMethodB1' },
+          ]);
         });
       });
     });
@@ -240,31 +272,36 @@ describe('AdviceRegisrty', () => {
               annotations: [Aannotation, Xannotation],
             })
             .find(),
-        ];
-        expect(advices).toContainEqual({
-          aspect: aaspect,
-          advice: aaspect.beforeClassA1,
+        ].map(({ aspect, advice }) => {
+          return {
+            aspect,
+            advice: advice.name,
+          };
         });
         expect(advices).toContainEqual({
           aspect: aaspect,
-          advice: aaspect.afterClassA1,
+          advice: 'beforeClassA1',
+        });
+        expect(advices).toContainEqual({
+          aspect: aaspect,
+          advice: 'afterClassA1',
         });
         expect(advices).toContainEqual({
           aspect: baspect,
-          advice: baspect.afterMethodB1,
+          advice: 'afterMethodB1',
         });
         expect(advices).toContainEqual({
           aspect: subAaaspect,
-          advice: subAaaspect.beforeClassA1,
+          advice: 'beforeClassA1',
         });
         expect(advices).toContainEqual({
           aspect: subAaaspect,
-          advice: subAaaspect.afterClassSubA1,
+          advice: 'afterClassSubA1',
         });
 
         expect(advices).not.toContainEqual({
           aspect: baspect,
-          advice: baspect.beforeMethodB1,
+          advice: 'beforeMethodB1',
         });
       });
     });

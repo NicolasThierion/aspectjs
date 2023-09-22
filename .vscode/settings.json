@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["aspectjs", "Pointcut"],
+  "cSpell.words": ["aspectjs", "Pointcut", "typeorm"],
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#65c89b",
     "activityBar.activeBorder": "#9259c6",

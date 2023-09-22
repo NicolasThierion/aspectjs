@@ -89,6 +89,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
 
         if (typeof methodDescriptor.value !== 'function') {
           throw new AdviceError(
+            entry.aspect,
             entry.advice,
             ctxt.target,
             'should return void, a function, or a Method property descriptor',

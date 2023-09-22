@@ -3,10 +3,18 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "outDir": "./out-tsc/spec",
     "types": ["jest", "node"],
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "paths": {
+      "*": ["node_modules/*", "src/*"],
+      "@aspectjs/persistence": ["./packages/persistence/src/public_api.ts"],
+      "@aspectjs/persistence/typeorm": [
+        "./packages/persistence/typeorm/src/public_api.ts"
+      ]
+    }
   },
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
   "ts-node": {

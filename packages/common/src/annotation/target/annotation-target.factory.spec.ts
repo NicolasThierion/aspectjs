@@ -1,7 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import { configureTesting } from '@aspectjs/common/testing';
 import { AnnotationType } from '../annotation.types';
-import { AnnotationsReflectModule } from '../context/annotations.context.global';
 import { AnnotationTargetFactory } from './annotation-target.factory';
 
 // eslint-disable  @typescript-eslint/no-unused-vars
@@ -12,9 +11,7 @@ describe('AnnotationTargetFactory', () => {
   }
   let targetFactory: AnnotationTargetFactory;
   beforeEach(() => {
-    targetFactory = configureTesting()
-      .addModules(AnnotationsReflectModule)
-      .get(AnnotationTargetFactory);
+    targetFactory = configureTesting().get(AnnotationTargetFactory);
   });
   describe('.of(<CLASS>)', () => {
     it('.type === AnnotationType.CLASS', () => {

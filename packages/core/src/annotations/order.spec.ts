@@ -9,7 +9,7 @@ import { Aspect } from '../aspect/aspect.annotation';
 import { JitWeaver } from '../jit/jit-weaver';
 import { on } from '../pointcut/pointcut-expression.factory';
 import { Around } from '../public_api';
-import { weaverContext } from '../weaver/context/weaver.context.global';
+import { WeaverModule } from '../weaver/weaver.module';
 import { Weaver } from './../weaver/weaver';
 import { Order } from './order.annotation';
 
@@ -24,7 +24,7 @@ describe('@Order(<PRECEDENCE>) annotation', () => {
   let aspect0: any, aspectX: any;
   let weaver: Weaver;
   beforeEach(() => {
-    const context = configureTesting(weaverContext());
+    const context = configureTesting(WeaverModule);
     weaver = context.get(JitWeaver);
     beforeAdvice0 = jest.fn();
     beforeAdviceX = jest.fn();

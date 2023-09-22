@@ -198,6 +198,7 @@ export abstract class JitWeaverCanvasStrategy<
     const retVal = (adviceEntry.advice as any).apply(adviceEntry.aspect, args);
     if (!isUndefined(retVal) && !allowReturn) {
       throw new AdviceError(
+        adviceEntry.aspect,
         adviceEntry.advice,
         ctxt.target,
         `Returning from advice is not supported`,

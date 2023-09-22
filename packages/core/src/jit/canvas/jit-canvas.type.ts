@@ -26,13 +26,14 @@ export class JitWeaverCanvas<
     ctxt: C,
     selection: AdvicesSelection,
   ): CompiledCanvas<T, X> {
-    //  if no advices, do not compile.
-    if (selection.find().next().done) {
-      return {
-        compiledSymbol: undefined,
-        link: () => {},
-      };
-    }
+    // if no advices, do not compile.
+    // in fact, this condition makes it impossible to enable aspects lately, we enhance the target anyway
+    // if (selection.find().next().done) {
+    //   return {
+    //     compiledSymbol: undefined,
+    //     link: () => {},
+    //   };
+    // }
 
     const compiledSymbol = this.strategy.compile(ctxt, selection);
     if (!compiledSymbol) {
