@@ -50,7 +50,9 @@ export class JitClassCanvasStrategy<
 
     adviceEntries
       //  prevent calling them twice.
-      .filter((e) => !getMetadata('compiled', e, () => false))
+      .filter(
+        (e) => !getMetadata('compiled', ctxt.target.proto, e.id, () => false),
+      )
       .forEach((entry) => {
         assert(typeof entry.advice === 'function');
         ctxt.target.proto.constructor = constructor;
@@ -67,7 +69,7 @@ export class JitClassCanvasStrategy<
             'should return void or a class constructor',
           );
         }
-        defineMetadata('compiled', true, entry);
+        defineMetadata('compiled', true, ctxt.target.proto, entry.id);
       });
 
     defineMetadata('@ajs:compiledSymbol', constructor, ctxt.target.ref);

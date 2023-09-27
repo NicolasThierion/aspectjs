@@ -28,6 +28,9 @@ export interface BaseAnnotationTarget<
   readonly static: boolean;
 
   eval(): unknown;
+
+  defineMetadata(key: string, value: any): void;
+  getMetadata<T extends unknown>(key: string, defaultvalue?: () => T): T;
 }
 
 /**

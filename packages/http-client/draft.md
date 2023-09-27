@@ -42,17 +42,33 @@ class UsersResource {
 
 ```ts
 class User {
-  // @TypeHint([Post])
   @JsonProperty('posts', [Post])
   posts: Post[];
 }
 
 class Post {
-  @TypeHint([Comment])
   comments: Comment[];
 }
 
 class Comment {
   msg: string;
+}
+```
+
+```ts
+@Resource()
+class User {
+  name: string;
+  @TypeHint([Post])
+  posts: Posts[];
+}
+
+function main() {
+  gm = new ResourceManager(Group);
+  gm.find(1);
+  gm.save(new Group(), { recursive: true });
+  gm.each((g: Group) => [g.users, g.users?.posts]).save();
+
+  gm.each((g: Group) => [g.users, g.users?.posts]).find(1);
 }
 ```

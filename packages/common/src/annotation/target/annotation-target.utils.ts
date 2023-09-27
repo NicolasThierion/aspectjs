@@ -1,7 +1,7 @@
 import {
   ConstructorType,
-  defineMetadata,
   Prototype,
+  defineMetadata,
 } from '@aspectjs/common/utils';
 import { AnnotationTarget } from './annotation-target';
 

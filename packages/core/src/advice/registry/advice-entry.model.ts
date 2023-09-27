@@ -18,16 +18,22 @@ export type AdviceEntry<
 > = {
   advice: Advice<T, X, P>;
   aspect: AspectType;
+  id: string;
 };
 
+let globaldviceEntryId = 0;
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AdviceEntry {
-  export function of(entry: AdviceEntry) {
-    return getMetadata(
+  export function of(aspect: AspectType, advice: Advice): AdviceEntry {
+    return getMetadata<AdviceEntry>(
       'advice-entry',
-      entry.aspect,
-      entry.advice.name,
-      () => entry,
+      aspect,
+      advice.name,
+      () => ({
+        aspect,
+        advice,
+        id: `${advice.name}#${globaldviceEntryId++}`,
+      }),
     );
   }
 }

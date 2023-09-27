@@ -4,10 +4,10 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
- * Annotation to declare an advice to be applied before a method.
+ * Annotation to declare an advice to be applied before a joinpoint.
  *
  * @description The Before annotation is used to apply before advice
- * to a method. Before advice is executed before the target method starts its execution.
+ * to a joinpoint. Before advice is executed before the target method starts its execution.
  * It is commonly used to perform setup tasks, parameter validation, or additional actions
  * that need to be executed before the method's execution.
  *

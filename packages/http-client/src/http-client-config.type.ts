@@ -1,8 +1,7 @@
-import { HttpClientRequestHandler } from './request-handler.type';
-import { HttpClientResponseHandler } from './response-handler.type';
+import { HttpBackend } from './fetch-adapter.type';
 
 export interface HttpClientConfig {
   baseUrl?: string;
-  requestHandler?: HttpClientRequestHandler;
-  responseHandler?: HttpClientResponseHandler;
+  requestInit?: RequestInit;
+  httpBackend?: HttpBackend;
 }

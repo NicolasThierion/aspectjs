@@ -159,12 +159,7 @@ export class AdviceRegistry {
         const byAspect = byAdviceType.get(aspectCtor) ?? [];
         byAdviceType.set(aspectCtor, byAspect);
 
-        byAspect.push(
-          AdviceEntry.of({
-            advice,
-            aspect,
-          }),
-        );
+        byAspect.push(AdviceEntry.of(aspect, advice));
       });
   }
 

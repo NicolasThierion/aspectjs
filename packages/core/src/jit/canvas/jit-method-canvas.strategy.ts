@@ -50,16 +50,18 @@ export abstract class AbstractJitMethodCanvasStrategy<
     }
 
     assert(!!ctxt.target.propertyKey);
-    if (!adviceEntries.length) {
-      return Reflect.getOwnPropertyDescriptor(
-        ctxt.target.proto,
-        ctxt.target.propertyKey,
-      ) as CompiledSymbol<T, X>;
-    }
+    // if (!adviceEntries.length) {
+    //   return Reflect.getOwnPropertyDescriptor(
+    //     ctxt.target.proto,
+    //     ctxt.target.propertyKey,
+    //   ) as CompiledSymbol<T, X>;
+    // }
 
     adviceEntries
       //  prevent calling them twice.
-      .filter((e) => !getMetadata('compiled', e, () => false))
+      .filter(
+        (e) => !getMetadata('compiled', ctxt.target.proto, e.id, () => false),
+      )
       .forEach((entry) => {
         assert(typeof entry.advice === 'function');
         Object.defineProperty(
@@ -91,8 +93,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
             'should return void, a function, or a Method property descriptor',
           );
         }
-
-        defineMetadata('compiled', true, entry);
+        defineMetadata('compiled', true, ctxt.target.proto, entry.id);
       });
     defineMetadata('@ajs:compiledSymbol', methodDescriptor, ctxt.target.ref);
     return methodDescriptor;

@@ -172,7 +172,9 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
     adviceEntries
       //  prevent calling them twice.
-      .filter((e) => !getMetadata('compiled', e, () => false))
+      .filter(
+        (e) => !getMetadata('compiled', ctxt.target.proto, e.id, () => false),
+      )
       .forEach((entry) => {
         assert(typeof entry.advice === 'function');
         const descriptor = entry.advice.call(
@@ -205,7 +207,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
             propertyDescriptor,
           );
         }
-        defineMetadata('compiled', true, entry);
+        defineMetadata('compiled', true, ctxt.target.proto, entry.id);
 
         return descriptor;
       });
