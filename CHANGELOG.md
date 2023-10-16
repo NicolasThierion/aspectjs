@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.13](https://github.com/NicolasThierion/aspectjs/compare/v0.3.12...v0.3.13) (2023-10-16)
+
+
+### Features
+
+* **persistence:** created Transactional aspect that works with Typeorm ([0413471](https://github.com/NicolasThierion/aspectjs/commit/04134718f487f72ec4b4fc3ab3c727a361f8bac5))
+
 ## [0.3.12](https://github.com/NicolasThierion/aspectjs/compare/v0.3.11...v0.3.12) (2023-09-14)
 
 
