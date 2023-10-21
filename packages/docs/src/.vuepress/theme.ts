@@ -8,7 +8,6 @@ import { searchProPlugin } from 'vuepress-plugin-search-pro';
 import { extendsMarkdown } from './custom-blocks/custom-md';
 import { sidebarSorter } from './sidebar/sidebar-sorter';
 import { typedocPluginConfig } from './typedoc/typedoc.plugin';
-
 export default function customTheme(): Theme {
   const plugins: PluginConfig = [
     customNavbar(),
@@ -82,21 +81,21 @@ export default function customTheme(): Theme {
       plugins: {
         // all features are enabled for demo, only preserve features you need here
         mdEnhance: {
-          align: true,
-          attrs: true,
-          chart: true,
+          align: false,
+          attrs: false,
+          chart: false,
           codetabs: true,
-          demo: true,
-          echarts: true,
-          figure: true,
-          flowchart: true,
-          gfm: true,
-          imgLazyload: true,
-          imgSize: true,
-          include: true,
-          // katex: true,
+          demo: false,
+          echarts: false,
+          figure: false,
+          flowchart: false,
+          gfm: false,
+          imgLazyload: false,
+          imgSize: false,
+          include: false,
+          // katex: false,
           mark: true,
-          // mermaid: true,
+          // mermaid: false,
           playground: {
             presets: ['ts'],
           },
@@ -113,11 +112,11 @@ export default function customTheme(): Theme {
               },
             },
           ],
-          sub: true,
-          sup: true,
+          sub: false,
+          sup: false,
           tabs: true,
           vPre: true,
-          vuePlayground: true,
+          vuePlayground: false,
         },
         prismjs: {
           // light: 'one-dark',

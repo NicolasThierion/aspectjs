@@ -311,7 +311,7 @@ describe('AnnotationRegistry', () => {
           expect(annotations.map((a) => a.ref)).toEqual(
             expect.arrayContaining(A_CLASS_ANNOTATIONS),
           );
-          expect(annotations.map((a) => a.target.value)).toEqual(
+          expect(annotations.map((a) => a.target.eval())).toEqual(
             expect.arrayContaining(A_CLASS_ANNOTATIONS.map(() => a)),
           );
         });
@@ -428,7 +428,7 @@ describe('AnnotationRegistry', () => {
             s
               .onProperty(new A())
               .find()
-              .map((a) => a.target.value),
+              .map((a) => a.target.eval()),
           ).toEqual(expect.arrayContaining(['propA1', 'propA2']));
         });
       });

@@ -10,7 +10,7 @@ import { on } from './../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -40,7 +40,7 @@ describe('class advice', () => {
     class AAspect {
       @Before(on.classes.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.CLASS>,
+        ctxt: BeforeContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -51,7 +51,7 @@ describe('class advice', () => {
     class BAspect {
       @Before(on.classes.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.CLASS>,
+        ctxt: BeforeContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -227,7 +227,7 @@ describe('class advice', () => {
         aadvice = jest.fn((ctxt: BeforeContext) => {
           const annotation = ctxt.annotations.find()[0];
           expect(annotation?.ref).toBe(AClass.ref);
-          expect(annotation?.target?.value).toBe(null);
+          expect(annotation?.target?.eval()).toBe(null);
         });
         new A();
 

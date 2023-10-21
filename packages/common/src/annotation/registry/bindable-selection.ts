@@ -37,7 +37,7 @@ export class BoundAnnotationsByTypeSelection<
       return Object.setPrototypeOf(
         {
           ...ctxt,
-          target: (ctxt.target as _AnnotationTargetImpl).bind(
+          target: (ctxt.target as _AnnotationTargetImpl)._bind(
             this.instance,
             this.args,
           ),

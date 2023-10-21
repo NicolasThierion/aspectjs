@@ -12,6 +12,7 @@ import { Aspect } from '../aspect/aspect.annotation';
 import { WeavingError } from '../errors/weaving.error';
 import { on } from '../pointcut/pointcut-expression.factory';
 import { Before, Compile } from '../public_api';
+import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
 import { WeaverModule } from '../weaver/weaver.module';
 import { JitWeaver } from './jit-weaver';
 
@@ -145,7 +146,7 @@ describe('JitWeaver', () => {
       const atf = context.get(AnnotationTargetFactory);
       const target = atf.of(enhanceable);
 
-      enhanced = weaver.enhance(target);
+      enhanced = weaver.enhance(target as _BindableAnnotationTarget);
     });
 
     it('returns a class of the same type', () => {

@@ -17,7 +17,7 @@ import { WeaverContext } from '../weaver/context/weaver.context';
 import { Aspect } from './aspect.annotation';
 
 import type { AspectOptions } from './aspect-options.type';
-import { AspectType, ASPECT_ID_SYMBOL } from './aspect.type';
+import { ASPECT_ID_SYMBOL, AspectType } from './aspect.type';
 let _globalRegId = 0;
 
 export class AspectRegistry {
@@ -49,9 +49,7 @@ export class AspectRegistry {
   }
 
   register(aspect: AspectType, aspectOptions: AspectOptions = {}) {
-    const target = this.annotationTargetFactory.of<AspectType>(
-      getPrototype(aspect),
-    );
+    const target = this.annotationTargetFactory.of<AspectType>(aspect);
     const annotation = this.weaverContext
       .get(AnnotationRegistry)
       .select(Aspect)

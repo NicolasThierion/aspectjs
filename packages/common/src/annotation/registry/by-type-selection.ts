@@ -1,4 +1,4 @@
-import { ConstructorType, assert } from '@aspectjs/common/utils';
+import { ConstructorType, assert, getPrototype } from '@aspectjs/common/utils';
 import { AnnotationContext } from '../annotation-context';
 import { AnnotationRef } from '../annotation-ref';
 import {
@@ -45,7 +45,7 @@ export class AnnotationsByTypeSelection<
     annotationSet?: _AnnotationsSet,
     annotationsRefs?: Set<AnnotationRef> | undefined,
     decoratorTypes?: T[],
-    type?: ConstructorType<X>,
+    type?: ConstructorType<X> | X,
     propertyKey?: string | symbol,
   ) {
     if (targetFactory instanceof AnnotationsByTypeSelection) {
@@ -61,7 +61,7 @@ export class AnnotationsByTypeSelection<
       this.annotationSet = annotationSet!;
       this.annotationsRefs = annotationsRefs;
       this.decoratorTypes = decoratorTypes!;
-      this.type = type;
+      this.type = type ? getPrototype(type).constructor : undefined;
       this.propertyKey = propertyKey;
     }
   }

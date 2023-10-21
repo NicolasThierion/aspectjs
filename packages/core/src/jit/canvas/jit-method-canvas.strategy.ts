@@ -1,4 +1,4 @@
-import { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import {
@@ -21,7 +21,7 @@ import { renameFunction } from './canvas.utils';
  * Canvas to advise method and parameters
  */
 export abstract class AbstractJitMethodCanvasStrategy<
-  T extends JoinpointType.METHOD | JoinpointType.PARAMETER,
+  T extends PointcutType.METHOD | PointcutType.PARAMETER,
   X = unknown,
 > extends JitWeaverCanvasStrategy<T, X> {
   protected abstract getAdviceEntries<P extends AdviceType>(
@@ -36,16 +36,12 @@ export abstract class AbstractJitMethodCanvasStrategy<
     // if method already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
     let methodDescriptor = getMetadata(
-      '@aspectjs:compiledSymbol',
-      ctxt.target.proto,
-      ctxt.target.propertyKey,
-      () =>
-        Reflect.getOwnPropertyDescriptor(
-          ctxt.target.proto,
-          ctxt.target.propertyKey,
-        ) as CompiledSymbol<T, X>,
+      '@ajs:compiledSymbol',
+      ctxt.target.ref,
+      () => ctxt.target.descriptor as CompiledSymbol<T, X>,
       true,
     );
+    assert(!!methodDescriptor);
 
     //  if no method compile advices, return method is
     const adviceEntries = this.getAdviceEntries(selection, AdviceType.COMPILE);
@@ -98,12 +94,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
 
         defineMetadata('compiled', true, entry);
       });
-    defineMetadata(
-      '@aspectjs:compiledSymbol',
-      methodDescriptor,
-      ctxt.target.proto,
-      ctxt.target.propertyKey,
-    );
+    defineMetadata('@ajs:compiledSymbol', methodDescriptor, ctxt.target.ref);
     return methodDescriptor;
   }
 
@@ -131,40 +122,34 @@ export abstract class AbstractJitMethodCanvasStrategy<
 export class JitMethodCanvasStrategy<
   X = unknown,
 > extends AbstractJitMethodCanvasStrategy<
-  JoinpointType.METHOD | JoinpointType.PARAMETER,
+  PointcutType.METHOD | PointcutType.PARAMETER,
   X
 > {
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [JoinpointType.METHOD, JoinpointType.PARAMETER]);
+    super(weaverContext, [PointcutType.METHOD, PointcutType.PARAMETER]);
   }
 
   protected override getAdviceEntries<P extends AdviceType>(
     selection: AdvicesSelection,
     pointcutType: P,
-  ): AdviceEntry<JoinpointType.METHOD | JoinpointType.PARAMETER, X, P>[] {
+  ): AdviceEntry<PointcutType.METHOD | PointcutType.PARAMETER, X, P>[] {
     return [
       ...selection.find(
-        [JoinpointType.METHOD, JoinpointType.PARAMETER],
+        [PointcutType.METHOD, PointcutType.PARAMETER],
         [pointcutType],
       ),
     ];
   }
 
   override compile(
-    ctxt: MutableAdviceContext<
-      JoinpointType.METHOD | JoinpointType.PARAMETER,
-      X
-    >,
+    ctxt: MutableAdviceContext<PointcutType.METHOD | PointcutType.PARAMETER, X>,
     selection: AdvicesSelection,
   ): MethodPropertyDescriptor {
     return super.compile(ctxt, selection) as MethodPropertyDescriptor;
   }
 
   override link(
-    ctxt: MutableAdviceContext<
-      JoinpointType.METHOD | JoinpointType.PARAMETER,
-      X
-    >,
+    ctxt: MutableAdviceContext<PointcutType.METHOD | PointcutType.PARAMETER, X>,
     compiledSymbol: MethodPropertyDescriptor,
     joinpoint: (...args: any[]) => unknown,
   ): MethodPropertyDescriptor {
@@ -177,16 +162,16 @@ export class JitMethodCanvasStrategy<
 }
 
 function wrapMethodDescriptor<X>(
-  ctxt: MutableAdviceContext<JoinpointType.METHOD | JoinpointType.PARAMETER, X>,
+  ctxt: MutableAdviceContext<PointcutType.METHOD | PointcutType.PARAMETER, X>,
   descriptor: MethodPropertyDescriptor,
   joinpoint: JoinPoint,
-): CompiledSymbol<JoinpointType.METHOD | JoinpointType.PARAMETER, X> {
+): CompiledSymbol<PointcutType.METHOD | PointcutType.PARAMETER, X> {
   return {
     ...descriptor,
     value: renameFunction(
       joinpoint,
-      (ctxt.target.proto as any)[ctxt.target.propertyKey]!,
-      `function ${ctxt.target.propertyKey}$$advised`,
+      ctxt.target.descriptor.value,
+      `function ${String(ctxt.target.propertyKey)}$$advised`,
     ),
   };
 }

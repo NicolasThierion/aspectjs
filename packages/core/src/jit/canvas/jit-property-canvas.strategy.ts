@@ -1,8 +1,9 @@
 import { assert, defineMetadata, getMetadata } from '@aspectjs/common/utils';
 
-import { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
+import { PropertyAnnotationTarget } from '@aspectjs/common';
 import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
@@ -17,23 +18,23 @@ import { CompiledCanvas, JitWeaverCanvas } from './jit-canvas.type';
 export class JitPropertyCanvasStrategy<
   X = unknown,
 > extends JitWeaverCanvasStrategy<
-  JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+  PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
   X
 > {
   private propertySetterStrategy: JitPropertySetCanvasStrategy<X>;
   propertySetterCanvas?: CompiledCanvas<
-    JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+    PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
     X
   >;
 
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [JoinpointType.GET_PROPERTY]);
+    super(weaverContext, [PointcutType.GET_PROPERTY]);
     this.propertySetterStrategy = this.createPropertySetterStrategy();
   }
 
   compile(
     ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     selection: AdvicesSelection,
@@ -47,7 +48,7 @@ export class JitPropertyCanvasStrategy<
 
   override callJoinpoint(
     ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     originalSymbol: PropertyDescriptor,
@@ -55,22 +56,23 @@ export class JitPropertyCanvasStrategy<
     assert(!!ctxt.args);
 
     assert(
-      this.joinpointTypes.includes(JoinpointType.GET_PROPERTY) ||
-        this.joinpointTypes.includes(JoinpointType.SET_PROPERTY),
+      this.pointcutTypes.includes(PointcutType.GET_PROPERTY) ||
+        this.pointcutTypes.includes(PointcutType.SET_PROPERTY),
     );
     assert(!ctxt.args?.length);
-    ctxt.value =
-      originalSymbol.get?.apply(ctxt.instance) ?? originalSymbol.value;
+    ctxt.value = originalSymbol.get
+      ? originalSymbol.get.apply(ctxt.instance)
+      : originalSymbol.value;
     return ctxt.value;
   }
 
   override link(
     ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     compiledSymbol: CompiledSymbol<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     getterJoinpoint: (...args: any[]) => unknown,
@@ -102,16 +104,16 @@ export class JitPropertyCanvasStrategy<
 }
 
 class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
-  JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+  PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
   X
 > {
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [JoinpointType.SET_PROPERTY]);
+    super(weaverContext, [PointcutType.SET_PROPERTY]);
   }
 
   override callJoinpoint(
     ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     originalSymbol: PropertyDescriptor,
@@ -127,15 +129,12 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
   override link(
     _ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     compiledSymbol: PropertyDescriptor,
     joinpoint: JoinPoint,
-  ): CompiledSymbol<
-    JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
-    X
-  > {
+  ): CompiledSymbol<PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY, X> {
     compiledSymbol = {
       ...compiledSymbol,
       set(...args: any[]) {
@@ -148,27 +147,18 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
   }
   override compile(
     ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
     selection: AdvicesSelection,
-  ): CompiledSymbol<
-    JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
-    X
-  > {
+  ): CompiledSymbol<PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY, X> {
     // if property already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
     let propertyDescriptor = getMetadata(
-      '@aspectjs:compiledSymbol',
-      ctxt.target.proto,
-      ctxt.target.propertyKey,
+      '@ajs:compiledSymbol',
+      ctxt.target.ref,
       () =>
-        ctxt.target.descriptor ??
-        Object.getOwnPropertyDescriptor(
-          ctxt.target.proto,
-          ctxt.target.propertyKey,
-        ) ??
-        this.createPropertyDescriptor(ctxt.target.propertyKey),
+        ctxt.target.descriptor ?? this.createPropertyDescriptor(ctxt.target),
       true,
     );
 
@@ -176,8 +166,8 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     const target = ctxt.target;
 
     const adviceEntries = [
-      ...selection.find([JoinpointType.GET_PROPERTY], [AdviceType.COMPILE]),
-      ...selection.find([JoinpointType.SET_PROPERTY], [AdviceType.COMPILE]),
+      ...selection.find([PointcutType.GET_PROPERTY], [AdviceType.COMPILE]),
+      ...selection.find([PointcutType.SET_PROPERTY], [AdviceType.COMPILE]),
     ];
 
     adviceEntries
@@ -224,13 +214,13 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
   }
 
   override afterThrow(
-    ctxt: MutableAdviceContext<JoinpointType.SET_PROPERTY, X>,
+    ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>,
     advicesSelection: AdvicesSelection,
   ) {
     return super.afterThrow(ctxt, advicesSelection, false);
   }
   override around(
-    ctxt: MutableAdviceContext<JoinpointType.SET_PROPERTY, X>,
+    ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>,
     advicesEntries: AdvicesSelection,
   ) {
     return super.around(ctxt, advicesEntries, false);
@@ -259,11 +249,14 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     return descriptor;
   }
 
-  private createPropertyDescriptor(propertyName: string): PropertyDescriptor {
-    const surrogate = { [propertyName]: undefined };
+  private createPropertyDescriptor(
+    target: PropertyAnnotationTarget,
+  ): PropertyDescriptor {
+    const { propertyKey } = target;
+    const surrogate = { [propertyKey]: undefined };
     const surrogateDescriptor = Reflect.getOwnPropertyDescriptor(
       surrogate,
-      propertyName,
+      propertyKey,
     )!;
 
     return surrogateDescriptor;

@@ -25,6 +25,9 @@ export interface BaseAnnotationTarget<
   readonly ref: AnnotationTargetRef;
   readonly declaringClass: ClassAnnotationTarget<X>;
   readonly parentClass: ClassAnnotationTarget<unknown> | undefined;
+  readonly static: boolean;
+
+  eval(): unknown;
 }
 
 /**
@@ -34,6 +37,7 @@ export interface BaseAnnotationTarget<
 export interface ClassAnnotationTarget<X = unknown>
   extends BaseAnnotationTarget<AnnotationType.CLASS, X> {
   readonly parent?: ClassAnnotationTarget<unknown>;
+  readonly static: boolean;
 }
 
 /**
@@ -42,9 +46,10 @@ export interface ClassAnnotationTarget<X = unknown>
  */
 export interface PropertyAnnotationTarget<X = unknown>
   extends BaseAnnotationTarget<AnnotationType.PROPERTY, X> {
-  readonly propertyKey: string;
+  readonly propertyKey: string | symbol;
   readonly parent: ClassAnnotationTarget<unknown>;
-  readonly descriptor: TypedPropertyDescriptor<unknown>;
+  readonly descriptor?: TypedPropertyDescriptor<unknown>;
+  readonly static: boolean;
 }
 
 /**
@@ -53,9 +58,10 @@ export interface PropertyAnnotationTarget<X = unknown>
  */
 export interface MethodAnnotationTarget<X = unknown>
   extends BaseAnnotationTarget<AnnotationType.METHOD, X> {
-  readonly propertyKey: string;
+  readonly propertyKey: string | symbol;
   readonly descriptor: MethodPropertyDescriptor;
   readonly parent: ClassAnnotationTarget<X>;
+  readonly static: boolean;
 }
 
 /**
@@ -64,10 +70,11 @@ export interface MethodAnnotationTarget<X = unknown>
  */
 export interface ParameterAnnotationTarget<X = unknown>
   extends BaseAnnotationTarget<AnnotationType.PARAMETER, X> {
-  readonly propertyKey: string;
+  readonly propertyKey: string | symbol;
   readonly parameterIndex: number;
   readonly descriptor: MethodPropertyDescriptor;
   readonly parent: MethodAnnotationTarget<X>;
+  readonly static: boolean;
 }
 
 /**

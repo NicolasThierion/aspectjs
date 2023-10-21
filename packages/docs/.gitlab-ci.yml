@@ -1,3 +1,5 @@
+image: node:18-alpine3.14
+
 pages:
   stage: deploy
   script:
@@ -8,3 +10,5 @@ pages:
     expire_in: 1 days
     paths:
       - 'public'
+
+

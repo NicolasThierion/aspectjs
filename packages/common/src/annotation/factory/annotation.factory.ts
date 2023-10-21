@@ -1,5 +1,3 @@
-import { isFunction } from '@aspectjs/common/utils';
-
 import { AnnotationRef } from '../annotation-ref';
 import {
   Annotation,
@@ -13,14 +11,16 @@ import { DecoratorProviderRegistry } from './decorator-provider.registry';
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
+import { assert } from '@aspectjs/common/utils';
 import { reflectContext } from '../../reflect/reflect.context.global';
 import type { AnnotationStub } from '../annotation.types';
+import { inferTypeFromArgs } from '../target/annotation-target.factory';
 let anonymousAnnotationId = 0;
 
 /**
- * Options given to the AnnotationFactory to create a new annotation.
- * @param T The type of annotation to create.
- * @param S The signature of the annotation to create.
+ * Options given to the {@link AnnotationFactory} to create a new annotation.
+ * @typeParam T the type of annotation to create
+ * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
  */
 export interface AnnotationCreateOptions<
   T extends AnnotationType,
@@ -44,9 +44,9 @@ export interface AnnotationCreateOptions<
  */
 export class AnnotationFactory {
   /**
-   * Create a new AnnotationFactory with the given groupId.
-   * You generaly have to choose a groupId that identifies your project or is unique to your organisation.
-   * The groupId will be used as a part of the signature for the created annotations.
+   * Create a new AnnotationFactory with the given `groupId`.
+   * You generaly have to choose a `groupId` that identifies your project or is unique to your organisation.
+   * The `groupId` will be used as a part of the signature for the created annotations.
    * @param groupId The groupId of this factory.
    */
   constructor(
@@ -58,9 +58,11 @@ export class AnnotationFactory {
   ) {}
 
   /**
-   * Create with the given type and name.
+   * Create an annotation with the given `type` and `name`.
    * @param type The type of annotation to create.
    * @param name The name of the annotation to create.
+   * @typeParam T the type of annotation to create
+   * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create();
@@ -74,10 +76,11 @@ export class AnnotationFactory {
   ): Annotation<T, S>;
 
   /**
-   * Create a new annotation with the given name and type.
+   * Create a new annotation with the given `name` and `type`.
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
    * @param name The name of the annotation to create.
+   * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create('LogErrors');
@@ -91,6 +94,8 @@ export class AnnotationFactory {
    *
    * @param type The type of annotation to create.
    * @param annotationStub The signature of the annotation to create.
+   * @typeParam T the type of annotation to create
+   * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create(
@@ -111,6 +116,7 @@ export class AnnotationFactory {
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
    * @param annotationStub The signature of the annotation to create.
+   * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create(
@@ -125,6 +131,8 @@ export class AnnotationFactory {
   /**
    * Create with the a n annotation.
    * @param options The options for the annotation to create.
+   * @typeParam T the type of annotation to create
+   * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    */
   create<T extends AnnotationType, S extends AnnotationStub<T>>(
     options?: AnnotationCreateOptions<T, S>,
@@ -191,20 +199,26 @@ export class AnnotationFactory {
         .reduce(
           (decoree, { name, createDecorator: decorator }) => {
             try {
-              const newDecoree =
-                (decorator as any)
-                  .apply(this, [
-                    context,
-                    annotation,
-                    annotationArgs,
-                    annotationStub,
-                  ])
-                  ?.apply(this, targetArgs) ?? decoree;
+              const newDecoree = (decorator as any)
+                .apply(this, [
+                  context,
+                  annotation,
+                  annotationArgs,
+                  annotationStub,
+                ])
+                ?.apply(this, targetArgs);
 
               if (newDecoree) {
-                Object.assign(newDecoree, decoree); // copy static props
+                if (inferTypeFromArgs(...targetArgs) === AnnotationType.CLASS) {
+                  assert(
+                    typeof newDecoree === 'function' &&
+                      typeof decoree === 'function',
+                  );
+                  Object.assign(newDecoree, decoree); // copy static props
+                }
+                decoree = newDecoree;
               }
-              return newDecoree;
+              return decoree;
             } catch (e) {
               console.error(
                 `Error applying annotation hook ${name}: ${
@@ -252,11 +266,7 @@ const noopDecorator: AnyDecorator = (<TFunction extends Function>(
   _parameterIndex: number,
 ): any => {
   if (propertyKey !== undefined) {
-    if (isFunction(target) && target.prototype) {
-      return Object.getOwnPropertyDescriptor(target.prototype, propertyKey);
-    } else {
-      return;
-    }
+    return Object.getOwnPropertyDescriptor(target, propertyKey);
   }
 
   return target;

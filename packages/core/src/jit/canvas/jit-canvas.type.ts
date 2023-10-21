@@ -1,8 +1,8 @@
-import { assert } from '@aspectjs/common/utils';
+import { assert, getMetadata } from '@aspectjs/common/utils';
 
 import { WeavingError } from '../../errors/weaving.error';
 
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
@@ -10,14 +10,14 @@ import type { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 export interface CompiledCanvas<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
 > {
   compiledSymbol: CompiledSymbol<T, X> | undefined;
   link: () => CompiledSymbol<T, X> | undefined | void;
 }
 export class JitWeaverCanvas<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
 > {
   constructor(private readonly strategy: JitWeaverCanvasStrategy<T, X>) {}
@@ -40,18 +40,21 @@ export class JitWeaverCanvas<
       assert(false);
     }
 
-    let withinAdviceSafeguard = false; // toggled to true before running joinpoint to avoid advice calling back itself
     assert(!!compiledSymbol);
 
     const bootstrapJp = (instance: any, ...args: any[]) => {
-      ctxt.instance = instance;
+      ctxt.value = undefined;
       ctxt.args = args;
-      if (withinAdviceSafeguard) {
+      if (!ctxt.target.static) {
+        ctxt.instance = instance;
+        ctxt.bind(instance);
+      }
+      if (getMetadata('@ajs:defuseAdvices', ctxt.target.ref)) {
         return this.strategy.callJoinpoint(ctxt, compiledSymbol);
       }
 
       // create the joinpoint for the original method
-      const joinpoint = (...args: any[]) => {
+      ctxt.joinpoint = (...args: any[]) => {
         ctxt.args = args;
 
         try {
@@ -72,17 +75,8 @@ export class JitWeaverCanvas<
           this.strategy.after(ctxt, selection);
         }
       };
-      withinAdviceSafeguard = true;
 
-      ctxt.value = undefined;
-      ctxt.args = args;
-      ctxt.instance = instance;
-      ctxt.joinpoint = joinpoint;
-      try {
-        return this.strategy.around(ctxt, selection)(...args);
-      } finally {
-        withinAdviceSafeguard = false;
-      }
+      return this.strategy.around(ctxt, selection)(...args);
     };
 
     return {

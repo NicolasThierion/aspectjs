@@ -3,6 +3,7 @@ import {
   AnnotationTarget,
   AnnotationType,
   BindableAnnotationsByTypeSelection,
+  _AnnotationTargetImpl,
 } from '@aspectjs/common';
 import {
   ConstructorType,
@@ -16,7 +17,7 @@ import { AspectType } from '../aspect/aspect.type';
 import { JitWeaverCanvas } from './canvas/jit-canvas.type';
 import { JitClassCanvasStrategy } from './canvas/jit-class-canvas.strategy';
 
-import type { JoinpointType } from '../pointcut/pointcut-target.type';
+import type { PointcutType } from '../pointcut/pointcut-target.type';
 import type { WeaverContext } from './../weaver/context/weaver.context';
 
 import type { Weaver } from '../weaver/weaver';
@@ -55,7 +56,7 @@ export class JitWeaver implements Weaver {
   }
 
   enhance<T extends AnnotationType, X = unknown>(
-    target: AnnotationTarget<T>,
+    target: _AnnotationTargetImpl<T, X> & AnnotationTarget<T, X>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
     const annotations = new BindableAnnotationsByTypeSelection(
       this.annotationRegistry.select().on({
@@ -64,7 +65,7 @@ export class JitWeaver implements Weaver {
       }),
     );
 
-    const ctxt = new MutableAdviceContext<any, any>({
+    const ctxt = new MutableAdviceContext({
       target,
       annotations,
     });
@@ -73,7 +74,7 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceClass<X>(
-    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
   ): (new (...args: any[]) => X) | void {
     const { target } = ctxt;
     const annotationsForType = new BindableAnnotationsByTypeSelection(
@@ -94,7 +95,7 @@ export class JitWeaver implements Weaver {
       annotations: annotationsForType.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<JoinpointType.CLASS, X>(
+    return new JitWeaverCanvas<PointcutType.CLASS, X>(
       new JitClassCanvasStrategy<X>(this.weaverContext),
     )
       .compile(ctxt, advicesSelection)
@@ -103,7 +104,7 @@ export class JitWeaver implements Weaver {
 
   private enhanceProperty<X>(
     ctxt: MutableAdviceContext<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
   ): PropertyDescriptor | void {
@@ -127,7 +128,7 @@ export class JitWeaver implements Weaver {
     });
 
     return new JitWeaverCanvas<
-      JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY,
+      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >(new JitPropertyCanvasStrategy<X>(this.weaverContext))
       .compile(ctxt, advicesSelection)
@@ -135,7 +136,7 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceMethod<X>(
-    ctxt: MutableAdviceContext<JoinpointType.METHOD, X>,
+    ctxt: MutableAdviceContext<PointcutType.METHOD, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
     const annotationsForType = new BindableAnnotationsByTypeSelection(
@@ -155,16 +156,15 @@ export class JitWeaver implements Weaver {
       annotations: annotationsForType.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<
-      JoinpointType.METHOD | JoinpointType.PARAMETER,
-      X
-    >(new JitMethodCanvasStrategy<X>(this.weaverContext))
+    return new JitWeaverCanvas<PointcutType.METHOD | PointcutType.PARAMETER, X>(
+      new JitMethodCanvasStrategy<X>(this.weaverContext),
+    )
       .compile(ctxt, advicesSelection)
       .link();
   }
 
   private enhanceParameter<X>(
-    ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
+    ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
     const annotationsForType = new BindableAnnotationsByTypeSelection(
@@ -185,7 +185,7 @@ export class JitWeaver implements Weaver {
       annotations: annotationsForType.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<JoinpointType.PARAMETER, X>(
+    return new JitWeaverCanvas<PointcutType.PARAMETER, X>(
       new JitParameterCanvasStrategy<X>(this.weaverContext),
     )
       .compile(ctxt, advicesSelection)

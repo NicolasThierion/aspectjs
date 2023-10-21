@@ -4,11 +4,11 @@ import type { AfterAdvice } from '../advices/after/after.type';
 import type { AroundAdvice } from '../advices/around/around.type';
 import type { BeforeAdvice } from '../advices/before/before.type';
 import type { CompileAdvice } from '../advices/compile/compile.type';
-import type { JoinpointType } from './../pointcut/pointcut-target.type';
+import type { PointcutType } from './../pointcut/pointcut-target.type';
 import { AdviceType } from './advice-type.type';
 
 export type Advice<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
   V extends AdviceType = any,
 > = V extends AdviceType.COMPILE

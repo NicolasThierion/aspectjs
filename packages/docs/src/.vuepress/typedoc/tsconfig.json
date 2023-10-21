@@ -5,9 +5,15 @@
     "noUnusedParameters": false,
     "noUnusedLocals": false,
     // "module": "ES2020",
+    "allowImportingTsExtensions": true,
+    "noImplicitAny": false,
     // "moduleResolution": "nodenext",
     "downlevelIteration": true
   },
-  "include": ["../../../../../**/*.ts"],
-  "exclude": ["../../../../../*.spec.ts", "../../../../../node_modules/**/*"]
+  "include": ["../../../../../**/index.ts", "../../../../../**/public_api.ts"],
+  "exclude": [
+    "../../../../../*.spec.ts",
+    "../../../../../node_modules/**/*",
+    "../../../../docs"
+  ]
 }

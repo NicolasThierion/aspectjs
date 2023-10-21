@@ -10,7 +10,7 @@ import type {
 import { TransactionalError } from './transactional-error';
 
 /**
- * Add behavior to the {@link Transactional} annotation.
+ * Make a method transactional. {@link Transactional} annotation.
  * This class is intended to be subclassed for ORM-specific implementations.
  */
 @Aspect('transactional')

@@ -1,8 +1,8 @@
 import { Annotation, AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
-import { JoinpointType } from './pointcut-target.type';
+import { PointcutType } from './pointcut-target.type';
 
-interface PointcutExpressionInit<T extends JoinpointType = JoinpointType> {
+interface PointcutExpressionInit<T extends PointcutType = PointcutType> {
   type: T;
   annotations: (AnnotationRef | Annotation)[];
 }
@@ -10,27 +10,27 @@ const ANNOTATIONS_MATCH = '(?<annotations>(?:@\\S+)*)';
 const NAME_MATCH = `(?<name>\\S*)`;
 
 const POINTCUT_REGEXES = {
-  [JoinpointType.CLASS]: new RegExp(
+  [PointcutType.CLASS]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+class\\s+${NAME_MATCH}\\s*$`,
   ),
-  [JoinpointType.GET_PROPERTY]: new RegExp(
+  [PointcutType.GET_PROPERTY]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+(?:get\\s+)?property\\s+${NAME_MATCH}\\s*$`,
   ),
-  [JoinpointType.SET_PROPERTY]: new RegExp(
+  [PointcutType.SET_PROPERTY]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+(?:set\\s+)property\\s+${NAME_MATCH}\\s*$`,
   ),
-  [JoinpointType.METHOD]: new RegExp(
+  [PointcutType.METHOD]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+method\\s+${NAME_MATCH}\\s*$`,
   ),
-  [JoinpointType.PARAMETER]: new RegExp(
+  [PointcutType.PARAMETER]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+parameter\\s+${NAME_MATCH}\\s*$`,
   ),
-  [JoinpointType.ANY]: new RegExp(
+  [PointcutType.ANY]: new RegExp(
     `^\\s*${ANNOTATIONS_MATCH}\\s+any\\s+${NAME_MATCH}\\s*$`,
   ),
 };
 
-export class PointcutExpression<T extends JoinpointType = JoinpointType> {
+export class PointcutExpression<T extends PointcutType = PointcutType> {
   readonly name: string = '*'; // TODO: Add support for pointcut by symbol name
   readonly type: T;
   readonly annotations: AnnotationRef[] = [];
@@ -47,9 +47,7 @@ export class PointcutExpression<T extends JoinpointType = JoinpointType> {
     );
   }
 
-  static of<T extends JoinpointType>(
-    expression: string,
-  ): PointcutExpression<T> {
+  static of<T extends PointcutType>(expression: string): PointcutExpression<T> {
     const [type, match] =
       Object.entries(POINTCUT_REGEXES)
         .map(([t, r]) => [t, r.exec(expression)] as [string, RegExpExecArray])

@@ -1,7 +1,7 @@
 import type { AspectType } from '../aspect/aspect.type';
 
 /**
- * A Weaver is some sort of processor that invoke the advices according to the enabled aspects
+ * A Weaver is some kind of compiler that connects the joinpoints to the corresponding advices.
  * @public
  */
 export interface Weaver {

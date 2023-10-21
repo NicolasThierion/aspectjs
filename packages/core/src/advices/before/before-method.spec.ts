@@ -10,7 +10,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -44,7 +44,7 @@ describe('method advice', () => {
     class AAspect {
       @Before(on.methods.withAnnotations(...aannotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.METHOD>,
+        ctxt: BeforeContext<PointcutType.METHOD>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -55,7 +55,7 @@ describe('method advice', () => {
     class BAspect {
       @Before(on.methods.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.METHOD>,
+        ctxt: BeforeContext<PointcutType.METHOD>,
         ...args: unknown[]
       ): void {
         return badvice.bind(this)(ctxt, ...args);
@@ -106,6 +106,32 @@ describe('method advice', () => {
       expect(aadvice).toHaveBeenCalledTimes(1);
       expect(badvice).toHaveBeenCalledTimes(1);
       expect(mImpl).toHaveBeenCalledTimes(1);
+    });
+
+    describe('if the method calls itself', () => {
+      it('calls the advice twice', () => {
+        let firstCall = true;
+        class A {
+          @AMethod()
+          @BMethod()
+          m(...args: any[]) {
+            mImpl(...args);
+            if (firstCall) {
+              firstCall = false;
+              this.m(...args);
+            }
+          }
+        }
+
+        expect(aadvice).not.toHaveBeenCalled();
+        expect(badvice).not.toHaveBeenCalled();
+        aadvice = jest.fn(function (this: any) {});
+
+        new A().m();
+        expect(aadvice).toHaveBeenCalledTimes(2);
+        expect(badvice).toHaveBeenCalledTimes(2);
+        expect(mImpl).toHaveBeenCalledTimes(2);
+      });
     });
   });
 
@@ -231,6 +257,21 @@ describe('method advice', () => {
         expect(thisInstance).toBe(a);
       });
 
+      it('has context.target.eval() = the annotated method', () => {
+        class A {
+          @AMethod()
+          m(...args: any[]) {
+            mImpl(this, ...args);
+          }
+        }
+        aadvice = jest.fn((ctxt: BeforeContext) => {
+          expect(ctxt.target.eval()).toEqual(a.m);
+        });
+        const a = new A();
+        a.m();
+        expect(aadvice).toHaveBeenCalled();
+      });
+
       it('has context.annotations that contains the annotations for that joinpoint', () => {
         class A {
           @AMethod('annotationArg')
@@ -246,7 +287,7 @@ describe('method advice', () => {
             .find()[0];
           expect(aMethodAnnotationContext).toBeTruthy();
           expect(aMethodAnnotationContext?.args).toEqual(['annotationArg']);
-          expect(aMethodAnnotationContext?.target.value).toBe(A.prototype.m);
+          expect(aMethodAnnotationContext?.target.eval()).toBe(A.prototype.m);
         });
         new A().m();
 

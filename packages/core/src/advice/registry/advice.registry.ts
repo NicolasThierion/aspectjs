@@ -15,7 +15,7 @@ import { AdvicesSelection } from './advices-selection.model';
 
 import { CompileAdvice } from '../../advices/compile/compile.type';
 import type { AspectType } from '../../aspect/aspect.type';
-import { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
 import { AdviceType } from '../advice-type.type';
 import { Advice } from '../advice.type';
@@ -83,7 +83,7 @@ export class AdviceRegistry {
           Reflect.defineProperty(advice, Symbol.toPrimitive, {
             value: () =>
               [...advice.pointcuts]
-                .map((p) => `@${p.type}(${p.annotations.join(',')})`)
+                .map((p) => `@${p.adviceType}(${p.annotations.join(',')})`)
                 .join('|') +
               ` ${aspect.constructor.name}.${String(advice.name)}()`,
           });
@@ -137,27 +137,27 @@ export class AdviceRegistry {
   ) {
     const aspectCtor = getPrototype(aspect).constructor;
 
-    const joinpointTypes =
-      pointcut.joinpointType === JoinpointType.ANY
+    const pointcutTypes =
+      pointcut.type === PointcutType.ANY
         ? [
-            JoinpointType.CLASS,
-            JoinpointType.GET_PROPERTY,
-            JoinpointType.SET_PROPERTY,
-            JoinpointType.METHOD,
-            JoinpointType.PARAMETER,
+            PointcutType.CLASS,
+            PointcutType.GET_PROPERTY,
+            PointcutType.SET_PROPERTY,
+            PointcutType.METHOD,
+            PointcutType.PARAMETER,
           ]
-        : [pointcut.joinpointType];
+        : [pointcut.type];
 
-    joinpointTypes
-      .map((joinpointType) => (this.buckets[joinpointType] ??= {}))
+    pointcutTypes
+      .map((pointcutType) => (this.buckets[pointcutType] ??= {}))
       .forEach((byTarget) => {
-        const byPointcutType = (byTarget[pointcut.type] ??= new Map<
+        const byAdviceType = (byTarget[pointcut.adviceType] ??= new Map<
           ConstructorType<AspectType>,
           AdviceEntry[]
         >());
 
-        const byAspect = byPointcutType.get(aspectCtor) ?? [];
-        byPointcutType.set(aspectCtor, byAspect);
+        const byAspect = byAdviceType.get(aspectCtor) ?? [];
+        byAdviceType.set(aspectCtor, byAspect);
 
         byAspect.push(
           AdviceEntry.of({

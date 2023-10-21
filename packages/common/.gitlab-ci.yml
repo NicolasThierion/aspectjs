@@ -1,0 +1,47 @@
+include:
+  - ci-templates/node.yml
+
+image: node:18-alpine3.14
+
+### COMMON
+
+common:lint:
+  variables:
+    CWD: packages/common
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+common:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/common
+  stage: test
+  needs:
+    - node:prepare
+
+common:build:
+  extends: .node:build
+  variables:
+    CWD: packages/common
+  stage: compile
+  needs:
+    - node:prepare
+
+common:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: publish
+  variables:
+    CWD: packages/common
+    PACKAGE_DIR: ./dist
+
+common:publish:npm:
+  extends: .node:npm:publish
+  stage: release
+  variables:
+    CWD: packages/common
+    PACKAGE_DIR: ./dist
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual

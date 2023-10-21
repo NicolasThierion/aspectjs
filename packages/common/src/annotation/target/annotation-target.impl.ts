@@ -7,7 +7,9 @@ import {
   ClassAnnotationTarget,
 } from './annotation-target';
 
-export const BOUND_INSTANCE_SYMBOL = Symbol.for('boundInstance');
+export const BOUND_INSTANCE_SYMBOL = Symbol.for('@ajs:boundInstance');
+export const BOUND_VALUE_SYMBOL = Symbol.for('@ajs:boundValue');
+const NOT_BOUND = {};
 /**
  * @internal
  */
@@ -22,9 +24,16 @@ export abstract class _AnnotationTargetImpl<
     | undefined;
 
   protected readonly [BOUND_INSTANCE_SYMBOL]?: X;
+  protected readonly [BOUND_VALUE_SYMBOL]?: unknown = NOT_BOUND;
 
-  get value(): unknown {
-    throw new Error('AnnotationTarget is not bound to a value');
+  public readonly ['static']: boolean;
+
+  eval(): unknown {
+    if (this[BOUND_VALUE_SYMBOL] === NOT_BOUND) {
+      throw new Error('AnnotationTarget is not bound to a value');
+    }
+
+    return this[BOUND_VALUE_SYMBOL];
   }
 
   constructor(
@@ -33,10 +42,20 @@ export abstract class _AnnotationTargetImpl<
     public readonly name: string,
     public readonly label: string,
     public readonly ref: AnnotationTargetRef,
-  ) {}
+    staticAttribute: boolean = false,
+  ) {
+    this['static'] = staticAttribute;
+  }
   toString() {
     return (this as any as AnnotationTarget).label;
   }
 
-  abstract bind(instance: unknown, value?: unknown): AnnotationTarget<T, X>;
+  /**
+   * Binds a value to this AnnotationTarget. The value is either the class instance for ClassAnnotationTarget, the property value for PropertyAnnotationTarget, MethodAnnotationTarget or ParameterAnnotationTarget.
+   * In addition, in case of ParameterAnnotationTarget, the bind() method accepts a 2nd argument to bind the parameter value.
+   *
+   * @param instance The class instance to bind this target to.
+   * @param value the value of this target
+   */
+  abstract _bind(instance: X, args?: unknown[]): AnnotationTarget<T, X>;
 }

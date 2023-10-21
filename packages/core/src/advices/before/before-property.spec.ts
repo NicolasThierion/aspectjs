@@ -9,7 +9,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AdviceError } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
@@ -39,7 +39,7 @@ describe('property get advice', () => {
     class AAspect {
       @Before(on.properties.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -49,7 +49,7 @@ describe('property get advice', () => {
     class BAspect {
       @Before(on.properties.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -88,7 +88,7 @@ describe('property get advice', () => {
       class AAspect {
         @Before(on.properties.withAnnotations(AProperty))
         applyBefore(
-          ctxt: BeforeContext<JoinpointType.GET_PROPERTY>,
+          ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
           ...args: unknown[]
         ): void {
           return advice.bind(this)(ctxt, ...args);
@@ -163,23 +163,26 @@ describe('property get advice', () => {
       }
     });
 
-    it('can read/write the property without any issue', () => {
+    it('can write the property without any issue', () => {
       class A {
         @AProperty()
         labels = ['a'];
       }
 
       const a = new A();
-      advice = jest.fn(function (this: any) {
+      advice = jest.fn(function (
+        this: any,
+        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+      ) {
         expect(this).toBe(aaspect);
-        expect(a.labels).toEqual(['a']);
-        a.labels = a.labels.concat('c');
-        expect(a.labels).toEqual(['a', 'c']);
+        a.labels = ['a', 'B'];
       });
       expect(advice).not.toHaveBeenCalled();
-      a.labels = a.labels.concat('b');
+      a.labels = a.labels.concat('b'); // 1st
 
-      expect(advice).toBeCalled();
+      expect(a.labels).toEqual(['a', 'B']); // 2nd call
+
+      expect(advice).toBeCalledTimes(2);
     });
 
     describe('is called with a context that ', () => {
@@ -197,6 +200,19 @@ describe('property get advice', () => {
         a.prop;
         expect(advice).toHaveBeenCalled();
         expect(thisInstance).toEqual(a);
+      });
+
+      it('has context.target.eval() = the value of the property', () => {
+        class A {
+          @AProperty()
+          prop: string = 'a';
+        }
+        advice = jest.fn((ctxt: BeforeContext) => {
+          expect(ctxt.target.eval()).toEqual('a');
+        });
+        const a = new A();
+        a.prop;
+        expect(advice).toHaveBeenCalled();
       });
 
       it('has context.annotations that contains the proper annotation contexts', () => {

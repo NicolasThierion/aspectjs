@@ -2,14 +2,14 @@ import chokidar from 'chokidar';
 import { findUpSync } from 'find-up';
 import { readFileSync } from 'fs';
 import { globSync } from 'glob';
+import Handlebars from 'handlebars';
 import json5 from 'json5';
 import { dirname, join } from 'path';
+import { Application, ProjectReflection, TypeDocOptions } from 'typedoc';
 import * as url from 'url';
 import { PluginFunction, PluginObject } from 'vuepress';
-import { TypeDocOptions, ReflectionKind } from 'typedoc';
-import { typedocPlugin } from 'vuepress-plugin-typedoc/next';
+// import { typedocPlugin } from 'vuepress-plugin-typedoc';
 const { parse } = json5;
-import Handlebars from 'handlebars';
 
 export interface PluginOptions extends TypeDocOptions {
   sidebar?: SidebarOptions;
@@ -28,34 +28,34 @@ export function typedocPluginConfig(): PluginFunction {
   const entryPoints = findEntrypoints();
 
   return (...args) => {
-    const pluginFn = typedocPlugin({
-      // plugin options
-      entryPoints,
-      tsconfig: `${__dirname}/tsconfig.json`,
-      cleanOutputDir: true,
-      name: 'AspectJS',
-      readme: join(__dirname, 'README.typedoc.md'),
-      excludeInternal: true,
-      excludePrivate: true,
-      excludeExternals: true,
-      groupOrder: ['Modules', 'Variables', 'Functions', '*'],
-      excludeNotDocumented: true,
-      categorizeByGroup: false,
-      hideParameterTypesInTitle: true,
+    // const pluginFn = typedocPlugin({
+    //   // plugin options
+    //   entryPoints,
+    //   tsconfig: `${__dirname}/tsconfig.json`,
+    //   cleanOutputDir: true,
+    //   name: 'AspectJS',
+    //   readme: join(__dirname, 'README.typedoc.md'),
+    //   // excludeInternal: true,
+    //   // excludePrivate: true,
+    //   // excludeExternals: true,
+    //   // groupOrder: ['Modules', 'Variables', 'Functions', '*'],
+    //   // excludeNotDocumented: true,
+    //   // categorizeByGroup: false,
+    //   // hideParameterTypesInTitle: true,
 
-      navigation: {
-        includeCategories: false,
-        includeGroups: false,
-      },
-      // Plugin options
-      out: 'api',
+    //   // navigation: {
+    //   //   includeCategories: false,
+    //   //   includeGroups: false,
+    //   // },
+    //   // Plugin options
+    //   out: 'api',
 
-      sidebar: {
-        fullNames: false,
-        autoConfiguration: true,
-        parentCategory: 'API',
-      },
-    } satisfies Partial<PluginOptions>);
+    //   sidebar: {
+    //     fullNames: false,
+    //     autoConfiguration: true,
+    //     parentCategory: 'API',
+    //   },
+    // } satisfies Partial<PluginOptions>);
 
     // override helper to exclude ReflectionKind from sidebar
     const _registerHelper = Handlebars.registerHelper;
@@ -83,35 +83,77 @@ export function typedocPluginConfig(): PluginFunction {
       return _registerHelper.apply(this, args);
     };
 
-    function escapeChars(str) {
+    function escapeChars(str: string) {
       return str
         .replace(/>/g, '\\>')
         .replace(/_/g, '\\_')
         .replace(/`/g, '\\`')
         .replace(/\|/g, '\\|');
     }
-    const plugin = pluginFn(...args);
+    // const plugin = pluginFn(...args);
 
-    (plugin as PluginObject).onWatched = (app, watchers, reload) => {
-      const pagesWatcher = chokidar.watch(
-        entryPoints.map((e) => dirname(e)).map((e) => join(e, '**/*.ts')),
-        {
-          cwd: app.dir.source(),
-          ignoreInitial: true,
-        },
-      );
-      pagesWatcher.on('add', async (filePathRelative) => {
-        reload();
-      });
-      pagesWatcher.on('change', async (filePathRelative) => {
-        reload();
-      });
-      pagesWatcher.on('unlink', async (filePathRelative) => {
-        reload();
-      });
+    let typedocApplication: Application;
+    let project: ProjectReflection;
+    const opts = {
+      entryPoints,
+      plugin: ['typedoc-plugin-markdown'],
+      includes: entryPoints,
+      tsconfig: `${__dirname}/tsconfig.json`,
+      cleanOutputDir: true,
+      name: 'AspectJS',
+      readme: join(__dirname, 'README.typedoc.md'),
+      excludeInternal: true,
+      excludePrivate: true,
+      excludeExternals: true,
+      groupOrder: ['Modules', 'Variables', 'Functions', '*'],
+      excludeNotDocumented: true,
+      categorizeByGroup: false,
+      // theme: MarkdownTheme,
+      hideParameterTypesInTitle: true,
+      navigation: {
+        includeCategories: false,
+        includeGroups: false,
+      },
+      // Plugin options
+      out: 'src/api',
+    } satisfies Partial<TypeDocOptions>;
+    const plugin: PluginObject = {
+      name: 'my-typedoc',
+      async onInitialized(app) {
+        typedocApplication = await Application.bootstrapWithPlugins(opts);
 
-      watchers.push(pagesWatcher);
+        project = (await typedocApplication.convert())!;
+        typedocApplication.generateDocs(project, opts.out);
+
+        async (project) => {
+          typedocApplication.generateDocs(project, opts.out);
+        };
+      },
+      onWatched(app, watchers, reload) {
+        const pagesWatcher = chokidar.watch(
+          entryPoints.map((e) => dirname(e)).map((e) => join(e, '**/*.ts')),
+          {
+            cwd: app.dir.source(),
+            ignoreInitial: true,
+          },
+        );
+        pagesWatcher.on('add', async (filePathRelative) => {
+          await typedocApplication.generateDocs(project, opts.out);
+          reload();
+        });
+        pagesWatcher.on('change', async (filePathRelative) => {
+          await typedocApplication.generateDocs(project, opts.out);
+          reload();
+        });
+        pagesWatcher.on('unlink', async (filePathRelative) => {
+          await typedocApplication.generateDocs(project, opts.out);
+          reload();
+        });
+
+        watchers.push(pagesWatcher);
+      },
     };
+
     return plugin;
   };
 }

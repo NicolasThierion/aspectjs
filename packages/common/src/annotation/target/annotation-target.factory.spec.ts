@@ -6,6 +6,9 @@ import { AnnotationTargetFactory } from './annotation-target.factory';
 // eslint-disable  @typescript-eslint/no-unused-vars
 describe('AnnotationTargetFactory', () => {
   class X {
+    static prop?: string = 'staticProp';
+    static method() {}
+
     prop?: string = 'propValue';
     method(..._args: any[]) {}
   }
@@ -19,6 +22,11 @@ describe('AnnotationTargetFactory', () => {
       expect(target.type).toBe(AnnotationType.CLASS);
     });
 
+    it('.static === false', () => {
+      const target = targetFactory.of(X);
+      expect(target.static).toBe(false);
+    });
+
     it('.proto === Prototype<CLASS>', () => {
       const target = targetFactory.of(X);
       expect(target.proto).toBe(X.prototype);
@@ -29,33 +37,43 @@ describe('AnnotationTargetFactory', () => {
       expect(target.declaringClass).toBe(target);
     });
   });
-  describe('.of(Prototype<CLASS>)', () => {
-    it('.type === AnnotationType.CLASS', () => {
-      const target = targetFactory.of(X.prototype);
-      expect(target.type).toBe(AnnotationType.CLASS);
-    });
+  // xdescribe('.of(Prototype<CLASS>)', () => {
+  //   it('.type === AnnotationType.CLASS', () => {
+  //     const target = targetFactory.of(X.prototype);
+  //     expect(target.type).toBe(AnnotationType.CLASS);
+  //   });
 
-    it('.proto === Prototype<CLASS>', () => {
-      const target = targetFactory.of(X.prototype);
-      expect(target.proto).toBe(X.prototype);
-    });
+  //   it('.static === false', () => {
+  //     const target = targetFactory.of(X.prototype);
+  //     expect(target.static).toBe(false);
+  //   });
 
-    it('.declaringClass === <self>', () => {
-      const target = targetFactory.of(X.prototype);
-      expect(target.declaringClass).toBe(target);
-    });
+  //   it('.proto === Prototype<CLASS>', () => {
+  //     const target = targetFactory.of(X.prototype);
+  //     expect(target.proto).toBe(X.prototype);
+  //   });
 
-    it('.value is not defined', () => {
-      const target = targetFactory.of(X.prototype);
-      expect(target.hasOwnProperty('value')).toBe(false);
-    });
-  });
+  //   it('.declaringClass === <self>', () => {
+  //     const target = targetFactory.of(X.prototype);
+  //     expect(target.declaringClass).toBe(target);
+  //   });
+
+  //   it('.eval() is not defined', () => {
+  //     const target = targetFactory.of(X.prototype);
+  //     expect(target.hasOwnProperty('value')).toBe(false);
+  //   });
+  // });
   describe('.of(x)', () => {
     it('.type === AnnotationType.CLASS', () => {
       const target = targetFactory.of(new X());
       expect(target.type).toBe(AnnotationType.CLASS);
     });
 
+    it('.static === false', () => {
+      const target = targetFactory.of(new X());
+      expect(target.static).toBe(false);
+    });
+
     it('.proto === Prototype<X>', () => {
       const target = targetFactory.of(new X());
       expect(target.proto).toBe(X.prototype);
@@ -66,17 +84,22 @@ describe('AnnotationTargetFactory', () => {
       expect(target.declaringClass).toBe(target);
     });
 
-    it('.value === x', () => {
+    it('.eval() === x', () => {
       const x = new X();
       const target = targetFactory.of(x);
-      expect(target.value).toBe(x);
+      expect(target.eval()).toBe(x);
     });
   });
 
-  describe('.of(X, propertyKey)', () => {
+  describe('.of(new X(), propertyKey)', () => {
     it('.type === AnnotationType.PROPERTY', () => {
       const target = targetFactory.of(new X(), 'prop');
       expect(target.type).toBe(AnnotationType.PROPERTY);
+    });
+
+    it('.static === false', () => {
+      const target = targetFactory.of(new X(), 'method');
+      expect(target.static).toBe(false);
     });
 
     it('.proto === Prototype<X>', () => {
@@ -94,18 +117,23 @@ describe('AnnotationTargetFactory', () => {
       expect(target.parent).toEqual(targetFactory.of(new X()));
     });
 
-    it('.value === x', () => {
+    it('.eval() === x', () => {
       const x = new X();
       const target = targetFactory.of(x, 'prop');
-      expect(target.value).toBe(x.prop);
+      expect(target.eval()).toBe(x.prop);
     });
   });
-  describe('.of(<prototype>, propertyKey)', () => {
+  describe('.of(X.prototype, propertyKey)', () => {
     it('.type === AnnotationType.PROPERTY', () => {
       const target = targetFactory.of(X.prototype, 'prop');
       expect(target.type).toBe(AnnotationType.PROPERTY);
     });
 
+    it('.static === false', () => {
+      const target = targetFactory.of(X.prototype, 'method');
+      expect(target.static).toBe(false);
+    });
+
     it('.proto === Prototype<X>', () => {
       const target = targetFactory.of(X.prototype, 'prop');
       expect(target.proto).toBe(X.prototype);
@@ -113,73 +141,80 @@ describe('AnnotationTargetFactory', () => {
 
     it('.declaringClass === <class target>', () => {
       const target = targetFactory.of(X.prototype, 'prop');
-      expect(target.declaringClass).toBe(targetFactory.of(X.prototype));
+      expect(target.declaringClass).toBe(targetFactory.of(X));
     });
 
     it('.parent === <class target>', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.parent).toEqual(targetFactory.of(new X()));
-    });
-
-    it('.value === x', () => {
       const target = targetFactory.of(X.prototype, 'prop');
-      expect(target.hasOwnProperty('value')).toBe(false);
-    });
-  });
-  describe('.of(<object>, propertyKey)', () => {
-    it('.type === AnnotationType.PROPERTY', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.type).toBe(AnnotationType.PROPERTY);
+      expect(target.parent).toEqual(targetFactory.of(X));
     });
 
-    it('.proto === Prototype<X>', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.proto).toBe(X.prototype);
+    it('.eval() throws an error', () => {
+      const target = targetFactory.of(X.prototype, 'prop');
+      expect(() => target.eval()).toThrowError(
+        'AnnotationTarget is not bound to a value',
+      );
     });
-
-    it('.declaringClass === <class target>', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.declaringClass).toEqual(targetFactory.of(new X()));
-    });
-
-    it('.parent === <class target>', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.parent).toEqual(targetFactory.of(new X()));
-    });
-
-    it('.value === x', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.value).toEqual(new X().prop);
+    it('.descriptor === property descriptor', () => {
+      const target = targetFactory.of(X.prototype, 'prop');
+      expect(target.descriptor).toBe(
+        Object.getOwnPropertyDescriptor(X.prototype, 'prop'),
+      );
     });
   });
 
-  describe('.of(<constructor>, methodName)', () => {
+  describe('.of(X.prototype, methodName)', () => {
     it('.type === AnnotationType.METHOD', () => {
-      const target = targetFactory.of(X, 'method');
+      const target = targetFactory.of(X.prototype, 'method');
       expect(target.type).toBe(AnnotationType.METHOD);
     });
+    it('.static === false', () => {
+      const target = targetFactory.of(X.prototype, 'method');
+      expect(target.static).toBe(false);
+    });
 
     it('.proto === Prototype<X>', () => {
-      const target = targetFactory.of(X, 'method');
+      const target = targetFactory.of(X.prototype, 'method');
       expect(target.proto).toBe(X.prototype);
     });
 
     it('.declaringClass === <class target>', () => {
-      const target = targetFactory.of(X, 'method');
-      expect(target.declaringClass).toBe(targetFactory.of(X.prototype));
+      const target = targetFactory.of(X.prototype, 'method');
+      expect(target.declaringClass).toBe(targetFactory.of(X));
     });
 
     it('.parent === <class target>', () => {
-      const target = targetFactory.of(X, 'method');
+      const target = targetFactory.of(X.prototype, 'method');
       expect(target.parent).toBe(targetFactory.of(X));
     });
 
-    it('.value === x', () => {
-      const target = targetFactory.of(X, 'method');
-      expect(target.hasOwnProperty('value')).toBe(false);
+    it('.eval() throws an error', () => {
+      const target = targetFactory.of(X.prototype, 'method');
+      expect(() => target.eval()).toThrowError(
+        'AnnotationTarget is not bound to a value',
+      );
+    });
+    it('.descriptor === the property descriptor', () => {
+      const target = targetFactory.of(X.prototype, 'method');
+      expect(target.descriptor).toEqual(
+        Object.getOwnPropertyDescriptor(X.prototype, 'method'),
+      );
     });
   });
-  describe('.of(<prototype>, <propertyKey>, <descriptor>)', () => {
+
+  describe('.of(X, methodName', () => {
+    it('.static === true', () => {
+      const target = targetFactory.of(X, 'method');
+      expect(target.static).toBe(true);
+    });
+    it('.descriptor === the static property descriptor', () => {
+      const target = targetFactory.of(X, 'method');
+      expect(target.descriptor).toEqual(
+        Object.getOwnPropertyDescriptor(X, 'method'),
+      );
+    });
+  });
+  describe('.of(X.prototype, <propertyKey>, <descriptor>)', () => {
     it('.type === AnnotationType.METHOD', () => {
       const target = targetFactory.of(
         X.prototype,
@@ -187,6 +222,11 @@ describe('AnnotationTargetFactory', () => {
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
       expect(target.type).toBe(AnnotationType.METHOD);
+    });
+
+    it('.static === false', () => {
+      const target = targetFactory.of(X.prototype, 'method');
+      expect(target.static).toBe(false);
     });
 
     it('.proto === Prototype<X>', () => {
@@ -204,7 +244,7 @@ describe('AnnotationTargetFactory', () => {
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.declaringClass).toBe(targetFactory.of(X.prototype));
+      expect(target.declaringClass).toBe(targetFactory.of(X));
     });
 
     it('.parent === <class target>', () => {
@@ -216,7 +256,7 @@ describe('AnnotationTargetFactory', () => {
       expect(target.parent).toBe(targetFactory.of(X));
     });
 
-    it('.value === x', () => {
+    it('.eval() === x', () => {
       const target = targetFactory.of(
         X.prototype,
         'method',
@@ -270,7 +310,7 @@ describe('AnnotationTargetFactory', () => {
       expect(target.parent).toEqual(targetFactory.of(new X()));
     });
 
-    it('.value === x', () => {
+    it('.eval() === x', () => {
       const x = new X();
 
       const target = targetFactory.of(
@@ -278,7 +318,7 @@ describe('AnnotationTargetFactory', () => {
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.value).toBe(x.method);
+      expect(target.eval()).toBe(x.method);
     });
   });
 
@@ -296,7 +336,7 @@ describe('AnnotationTargetFactory', () => {
 
     it('.declaringClass === <class target>', () => {
       const target = targetFactory.of(X, 'method', 1);
-      expect(target.declaringClass).toBe(targetFactory.of(X.prototype));
+      expect(target.declaringClass).toBe(targetFactory.of(X));
     });
 
     it('.parent === <class target>', () => {

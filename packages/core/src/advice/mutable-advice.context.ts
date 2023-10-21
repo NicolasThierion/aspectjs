@@ -1,22 +1,25 @@
-import { AdviceTarget } from './advice-target.type';
 import { JoinPoint } from './joinpoint';
 
 import type { AfterContext } from '../advices/after/after.context';
 import type {
-  JoinpointType,
+  PointcutType,
   ToAnnotationType,
 } from '../pointcut/pointcut-target.type';
 
-import { BindableAnnotationsByTypeSelection } from '@aspectjs/common';
+import {
+  AnnotationTarget,
+  BindableAnnotationsByTypeSelection,
+} from '@aspectjs/common';
 import type { AfterReturnContext } from '../advices/after-return/after-return.context';
 import type { AfterThrowContext } from '../advices/after-throw/after-throw.context';
 import type { AroundContext } from '../advices/around/around.context';
 import type { BeforeContext } from '../advices/before/before.context';
 import type { CompileContext } from '../advices/compile/compile.context';
+import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
 import { AdviceContext } from './advice.context';
 
 export class MutableAdviceContext<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
 > {
   /** The annotations contexts **/
@@ -26,7 +29,8 @@ export class MutableAdviceContext<
   /** the arguments originally passed to the joinpoint **/
   args?: any[];
   /** The symbol targeted by this advice (class, method, property or parameter **/
-  target: AdviceTarget<T, X>;
+  target: AnnotationTarget<ToAnnotationType<T>, X> &
+    _BindableAnnotationTarget<ToAnnotationType<T>, X>;
   /** The value originally returned by the joinpoint **/
   value?: unknown;
   /** Hold the original function, bound to its execution context and it original parameters **/
@@ -124,6 +128,14 @@ export class MutableAdviceContext<
       'target',
       'joinpoint',
     );
+  }
+
+  bind(instance: X) {
+    this.target = this.target._bind(instance) as _BindableAnnotationTarget<
+      ToAnnotationType<T>,
+      X
+    >;
+    return this;
   }
 }
 

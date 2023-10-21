@@ -8,20 +8,20 @@ import {
 
 export interface BoundClassAnnotationTarget<X = unknown>
   extends ClassAnnotationTarget<X> {
-  readonly value: X;
+  eval(): X;
 }
 
 interface BoundParameterAnnotationTarget<X = unknown>
   extends ParameterAnnotationTarget<X> {
-  readonly value: unknown;
+  eval(): unknown;
 }
 interface BoundMethodAnnotationTarget<X = unknown>
   extends MethodAnnotationTarget<X> {
-  readonly value: (...args: unknown[]) => unknown;
+  eval(): (...args: unknown[]) => unknown;
 }
 interface BoundPropertyAnnotationTarget<X = unknown>
   extends PropertyAnnotationTarget<X> {
-  readonly value: unknown;
+  eval(): unknown;
 }
 
 /**

@@ -1,0 +1,43 @@
+include:
+  - ci-templates/node.yml
+
+memo:lint:
+  variables:
+    CWD: packages/memo
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+memo:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/memo
+  stage: test
+  needs:
+    - node:prepare
+
+memo:build:
+  extends: .node:build
+  variables:
+    CWD: packages/memo
+  stage: compile
+  needs:
+    - node:prepare
+
+memo:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: publish
+  variables:
+    CWD: packages/memo
+    PACKAGE_DIR: ./dist
+
+memo:publish:npm:
+  extends: .node:npm:publish
+  stage: release
+  variables:
+    CWD: packages/memo
+    PACKAGE_DIR: ./dist
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual

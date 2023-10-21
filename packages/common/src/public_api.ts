@@ -13,7 +13,6 @@ export * from './annotation/target/annotation-target';
 export * from './annotation/target/annotation-target.factory';
 export * from './annotation/target/annotation-target.impl';
 export * from './annotation/target/bound-annotation-target';
-export * from './annotation/target/target-args';
 // export * from './annotation/trigger/annotation-trigger.registry';
 // export * from './annotation/trigger/annotation-trigger.type';
 export * from './reflect/module/reflect-module-config.type';

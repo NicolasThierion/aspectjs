@@ -1,12 +1,17 @@
 import type { AnnotationsByTypeSelection } from '@aspectjs/common';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type {
-  JoinpointType,
+  PointcutType,
   ToAnnotationType,
 } from './../../pointcut/pointcut-target.type';
 
+import type { CompileAdvice } from './compile.type';
+
+/**
+ * Execution context passed to advices of type {@link CompileAdvice}
+ */
 export interface CompileContext<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
 > {
   /** The annotation contexts **/

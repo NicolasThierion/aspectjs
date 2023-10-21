@@ -6,7 +6,7 @@ import {
 } from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
-import { JoinpointType } from './../../pointcut/pointcut-target.type';
+import { PointcutType } from './../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import { AdviceType } from '../../advice/advice-type.type';
@@ -22,26 +22,26 @@ import { renameFunction } from './canvas.utils';
  */
 export class JitClassCanvasStrategy<
   X = unknown,
-> extends JitWeaverCanvasStrategy<JoinpointType.CLASS, X> {
+> extends JitWeaverCanvasStrategy<PointcutType.CLASS, X> {
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [JoinpointType.CLASS]);
+    super(weaverContext, [PointcutType.CLASS]);
   }
 
   compile(
-    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
     selection: AdvicesSelection,
   ): ConstructorType<X> {
     // if class already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
     let constructor = getMetadata(
-      '@aspectjs:compiledSymbol',
-      ctxt.target.proto,
+      '@ajs:compiledSymbol',
+      ctxt.target.ref,
       () => ctxt.target.proto.constructor,
       true,
     ) as ConstructorType<X>;
 
     const adviceEntries = [
-      ...selection.find([JoinpointType.CLASS], [AdviceType.COMPILE]),
+      ...selection.find([PointcutType.CLASS], [AdviceType.COMPILE]),
     ];
     //  if no class compile advices, return ctor as is
     if (!adviceEntries.length) {
@@ -70,19 +70,19 @@ export class JitClassCanvasStrategy<
         defineMetadata('compiled', true, entry);
       });
 
-    defineMetadata('@aspectjs:compiledSymbol', constructor, ctxt.target.proto);
+    defineMetadata('@ajs:compiledSymbol', constructor, ctxt.target.ref);
     return constructor;
   }
 
   override before(
-    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
     selection: AdvicesSelection,
   ): void {
     super.before(withNullInstance(ctxt), selection);
   }
 
   override callJoinpoint(
-    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
     originalSymbol: ConstructorType<X>,
   ): unknown {
     assert(!!ctxt.args);
@@ -93,8 +93,8 @@ export class JitClassCanvasStrategy<
   }
 
   override link(
-    ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
-    compiledConstructor: CompiledSymbol<JoinpointType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
+    compiledConstructor: CompiledSymbol<PointcutType.CLASS, X>,
     joinpoint: (...args: any[]) => unknown,
   ): ConstructorType<X> {
     assert(!!ctxt.target?.proto);
@@ -114,8 +114,8 @@ export class JitClassCanvasStrategy<
   }
 
   protected override callAdvice(
-    adviceEntry: AdviceEntry<JoinpointType.CLASS>,
-    ctxt: MutableAdviceContext<JoinpointType.CLASS>,
+    adviceEntry: AdviceEntry<PointcutType.CLASS>,
+    ctxt: MutableAdviceContext<PointcutType.CLASS>,
     args: unknown[],
     allowReturn = true,
   ): unknown {
@@ -132,9 +132,9 @@ export class JitClassCanvasStrategy<
  * Void instance, as instance is not reliable before the actual call of the constructor
  */
 function withNullInstance<X>(
-  ctxt: MutableAdviceContext<JoinpointType.CLASS, X>,
-): MutableAdviceContext<JoinpointType.CLASS, X> {
-  return new MutableAdviceContext<JoinpointType.CLASS, X>({
+  ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
+): MutableAdviceContext<PointcutType.CLASS, X> {
+  return new MutableAdviceContext<PointcutType.CLASS, X>({
     ...ctxt,
     instance: null,
   });

@@ -57,7 +57,7 @@ describe('DecoratorProviderRegistry', () => {
         expect(hookedDecorator).toHaveBeenCalled();
       });
 
-      it('preserve static class properties', () => {
+      it('preserves class static properties', () => {
         hookedDecorator = jest.fn(() => function () {});
 
         const AClass = af.create(AnnotationType.CLASS, 'AClass');

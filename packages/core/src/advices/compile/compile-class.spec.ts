@@ -7,7 +7,7 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { AdviceError, JoinpointType } from '../../public_api';
+import { AdviceError, PointcutType } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Compile } from './compile.annotation';
 import { CompileContext } from './compile.context';
@@ -42,7 +42,7 @@ describe('class advice', () => {
     class AAspect {
       @Compile(on.classes.withAnnotations(...aanotations))
       applyCompile(
-        ctxt: CompileContext<JoinpointType.CLASS>,
+        ctxt: CompileContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
         return compileAdviceA.bind(this)(ctxt, ...args);
@@ -53,7 +53,7 @@ describe('class advice', () => {
     class BAspect {
       @Compile(on.classes.withAnnotations(...bannotations))
       applyCompile(
-        ctxt: CompileContext<JoinpointType.CLASS>,
+        ctxt: CompileContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
         return compileAdviceB.bind(this)(ctxt, ...args);
@@ -207,7 +207,7 @@ describe('class advice', () => {
           constructor() {}
         }
         compileAdviceA = jest.fn(
-          (ctxt: CompileContext<JoinpointType.CLASS, A>) => {
+          (ctxt: CompileContext<PointcutType.CLASS, A>) => {
             expect(ctxt.annotations.find().length).toEqual(2);
             const aclassAnnotationContext = ctxt.annotations
               .filter(AClass)

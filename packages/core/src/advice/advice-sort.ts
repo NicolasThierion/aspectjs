@@ -49,12 +49,11 @@ export class AdviceSorter {
     );
 
     return this.annotationRegistry
-      .select()
+      .select(Order)
       .on({
         target: adviceTarget,
         types: [AnnotationType.CLASS, AnnotationType.METHOD],
       })
-      .filter(Order)
       .find({
         searchParents: true,
       })

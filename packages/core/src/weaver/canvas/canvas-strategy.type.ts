@@ -6,21 +6,21 @@ import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 
 import type { JoinPoint } from '../../advice/joinpoint';
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 
 export type CompiledSymbol<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
-> = T extends JoinpointType.CLASS
+> = T extends PointcutType.CLASS
   ? ConstructorType<X>
-  : T extends JoinpointType.METHOD | JoinpointType.PARAMETER
+  : T extends PointcutType.METHOD | PointcutType.PARAMETER
   ? MethodPropertyDescriptor
-  : T extends JoinpointType.GET_PROPERTY | JoinpointType.SET_PROPERTY
+  : T extends PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY
   ? PropertyDescriptor
   : never;
 
 export interface WeaverCanvasStrategy<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
 > {
   compile(

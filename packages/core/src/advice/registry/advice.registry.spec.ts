@@ -6,7 +6,7 @@ import { AdviceType } from './../advice-type.type';
 import { After } from '../../advices/after/after.annotation';
 import { Before } from '../../advices/before/before.annotation';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { AdviceRegistry } from './advice.registry';
 
@@ -173,7 +173,7 @@ describe('AdviceRegisrty', () => {
                 .select({
                   aspects: [Aaspect, Baspect],
                 })
-                .find([JoinpointType.CLASS]),
+                .find([PointcutType.CLASS]),
             ].map(({ aspect, advice }) => {
               return {
                 aspect,
@@ -195,7 +195,7 @@ describe('AdviceRegisrty', () => {
                 .select({
                   aspects: [Aaspect, Baspect],
                 })
-                .find([JoinpointType.CLASS], [AdviceType.AFTER]),
+                .find([PointcutType.CLASS], [AdviceType.AFTER]),
             ].map(({ aspect, advice }) => {
               return {
                 aspect,

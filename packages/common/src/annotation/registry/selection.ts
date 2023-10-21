@@ -85,11 +85,7 @@ export class AnnotationsSelection<S extends AnnotationStub = AnnotationStub> {
     type?: ConstructorType<X> | X,
     propertyKey?: K,
   ): AnnotationsByTypeSelection<AnnotationType.PARAMETER, S, X> {
-    return this.createSelection(
-      [AnnotationType.PARAMETER],
-      type ? getPrototype(type).constructor : undefined,
-      propertyKey,
-    );
+    return this.createSelection([AnnotationType.PARAMETER], type, propertyKey);
   }
 
   private createSelection<

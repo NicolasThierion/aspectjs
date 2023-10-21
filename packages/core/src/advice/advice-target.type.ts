@@ -1,10 +1,12 @@
 import type { AnnotationTarget } from '@aspectjs/common';
 import type {
-  JoinpointType,
+  PointcutType,
   ToAnnotationType,
 } from '../pointcut/pointcut-target.type';
 
 export type AdviceTarget<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
-> = AnnotationTarget<ToAnnotationType<T>, X>;
+> = AnnotationTarget<ToAnnotationType<T>, X> & {
+  eval(): T extends PointcutType.PARAMETER ? never : unknown;
+};

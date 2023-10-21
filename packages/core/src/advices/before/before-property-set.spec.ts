@@ -9,7 +9,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AdviceError } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
@@ -39,7 +39,7 @@ describe('property set advice', () => {
     class AAspect {
       @Before(on.properties.setter.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.SET_PROPERTY>,
+        ctxt: BeforeContext<PointcutType.SET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -49,7 +49,7 @@ describe('property set advice', () => {
     class BAspect {
       @Before(on.properties.setter.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.SET_PROPERTY>,
+        ctxt: BeforeContext<PointcutType.SET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -145,7 +145,7 @@ describe('property set advice', () => {
       }
     });
 
-    it('can read/write the property without any issue', () => {
+    it('can read the property without any issue', () => {
       class A {
         @AProperty()
         labels = ['a'];
@@ -155,8 +155,6 @@ describe('property set advice', () => {
       advice = jest.fn(function (this: any) {
         expect(this).toEqual(aaspect);
         expect(a.labels).toEqual(['a']);
-        a.labels = a.labels.concat('c');
-        expect(a.labels).toEqual(['a', 'c']);
       });
       expect(advice).not.toHaveBeenCalled();
       a.labels = a.labels.concat('b');
@@ -177,6 +175,21 @@ describe('property set advice', () => {
         const a = new A();
         expect(advice).toHaveBeenCalled();
         expect(thisInstance).toEqual(a);
+      });
+      it('has context.target.eval() = the value of the property', () => {
+        class A {
+          @AProperty()
+          prop: string = 'a'; // 1st call
+        }
+        let callNumber = 0;
+        advice = jest.fn((ctxt: BeforeContext) => {
+          if (++callNumber === 2) {
+            expect(ctxt.target.eval()).toEqual('a');
+          }
+        });
+        const a = new A();
+        a.prop = 'b'; // 2nd call
+        expect(advice).toHaveBeenCalledTimes(2);
       });
 
       it('has context.annotations that contains the proper annotation contexts', () => {

@@ -10,7 +10,7 @@ import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AfterThrow } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 
@@ -69,7 +69,7 @@ describe('parameter advice', () => {
     class BAspect {
       @AfterThrow(on.parameters.withAnnotations(...bannotations))
       applyAfterThrow(
-        ctxt: AfterThrowContext<JoinpointType.CLASS>,
+        ctxt: AfterThrowContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
         return afterThrowAdviceB.bind(this)(ctxt, ...args);

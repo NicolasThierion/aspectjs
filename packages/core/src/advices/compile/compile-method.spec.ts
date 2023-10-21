@@ -4,10 +4,11 @@ import 'jest-extended/all';
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
+import { MethodPropertyDescriptor } from '@aspectjs/common/utils';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { AdviceError, JoinpointType } from '../../public_api';
+import { AdviceError, PointcutType } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Compile } from './compile.annotation';
 import { CompileContext } from './compile.context';
@@ -41,7 +42,7 @@ describe('method advice', () => {
     class AAspect {
       @Compile(on.methods.withAnnotations(...aanotations))
       applyCompile(
-        ctxt: CompileContext<JoinpointType.METHOD>,
+        ctxt: CompileContext<PointcutType.METHOD>,
         ...args: unknown[]
       ): void {
         return compileAdviceA.bind(this)(ctxt, ...args);
@@ -52,7 +53,7 @@ describe('method advice', () => {
     class BAspect {
       @Compile(on.methods.withAnnotations(...bannotations))
       applyCompile(
-        ctxt: CompileContext<JoinpointType.METHOD>,
+        ctxt: CompileContext<PointcutType.METHOD>,
         ...args: unknown[]
       ): void {
         return compileAdviceB.bind(this)(ctxt, ...args);
@@ -185,19 +186,25 @@ describe('method advice', () => {
     describe('when multiple "compile" advices are configured', () => {
       it('calls through them one after the other', () => {
         compileAdviceA = jest.fn(function (
-          ctxt: CompileContext<JoinpointType.METHOD>,
+          ctxt: CompileContext<PointcutType.METHOD>,
         ) {
-          const originalMethod = ctxt.target.proto[ctxt.target.propertyKey];
+          const originalMethod = Object.getOwnPropertyDescriptor(
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+          )! as MethodPropertyDescriptor;
           return jest.fn(function (this: any, ...args: string[]) {
-            return [originalMethod.call(this, ...args), 'A'].join('-');
+            return [originalMethod.value.call(this, ...args), 'A'].join('-');
           });
         });
         compileAdviceB = jest.fn(function (
-          ctxt: CompileContext<JoinpointType.METHOD>,
+          ctxt: CompileContext<PointcutType.METHOD>,
         ) {
-          const originalMethod = ctxt.target.proto[ctxt.target.propertyKey];
+          const originalMethod = Object.getOwnPropertyDescriptor(
+            ctxt.target.proto,
+            ctxt.target.propertyKey,
+          )! as MethodPropertyDescriptor;
           return jest.fn(function (this: any, ...args: string[]) {
-            return [originalMethod.call(this, ...args), 'B'].join('-');
+            return [originalMethod.value.call(this, ...args), 'B'].join('-');
           });
         });
 
@@ -233,7 +240,7 @@ describe('method advice', () => {
           }
         }
         compileAdviceA = jest.fn(
-          (ctxt: CompileContext<JoinpointType.CLASS, A>) => {
+          (ctxt: CompileContext<PointcutType.CLASS, A>) => {
             expect(ctxt.annotations.find().length).toEqual(2);
             const aclassAnnotationContext = ctxt.annotations
               .filter(AMethod)

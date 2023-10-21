@@ -1,6 +1,6 @@
 import type { AnnotationType } from '@aspectjs/common';
 
-export enum JoinpointType {
+export enum PointcutType {
   CLASS = 'class',
   METHOD = 'method',
   GET_PROPERTY = 'get property',
@@ -9,14 +9,14 @@ export enum JoinpointType {
   ANY = 'any',
 }
 
-export type ToAnnotationType<T extends JoinpointType> = T extends
-  | JoinpointType.GET_PROPERTY
-  | JoinpointType.SET_PROPERTY
+export type ToAnnotationType<T extends PointcutType> = T extends
+  | PointcutType.GET_PROPERTY
+  | PointcutType.SET_PROPERTY
   ? AnnotationType.PROPERTY
-  : T extends JoinpointType.CLASS
+  : T extends PointcutType.CLASS
   ? AnnotationType.CLASS
-  : T extends JoinpointType.METHOD
+  : T extends PointcutType.METHOD
   ? AnnotationType.METHOD
-  : T extends JoinpointType.PARAMETER
+  : T extends PointcutType.PARAMETER
   ? AnnotationType.PARAMETER
   : any;

@@ -2,11 +2,11 @@ import type { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 import { AdviceType } from '../advice/advice-type.type';
 import type { PointcutExpression } from './pointcut-expression.type';
-import type { JoinpointType } from './pointcut-target.type';
+import type { PointcutType } from './pointcut-target.type';
 
 interface PointcutInit<
   P extends AdviceType,
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
 > {
   readonly type: P;
   readonly expression: PointcutExpression<T>;
@@ -14,28 +14,27 @@ interface PointcutInit<
 
 export class Pointcut<
   P extends AdviceType = AdviceType,
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
 > {
-  readonly joinpointType: T;
+  readonly type: T;
   readonly annotations: AnnotationRef[];
   readonly name: string;
-  readonly type: AdviceType;
+  readonly adviceType: AdviceType;
   private readonly _expr: PointcutExpression;
 
   constructor(pointcutInit: PointcutInit<P, T>) {
     this._expr = pointcutInit.expression;
-    this.type = pointcutInit.type;
-    this.joinpointType = this._expr.type as T;
+    this.adviceType = pointcutInit.type;
+    this.type = this._expr.type as T;
     this.annotations = this._expr.annotations;
     this.name = this._expr.name;
   }
 
-  [Symbol.toPrimitive] = () => `${this.type}(${this._expr})`;
+  [Symbol.toPrimitive] = () => `${this.adviceType}(${this._expr})`;
 
   isAssignableFrom(pointcut: Pointcut): boolean {
     return (
-      pointcut.joinpointType === this.joinpointType &&
-      this.type === pointcut.type
+      pointcut.type === this.type && this.adviceType === pointcut.adviceType
     );
   }
 

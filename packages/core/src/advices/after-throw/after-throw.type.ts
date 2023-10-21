@@ -1,13 +1,13 @@
 import { AdviceType } from '../../advice/advice-type.type';
 import type { AdviceContext } from '../../advice/advice.context';
 import { Pointcut } from '../../pointcut/pointcut';
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 
-export type AfterThrowPointcut<T extends JoinpointType = JoinpointType> =
+export type AfterThrowPointcut<T extends PointcutType = PointcutType> =
   Pointcut<AdviceType.AFTER_THROW, T>;
 
 export type AfterThrowAdvice<
-  T extends JoinpointType = JoinpointType,
+  T extends PointcutType = PointcutType,
   X = unknown,
 > = {
   name: string;

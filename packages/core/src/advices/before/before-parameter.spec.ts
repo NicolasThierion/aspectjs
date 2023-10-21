@@ -10,7 +10,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -45,7 +45,7 @@ describe('parameter advice', () => {
     class AAspect {
       @Before(on.parameters.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.PARAMETER>,
+        ctxt: BeforeContext<PointcutType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -56,7 +56,7 @@ describe('parameter advice', () => {
     class BAspect {
       @Before(on.parameters.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<JoinpointType.PARAMETER>,
+        ctxt: BeforeContext<PointcutType.PARAMETER>,
         ...args: unknown[]
       ): void {
         return badvice.bind(this)(ctxt, ...args);
@@ -263,7 +263,7 @@ describe('parameter advice', () => {
             mImpl(this, arg1, arg2);
           }
         }
-        aadvice = jest.fn((ctxt: BeforeContext<JoinpointType.PARAMETER>) => {
+        aadvice = jest.fn((ctxt: BeforeContext<PointcutType.PARAMETER>) => {
           const aParameterAnnotations = ctxt.annotations
             .filter(AParameter)
             .find();
@@ -275,9 +275,9 @@ describe('parameter advice', () => {
           expect(aParameterAnnotations.length).toEqual(2);
 
           expect(bParameterAnnotations.length).toEqual(1);
-          expect(aParameterAnnotations[0]?.target.value).toEqual('b');
-          expect(bParameterAnnotations[0]?.target.value).toEqual('a');
-          expect(aParameterAnnotations[1]?.target.value).toEqual('a');
+          expect(aParameterAnnotations[0]?.target.eval()).toEqual('b');
+          expect(bParameterAnnotations[0]?.target.eval()).toEqual('a');
+          expect(aParameterAnnotations[1]?.target.eval()).toEqual('a');
         });
         new A().m('a', 'b');
 

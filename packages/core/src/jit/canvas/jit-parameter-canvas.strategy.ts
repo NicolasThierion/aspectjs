@@ -1,4 +1,4 @@
-import { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut-target.type';
 
 import { getMetadata, MethodPropertyDescriptor } from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
@@ -15,31 +15,16 @@ const _defineProperty = Object.defineProperty;
  */
 export class JitParameterCanvasStrategy<
   X = unknown,
-> extends AbstractJitMethodCanvasStrategy<JoinpointType.PARAMETER, X> {
+> extends AbstractJitMethodCanvasStrategy<PointcutType.PARAMETER, X> {
   constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [JoinpointType.PARAMETER]);
+    super(weaverContext, [PointcutType.PARAMETER]);
   }
 
   override compile(
-    ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
+    ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
     selection: AdvicesSelection,
   ): MethodPropertyDescriptor {
     const compiledDescriptor = super.compile(ctxt, selection);
-
-    // save original descriptor.
-    // Used later to prevent Reflect.decorate to restore this descriptor
-    // and cancel the enhanced parameter
-    getMetadata(
-      'aspectjs:originalDescriptor',
-      ctxt.target.proto,
-      ctxt.target.propertyKey,
-      () => {
-        return Reflect.getOwnPropertyDescriptor(
-          ctxt.target.proto,
-          ctxt.target.propertyKey,
-        );
-      },
-    );
 
     return compiledDescriptor;
   }
@@ -47,12 +32,12 @@ export class JitParameterCanvasStrategy<
   protected override getAdviceEntries<P extends AdviceType>(
     selection: AdvicesSelection,
     pointcutType: P,
-  ): AdviceEntry<JoinpointType.PARAMETER, X, P>[] {
-    return [...selection.find([JoinpointType.PARAMETER], [pointcutType])];
+  ): AdviceEntry<PointcutType.PARAMETER, X, P>[] {
+    return [...selection.find([PointcutType.PARAMETER], [pointcutType])];
   }
 
   override link(
-    ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
+    ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
     compiledSymbol: MethodPropertyDescriptor,
     joinpoint: (...args: any[]) => unknown,
   ): MethodPropertyDescriptor {
@@ -63,9 +48,24 @@ export class JitParameterCanvasStrategy<
   }
 }
 function preventRevertMethodDescriptor<X>(
-  ctxt: MutableAdviceContext<JoinpointType.PARAMETER, X>,
+  ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
   methodDescriptor: PropertyDescriptor,
 ) {
+  // save original descriptor.
+  // Used later to prevent Reflect.decorate to restore this descriptor
+  // and cancel the enhanced parameter
+  getMetadata(
+    'aspectjs:originalDescriptor',
+    ctxt.target.proto,
+    ctxt.target.propertyKey,
+    () => {
+      return Reflect.getOwnPropertyDescriptor(
+        ctxt.target.proto,
+        ctxt.target.propertyKey,
+      );
+    },
+  );
+
   // Override method descriptor from parameter decorator is not allowed because return value of parameter decorators are ignored.
   // Moreover, Reflect.decorate will overwrite any changes made on proto[propertyKey]
   // To prevent this, we monkey patch Object.defineProperty;

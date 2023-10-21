@@ -2,7 +2,7 @@ import { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 
 import { Pointcut } from '../../pointcut/pointcut';
-import { JoinpointType } from '../../pointcut/pointcut-target.type';
+import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
 import { AdviceType } from '../advice-type.type';
 import { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
@@ -27,9 +27,9 @@ export class AdvicesSelection {
     );
   }
 
-  find<T extends JoinpointType, P extends AdviceType>(
-    joinpointTypes?: T[],
-    pointcutTypes?: P[],
+  find<T extends PointcutType, P extends AdviceType>(
+    pointcutTypes?: T[],
+    adviceTypes?: P[],
   ): IterableIterator<AdviceEntry<T, unknown, P>> {
     const buckets = this.buckets;
     const filters = this.filters;
@@ -38,9 +38,9 @@ export class AdvicesSelection {
       (this.filters.annotations ?? []).map((a) => AnnotationRef.of(a)),
     );
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const _joinpointTypes: JoinpointType[] = joinpointTypes?.length
-      ? joinpointTypes
-      : (Object.keys(buckets) as JoinpointType[]);
+    const _pointcutTypes: PointcutType[] = pointcutTypes?.length
+      ? pointcutTypes
+      : (Object.keys(buckets) as PointcutType[]);
 
     function* generator() {
       // advice that are applied to multiple pointcuts are merged into a single entry.
@@ -48,14 +48,14 @@ export class AdvicesSelection {
       // We have to remember what entries are generated to avoir generating the same entry twice
       const generatedEntrySet = new Set();
 
-      for (const joinpointType of _joinpointTypes) {
-        const byJoinpointType = buckets[joinpointType] ?? {};
-        const _pointcutTypes = pointcutTypes?.length
-          ? pointcutTypes
-          : (Object.keys(byJoinpointType) as AdviceType[]);
+      for (const pointcutType of _pointcutTypes) {
+        const byPointcutType = buckets[pointcutType] ?? {};
+        const _adviceTypes = adviceTypes?.length
+          ? adviceTypes
+          : (Object.keys(byPointcutType) as AdviceType[]);
 
-        for (const pointcutType of _pointcutTypes) {
-          const map = byJoinpointType[pointcutType];
+        for (const pointcutType of _adviceTypes) {
+          const map = byPointcutType[pointcutType];
           if (map) {
             const adviceEntries = (
               filters.aspects?.length

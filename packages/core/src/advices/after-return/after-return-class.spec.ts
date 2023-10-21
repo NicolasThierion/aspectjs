@@ -10,7 +10,7 @@ import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { JoinpointType } from '../../pointcut/pointcut-target.type';
+import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { AfterReturn } from './after-return.annotation';
 
@@ -186,7 +186,7 @@ describe('class advice', () => {
             constructor(public labels = ['A']) {}
           }
           afterReturnA1 = jest.fn(function (
-            ctxt: AfterReturnContext<JoinpointType.CLASS, A>,
+            ctxt: AfterReturnContext<PointcutType.CLASS, A>,
           ) {
             ctxt.instance.labels = ['B'];
           });

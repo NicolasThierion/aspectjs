@@ -1,0 +1,43 @@
+include:
+  - ci-templates/node.yml
+
+core:lint:
+  variables:
+    CWD: packages/core
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+core:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/core
+  stage: test
+  needs:
+    - node:prepare
+
+core:build:
+  extends: .node:build
+  variables:
+    CWD: packages/core
+  stage: compile
+  needs:
+    - node:prepare
+
+core:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: publish
+  variables:
+    CWD: packages/core
+    PACKAGE_DIR: ./dist
+
+core:publish:npm:
+  extends: .node:npm:publish
+  stage: release
+  variables:
+    CWD: packages/core
+    PACKAGE_DIR: ./dist
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual

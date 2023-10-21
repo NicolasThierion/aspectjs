@@ -1,12 +1,20 @@
 @import './blocks.scss';
 // place your custom styles here
 
+// html[data-theme='light'] #app {
+//   --code-color: #686868;
+//   --code-line-color: rgba(63, 64, 66, 0.67);
+//   --code-bg-color: #f0f5ee;
+//   --code-border-color: #e2ebde;
+//   --code-highlight-line-color: #d3def5;
+// }
+
 html[data-theme='light'] #app {
   --code-color: #686868;
   --code-line-color: rgba(63, 64, 66, 0.67);
-  --code-bg-color: #f0f5ee;
-  --code-border-color: #e2ebde;
-  --code-highlight-line-color: #d3def5;
+  --code-bg-color: #f1f5ed;
+  --code-border-color: #dce0dc;
+  --code-highlight-line-color: #d3e6d3;
 }
 
 html #app {
@@ -16,9 +24,26 @@ html #app {
   h4,
   h5,
   h6 {
-    i {
-      color: var(--theme-color-dark);
+    i,
+    .font-icon.icon {
+      color: var(--theme-color-darker);
     }
-    color: var(--theme-color);
+    color: var(--theme-color-dark);
+  }
+  .nav-item a,
+  .nav-item button,
+  .nav-link.active,
+  .vp-breadcrumb a,
+  #toc .toc-item.active .toc-link {
+    color: var(--theme-color-dark);
+
+    i,
+    .font-icon.icon {
+      color: var(--theme-color-darker);
+    }
+  }
+
+  .theme-hope-content a {
+    color: var(--theme-color-dark);
   }
 }
