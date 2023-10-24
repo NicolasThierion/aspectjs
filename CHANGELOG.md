@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.14](https://github.com/NicolasThierion/aspectjs/compare/v0.3.13...v0.3.14) (2023-10-24)
+
+
+### Bug Fixes
+
+* annotations & aspects works with static methods / properties ([53c0ede](https://github.com/NicolasThierion/aspectjs/commit/53c0ede2ceb0a72b0c76aae4cb5aef2dfde226e0))
+
 ## [0.3.13](https://github.com/NicolasThierion/aspectjs/compare/v0.3.12...v0.3.13) (2023-10-16)
 
 
