@@ -57,7 +57,7 @@ describe('static property get advice', () => {
       }
 
       expect(aadvice).not.toHaveBeenCalled();
-      aadvice = jest.fn(function (this: any, ctxt: BeforeContext) {
+      aadvice = jest.fn(function (this: any, _ctxt: BeforeContext) {
         expect(this).toBe(aaspect);
       });
       const p = A.prop;

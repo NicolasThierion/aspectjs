@@ -92,7 +92,7 @@ export class _PropertyAnnotationTargetImpl<X>
       return this._declaringClassTarget;
     }
 
-    let declaringClassTarget = _ClassAnnotationTargetImpl.of<X>(
+    const declaringClassTarget = _ClassAnnotationTargetImpl.of<X>(
       this.proto.constructor,
     );
     this._declaringClassTarget =

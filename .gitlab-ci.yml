@@ -3,6 +3,7 @@ include:
   - packages/core/.gitlab-ci.yml
   - packages/common/.gitlab-ci.yml
   - packages/memo/.gitlab-ci.yml
+  - packages/persistence/.gitlab-ci.yml
 
 image: node:18-alpine3.14
 

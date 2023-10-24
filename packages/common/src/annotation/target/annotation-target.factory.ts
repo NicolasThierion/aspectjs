@@ -117,9 +117,7 @@ export class AnnotationTargetFactory {
   }
 }
 
-export function inferTypeFromArgs<X = unknown>(
-  ...args: unknown[]
-): AnnotationType;
+export function inferTypeFromArgs(...args: unknown[]): AnnotationType;
 export function inferTypeFromArgs<X = unknown>(
   decoree: ConstructorType<X> | Prototype<X>,
   propertyKey?: string | symbol,

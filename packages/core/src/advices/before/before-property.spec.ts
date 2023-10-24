@@ -172,7 +172,7 @@ describe('property get advice', () => {
       const a = new A();
       advice = jest.fn(function (
         this: any,
-        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        _ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
       ) {
         expect(this).toBe(aaspect);
         a.labels = ['a', 'B'];

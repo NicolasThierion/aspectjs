@@ -56,7 +56,7 @@ describe('static property set advice', () => {
         prop = 'b';
       }
 
-      aadvice = jest.fn(function (this: any, ctxt: BeforeContext) {
+      aadvice = jest.fn(function (this: any, _ctxt: BeforeContext) {
         expect(this).toBe(aaspect);
       });
 

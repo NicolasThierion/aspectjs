@@ -1,0 +1,43 @@
+include:
+  - ci-templates/node.yml
+
+persistence:lint:
+  variables:
+    CWD: packages/persistence
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+persistence:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/persistence
+  stage: test
+  needs:
+    - node:prepare
+
+persistence:build:
+  extends: .node:build
+  variables:
+    CWD: packages/persistence
+  stage: compile
+  needs:
+    - node:prepare
+
+persistence:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: publish
+  variables:
+    CWD: packages/persistence
+    PACKAGE_DIR: ./dist
+
+persistence:publish:npm:
+  extends: .node:npm:publish
+  stage: release
+  variables:
+    CWD: packages/persistence
+    PACKAGE_DIR: ./dist
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual

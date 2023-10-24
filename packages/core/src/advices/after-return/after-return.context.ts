@@ -3,6 +3,7 @@ import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type { ToAnnotationType } from './../../pointcut/pointcut-target.type';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AfterReturnAdvice } from './after-return.type';
 
 /**

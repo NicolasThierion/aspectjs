@@ -17,7 +17,6 @@ describe('static method advice', () => {
   let aadvice: ReturnType<typeof jest.fn>;
   let badvice: ReturnType<typeof jest.fn>;
   let aaspect: any;
-  let mImpl: any;
 
   const AMethod = new AnnotationFactory('test').create(
     AnnotationType.METHOD,
@@ -31,10 +30,9 @@ describe('static method advice', () => {
 
     aadvice = jest.fn();
     badvice = jest.fn();
-    mImpl = jest.fn();
   });
 
-  function setupAspects(aannotations: any[] = [], bannotations: any[] = []) {
+  function setupAspects(aannotations: any[] = []) {
     @Aspect('AMethodLabel')
     class AAspect {
       @Before(on.methods.withAnnotations(...aannotations))

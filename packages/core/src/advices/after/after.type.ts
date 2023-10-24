@@ -17,7 +17,9 @@ export type AfterAdvice<T extends PointcutType = PointcutType, X = unknown> = {
    * The set of pointcuts this advice stops at
    */
   pointcuts: AfterPointcut<T>[];
-} & /**
- * The advice context
- */
-((ctxt: AdviceContext<T, X>) => void);
+} & ((
+  /**
+   * The advice context
+   */
+  ctxt: AdviceContext<T, X>,
+) => void);

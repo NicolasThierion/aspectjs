@@ -5,6 +5,7 @@ import type {
   ToAnnotationType,
 } from './../../pointcut/pointcut-target.type';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { CompileAdvice } from './compile.type';
 
 /**
