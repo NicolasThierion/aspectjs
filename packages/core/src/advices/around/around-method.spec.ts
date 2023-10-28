@@ -48,6 +48,8 @@ describe('method advice', () => {
         ctxt: AroundContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
+        this.someMethod();
+
         return aroundAdviceA.bind(this)(ctxt, ...args);
       }
 
@@ -56,6 +58,8 @@ describe('method advice', () => {
         ctxt: AroundContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
+        this.someMethod();
+
         return aroundAdviceB.bind(this)(ctxt, ...args);
       }
 
@@ -64,8 +68,12 @@ describe('method advice', () => {
         ctxt: AroundContext<PointcutType.CLASS>,
         ...args: unknown[]
       ): void {
+        this.someMethod();
+
         return beforeAdvice.bind(this)(ctxt, ...args);
       }
+
+      someMethod() {}
     }
 
     @Aspect()

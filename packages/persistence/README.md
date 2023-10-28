@@ -4,7 +4,7 @@ icon: database
 
 # @aspectjs/persistence
 
-## <i class="fa fa-question"/> Why ?
+## Why ?
 
 Inspired by the [Java Persistence API](https://docs.oracle.com/javaee/6/tutorial/doc/bnbpz.html), **@aspectjs/persistence** is an attempt to bring standardized persistence annotations to javascript. At the moment, different ORM libraries libraries like [typeorm](https://typeorm.io/) or [mikro orm](https://mikro-orm.io/) bring their own ES decorators to the Object-Relationnal mapping. Altough the decorators are very similar, you cannot switch from one implementation to another without reworking your codebase.
 
@@ -12,20 +12,17 @@ With **@aspectjs/persistence**, persistence libraries could rely on a standardiz
 
 At the moment though, the project only offers a `@Transactional()` annotation, that integrates with _typeorm_.
 
-## <i class="fa fa-download"></i> Installation
+## Installation
 
 ```bash
 npm i @aspectjs/persistence
 ```
 
-**danger** This project is only intended to work on NodeJS
-
-## <i class="fa fa-clock-rotate-left"/> @Transactional()
+## @Transactional()
 
 - Enable the `TransactionalAspect`
 
-:::code-tabs
-@tab aop.ts
+**aop.ts**
 
 ```ts
 import { getWeaver } from '@aspectjs/core';
@@ -35,7 +32,7 @@ import { DATASOURCE } from './datasource.ts';
 getWeaver().enable(new TypeOrmTransactionalAspect().configure(DATASOURCE));
 ```
 
-@tab datasource.ts
+**datasource.ts**
 
 ```ts
 import { DataSource } from 'typeorm';
@@ -52,12 +49,7 @@ export const DATASOURCE = new DataSource({
 //   DATASOURCE.initialize();
 ```
 
-:::
-
 - Declare a transactional method
-
-:::code-tabs
-@tab users.service.ts
 
 ```ts
 import { DATASOURCE } from './datasource.ts';
@@ -78,13 +70,9 @@ export class UsersService {
 }
 ```
 
-:::
-
 ## Usage with NestJS
 
-:::code-tabs
-
-@tab app.module.ts
+**app.module.ts**
 
 ```ts
 import { getWeaver } from '@aspectjs/core';
@@ -125,7 +113,7 @@ import { UsersModule } from './users/users.module';
 export class AppModule {}
 ```
 
-@tab users.service.ts
+**users.service.ts**
 
 ```ts
 import { Transactional } from '@aspectjs/persistence';
@@ -152,5 +140,3 @@ export class UsersService {
   }
 }
 ```
-
-:::
