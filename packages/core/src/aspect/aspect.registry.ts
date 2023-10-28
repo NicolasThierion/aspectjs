@@ -97,12 +97,15 @@ export class AspectRegistry {
     if (!aspect) {
       return;
     }
-    return getMetadata(this._ASPECT_OPTIONS_REFLECT_KEY, getPrototype(aspect));
+    return getMetadata(
+      this._ASPECT_OPTIONS_REFLECT_KEY,
+      Object.getPrototypeOf(aspect),
+    );
   }
 
   private _assertIsAspect(aspect: AspectType) {
     if (!this.isAspect(aspect)) {
-      const proto = getPrototype(aspect);
+      const proto = Object.getPrototypeOf(aspect);
       throw new TypeError(
         `${proto.constructor.name} is not a registered Aspect`,
       );
