@@ -38,7 +38,7 @@ export class ReflectTestingContext extends ReflectContext {
   }
 
   public reset(): this {
-    this.apply(this.baseContext);
+    this.apply(cloneDeep(this.baseContext));
     // remove all providers registered by modules in extraModules
     this.extraModules
       .flatMap((m) => getProviders(m))

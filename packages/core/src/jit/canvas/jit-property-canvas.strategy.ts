@@ -154,12 +154,10 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
   ): CompiledSymbol<PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY, X> {
     // if property already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
-    let propertyDescriptor = getMetadata(
+    let propertyDescriptor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
-      ctxt.target.ref,
       () =>
         ctxt.target.descriptor ?? this.createPropertyDescriptor(ctxt.target),
-      true,
     );
 
     assert(!!ctxt.target.propertyKey);
@@ -172,9 +170,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
     adviceEntries
       //  prevent calling them twice.
-      .filter(
-        (e) => !getMetadata('compiled', ctxt.target.proto, e.id, () => false),
-      )
+      .filter((e) => !ctxt.target.getMetadata(`compiled_${e.id}`, () => false))
       .forEach((entry) => {
         assert(typeof entry.advice === 'function');
         const descriptor = entry.advice.call(
@@ -207,7 +203,7 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
             propertyDescriptor,
           );
         }
-        defineMetadata('compiled', true, ctxt.target.proto, entry.id);
+        ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
 
         return descriptor;
       });

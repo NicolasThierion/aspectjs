@@ -1,5 +1,5 @@
 import { configureTesting } from '@aspectjs/common/testing';
-import { AspectError, getWeaver } from '@aspectjs/core';
+import { AspectError, WeaverModule, getWeaver } from '@aspectjs/core';
 import nodeFetch from 'node-fetch';
 import 'reflect-metadata';
 import 'whatwg-fetch';
@@ -12,33 +12,31 @@ interface IHttpClientApi {
   get(): any;
 }
 
-describe('@Get(<PARAMS>) annotation on a method', () => {
-  let api!: IHttpClientApi;
+describe('@Get() annotation on a method', () => {
   let httpBackend: typeof nodeFetch & jest.SpyInstance;
-
+  let httpClientAspect: HttpClientAspect;
   beforeEach(() => {
     httpBackend = jest.fn((..._args: any[]) => {
       return Promise.resolve(undefined as any);
     });
-    configureTesting();
-    getWeaver().enable(
-      new HttpClientAspect({
-        httpBackend,
-      }),
-    );
-    api = createHttpClientApi();
+    configureTesting(WeaverModule);
+    httpClientAspect = new HttpClientAspect({
+      httpBackend,
+    });
+    getWeaver().enable(httpClientAspect);
   });
 
-  describe('when the class is not annotated with @HttpClient', () => {
+  describe('when the class is not annotated with @HttpClient()', () => {
     it('throws an error', () => {
       class HttpClientApi implements IHttpClientApi {
         @Get()
         get() {}
       }
-      api = new HttpClientApi();
 
+      const api = new HttpClientApi();
       expect(() => api.get()).toThrowError(
         new AspectError(
+          httpClientAspect,
           `class HttpClientApi is missing the @HttpClient annotation`,
         ),
       );
@@ -56,7 +54,7 @@ describe('@Get(<PARAMS>) annotation on a method', () => {
           override get() {}
         }
 
-        api = new HttpClientApi();
+        const api = new HttpClientApi();
 
         jest.fn().mock;
         expect(() => api.get()).not.toThrow();
@@ -66,23 +64,47 @@ describe('@Get(<PARAMS>) annotation on a method', () => {
       });
     });
   });
+  describe('when the class is annotated with @HttpClient({baseUrl})', () => {
+    let api!: IHttpClientApi;
 
-  xdescribe('given no <CONFIG>', () => {
-    it('should call fetch("", { method: "get"})', () => {
-      api.get();
-      expect(httpBackend).toHaveBeenCalled();
-      expect(httpBackend).toHaveBeenCalledWith('/', { method: 'get' });
-    });
-  });
-
-  xdescribe('given a path', () => {
     beforeEach(() => {
-      api = createHttpClientApi({}, 'path');
+      api = createHttpClientApi();
     });
-    it('should call fetch("path", { method: "get"})', () => {
-      api.get();
-      expect(httpBackend).toHaveBeenCalled();
-      expect(httpBackend).toHaveBeenCalledWith('/path', { method: 'get' });
+    describe('given no path', () => {
+      it('should call fetch("", { method: "get"})', () => {
+        api.get();
+        expect(httpBackend).toHaveBeenCalled();
+        expect(httpBackend).toHaveBeenCalledWith('', { method: 'get' });
+      });
+    });
+
+    describe('given argument path to @Get({path})', () => {
+      beforeEach(() => {
+        api = createHttpClientApi({}, 'path');
+      });
+      it('should call fetch("path", { method: "get"})', () => {
+        api.get();
+        expect(httpBackend).toHaveBeenCalled();
+        expect(httpBackend).toHaveBeenCalledWith('path', { method: 'get' });
+      });
+
+      describe('and given argument path baseUrl @HttpClient({baseUrl})', () => {
+        beforeEach(() => {
+          api = createHttpClientApi(
+            {
+              baseUrl: 'baseUrl',
+            },
+            'path',
+          );
+        });
+        it('should call fetch("baseUrl/path", { method: "get"})', () => {
+          api.get();
+          expect(httpBackend).toHaveBeenCalled();
+          expect(httpBackend).toHaveBeenCalledWith('baseUrl/path', {
+            method: 'get',
+          });
+        });
+      });
     });
   });
 

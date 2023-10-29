@@ -193,13 +193,13 @@ export class AdviceRegistry {
     // }
 
     if (processedAnnotations.size) {
-      throw new WeavingError(
-        `Could not enable aspect ${
-          getPrototype(aspect).constructor.name
-        }: Annotations have already been processed: ${[
-          ...processedAnnotations,
-        ].join(',')}`,
-      );
+      const err = `Could not enable aspect ${
+        getPrototype(aspect).constructor.name
+      }: Annotations have already been processed: ${[
+        ...processedAnnotations,
+      ].join(',')}`;
+      assert(false, err);
+      throw new WeavingError(err);
     }
   }
 }

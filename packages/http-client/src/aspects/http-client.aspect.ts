@@ -4,8 +4,9 @@ import {
   AfterReturnContext,
   Aspect,
   AspectError,
+  Before,
   Compile,
-  JoinpointType,
+  PointcutType,
   on,
 } from '@aspectjs/core';
 import { Body } from '../annotations/body.annotation';
@@ -33,7 +34,7 @@ interface EndpointMetadata {
   method: string;
   requestInit?: RequestInit;
 }
-@Aspect()
+@Aspect('@aspectjs/http:client')
 export class HttpClientAspect {
   protected readonly config: HttpClientAspectConfig;
   protected readonly httpBackend!: HttpBackend;
@@ -48,35 +49,33 @@ export class HttpClientAspect {
    */
   @Compile(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
   protected defineEndpointMedatada(
-    ctxt: AfterReturnContext<JoinpointType.METHOD>,
+    ctxt: AfterReturnContext<PointcutType.METHOD>,
   ) {
     const fetchAnnotation = this.findFetchAnnotation(ctxt);
-    ctxt.target.defineMetadata('@aspectjs/http:endpoint', {
-      url: fetchAnnotation.args[0],
+    let url = fetchAnnotation.args[0] ?? '';
+    ctxt.target.defineMetadata('@ajs/http:endpoint', {
+      url,
       method: fetchAnnotation.ref.name.toLowerCase(),
       requestInit: fetchAnnotation.args[1],
     } satisfies EndpointMetadata);
   }
 
-  protected getEndpointMedatada(
-    ctxt: AfterReturnContext<JoinpointType.METHOD>,
-  ): EndpointMetadata {
-    const metadata = ctxt.target.getMetadata<EndpointMetadata>(
-      '@aspectjs/http:endpoint',
-    );
-    assert(!!metadata);
-    return metadata;
-  }
-
   /**
    * Extracts the api metadata from the HttpClient annotation
    */
-  @Compile(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
-  protected defineApiMetadata(ctxt: AfterReturnContext<JoinpointType.METHOD>) {
-    const httpClientAnnotation = this.findHttpClientAnnotation(ctxt);
-    const arg = httpClientAnnotation.args[0];
+  @Before(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
+  protected defineClassMetadata(ctxt: AfterReturnContext<PointcutType.CLASS>) {
+    let metadata = ctxt.target.getMetadata<HttpApiMetadata>('@ajs/http:api');
 
-    const metadata =
+    if (metadata) {
+      return;
+    }
+
+    const httpClientAnnotation = this.findHttpClientAnnotation(ctxt);
+    const [arg] = httpClientAnnotation!.args;
+
+    assert(!!arg);
+    metadata =
       typeof arg === 'string'
         ? {
             baseUrl: arg,
@@ -84,29 +83,51 @@ export class HttpClientAspect {
         : arg ?? {};
 
     ctxt.target.defineMetadata(
-      '@aspectjs/http:api',
+      '@ajs/http:api',
       metadata satisfies HttpApiMetadata,
     );
   }
 
-  protected getApiMetadata(
-    ctxt: AfterReturnContext<JoinpointType.METHOD>,
-  ): HttpApiMetadata {
-    // TODO: write ctxt.target.getOwnMetadata
-    return ctxt.target.getMetadata<EndpointMetadata>('@aspectjs/http:api');
-  }
-
   @AfterReturn(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
   fetch(ctxt: AfterReturnContext) {
-    const apiMetadata = this.getApiMetadata(ctxt);
-
+    const classMetadata = this.getClassMetadata(ctxt);
     const endpointMetadata = this.getEndpointMedatada(ctxt);
-    const config = this.mergeConfig(this.config, apiMetadata, endpointMetadata);
 
-    return config.httpBackend(joinUrls(config.baseUrl, endpointMetadata.url), {
+    const config = this.mergeConfig(
+      this.config,
+      classMetadata,
+      endpointMetadata,
+    );
+
+    const requestInit: RequestInit = {
+      ...config.requestInit,
       method: endpointMetadata.method,
-      body: this.getBody(config, ctxt) as any,
-    } satisfies RequestInit);
+    };
+    const body = this.getBody(config, ctxt);
+    if (body !== undefined) {
+      requestInit.body = body;
+    }
+    return config.httpBackend(
+      joinUrls(config.baseUrl, endpointMetadata.url),
+      requestInit as any,
+    );
+  }
+
+  getEndpointMedatada(
+    ctxt: AfterReturnContext<PointcutType.METHOD>,
+  ): EndpointMetadata {
+    const metadata =
+      ctxt.target.getMetadata<EndpointMetadata>('@ajs/http:endpoint');
+    assert(!!metadata);
+    return metadata;
+  }
+
+  getClassMetadata(
+    ctxt: AfterReturnContext<PointcutType.CLASS>,
+  ): HttpApiMetadata {
+    const metadata = ctxt.target.getMetadata<EndpointMetadata>('@ajs/http:api');
+    assert(!!metadata);
+    return metadata;
   }
 
   protected mergeConfig(
@@ -133,7 +154,7 @@ export class HttpClientAspect {
     ctxt: AfterReturnContext,
   ): BodyInit | null | undefined {
     const body =
-      ctxt.annotations.filter(Body).find()[0]?.target.value ?? undefined;
+      ctxt.annotations.filter(Body).find()[0]?.target.eval() ?? undefined;
     if (body === undefined) {
       return;
     }
@@ -153,6 +174,7 @@ export class HttpClientAspect {
           .find({ searchParents: false }).length > 1
       ) {
         throw new AspectError(
+          this,
           `${
             ctxt.target.label
           } is annotated by multiple fetch annotations: ${fetchAnnotations.join(
@@ -166,16 +188,17 @@ export class HttpClientAspect {
   }
 
   protected findHttpClientAnnotation(ctxt: AfterReturnContext) {
-    const httpClientAnnotations = ctxt.annotations
+    const [httpClientAnnotation] = ctxt.annotations
       .filter(HttpClient)
       .find({ searchParents: true });
-    if (httpClientAnnotations.length < 1) {
+
+    if (!httpClientAnnotation) {
       throw new AspectError(
+        this,
         `${ctxt.target.declaringClass} is missing the ${HttpClient} annotation`,
       );
     }
-
-    return httpClientAnnotations[0]!;
+    return httpClientAnnotation;
   }
 }
 

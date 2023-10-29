@@ -1,12 +1,7 @@
 import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
-import {
-  MethodPropertyDescriptor,
-  assert,
-  defineMetadata,
-  getMetadata,
-} from '@aspectjs/common/utils';
+import { MethodPropertyDescriptor, assert } from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
@@ -35,11 +30,9 @@ export abstract class AbstractJitMethodCanvasStrategy<
   ): CompiledSymbol<T, X> {
     // if method already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
-    let methodDescriptor = getMetadata(
+    let methodDescriptor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
-      ctxt.target.ref,
       () => ctxt.target.descriptor as CompiledSymbol<T, X>,
-      true,
     );
     assert(!!methodDescriptor);
 
@@ -59,9 +52,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
 
     adviceEntries
       //  prevent calling them twice.
-      .filter(
-        (e) => !getMetadata('compiled', ctxt.target.proto, e.id, () => false),
-      )
+      .filter((e) => !ctxt.target.getMetadata(`compiled_${e.id}`, () => false))
       .forEach((entry) => {
         assert(typeof entry.advice === 'function');
         Object.defineProperty(
@@ -93,9 +84,9 @@ export abstract class AbstractJitMethodCanvasStrategy<
             'should return void, a function, or a Method property descriptor',
           );
         }
-        defineMetadata('compiled', true, ctxt.target.proto, entry.id);
+        ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
       });
-    defineMetadata('@ajs:compiledSymbol', methodDescriptor, ctxt.target.ref);
+    ctxt.target.defineMetadata('@ajs:compiledSymbol', methodDescriptor);
     return methodDescriptor;
   }
 
