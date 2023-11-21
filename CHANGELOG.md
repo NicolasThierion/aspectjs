@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.3.16](https://github.com/NicolasThierion/aspectjs/compare/v0.3.15...v0.3.16) (2023-11-21)
+
+
+### Bug Fixes
+
+* doc generation ([e0f69cf](https://github.com/NicolasThierion/aspectjs/commit/e0f69cfd7fb4334af688574ab59ff972930aebc1))
+
 ## [0.3.15](https://github.com/NicolasThierion/aspectjs/compare/v0.3.14...v0.3.15) (2023-10-24)
 
 ## [0.3.14](https://github.com/NicolasThierion/aspectjs/compare/v0.3.13...v0.3.14) (2023-10-24)
