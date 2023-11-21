@@ -123,11 +123,7 @@ export function typedocPluginConfig(): PluginFunction {
         typedocApplication = await Application.bootstrapWithPlugins(opts);
 
         project = (await typedocApplication.convert())!;
-        typedocApplication.generateDocs(project, opts.out);
-
-        async (project) => {
-          typedocApplication.generateDocs(project, opts.out);
-        };
+        await typedocApplication.generateDocs(project, opts.out);
       },
       onWatched(app, watchers, reload) {
         const pagesWatcher = chokidar.watch(
