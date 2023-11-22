@@ -1,7 +1,7 @@
 {
   "name": "@aspectjs/docs",
   "private": true,
-  "version": "0.3.16",
+  "version": "0.3.17",
   "license": "MIT",
   "type": "module",
   "scripts": {
