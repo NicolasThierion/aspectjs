@@ -7,9 +7,9 @@
   "scripts": {
     "start": "npm run docs:dev",
     "clean": "rimraf ./src/.vuepress/.cache ./src/.vuepress/.temp",
-    "docs:build": "vuepress build src --dest dist",
+    "docs:build": "npm run typedoc && vuepress build src --dest dist",
     "docs:clean-dev": "vuepress dev src --clean-cache",
-    "typedoc": "node --loader ts-node/esm ./src/typedoc.ts src",
+    "typedoc": "node --loader ts-node/esm ./src/.vuepress/run-typedoc.ts",
     "docs:dev": "vuepress dev src",
     "docs:update-package": "npx vp-update"
   },
