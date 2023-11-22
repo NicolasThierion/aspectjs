@@ -2,7 +2,7 @@ import chokidar from 'chokidar';
 import { findUpSync } from 'find-up';
 import { readFileSync } from 'fs';
 import { globSync } from 'glob';
-import Handlebars from 'handlebars';
+import { configureTypedoc } from './typedoc';
 import json5 from 'json5';
 import { dirname, join } from 'path';
 import { Application, ProjectReflection, TypeDocOptions } from 'typedoc';
@@ -58,72 +58,12 @@ export function typedocPluginConfig(): PluginFunction {
     // } satisfies Partial<PluginOptions>);
 
     // override helper to exclude ReflectionKind from sidebar
-    const _registerHelper = Handlebars.registerHelper;
-    Handlebars.registerHelper = function (...args): void {
-      if (args[0] === 'reflectionTitle') {
-        return _registerHelper.call(
-          this,
-          'reflectionTitle',
-          function (shouldEscape = true) {
-            const title = [''];
-            title.push(
-              shouldEscape ? escapeChars(this.model.name) : this.model.name,
-            );
-            if (this.model.typeParameters) {
-              const typeParameters = this.model.typeParameters
-                .map((typeParameter) => typeParameter.name)
-                .join(', ');
-              title.push(`<${typeParameters}${shouldEscape ? '\\>' : '>'}`);
-            }
-            return title.join('');
-          },
-        );
-      }
 
-      return _registerHelper.apply(this, args);
-    };
-
-    function escapeChars(str: string) {
-      return str
-        .replace(/>/g, '\\>')
-        .replace(/_/g, '\\_')
-        .replace(/`/g, '\\`')
-        .replace(/\|/g, '\\|');
-    }
-    // const plugin = pluginFn(...args);
-
-    let typedocApplication: Application;
-    let project: ProjectReflection;
-    const opts = {
-      entryPoints,
-      plugin: ['typedoc-plugin-markdown'],
-      includes: entryPoints,
-      tsconfig: `${__dirname}/tsconfig.json`,
-      cleanOutputDir: true,
-      name: 'AspectJS',
-      readme: join(__dirname, 'README.typedoc.md'),
-      excludeInternal: true,
-      excludePrivate: true,
-      excludeExternals: true,
-      groupOrder: ['Modules', 'Variables', 'Functions', '*'],
-      excludeNotDocumented: true,
-      categorizeByGroup: false,
-      // theme: MarkdownTheme,
-      hideParameterTypesInTitle: true,
-      navigation: {
-        includeCategories: false,
-        includeGroups: false,
-      },
-      // Plugin options
-      out: 'src/api',
-    } satisfies Partial<TypeDocOptions>;
+    const project = configureTypedoc();
     const plugin: PluginObject = {
       name: 'my-typedoc',
       async onInitialized(app) {
-        typedocApplication = await Application.bootstrapWithPlugins(opts);
-
-        project = (await typedocApplication.convert())!;
-        await typedocApplication.generateDocs(project, opts.out);
+        await project.generateDocs();
       },
       onWatched(app, watchers, reload) {
         const pagesWatcher = chokidar.watch(
@@ -134,15 +74,15 @@ export function typedocPluginConfig(): PluginFunction {
           },
         );
         pagesWatcher.on('add', async (filePathRelative) => {
-          await typedocApplication.generateDocs(project, opts.out);
+          await project.generateDocs();
           reload();
         });
         pagesWatcher.on('change', async (filePathRelative) => {
-          await typedocApplication.generateDocs(project, opts.out);
+          await project.generateDocs();
           reload();
         });
         pagesWatcher.on('unlink', async (filePathRelative) => {
-          await typedocApplication.generateDocs(project, opts.out);
+          await project.generateDocs();
           reload();
         });
 

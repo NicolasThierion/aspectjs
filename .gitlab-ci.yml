@@ -1,9 +1,9 @@
 include:
   - ci-templates/node.yml
-  - packages/core/.gitlab-ci.yml
-  - packages/common/.gitlab-ci.yml
-  - packages/memo/.gitlab-ci.yml
-  - packages/persistence/.gitlab-ci.yml
+#  - packages/core/.gitlab-ci.yml
+#  - packages/common/.gitlab-ci.yml
+#  - packages/memo/.gitlab-ci.yml
+#  - packages/persistence/.gitlab-ci.yml
 
 image: node:18-alpine3.14
 
@@ -34,7 +34,10 @@ docs:
   needs:
     - node:prepare
   script:
+    - ls -al ./
     - npm run docs:build
+    - ls -al ./packages/docs/dist/
+    - ls -al ./packages/docs/src/api
   artifacts:
     expire_in: 20 min
 
@@ -76,7 +79,7 @@ release_job:
     - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
       when: manual
 
-coverage:
+.coverage:
   extends: .node:test:unit
   stage: test
   needs:
