@@ -32,11 +32,14 @@ getWeaver();
 // @TypeHint('$[*]', User)
 // @TypeHint('$[*].posts[*]', Post)
 // @MapperHint('$[*].posts[*].comment[*]', (r) => new Comment(r))
-class UsersResource {
+abstract class UsersClient {
   @Get()
   getAll() {
     return [new User()];
   }
+
+  @Get(":id/")
+  abstract getOne();
 }
 ```
 
@@ -54,6 +57,38 @@ class Comment {
   msg: string;
 }
 ```
+
+## Server
+
+```ts
+@HttpMapping("/users")
+abstract class UserApi {
+
+  @Get();
+  abstract findAll(): User[];
+
+  @Delete("/:id")
+  abstract deleteOne(id: number): void;
+}
+```
+
+```ts
+@HttpClient()
+class UserClient extends UserApi {
+  override findAll(): User[] {
+    return [new User()];
+  }
+}
+
+@HttpResource()
+class UserResource extends UserApi {
+  override findAll(): User[] {
+    return db.find(User);
+  }
+}
+```
+
+## Manager
 
 ```ts
 @Resource()

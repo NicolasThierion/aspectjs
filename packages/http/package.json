@@ -1,7 +1,7 @@
 {
-  "name": "@aspectjs/http-client",
+  "name": "@aspectjs/http",
   "version": "0.3.8",
-  "description": "AOP based HTTP client",
+  "description": "Http annotations to write HTTP clients & servers powered by AOP",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",
@@ -27,16 +27,16 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/memo.js",
-      "es2020": "./fesm2020/memo.mjs",
-      "node": "./cjs/memo.cjs",
-      "require": "./cjs/memo.cjs",
-      "default": "./cjs/memo.cjs",
-      "unpkg": "./umd/memo.umd.min.js"
+      "esm2020": "./esm2020/http.js",
+      "es2020": "./fesm2020/http.mjs",
+      "node": "./cjs/http.cjs",
+      "require": "./cjs/http.cjs",
+      "default": "./cjs/http.cjs",
+      "unpkg": "./umd/http.umd.min.js"
     }
   },
-  "module": "./fesm2020/memo.mjs",
-  "main": "./umd/memo.umd.min.js",
+  "module": "./fesm2020/http.mjs",
+  "main": "./umd/http.umd.min.js",
   "dependencies": {
     "@emotion/hash": "^0.9.1"
   },

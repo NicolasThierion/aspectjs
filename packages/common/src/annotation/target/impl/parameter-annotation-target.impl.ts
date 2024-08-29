@@ -51,9 +51,9 @@ export class _ParameterAnnotationTargetImpl<X>
       proto,
       argsNames(proto[propertyKey as any])[parameterIndex!] ??
         `#${parameterIndex!}`,
-      `${isStatic ? 'static ' : ''}method ${proto.constructor.name}.${String(
+      `${isStatic ? 'static ' : ''}argument ${proto.constructor.name}.${String(
         propertyKey,
-      )}`,
+      )}[${parameterIndex}]`,
       ref,
       isStatic,
     );

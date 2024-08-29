@@ -1,4 +1,4 @@
-import { Annotation, AnnotationsSelector } from '@aspectjs/common';
+import { AnnotationsByRefSelector } from '@aspectjs/common';
 import type {
   PointcutType,
   ToAnnotationType,
@@ -16,9 +16,9 @@ export interface AfterReturnContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: (
-    ...annotations: Annotation[]
-  ) => AnnotationsSelector<ToAnnotationType<T>>;
+  readonly annotations: AnnotationsByRefSelector<
+    ToAnnotationType<T>
+  >['annotations'];
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

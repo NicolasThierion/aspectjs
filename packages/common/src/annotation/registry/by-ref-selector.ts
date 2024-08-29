@@ -9,6 +9,7 @@ import {
 import { AnnotationTarget } from '../target/annotation-target';
 import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { _AnnotationsSet } from './annotation-set';
+import { AnnotationsSelector } from './selector';
 
 export interface AnnotationsByTypeSelectionOptions {
   /**
@@ -65,9 +66,9 @@ export class AnnotationsByRefSelector<
   }
   annotations<S2 extends AnnotationStub>(
     annotation: Annotation<AnnotationType, S2>,
-  ): AnnotationsByRefSelector<T, S2, X>;
-  annotations(...annotations: Annotation[]): AnnotationsByRefSelector<T, S, X>;
-  annotations(...annotations: Annotation[]): AnnotationsByRefSelector<T, S, X> {
+  ): AnnotationsSelector<T, S2, X>;
+  annotations(...annotations: Annotation[]): AnnotationsSelector<T, S, X>;
+  annotations(...annotations: Annotation[]): AnnotationsSelector<T, S, X> {
     let annotationRefs = this.annotationsRefs;
     if (annotations.length) {
       if (!annotationRefs) {
@@ -81,7 +82,7 @@ export class AnnotationsByRefSelector<
       }
     }
 
-    return new AnnotationsByRefSelector(
+    return new AnnotationsSelector(
       this.targetFactory,
       this.annotationSet,
       annotationRefs,

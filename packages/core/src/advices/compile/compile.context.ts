@@ -1,4 +1,4 @@
-import type { Annotation, AnnotationsSelector } from '@aspectjs/common';
+import type { AnnotationsByRefSelector } from '@aspectjs/common';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type {
   PointcutType,
@@ -16,9 +16,9 @@ export interface CompileContext<
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: (
-    ...annotations: Annotation[]
-  ) => AnnotationsSelector<ToAnnotationType<T>>;
+  readonly annotations: AnnotationsByRefSelector<
+    ToAnnotationType<T>
+  >['annotations'];
   /** The symbol targeted by this advice (class, method, property or parameter **/
   readonly target: AdviceTarget<T, X>;
 
