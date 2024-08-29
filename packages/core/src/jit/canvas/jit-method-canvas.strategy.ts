@@ -1,7 +1,11 @@
 import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
-import { MethodPropertyDescriptor, assert } from '@aspectjs/common/utils';
+import {
+  MethodPropertyDescriptor,
+  _defuseAbstract,
+  assert,
+} from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
@@ -94,9 +98,8 @@ export abstract class AbstractJitMethodCanvasStrategy<
     ctxt: MutableAdviceContext<T, X>,
     originalSymbol: MethodPropertyDescriptor,
   ): unknown {
-    return (ctxt.value = originalSymbol.value.call(
-      ctxt.instance,
-      ...ctxt.args!,
+    return (ctxt.value = _defuseAbstract(() =>
+      originalSymbol.value.call(ctxt.instance, ...ctxt.args!),
     ));
   }
 

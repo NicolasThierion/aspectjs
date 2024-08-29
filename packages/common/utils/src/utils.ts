@@ -1,5 +1,5 @@
 import type { Annotation } from '../../src/annotation/annotation.types';
-import { Prototype } from './types';
+import { Prototype } from './types.util';
 
 export function getPrototype(
   // eslint-disable-next-line @typescript-eslint/ban-types

@@ -1,4 +1,4 @@
-import { assert } from '@aspectjs/common/utils';
+import { _isAbstractToken, assert } from '@aspectjs/common/utils';
 
 import { WeavingError } from '../../errors/weaving.error';
 
@@ -76,7 +76,14 @@ export class JitWeaverCanvas<
         }
       };
 
-      return this.strategy.around(ctxt, selection)(...args);
+      const returnValue = this.strategy.around(ctxt, selection)(...args);
+
+      if (_isAbstractToken(returnValue)) {
+        throw new WeavingError(
+          `${ctxt.target} returned "abstract()" token. "abstract()" is meant to be superseded by a @AfterReturn advice or an @Around advice.`,
+        );
+      }
+      return returnValue;
     };
 
     return {
