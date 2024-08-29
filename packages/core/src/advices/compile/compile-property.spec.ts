@@ -166,12 +166,12 @@ describe('property advice', () => {
         }
         compileAdviceA = jest.fn(
           (ctxt: CompileContext<PointcutType.CLASS, A>) => {
-            expect(ctxt.annotations.find().length).toEqual(2);
-            const aclassAnnotationContext = ctxt.annotations
-              .filter(AProperty)
+            expect(ctxt.annotations().find().length).toEqual(2);
+            const aclassAnnotationContext = ctxt
+              .annotations(AProperty)
               .find()[0];
-            const bclassAnnotationContext = ctxt.annotations
-              .filter(BProperty)
+            const bclassAnnotationContext = ctxt
+              .annotations(BProperty)
               .find()[0];
 
             expect(aclassAnnotationContext).toBeTruthy();

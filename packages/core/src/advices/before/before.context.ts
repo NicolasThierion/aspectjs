@@ -1,4 +1,4 @@
-import { BoundAnnotationsByTypeSelection } from '@aspectjs/common';
+import { Annotation, AnnotationsSelector } from '@aspectjs/common';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type {
   PointcutType,
@@ -16,7 +16,9 @@ export interface BeforeContext<
   X = object,
 > {
   /** The annotation contexts **/
-  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>>;
+  readonly annotations: (
+    ...annotations: Annotation[]
+  ) => AnnotationsSelector<ToAnnotationType<T>>;
   /** The 'this' instance bound to the current execution context */
   readonly instance: T extends PointcutType.CLASS ? never : X;
   /** the arguments originally passed to the joinpoint */

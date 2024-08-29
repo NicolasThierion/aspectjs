@@ -269,9 +269,8 @@ describe('class advice', () => {
           }
         }
         afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aclassAnnotationContext = ctxt.annotations
-            .filter(AClass)
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aclassAnnotationContext = ctxt.annotations(AClass)
             .find()[0];
           expect(aclassAnnotationContext).toBeTruthy();
           expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);

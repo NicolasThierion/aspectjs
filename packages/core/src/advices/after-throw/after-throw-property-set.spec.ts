@@ -267,9 +267,9 @@ describe('property advice', () => {
         }
 
         afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {
-          expect(ctxt.annotations.find().length).toEqual(3);
-          const APropertyAnnotationContext = ctxt.annotations
-            .filter(AProperty)
+          expect(ctxt.annotations().find().length).toEqual(3);
+          const APropertyAnnotationContext = ctxt
+            .annotations(AProperty)
             .find()[0];
           expect(APropertyAnnotationContext).toBeTruthy();
           expect(APropertyAnnotationContext?.args).toEqual(['annotationArg']);

@@ -282,9 +282,9 @@ describe('property setter advice', () => {
           labels = ['a'];
         }
         aroundAdviceA = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aPropertyAnnotationContext = ctxt.annotations
-            .filter(AProperty)
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aPropertyAnnotationContext = ctxt
+            .annotations(AProperty)
             .find()[0];
           expect(aPropertyAnnotationContext).toBeTruthy();
           expect(aPropertyAnnotationContext?.args).toEqual(['annotationArg']);

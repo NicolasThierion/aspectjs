@@ -2,17 +2,17 @@ import { AnnotationRegistry } from './annotation.registry';
 
 import { reflectContext } from '../../reflect/reflect.context.global';
 import type { Annotation, AnnotationStub } from '../annotation.types';
-import { AnnotationsSelection } from './selection';
+import { AnnotationByTargetSelector } from './by-target-selector';
 
 export function getAnnotations<S extends AnnotationStub>(
   annotation: S,
-): AnnotationsSelection<S>;
+): AnnotationByTargetSelector<S>;
 export function getAnnotations<S extends AnnotationStub>(
   ...annotations: S[]
-): AnnotationsSelection<S>;
+): AnnotationByTargetSelector<S>;
 export function getAnnotations(
   ...annotations: Annotation[]
-): AnnotationsSelection {
+): AnnotationByTargetSelector {
   return reflectContext()
     .get(AnnotationRegistry)
     .select(...annotations);

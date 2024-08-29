@@ -95,6 +95,10 @@ export class _MethodAnnotationTargetImpl<X>
     );
   }
 
+  asDecoratorArgs() {
+    return [this.proto, this.propertyKey, this.descriptor];
+  }
+
   get declaringClass() {
     if (this._declaringClassTarget) {
       return this._declaringClassTarget;

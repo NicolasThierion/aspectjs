@@ -98,6 +98,11 @@ export class _PropertyAnnotationTargetImpl<X>
         ),
     );
   }
+
+  asDecoratorArgs() {
+    return [this.proto, this.propertyKey];
+  }
+
   get declaringClass() {
     if (this._declaringClassTarget) {
       return this._declaringClassTarget;

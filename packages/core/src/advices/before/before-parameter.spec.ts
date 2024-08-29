@@ -264,14 +264,10 @@ describe('parameter advice', () => {
           }
         }
         aadvice = jest.fn((ctxt: BeforeContext<PointcutType.PARAMETER>) => {
-          const aParameterAnnotations = ctxt.annotations
-            .filter(AParameter)
-            .find();
-          const bParameterAnnotations = ctxt.annotations
-            .filter(BParameter)
-            .find();
+          const aParameterAnnotations = ctxt.annotations(AParameter).find();
+          const bParameterAnnotations = ctxt.annotations(BParameter).find();
 
-          expect(ctxt.annotations.find().length).toEqual(3);
+          expect(ctxt.annotations().find().length).toEqual(3);
           expect(aParameterAnnotations.length).toEqual(2);
 
           expect(bParameterAnnotations.length).toEqual(1);

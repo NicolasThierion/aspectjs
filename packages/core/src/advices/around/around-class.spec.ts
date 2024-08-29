@@ -297,11 +297,8 @@ describe('class advice', () => {
         }
         aroundAdviceA = jest.fn(
           (ctxt: AroundContext<PointcutType.CLASS, A>) => {
-            expect(ctxt.annotations.find().length).toEqual(2);
-            const aclassAnnotationContext = ctxt.annotations
-              .filter(AClass)
-              .find()[0];
-            console.log(aclassAnnotationContext?.target.eval());
+            expect(ctxt.annotations().find().length).toEqual(2);
+            const aclassAnnotationContext = ctxt.annotations(AClass).find()[0];
             expect(aclassAnnotationContext).toBeTruthy();
             expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
             expect(aclassAnnotationContext!.target.eval()).toBeInstanceOf(A);

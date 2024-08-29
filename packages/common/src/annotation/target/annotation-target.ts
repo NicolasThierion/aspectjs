@@ -26,11 +26,16 @@ export interface BaseAnnotationTarget<
   readonly declaringClass: ClassAnnotationTarget<X>;
   readonly parentClass: ClassAnnotationTarget<unknown> | undefined;
   readonly static: boolean;
+  asDecoratorArgs(): any[];
 
   eval(): unknown;
 
   defineMetadata(key: string, value: any): void;
-  getMetadata<T extends unknown>(key: string, defaultvalue?: () => T): T;
+  getMetadata<T extends unknown>(key: string, defaultvalue: () => T): T;
+  getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: () => T,
+  ): T | undefined;
 }
 
 /**

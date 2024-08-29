@@ -1,11 +1,11 @@
 import {
   _AnnotationTargetImpl,
+  Annotation,
   AnnotationRegistry,
   AnnotationTarget,
   AnnotationTargetFactory,
   AnnotationTargetRef,
   AnnotationType,
-  BindableAnnotationsByTypeSelection,
 } from '@aspectjs/common';
 import {
   assert,
@@ -72,12 +72,12 @@ export class JitWeaver implements Weaver {
     target: _AnnotationTargetImpl<T, X> & AnnotationTarget<T, X>,
   ): void | (new (...args: any[]) => X) | PropertyDescriptor {
     this.enhancedTargets.set(target.ref, target);
-    const annotations = new BindableAnnotationsByTypeSelection(
-      this.annotationRegistry.select().on({
+    const annotations = (...annotations: Annotation[]) => {
+      return this.annotationRegistry.select(...annotations).on({
         target,
         // types: [target.type]
-      }),
-    );
+      });
+    };
 
     const ctxt = new MutableAdviceContext({
       target,
@@ -91,12 +91,13 @@ export class JitWeaver implements Weaver {
     ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
   ): (new (...args: any[]) => X) | void {
     const { target } = ctxt;
-    const annotationsForType = new BindableAnnotationsByTypeSelection(
-      this.annotationRegistry.select().on({
+    const annotationsForType = this.annotationRegistry
+      .select()
+      .on({
         target,
         types: [target.type],
-      }),
-    ).find();
+      })
+      .find();
 
     if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
@@ -123,12 +124,13 @@ export class JitWeaver implements Weaver {
     >,
   ): PropertyDescriptor | void {
     const { target } = ctxt;
-    const annotationsForType = new BindableAnnotationsByTypeSelection(
-      this.annotationRegistry.select().on({
+    const annotationsForType = this.annotationRegistry
+      .select()
+      .on({
         target,
         types: [target.type],
-      }),
-    ).find();
+      })
+      .find();
 
     if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
@@ -153,12 +155,13 @@ export class JitWeaver implements Weaver {
     ctxt: MutableAdviceContext<PointcutType.METHOD, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
-    const annotationsForType = new BindableAnnotationsByTypeSelection(
-      this.annotationRegistry.select().on({
+    const annotationsForType = this.annotationRegistry
+      .select()
+      .on({
         target,
         types: [AnnotationType.METHOD, AnnotationType.PARAMETER],
-      }),
-    ).find();
+      })
+      .find();
     if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,
       // as there are no chances this prop has to be enhanced.
@@ -181,12 +184,13 @@ export class JitWeaver implements Weaver {
     ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
-    const annotationsForType = new BindableAnnotationsByTypeSelection(
-      this.annotationRegistry.select().on({
+    const annotationsForType = this.annotationRegistry
+      .select()
+      .on({
         target,
         types: [target.type],
-      }),
-    ).find();
+      })
+      .find();
 
     if (!annotationsForType.length) {
       // no annotations... Bypass the weaver as a whole,

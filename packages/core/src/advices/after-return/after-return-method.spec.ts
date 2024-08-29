@@ -272,10 +272,8 @@ describe('method advice', () => {
           }
         }
         afterReturnA1 = jest.fn((ctxt: AfterReturnContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const AMethodAnnotationContext = ctxt.annotations
-            .filter(AMethod)
-            .find()[0]!;
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const AMethodAnnotationContext = ctxt.annotations(AMethod).find()[0]!;
           expect(AMethodAnnotationContext).toBeTruthy();
           expect(AMethodAnnotationContext?.args).toEqual(['annotationArg']);
         });

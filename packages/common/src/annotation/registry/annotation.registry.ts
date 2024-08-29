@@ -3,7 +3,7 @@ import { AnnotationRef } from '../annotation-ref';
 import { Annotation } from '../annotation.types';
 import type { AnnotationTargetFactory } from '../target/annotation-target.factory';
 import { _AnnotationsSet } from './annotation-set';
-import { AnnotationsSelection } from './selection';
+import { AnnotationByTargetSelector } from './by-target-selector';
 
 /**
  * Store all registered annotations
@@ -22,14 +22,14 @@ export class AnnotationRegistry {
       | Annotation
       | string
     )[]
-  ): AnnotationsSelection {
+  ): AnnotationByTargetSelector {
     const annotationsFilter = annotations.length
       ? new Set(
           annotations.filter((a) => a !== undefined).map(AnnotationRef.of),
         )
       : undefined;
 
-    return new AnnotationsSelection(
+    return new AnnotationByTargetSelector(
       this.targetFactory,
       this.annotationSet,
       annotationsFilter,

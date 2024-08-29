@@ -33,7 +33,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
     let methodDescriptor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
       () => ctxt.target.descriptor as CompiledSymbol<T, X>,
-    );
+    )!;
     assert(!!methodDescriptor);
 
     //  if no method compile advices, return method is

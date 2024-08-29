@@ -69,6 +69,10 @@ export class _ClassAnnotationTargetImpl<X = unknown>
     );
   }
 
+  asDecoratorArgs() {
+    return [this.proto.constructor];
+  }
+
   public get declaringClass() {
     return this;
   }

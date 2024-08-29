@@ -16,7 +16,7 @@ export class ReflectTestingContext extends ReflectContext {
   private extraModules: ConstructorType[] = [];
   private readonly isInit: boolean;
   baseContext: any;
-  constructor(c: ReflectContext) {
+  constructor(c: ReflectContext = new ReflectContext()) {
     super(c);
     this.baseContext = cloneDeep(c);
     this.isInit = true;

@@ -209,10 +209,8 @@ describe('class advice', () => {
           constructor() {}
         }
         aadvice = jest.fn((ctxt: BeforeContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aclassAnnotationContext = ctxt.annotations
-            .filter(AClass)
-            .find()[0];
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aclassAnnotationContext = ctxt.annotations(AClass).find()[0];
           expect(aclassAnnotationContext).toBeTruthy();
           expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
         });
@@ -225,7 +223,7 @@ describe('class advice', () => {
           constructor(public labels = ['X']) {}
         }
         aadvice = jest.fn((ctxt: BeforeContext) => {
-          const annotation = ctxt.annotations.find()[0];
+          const annotation = ctxt.annotations().find()[0];
           expect(annotation?.ref).toBe(AClass.ref);
           expect(annotation?.target?.eval()).toBe(null);
         });

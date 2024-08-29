@@ -269,9 +269,9 @@ describe('parameter advice', () => {
         }
 
         afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {
-          expect(ctxt.annotations.find().length).toEqual(3);
-          const AParameterAnnotationContext = ctxt.annotations
-            .filter(AParameter)
+          expect(ctxt.annotations().find().length).toEqual(3);
+          const AParameterAnnotationContext = ctxt
+            .annotations(AParameter)
             .find()[0];
           expect(AParameterAnnotationContext).toBeTruthy();
           expect(AParameterAnnotationContext?.args).toEqual(['annotationArg']);

@@ -324,9 +324,9 @@ describe('parameter advice', () => {
           }
         }
         aroundAdviceA1 = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aPropertyAnnotationContext = ctxt.annotations
-            .filter(AParameter)
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aPropertyAnnotationContext = ctxt
+            .annotations(AParameter)
             .find()[0];
           expect(aPropertyAnnotationContext).toBeTruthy();
           expect(aPropertyAnnotationContext?.args).toEqual(['annotationArg']);

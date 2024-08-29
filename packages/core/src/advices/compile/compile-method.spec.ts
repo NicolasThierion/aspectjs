@@ -241,13 +241,9 @@ describe('method advice', () => {
         }
         compileAdviceA = jest.fn(
           (ctxt: CompileContext<PointcutType.CLASS, A>) => {
-            expect(ctxt.annotations.find().length).toEqual(2);
-            const aclassAnnotationContext = ctxt.annotations
-              .filter(AMethod)
-              .find()[0];
-            const bclassAnnotationContext = ctxt.annotations
-              .filter(BMethod)
-              .find()[0];
+            expect(ctxt.annotations().find().length).toEqual(2);
+            const aclassAnnotationContext = ctxt.annotations(AMethod).find()[0];
+            const bclassAnnotationContext = ctxt.annotations(BMethod).find()[0];
 
             expect(aclassAnnotationContext).toBeTruthy();
             expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);

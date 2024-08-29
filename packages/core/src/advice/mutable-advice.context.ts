@@ -7,8 +7,10 @@ import type {
 } from '../pointcut/pointcut-target.type';
 
 import {
+  Annotation,
+  AnnotationsSelector,
   AnnotationTarget,
-  BindableAnnotationsByTypeSelection,
+  BoundAnnotationsSelector,
 } from '@aspectjs/common';
 import type { AfterReturnContext } from '../advices/after-return/after-return.context';
 import type { AfterThrowContext } from '../advices/after-throw/after-throw.context';
@@ -23,7 +25,9 @@ export class MutableAdviceContext<
   X = unknown,
 > {
   /** The annotations contexts **/
-  annotations: BindableAnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  annotations: (
+    ...annotations: Annotation[]
+  ) => AnnotationsSelector<ToAnnotationType<T>>;
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/
@@ -160,10 +164,18 @@ function copyProps<A extends AdviceContext>(
       return res;
     }, {} as A);
 
-  const instance = ctxt.instance;
+  const annotations = newContext.annotations;
+  const newAnnotations: AdviceContext['annotations'] = (
+    ...ans: Annotation[]
+  ) => {
+    const selector = new BoundAnnotationsSelector(
+      annotations(...ans),
+      ctxt.instance,
+      ctxt.args,
+    );
+    return selector;
+  };
 
-  (newContext.annotations as any) = (
-    newContext.annotations as BindableAnnotationsByTypeSelection
-  ).bind(instance, ctxt.args);
+  (newContext.annotations as any) = newAnnotations;
   return newContext;
 }

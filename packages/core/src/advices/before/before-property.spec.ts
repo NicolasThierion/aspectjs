@@ -229,10 +229,8 @@ describe('property get advice', () => {
           prop?: string;
         }
         advice = jest.fn((ctxt: BeforeContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aclassAnnotationContext = ctxt.annotations
-            .filter(AProperty)
-            .find()[0];
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aclassAnnotationContext = ctxt.annotations(AProperty).find()[0];
 
           expect(advice).toHaveBeenCalled();
           expect(aclassAnnotationContext).toBeTruthy();
