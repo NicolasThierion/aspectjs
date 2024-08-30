@@ -10,6 +10,5 @@ export * from './annotations/fetch/put.annotation';
 export * from './annotations/http-client.annotation';
 export * from './annotations/path-variable.annotation';
 export * from './annotations/query-param.annotation';
-export * from './aspects/http-client.aspect';
+export * from './aspects/httyped-client.aspect';
 export * from './fetch-adapter.type';
-export * from './http-client-config.type';

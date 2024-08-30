@@ -1,9 +1,14 @@
 /**
  * @internal
  */
-export type ConstructorType<X = unknown> = {
-  new (...value: any[]): X;
-};
+export type AbstractConstructorType<X = unknown> = abstract new (
+  ...args: any[]
+) => X;
+
+export type ConcreteConstructorType<X = unknown> = new (...value: any[]) => X;
+export type ConstructorType<X = unknown> =
+  | ConcreteConstructorType<X>
+  | AbstractConstructorType<X>;
 
 /**
  * @internal

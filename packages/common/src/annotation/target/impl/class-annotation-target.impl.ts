@@ -23,9 +23,8 @@ export class _ClassAnnotationTargetImpl<X = unknown>
   extends _AnnotationTargetImpl<AnnotationType.CLASS, X>
   implements ClassAnnotationTarget<X>
 {
-  protected override [BOUND_INSTANCE_SYMBOL]?: X;
-  protected override [BOUND_VALUE_SYMBOL]?: X;
-  override proto!: Prototype<X>;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: X;
   private _parentClass?: ClassAnnotationTarget;
 
   private constructor(proto: Prototype<X>, ref: AnnotationTargetRef) {

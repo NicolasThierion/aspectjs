@@ -12,7 +12,7 @@ describe('@Before property advice', () => {
 
       class A {
         @EarlyAnnotation()
-        prop = 'p';
+        declare prop: string;
       }
 
       const advice = jest.fn(() => {});

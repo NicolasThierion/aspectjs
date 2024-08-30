@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts", "./index.ts"],
+  "compilerOptions": {
+    "lib": ["DOM", "ES2015", "ES2021"],
+    "paths": {
+      "@aspectjs/common": ["../common/src/public_api.ts"],
+      "@aspectjs/common/testing": ["../common/testing/src/public_api.ts"],
+      "@aspectjs/common/utils": ["../common/utils/src/public_api.ts"],
+      "@aspectjs/core": ["../core/src/public_api.ts"],
+      "@aspectjs/core/testing": ["../core/testing/src/public_api.ts"]
+    }
+  }
+}

@@ -102,7 +102,10 @@ describe('property setter advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       aroundAdviceA = jest.fn(function (this: any) {
@@ -118,7 +121,7 @@ describe('property setter advice', () => {
     it('calls through each matching advice once', () => {
       class A {
         @AProperty()
-        labels: any;
+        declare labels: any;
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
@@ -148,7 +151,10 @@ describe('property setter advice', () => {
     it('calls through the advice once', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
@@ -184,7 +190,10 @@ describe('property setter advice', () => {
       it('does not set the property', () => {
         class A {
           @AProperty()
-          labels = ['a'];
+          declare labels: string[];
+          constructor() {
+            this.labels = ['a'];
+          }
         }
 
         const a = new A();
@@ -219,7 +228,10 @@ describe('property setter advice', () => {
     it('does not interfere with property getter', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       const a = new A();
@@ -248,7 +260,10 @@ describe('property setter advice', () => {
           class A {
             @AProperty()
             @BProperty()
-            labels = ['a'];
+            declare labels: string[];
+            constructor() {
+              this.labels = ['a'];
+            }
           }
 
           new A();
@@ -263,13 +278,15 @@ describe('property setter advice', () => {
       it('has context.instance = the class instance', () => {
         class A {
           @AProperty()
-          labels = ['a'];
+          declare labels: string[];
+          constructor() {
+            this.labels = ['a'];
+          }
         }
         aroundAdviceA = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
         });
         const a = new A();
-        a.labels;
 
         expect(thisInstance).toBe(a);
         expect(aroundAdviceA).toHaveBeenCalled();

@@ -31,8 +31,8 @@ export class _ParameterAnnotationTargetImpl<X>
   readonly propertyKey: string | symbol;
   readonly descriptor: MethodPropertyDescriptor;
   readonly parameterIndex: number;
-  protected override [BOUND_INSTANCE_SYMBOL]?: X;
-  protected override [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
 
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
   private _methodTarget?: MethodAnnotationTarget<X>;

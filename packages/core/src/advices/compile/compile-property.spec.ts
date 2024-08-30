@@ -122,7 +122,7 @@ describe('property advice', () => {
           expect(() => {
             class A {
               @AProperty()
-              prop = 'A';
+              declare prop: string;
             }
           }).toThrow(AdviceError);
         });
@@ -140,7 +140,10 @@ describe('property advice', () => {
           });
           class A {
             @AProperty()
-            prop = 'A';
+            declare prop: string;
+            constructor() {
+              this.prop = 'A';
+            }
             get m(): any {
               return;
             }

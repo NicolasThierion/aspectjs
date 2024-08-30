@@ -80,7 +80,7 @@ export class JitClassCanvasStrategy<
   ): unknown {
     assert(!!ctxt.args);
     assert(!!ctxt.instance);
-    const newInstance = new originalSymbol(...ctxt.args!);
+    const newInstance = Reflect.construct(originalSymbol, ctxt.args!);
     Object.assign(ctxt.instance as any, newInstance);
     return (ctxt.value = ctxt.instance);
   }

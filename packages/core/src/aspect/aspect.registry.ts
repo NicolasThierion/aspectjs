@@ -25,13 +25,16 @@ export class AspectRegistry {
   private readonly _ASPECT_OPTIONS_REFLECT_KEY = `@aspectjs/AspectRegistry@${_globalRegId++}`;
   private readonly aspectsMap = new Map<string, AspectType[]>();
 
-  private readonly annotationTargetFactory = this.weaverContext.get(
-    AnnotationTargetFactory,
-  );
+  private readonly annotationTargetFactory: AnnotationTargetFactory;
+  private readonly adviceReg: AdviceRegistry;
 
-  private readonly adviceReg = this.weaverContext.get(AdviceRegistry);
+  constructor(private readonly weaverContext: WeaverContext) {
+    this.annotationTargetFactory = this.weaverContext.get(
+      AnnotationTargetFactory,
+    );
 
-  constructor(private readonly weaverContext: WeaverContext) {}
+    this.adviceReg = this.weaverContext.get(AdviceRegistry);
+  }
   /**
    *
    * An object  is considered an aspect if its class or one of its parent
@@ -89,12 +92,14 @@ export class AspectRegistry {
     this.registerAdvices(aspect);
   }
 
-  getAspects<T = AspectType>(
+  getAspects<T = unknown>(
     aspect?: string | ConstructorType<T>,
-  ): AspectType[] {
-    return aspect
-      ? this.aspectsMap.get(getAspectId(aspect)) ?? []
-      : [...this.aspectsMap.values()].flatMap((a) => a);
+  ): (T & AspectType)[] {
+    return (
+      aspect
+        ? this.aspectsMap.get(getAspectId(aspect)) ?? []
+        : [...this.aspectsMap.values()].flatMap((a) => a)
+    ) as (T & AspectType)[];
   }
 
   private registerAdvices(aspect: AspectType) {
@@ -141,5 +146,5 @@ function coerceAspectOptions(
 function getAspectId(aspect: AspectType | string): string {
   return typeof aspect === 'string'
     ? aspect
-    : Object.getPrototypeOf(aspect).constructor.name;
+    : getPrototype(aspect).constructor.name;
 }

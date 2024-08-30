@@ -7,9 +7,9 @@ import { AnnotationByTargetSelector } from './by-target-selector';
 export function getAnnotations<S extends AnnotationStub>(
   annotation: S,
 ): AnnotationByTargetSelector<S>;
-export function getAnnotations<S extends AnnotationStub>(
-  ...annotations: S[]
-): AnnotationByTargetSelector<S>;
+export function getAnnotations(
+  ...annotations: Annotation[]
+): AnnotationByTargetSelector;
 export function getAnnotations(
   ...annotations: Annotation[]
 ): AnnotationByTargetSelector {

@@ -17,22 +17,17 @@ export const _defuseAbstract = (receipe: () => {}) => {
       return val;
     }
 
-    if (
-      _isAbstractToken(val) &&
-      (val as AbstractToken).counter - abstractCounter !== 0
-    ) {
-      // abstact was used once, as a return value
-      return val;
+    const multipleAbstractCalls =
+      (_isAbstractToken(val) &&
+        (val as AbstractToken).counter - abstractCounter !== 0) ||
+      (_abstractThrows && abstractCounter - _abstractCounter !== 1);
+    if (multipleAbstractCalls) {
+      throw new Error(
+        '"abstract()" placeholder should only be used as a return value.',
+      );
     }
 
-    if (!_abstractThrows || abstractCounter - _abstractCounter === 1) {
-      // abstract was used more than once, in case of nested calls
-      return val;
-    }
-
-    throw new Error(
-      '"abstract()" placeholder should only be used as a return value.',
-    );
+    return val;
   } finally {
     abstractThrows = _abstractThrows;
   }

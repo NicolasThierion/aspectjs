@@ -68,7 +68,11 @@ describe('property set advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -89,7 +93,10 @@ describe('property set advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -105,7 +112,10 @@ describe('property set advice', () => {
     it('calls the advice before the property is set', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -124,7 +134,7 @@ describe('property set advice', () => {
     it('is not allowed to return', () => {
       class A {
         @AProperty()
-        prop?: string;
+        declare prop?: string;
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -148,7 +158,10 @@ describe('property set advice', () => {
     it('can read the property without any issue', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       const a = new A();
@@ -167,7 +180,10 @@ describe('property set advice', () => {
       it('has context.instance = the instance that owns the property', () => {
         class A {
           @AProperty()
-          labels = ['a'];
+          declare labels: string[];
+          constructor() {
+            this.labels = ['a'];
+          }
         }
         advice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
@@ -179,7 +195,11 @@ describe('property set advice', () => {
       it('has context.target.eval() = the value of the property', () => {
         class A {
           @AProperty()
-          prop: string = 'a'; // 1st call
+          declare prop: string;
+
+          constructor() {
+            this.prop = 'a'; // 1st call
+          }
         }
         let callNumber = 0;
         advice = jest.fn((ctxt: BeforeContext) => {

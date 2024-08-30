@@ -4,6 +4,7 @@ import 'jest-extended/all';
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
+import { ConcreteConstructorType } from '@aspectjs/common/utils';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
@@ -170,7 +171,8 @@ describe('class advice', () => {
     describe('when multiple "compile" advices are configured', () => {
       it('calls through them one after the other', () => {
         compileAdviceA = jest.fn(function (ctxt: CompileContext) {
-          const originalCtor = ctxt.target.proto.constructor;
+          const originalCtor = ctxt.target.proto
+            .constructor as ConcreteConstructorType;
           return jest.fn(function (this: any, label: string) {
             Object.assign(this, new originalCtor(label));
             this.name ??= label;
@@ -178,7 +180,8 @@ describe('class advice', () => {
           });
         });
         compileAdviceB = jest.fn(function (ctxt: CompileContext) {
-          const originalCtor = ctxt.target.proto.constructor;
+          const originalCtor = ctxt.target.proto
+            .constructor as ConcreteConstructorType;
           return jest.fn(function (this: any, label: string) {
             Object.assign(this, new originalCtor(label));
             this.name ??= label;

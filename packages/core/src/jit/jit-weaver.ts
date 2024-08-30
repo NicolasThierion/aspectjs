@@ -38,17 +38,20 @@ export class JitWeaver implements Weaver {
     [AnnotationType.PARAMETER]: this.enhanceParameter.bind(this),
   };
 
-  private readonly annotationRegistry =
-    this.weaverContext.get(AnnotationRegistry);
-  private readonly aspectRegistry = this.weaverContext.get(AspectRegistry);
-  private readonly adviceRegistry = this.weaverContext.get(AdviceRegistry);
+  private readonly annotationRegistry: AnnotationRegistry;
+  private readonly aspectRegistry: AspectRegistry;
+  private readonly adviceRegistry: AdviceRegistry;
   private readonly enhancedTargets = new WeakMap<
     AnnotationTargetRef,
     AnnotationTarget
   >();
   private lastAnnotationsCount = 0;
 
-  constructor(private readonly weaverContext: WeaverContext) {}
+  constructor(private readonly weaverContext: WeaverContext) {
+    this.annotationRegistry = this.weaverContext.get(AnnotationRegistry);
+    this.aspectRegistry = this.weaverContext.get(AspectRegistry);
+    this.adviceRegistry = this.weaverContext.get(AdviceRegistry);
+  }
 
   enable(...aspects: AspectType[]): this {
     aspects.forEach((aspect) => {
@@ -62,15 +65,15 @@ export class JitWeaver implements Weaver {
     return this;
   }
 
-  getAspects<T = AspectType>(
+  getAspects<T = unknown>(
     aspect?: string | ConstructorType<T>,
-  ): AspectType[] {
+  ): (T & AspectType)[] {
     return this.aspectRegistry.getAspects(aspect);
   }
 
   enhance<T extends AnnotationType, X = unknown>(
     target: _AnnotationTargetImpl<T, X> & AnnotationTarget<T, X>,
-  ): void | (new (...args: any[]) => X) | PropertyDescriptor {
+  ): void | ConstructorType<X> | PropertyDescriptor {
     this.enhancedTargets.set(target.ref, target);
     const annotations = (...annotations: Annotation[]) => {
       return this.annotationRegistry.select(...annotations).on({
@@ -89,7 +92,7 @@ export class JitWeaver implements Weaver {
 
   private enhanceClass<X>(
     ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-  ): (new (...args: any[]) => X) | void {
+  ): ConstructorType<X> | void {
     const { target } = ctxt;
     const annotationsForType = this.annotationRegistry
       .select()

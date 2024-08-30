@@ -16,5 +16,5 @@ export interface Weaver {
    * @param aspect - The aspect id or constructor to find.
    * @returns The aspects maching the given id, or an empty array if no aspects found. Returns all aspects if no parameter given.
    */
-  getAspects<T = AspectType>(aspect?: string | (new () => T)): AspectType[];
+  getAspects<T = AspectType>(aspect?: string | (new () => T)): T[];
 }

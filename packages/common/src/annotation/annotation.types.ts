@@ -5,6 +5,7 @@ import type { AnnotationRef } from './annotation-ref';
 /**
  * Type of an annotation.
  */
+// TODO: rename to AnnotationKind
 export enum AnnotationType {
   CLASS = 0b0001,
   PROPERTY = 0b0010,

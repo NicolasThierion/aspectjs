@@ -38,8 +38,8 @@ export class _PropertyAnnotationTargetImpl<X>
 
   readonly propertyKey: string | symbol;
   readonly descriptor: PropertyDescriptor;
-  override [BOUND_INSTANCE_SYMBOL]?: X;
-  override [BOUND_VALUE_SYMBOL]?: () => unknown;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: () => unknown;
 
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
   private constructor(

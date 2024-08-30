@@ -1,7 +1,10 @@
+import '../url-canparse.polyfill';
+
 import {
   AnnotationContext,
   AnnotationType,
   BoundAnnotationContext,
+  getAnnotations,
 } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 import {
@@ -20,48 +23,48 @@ import {
   FETCH_ANNOTATIONS,
   FetchAnnotationContext,
 } from '../annotations/fetch/fetch-annotations';
-import { HttpClient } from '../annotations/http-client.annotation';
+import { HttypedClient } from '../annotations/http-client.annotation';
+import { Type } from '../annotations/type.annotation';
+import { HttypedClientConfig } from '../client-factory/client-config.type';
 import { FetchAdapter } from '../fetch-adapter.type';
-import { HttpClientConfig } from '../http-client-config.type';
-import { Mapper } from '../mapper.type';
+import { HttpClassMetadata } from '../http-class-metadata.type';
+import { HttpEndpointMetadata } from '../http-endpoint-metadata.type';
+import { Mapper, MapperContext } from '../mapper.type';
 
-export interface HttpClientAspectConfig extends HttpClientConfig {
+/**
+ * @deprecated
+ */
+export interface HttpClientAspectConfig extends HttypedClientConfig {
   fetchAdapter?: FetchAdapter;
   responseBodyMappers?: Mapper[];
   requestBodyMappers?: Mapper[];
 }
 
-export interface HttpClassMetadata extends HttpClientConfig {}
-export interface HttpEndpointMetadata {
-  url?: string;
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head' | 'option';
-  requestInit?: RequestInit;
-}
-
-const DEFAULT_ASPECT_CONFIG = {
-  baseUrl: '',
-  requestInit: {},
-  fetchAdapter: fetch,
-  requestBodyMappers: [],
-  responseBodyMappers: [],
-} satisfies Required<HttpClientAspectConfig>;
-
-interface BodyMetadata {
-  type: any;
-}
-
 @Aspect('@aspectjs/http:client')
-export class HttpClientAspect {
-  protected readonly config: Required<HttpClientAspectConfig>;
-  protected readonly fetchAdapter: FetchAdapter;
+export class HttypedClientAspect {
+  constructor() {}
 
-  constructor(config?: HttpClientAspectConfig | string) {
-    this.config = coerceConfig(config);
-    this.fetchAdapter = this.config.fetchAdapter ?? fetch;
+  defineClientConfig<T>(clientInstance: T, config: HttypedClientConfig): T {
+    const ctor = Object.getPrototypeOf(clientInstance).constructor;
+    const httypedAnnotation = getAnnotations(HttypedClient)
+      .onClass(ctor)
+      .find({ searchParents: true });
+
+    if (!httypedAnnotation.length) {
+      throw new AspectError(
+        this,
+        `class ${ctor.name} is missing the ${HttypedClient} annotation`,
+      );
+    }
+
+    Reflect.defineMetadata('@ajs/http:client-config', config, clientInstance!);
+    return clientInstance;
   }
 
   @Before(on.parameters.withAnnotations(Body))
-  protected assertBodyImpliesFetch(ctxt: BeforeContext) {
+  protected assertBodyImpliesFetch(
+    ctxt: BeforeContext<PointcutType.PARAMETER>,
+  ) {
     if (ctxt.target.getMetadata('@ajs/http:assertBodyImpliesFetch')) {
       return;
     }
@@ -76,32 +79,38 @@ export class HttpClientAspect {
 
   @AfterReturn(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
   protected fetch(ctxt: AfterReturnContext) {
-    let config =
-      ctxt.target.getMetadata<Required<HttpClientAspectConfig>>(
-        '@ajs/http:config',
-      );
+    let config = this.getClientConfig(ctxt);
+    if (!config) {
+      // not received a client config = not created through the HttypedClientFactory.
+      return;
+    }
+
     const endpointMetadata = this.getEndpointMedatada(ctxt);
     const classMetadata = this.getClassMetadata(ctxt);
 
-    if (!config) {
-      config = this.mergeConfig(this.config, classMetadata, endpointMetadata);
-
-      ctxt.target.defineMetadata('@ajs/http:config', config);
-    }
+    const endpointConfig = this.mergeConfig(
+      config,
+      classMetadata,
+      endpointMetadata,
+    );
 
     const requestInit: RequestInit = {
-      ...config.requestInit,
+      ...endpointConfig.requestInit,
       method: endpointMetadata.method,
     };
 
-    const body = this.serializeRequestBody(config, ctxt);
+    const body = this.serializeRequestBody(endpointConfig, ctxt);
     if (body !== undefined) {
       requestInit.body = body;
     }
-    return config.fetchAdapter(
-      joinUrls(config.baseUrl, endpointMetadata.url),
+    return endpointConfig.fetchAdapter(
+      joinUrls(endpointConfig.baseUrl, endpointMetadata.url),
       requestInit as any,
     );
+  }
+
+  protected getClientConfig(ctxt: AfterReturnContext) {
+    return Reflect.getMetadata('@ajs/http:client-config', ctxt.instance!);
   }
 
   /**
@@ -163,14 +172,13 @@ export class HttpClientAspect {
   }
 
   protected mergeConfig(
-    config: Required<HttpClientAspectConfig>,
-    classConfig: HttpClientConfig,
+    config: Required<HttypedClientConfig>,
+    classConfig: HttpClassMetadata,
     endpointMetadata: HttpEndpointMetadata,
-  ): Required<HttpClientAspectConfig> {
-    const baseUrl =
-      classConfig.baseUrl && classConfig.baseUrl.match('.*://.*')
-        ? classConfig.baseUrl
-        : joinUrls(config.baseUrl, classConfig.baseUrl);
+  ): Required<HttypedClientConfig> {
+    const baseUrl = URL.canParse(classConfig.baseUrl ?? '')
+      ? classConfig.baseUrl!
+      : joinUrls(config.baseUrl, classConfig.baseUrl);
     return {
       ...config,
       ...classConfig,
@@ -212,9 +220,9 @@ export class HttpClientAspect {
    * @returns the method body
    */
   protected serializeRequestBody(
-    config: Required<HttpClientAspectConfig>,
+    config: Required<HttypedClientConfig>,
     ctxt: AdviceContext,
-  ): BodyInit | null | undefined {
+  ): BodyInit | undefined {
     const bodyAnnotation = this.findBodyAnnotation(ctxt);
     if (bodyAnnotation === undefined) {
       return;
@@ -225,10 +233,19 @@ export class HttpClientAspect {
     if (typeof body === undefined) {
       return;
     }
-
+    const typeHint =
+      ctxt.annotations(Type).find({ searchParents: true })[0]?.args[0] ??
+      (
+        bodyAnnotation.target.parent.getMetadata(
+          'design:paramtypes',
+        ) as unknown[]
+      )[bodyAnnotation.target.parameterIndex];
+    const context: MapperContext = {
+      typeHint,
+    };
     for (let mapper of config.requestBodyMappers) {
-      if (mapper.accepts(body)) {
-        body = mapper.map(body);
+      if (mapper.accepts(body, context)) {
+        body = mapper.map(body, context);
         break;
       }
     }
@@ -259,43 +276,31 @@ export class HttpClientAspect {
     const fetchAnnotation = fetchAnnotations[0];
 
     if (!fetchAnnotation) {
-      throw new AspectError(
-        this,
-        `${ctxt.target.label} is missing a fetch annotation`,
-      );
+      const label =
+        ctxt.target.type === AnnotationType.PARAMETER
+          ? ctxt.target.parent.label
+          : ctxt.target.label;
+
+      throw new AspectError(this, `${label} is missing a fetch annotation`);
     }
     return fetchAnnotation;
   }
 
   protected findHttpClientAnnotation(
     ctxt: AdviceContext,
-  ): AnnotationContext<AnnotationType.CLASS, typeof HttpClient> {
+  ): AnnotationContext<AnnotationType.CLASS, typeof HttypedClient> {
     const [httpClientAnnotation] = ctxt
-      .annotations(HttpClient)
+      .annotations(HttypedClient)
       .find({ searchParents: true });
 
     if (!httpClientAnnotation) {
       throw new AspectError(
         this,
-        `${ctxt.target.declaringClass} is missing the ${HttpClient} annotation`,
+        `${ctxt.target.declaringClass} is missing the ${HttypedClient} annotation`,
       );
     }
     return httpClientAnnotation;
   }
-}
-
-function coerceConfig(
-  config?: Partial<HttpClientAspectConfig> | string,
-): Required<HttpClientAspectConfig> {
-  return typeof config === 'string'
-    ? {
-        ...DEFAULT_ASPECT_CONFIG,
-        baseUrl: config,
-      }
-    : {
-        ...DEFAULT_ASPECT_CONFIG,
-        ...config,
-      };
 }
 
 function joinUrls(...paths: (string | undefined)[]): string {

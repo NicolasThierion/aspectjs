@@ -74,7 +74,10 @@ describe('property get advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        declare prop: string;
+        constructor() {
+          this.prop = 'p';
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -108,7 +111,10 @@ describe('property get advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        declare prop: string;
+        constructor() {
+          this.prop = 'p';
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -148,7 +154,10 @@ describe('property get advice', () => {
     it('is not allowed to return', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        declare prop: string;
+        constructor() {
+          this.prop = 'p';
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -172,7 +181,10 @@ describe('property get advice', () => {
     it('can write the property without any issue', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       const a = new A();
@@ -197,7 +209,7 @@ describe('property get advice', () => {
       it('has context.instance = the instance that owns the property', () => {
         class A {
           @AProperty()
-          prop?: string;
+          declare prop: string;
         }
         advice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
@@ -211,7 +223,11 @@ describe('property get advice', () => {
       it('has context.target.eval() = the value of the property', () => {
         class A {
           @AProperty()
-          prop: string = 'a';
+          declare prop: string;
+
+          constructor() {
+            this.prop = 'a';
+          }
         }
         advice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.target.eval()).toEqual('a');

@@ -1,11 +1,11 @@
 {
-  "name": "@aspectjs/http",
+  "name": "httyped-client",
   "version": "0.3.8",
-  "description": "Http annotations to write HTTP clients & servers powered by AOP",
+  "description": "An AOP powered typesafe http client, inspired by Retrofit library for java",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",
-    "directory": "packages/http"
+    "directory": "packages/httyped-client"
   },
   "scripts": {
     "test": "npm run clean && npm run test:lint && npm run test:unit",
@@ -27,25 +27,23 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/http.js",
-      "es2020": "./fesm2020/http.mjs",
-      "node": "./cjs/http.cjs",
-      "require": "./cjs/http.cjs",
-      "default": "./cjs/http.cjs",
-      "unpkg": "./umd/http.umd.min.js"
+      "esm2020": "./esm2020/httyped.js",
+      "es2020": "./fesm2020/httyped.mjs",
+      "node": "./cjs/httyped.cjs",
+      "require": "./cjs/httyped.cjs",
+      "default": "./cjs/httyped.cjs",
+      "unpkg": "./umd/httyped.umd.min.js"
     }
   },
-  "module": "./fesm2020/http.mjs",
-  "main": "./umd/http.umd.min.js",
-  "dependencies": {
-    "@emotion/hash": "^0.9.1"
-  },
+  "module": "./fesm2020/httyped.mjs",
+  "main": "./umd/httyped.umd.min.js",
   "devDependencies": {
-    "@types/whatwg-fetch": "^0.0.33",
+    "bun": "^1.1.26",
     "jest": "^29.5.0",
+    "tsx": "^4.19.0",
     "whatwg-fetch": "^3.6.2"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@aspectjs/common": "^0.3.2",
     "@aspectjs/core": "^0.3.2"
   }

@@ -28,8 +28,8 @@ export class _MethodAnnotationTargetImpl<X>
 {
   readonly propertyKey: string | symbol;
   readonly descriptor: MethodPropertyDescriptor;
-  protected override [BOUND_INSTANCE_SYMBOL]?: X;
-  protected override [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
 
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
 

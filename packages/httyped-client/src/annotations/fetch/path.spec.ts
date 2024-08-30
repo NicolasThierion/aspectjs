@@ -2,11 +2,13 @@ import 'reflect-metadata';
 import 'whatwg-fetch';
 
 import { configureTesting } from '@aspectjs/common/testing';
-import { AspectError, WeaverModule, getWeaver } from '@aspectjs/core';
+import { abstract } from '@aspectjs/common/utils';
+import { AspectError, getWeaver, WeaverModule } from '@aspectjs/core';
 import nodeFetch from 'node-fetch';
-import { HttpClientAspect } from '../../aspects/http-client.aspect';
-import { HttpClientConfig } from '../../http-client-config.type';
-import { HttpClient } from '../http-client.annotation';
+import { HttypedClientAspect } from '../../aspects/httyped-client.aspect';
+import { HttypedClientConfig } from '../../client-factory/client-config.type';
+import { HttypedClientFactory } from '../../client-factory/client.factory';
+import { HttypedClient } from '../http-client.annotation';
 import { Delete } from './delete.annotation';
 import { Get } from './get.annotation';
 import { Head } from './head.annotation';
@@ -60,55 +62,63 @@ describe.each([
 ])(
   '$annotationName(<path>) annotation on a method',
   ({ annotation, method }) => {
-    let httpBackend: typeof nodeFetch & jest.SpyInstance;
-    let httpClientAspect: HttpClientAspect;
+    let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
+    let httypedClientFactory: HttypedClientFactory;
+    let httypedClientAspect: HttypedClientAspect;
+
     beforeEach(() => {
-      httpBackend = jest.fn((..._args: any[]) => {
+      fetchAdapter = jest.fn((..._args: any[]) => {
         return Promise.resolve(undefined as any);
       });
       configureTesting(WeaverModule);
-      httpClientAspect = new HttpClientAspect({
-        fetchAdapter: httpBackend,
+      httypedClientAspect = new HttypedClientAspect();
+      getWeaver().enable(httypedClientAspect);
+      httypedClientFactory = new HttypedClientFactory({
+        fetchAdapter: fetchAdapter,
         baseUrl: ASPECT_BASE_URL,
       });
-      getWeaver().enable(httpClientAspect);
     });
 
-    describe('when the class is not annotated with @HttpClient()', () => {
+    describe(`when the class is not annotated with @${HttypedClient.name}()`, () => {
       it('throws an error', () => {
-        class HttpClientApi implements IHttpClientApi {
+        abstract class HttpClientApi implements IHttpClientApi {
           @annotation()
-          method() {}
+          async method(): Promise<object> {
+            return abstract<object>();
+          }
         }
 
-        const api = new HttpClientApi();
-        expect(() => api.method()).toThrowError(
+        expect(() => httypedClientFactory.create(HttpClientApi)).toThrowError(
           new AspectError(
-            httpClientAspect,
-            `class HttpClientApi is missing the @HttpClient annotation`,
+            httypedClientAspect,
+            `class HttpClientApi is missing the @${HttypedClient.name} annotation`,
           ),
         );
       });
       describe('but parent class is', () => {
         it('uses the config from the parent class', () => {
-          @HttpClient({
+          @HttypedClient({
             baseUrl: 'http://example.com',
           })
-          class HttpClientApiParent implements IHttpClientApi {
-            method() {}
+          abstract class HttpClientApiParent implements IHttpClientApi {
+            method() {
+              return abstract<object>();
+            }
           }
-          class HttpClientApi extends HttpClientApiParent {
+          abstract class HttpClientApi extends HttpClientApiParent {
             @annotation()
-            override method() {}
+            override method() {
+              return abstract<object>();
+            }
           }
 
-          const api = new HttpClientApi();
+          const api = httypedClientFactory.create(HttpClientApi);
 
           jest.fn().mock;
           expect(() => api.method()).not.toThrow();
-          expect(httpBackend).toHaveBeenCalled();
-          expect(httpBackend.mock.calls[0][0]).toEqual('http://example.com');
-          expect(httpBackend.mock.calls[0][1].method).toEqual(method);
+          expect(fetchAdapter).toHaveBeenCalled();
+          expect(fetchAdapter.mock.calls[0][0]).toEqual('http://example.com');
+          expect(fetchAdapter.mock.calls[0][1].method).toEqual(method);
         });
       });
     });
@@ -124,8 +134,8 @@ describe.each([
       describe('given no <path> argument', () => {
         it('calls fetch("", { method: "get"})', () => {
           api.method();
-          expect(httpBackend).toHaveBeenCalled();
-          expect(httpBackend).toHaveBeenCalledWith(ASPECT_BASE_URL, {
+          expect(fetchAdapter).toHaveBeenCalled();
+          expect(fetchAdapter).toHaveBeenCalledWith(ASPECT_BASE_URL, {
             method,
           });
         });
@@ -135,8 +145,8 @@ describe.each([
         beforeEach(() => (api = createHttpClientApi({}, 'path')));
         it('calls fetch("<path>", { method: "get"})', () => {
           api.method();
-          expect(httpBackend).toHaveBeenCalled();
-          expect(httpBackend).toHaveBeenCalledWith(`${ASPECT_BASE_URL}/path`, {
+          expect(fetchAdapter).toHaveBeenCalled();
+          expect(fetchAdapter).toHaveBeenCalledWith(`${ASPECT_BASE_URL}/path`, {
             method,
           });
         });
@@ -144,16 +154,18 @@ describe.each([
     });
 
     function createHttpClientApi(
-      httpClientConfig?: HttpClientConfig,
+      httpClientConfig?: HttypedClientConfig,
       path?: string,
     ) {
-      @HttpClient({ ...httpClientConfig })
-      class HttpClientApi {
+      @HttypedClient({ ...httpClientConfig })
+      abstract class HttpClientApi {
         @annotation(path)
-        method() {}
+        method() {
+          return abstract<object>();
+        }
       }
 
-      return new HttpClientApi();
+      return httypedClientFactory.create(HttpClientApi);
     }
   },
 );

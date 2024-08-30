@@ -5,6 +5,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "outDir": "./out-tsc/spec",
+    "lib": ["DOM", "ES2021"],
     "types": ["jest", "node"],
     "noUnusedLocals": false,
     "noUnusedParameters": false,
