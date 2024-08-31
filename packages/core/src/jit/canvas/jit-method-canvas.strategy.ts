@@ -40,7 +40,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
     )!;
     assert(!!methodDescriptor);
 
-    //  if no method compile advices, return method is
+    //  if no method compile advices, return method as is
     const adviceEntries = this.getAdviceEntries(selection, AdviceType.COMPILE);
     if (!adviceEntries.length) {
       return methodDescriptor;

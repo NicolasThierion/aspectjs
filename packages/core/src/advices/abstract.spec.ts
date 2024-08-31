@@ -28,15 +28,10 @@ describe('"abstract()" value placeholder', () => {
     describe('that is advised with a @AfterReturn advice', () => {
       let x: { m: () => any };
       beforeEach(() => {
-        const InterceptReturn = new AnnotationFactory('test').create(
-          'InterceptReturn',
-        );
-        class X {
-          @InterceptReturn()
-          m() {
-            return abstract<object>();
-          }
-        }
+        const af = new AnnotationFactory('test');
+
+        const InterceptReturn = af.create('InterceptReturn');
+        const NoInterceptReturn = af.create('NoInterceptReturn');
 
         configureTesting(WeaverModule);
 
@@ -48,6 +43,13 @@ describe('"abstract()" value placeholder', () => {
           }
         }
         getWeaver().enable(new InterceptAbstractReturnAspect());
+        class X {
+          @InterceptReturn()
+          m(@NoInterceptReturn() arg?: any) {
+            return abstract<object>();
+          }
+        }
+
         x = new X();
       });
       it('does not throw', () => {
