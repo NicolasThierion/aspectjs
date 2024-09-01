@@ -1,10 +1,6 @@
+import { AnnotationTargetFactory } from '@aspectjs/common';
 import {
-  AnnotationRegistry,
-  AnnotationTarget,
-  AnnotationTargetFactory,
-  AnnotationType,
-} from '@aspectjs/common';
-import {
+  assert,
   ConstructorType,
   defineMetadata,
   getMetadata,
@@ -15,15 +11,18 @@ import {
 import { AdviceRegistry } from '../advice/registry/advice.registry';
 import { WeavingError } from '../errors/weaving.error';
 import { WeaverContext } from '../weaver/context/weaver.context';
-import { Aspect } from './aspect.annotation';
 
-import type { AspectOptions } from './aspect-options.type';
-import { ASPECT_ID_SYMBOL, AspectType } from './aspect.type';
+import {
+  ASPECT_ID_SYMBOL,
+  AspectType,
+  getAspectMetadata,
+  isAspect,
+} from './aspect.type';
 let _globalRegId = 0;
 
 export class AspectRegistry {
-  private readonly _ASPECT_OPTIONS_REFLECT_KEY = `@aspectjs/AspectRegistry@${_globalRegId++}`;
-  private readonly aspectsMap = new Map<string, AspectType[]>();
+  private readonly _ASPECT_REGSTERED_REFLECT_KEY = `@aspectjs/AspectRegistry@${_globalRegId++}`;
+  private readonly aspectsMap = new Map<string, AspectType>();
 
   private readonly annotationTargetFactory: AnnotationTargetFactory;
   private readonly adviceReg: AdviceRegistry;
@@ -37,30 +36,19 @@ export class AspectRegistry {
   }
   /**
    *
-   * An object  is considered an aspect if its class or one of its parent
+   * An object is considered a registered aspect if its class or one of its parent
    * has been annotated with the `@Aspect` annotation,
    * plus it has been registered against this registry.
    * @param aspect
    * @returns true if the given parameter is an aspect
    */
-  isAspect(aspect: AspectType): boolean {
-    return !!this.__getAspectOptions(aspect);
+  isRegistered(aspect: AspectType): boolean {
+    return !!this.__isAspectRegistered(aspect);
   }
 
-  getAspectOptions(aspect: AspectType): AspectOptions {
-    this._assertIsAspect(aspect);
-    return this.__getAspectOptions(aspect)!;
-  }
-
-  register(aspect: AspectType, aspectOptions: AspectOptions = {}) {
-    const target = this.annotationTargetFactory.of<AspectType>(aspect);
-    const [annotation] = this.weaverContext
-      .get(AnnotationRegistry)
-      .select(Aspect)
-      .on({ target })
-      .find({ searchParents: true });
-
-    if (!annotation) {
+  register(aspect: AspectType) {
+    if (!isAspect(aspect)) {
+      const target = this.annotationTargetFactory.of<AspectType>(aspect);
       throw new WeavingError(`${target.label} is not an aspect`);
     } else if (!isClassInstance(aspect)) {
       throw new TypeError(
@@ -70,26 +58,27 @@ export class AspectRegistry {
       );
     }
 
-    if (this.isAspect(aspect)) {
+    if (this.isRegistered(aspect)) {
       throw new WeavingError(
         `Aspect "${getPrototype(aspect)?.constructor
           ?.name}" has already been registered`,
       );
     }
 
-    aspectOptions = coerceAspectOptions(target, annotation.args[0]);
-    const id = getAspectId(aspect);
-    const as = this.aspectsMap.get(id) ?? [];
-    as.push(aspect);
-    this.aspectsMap.set(id, as);
-    defineMetadata(
-      this._ASPECT_OPTIONS_REFLECT_KEY,
-      aspectOptions,
-      getPrototype(aspect),
-    );
+    const aspectOptions = getAspectMetadata(aspect);
+    this.__defineRegistered(aspect);
+
+    const id = aspectOptions.id;
+    assert(!!id, 'Aspect options must have an id');
+    const as = this.aspectsMap.get(id);
+    if (as) {
+      this.adviceReg.unregister(id);
+    }
+    this.aspectsMap.set(id, aspect);
+
     aspect[ASPECT_ID_SYMBOL] = id;
 
-    this.registerAdvices(aspect);
+    this.adviceReg.register(aspect);
   }
 
   getAspects<T = unknown>(
@@ -102,45 +91,12 @@ export class AspectRegistry {
     ) as (T & AspectType)[];
   }
 
-  private registerAdvices(aspect: AspectType) {
-    this.adviceReg.register(aspect);
+  private __isAspectRegistered(aspect: AspectType) {
+    return getMetadata<boolean>(this._ASPECT_REGSTERED_REFLECT_KEY, aspect);
   }
-
-  private __getAspectOptions(aspect: AspectType): AspectOptions | undefined {
-    if (!aspect) {
-      return;
-    }
-    return getMetadata(
-      this._ASPECT_OPTIONS_REFLECT_KEY,
-      Object.getPrototypeOf(aspect),
-    );
+  private __defineRegistered(aspect: AspectType) {
+    return defineMetadata(this._ASPECT_REGSTERED_REFLECT_KEY, true, aspect);
   }
-
-  private _assertIsAspect(aspect: AspectType) {
-    if (!this.isAspect(aspect)) {
-      const proto = Object.getPrototypeOf(aspect);
-      throw new TypeError(
-        `${proto.constructor.name} is not a registered Aspect`,
-      );
-    }
-  }
-}
-
-let _globalAspectId = 0;
-
-function coerceAspectOptions(
-  aspectTarget: AnnotationTarget<AnnotationType.CLASS, AspectType>,
-  idOrOptions: unknown,
-): Required<AspectOptions> {
-  const options: AspectOptions =
-    typeof idOrOptions === 'object' ? { ...idOrOptions } : {};
-
-  options.id =
-    typeof idOrOptions === 'string'
-      ? idOrOptions
-      : options.id ??
-        `${aspectTarget.proto.constructor.name}#${_globalAspectId++}`;
-  return options as Required<AspectOptions>;
 }
 
 function getAspectId(aspect: AspectType | string): string {

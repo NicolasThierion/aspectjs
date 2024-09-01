@@ -1,5 +1,3 @@
-import '../url-canparse.polyfill';
-
 import {
   AnnotationContext,
   AnnotationType,
@@ -24,21 +22,18 @@ import {
   FetchAnnotationContext,
 } from '../annotations/fetch/fetch-annotations';
 import { HttypedClient } from '../annotations/http-client.annotation';
+import { PathVariable } from '../annotations/path-variable.annotation';
 import { Type } from '../annotations/type.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
-import { FetchAdapter } from '../fetch-adapter.type';
-import { HttpClassMetadata } from '../http-class-metadata.type';
-import { HttpEndpointMetadata } from '../http-endpoint-metadata.type';
-import { Mapper, MapperContext } from '../mapper.type';
-
-/**
- * @deprecated
- */
-export interface HttpClientAspectConfig extends HttypedClientConfig {
-  fetchAdapter?: FetchAdapter;
-  responseBodyMappers?: Mapper[];
-  requestBodyMappers?: Mapper[];
-}
+import {
+  MissingPathVariableError,
+  PathVariableNotMatchedError,
+} from '../client-factory/path-variables-handler.type';
+import { HttpClassMetadata } from '../types/http-class-metadata.type';
+import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
+import { MapperContext } from '../types/mapper.type';
+import type { Request } from '../types/request-handler.type';
+import '../url-canparse.polyfill';
 
 @Aspect('@aspectjs/http:client')
 export class HttypedClientAspect {
@@ -94,22 +89,99 @@ export class HttypedClientAspect {
       endpointMetadata,
     );
 
-    const requestInit: RequestInit = {
+    let url = joinUrls(endpointConfig.baseUrl, endpointMetadata.url);
+
+    url = this.replacePathVariables(url, endpointConfig, ctxt);
+
+    let requestInit: Request = {
       ...endpointConfig.requestInit,
       method: endpointMetadata.method,
+      url,
     };
-
     const body = this.serializeRequestBody(endpointConfig, ctxt);
     if (body !== undefined) {
       requestInit.body = body;
     }
-    return endpointConfig.fetchAdapter(
-      joinUrls(endpointConfig.baseUrl, endpointMetadata.url),
-      requestInit as any,
+
+    requestInit = this.applyRequestHandlers(config, requestInit);
+    url = requestInit.url;
+
+    delete (requestInit as Partial<Request> & RequestInit).url;
+
+    return this.callHttpAdapter(endpointConfig, url, requestInit).then(
+      async (r) => this.applyResponseHandlers(config, r as Response),
     );
   }
+  callHttpAdapter(
+    endpointConfig: Required<HttypedClientConfig>,
+    url: string,
+    requestInit: RequestInit,
+  ) {
+    return endpointConfig.fetchAdapter(url, requestInit as any);
+  }
+  protected replacePathVariables(
+    url: string,
+    endpointConfig: Required<HttypedClientConfig>,
+    ctxt: AfterReturnContext<PointcutType, unknown>,
+  ): string {
+    const variableHandler = endpointConfig.pathVariablesHandler;
 
-  protected getClientConfig(ctxt: AfterReturnContext) {
+    const variables = ctxt
+      .annotations(PathVariable)
+      .find({ searchParents: true })
+      .reduce(
+        (variables, annotation) => {
+          return {
+            ...variables,
+            [annotation.args[0]]: annotation.target.eval(),
+          };
+        },
+        {} as Record<string, any>,
+      );
+
+    try {
+      return variableHandler.replace(url, variables);
+    } catch (e) {
+      if (e instanceof MissingPathVariableError) {
+        throw new AspectError(
+          this,
+          `${PathVariable}(${e.variable}) parameter is missing for ${ctxt.target.label}`,
+        );
+      } else if (e instanceof PathVariableNotMatchedError) {
+        throw new AspectError(
+          this,
+          `${PathVariable}(${e.variable}) parameter of ${ctxt.target.label} does not match url ${url}`,
+        );
+      } else {
+        throw e;
+      }
+    }
+  }
+  protected applyRequestHandlers(
+    config: Required<HttypedClientConfig>,
+    requestInit: Request,
+  ) {
+    for (const h of config.requestHandlers) {
+      requestInit = h(requestInit) ?? requestInit;
+    }
+    return requestInit;
+  }
+
+  protected async applyResponseHandlers(
+    config: Required<HttypedClientConfig>,
+    response: Response,
+  ): Promise<any> {
+    let mappedResponse: any;
+    for (const handler of config.responseHandler) {
+      mappedResponse = await handler(response);
+    }
+
+    return mappedResponse;
+  }
+
+  protected getClientConfig(
+    ctxt: AfterReturnContext,
+  ): Required<HttypedClientConfig> {
     return Reflect.getMetadata('@ajs/http:client-config', ctxt.instance!);
   }
 
@@ -240,10 +312,13 @@ export class HttypedClientAspect {
           'design:paramtypes',
         ) as unknown[]
       )[bodyAnnotation.target.parameterIndex];
+
+    const mappers = config.requestBodyMappers;
     const context: MapperContext = {
       typeHint,
+      mappers,
     };
-    for (let mapper of config.requestBodyMappers) {
+    for (let mapper of mappers) {
       if (mapper.accepts(body, context)) {
         body = mapper.map(body, context);
         break;

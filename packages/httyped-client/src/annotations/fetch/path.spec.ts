@@ -8,58 +8,16 @@ import nodeFetch from 'node-fetch';
 import { HttypedClientAspect } from '../../aspects/httyped-client.aspect';
 import { HttypedClientConfig } from '../../client-factory/client-config.type';
 import { HttypedClientFactory } from '../../client-factory/client.factory';
+import { ALL_FETCH_ANNOTATIONS } from '../../test-helpers/all-fetch-annotations.helper';
 import { HttypedClient } from '../http-client.annotation';
-import { Delete } from './delete.annotation';
-import { Get } from './get.annotation';
-import { Head } from './head.annotation';
-import { Option } from './option.annotation';
-import { Patch } from './patch.annotation';
-import { Post } from './post.annotation';
-import { Put } from './put.annotation';
 
 interface IHttpClientApi {
   method(): any;
 }
 
-const ASPECT_BASE_URL = 'protocol://aspectBaseUrl';
+const TEST_BASE_URL = 'http://testBaseUrl';
 
-describe.each([
-  {
-    annotation: Get,
-    annotationName: `${Get}`,
-    method: 'get',
-  },
-  {
-    annotation: Post,
-    annotationName: `${Post}`,
-    method: 'post',
-  },
-  {
-    annotation: Put,
-    annotationName: `${Put}`,
-    method: 'put',
-  },
-  {
-    annotation: Delete,
-    annotationName: `${Delete}`,
-    method: 'delete',
-  },
-  {
-    annotation: Patch,
-    annotationName: `${Patch}`,
-    method: 'patch',
-  },
-  {
-    annotation: Option,
-    annotationName: `${Option}`,
-    method: 'option',
-  },
-  {
-    annotation: Head,
-    annotationName: `${Head}`,
-    method: 'head',
-  },
-])(
+describe.each(ALL_FETCH_ANNOTATIONS)(
   '$annotationName(<path>) annotation on a method',
   ({ annotation, method }) => {
     let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
@@ -68,14 +26,14 @@ describe.each([
 
     beforeEach(() => {
       fetchAdapter = jest.fn((..._args: any[]) => {
-        return Promise.resolve(undefined as any);
+        return Promise.resolve(new Response('{}') as any);
       });
       configureTesting(WeaverModule);
       httypedClientAspect = new HttypedClientAspect();
       getWeaver().enable(httypedClientAspect);
       httypedClientFactory = new HttypedClientFactory({
+        baseUrl: TEST_BASE_URL,
         fetchAdapter: fetchAdapter,
-        baseUrl: ASPECT_BASE_URL,
       });
     });
 
@@ -127,15 +85,15 @@ describe.each([
 
       beforeEach(() => (api = createHttpClientApi()));
 
-      it('returns a promise', () => {
+      it('returns a promise', async () => {
         expect(api.method()).toEqual(expect.any(Promise));
       });
 
       describe('given no <path> argument', () => {
-        it('calls fetch("", { method: "get"})', () => {
-          api.method();
+        it(`calls fetch("", { method: ${method}})`, async () => {
+          await api.method();
           expect(fetchAdapter).toHaveBeenCalled();
-          expect(fetchAdapter).toHaveBeenCalledWith(ASPECT_BASE_URL, {
+          expect(fetchAdapter).toHaveBeenCalledWith(TEST_BASE_URL, {
             method,
           });
         });
@@ -143,10 +101,10 @@ describe.each([
 
       describe('given a <path> argument', () => {
         beforeEach(() => (api = createHttpClientApi({}, 'path')));
-        it('calls fetch("<path>", { method: "get"})', () => {
-          api.method();
+        it(`calls fetch("<path>", { method: ${method}})`, async () => {
+          await api.method();
           expect(fetchAdapter).toHaveBeenCalled();
-          expect(fetchAdapter).toHaveBeenCalledWith(`${ASPECT_BASE_URL}/path`, {
+          expect(fetchAdapter).toHaveBeenCalledWith(`${TEST_BASE_URL}/path`, {
             method,
           });
         });
@@ -154,7 +112,7 @@ describe.each([
     });
 
     function createHttpClientApi(
-      httpClientConfig?: HttypedClientConfig,
+      httpClientConfig?: Partial<HttypedClientConfig>,
       path?: string,
     ) {
       @HttypedClient({ ...httpClientConfig })

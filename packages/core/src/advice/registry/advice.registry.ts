@@ -14,7 +14,7 @@ import { WeaverContext } from '../../weaver/context/weaver.context';
 import { AdvicesSelection } from './advices-selection.model';
 
 import { CompileAdvice } from '../../advices/compile/compile.type';
-import type { AspectType } from '../../aspect/aspect.type';
+import { getAspectMetadata, type AspectType } from '../../aspect/aspect.type';
 import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
 import { AdviceType } from '../advice-type.type';
@@ -59,71 +59,89 @@ export class AdviceRegistry {
     const aspectCtor = getPrototype(aspect).constructor;
 
     const advices: Advice[] = [];
-    const processedAdvices = new Map<string, Pointcut[]>();
+    const processedAdvicesMap = new Map<string, Pointcut[]>();
     // find advices annotations
-    this.weaverContext
+    const adviceAnnotations = this.weaverContext
       .get(AnnotationRegistry)
       .select(...KNOWN_POINTCUT_ANNOTATION_REFS)
       .onMethod(aspectCtor)
-      .find({ searchParents: true })
-      .forEach((pointcutAnnotation) => {
-        const advice: Advice = pointcutAnnotation.target.descriptor
-          .value as Advice;
+      .find({ searchParents: true });
 
-        const type = KNOWN_ADVICE_TYPES[pointcutAnnotation.ref.name]!;
-        assert(!!type);
+    adviceAnnotations.forEach((adviceAnnotation) => {
+      const advice: Advice = adviceAnnotation.target.descriptor.value as Advice;
 
-        advice.pointcuts ??= [];
+      const type = KNOWN_ADVICE_TYPES[adviceAnnotation.ref.name]!;
+      assert(!!type);
 
-        // do not process advice if it has been processed on a child class already
-        let processedPointcuts = processedAdvices.get(advice.name)!;
-        if (!processedPointcuts) {
-          processedPointcuts = [];
-          processedAdvices.set(advice.name, processedPointcuts);
-          Reflect.defineProperty(advice, Symbol.toPrimitive, {
-            value: () =>
-              [...advice.pointcuts]
-                .map((p) => `@${p.adviceType}(${p.annotations.join(',')})`)
-                .join('|') +
-              ` ${aspect.constructor.name}.${String(advice.name)}()`,
-          });
+      advice.pointcuts ??= [];
 
-          Reflect.defineProperty(advice, 'name', {
-            value: advice.name,
-          });
+      // do not process advice if it has been processed on a child class already
+      let processedAdvices = processedAdvicesMap.get(advice.name)!;
+      if (!processedAdvices) {
+        processedAdvices = [];
+        processedAdvicesMap.set(advice.name, processedAdvices);
+        Reflect.defineProperty(advice, Symbol.toPrimitive, {
+          value: () =>
+            [...advice.pointcuts]
+              .map((p) => `@${p.adviceType}(${p.annotations.join(',')})`)
+              .join('|') +
+            ` ${aspect.constructor.name}.${String(advice.name)}()`,
+        });
 
-          advices.push(advice);
+        Reflect.defineProperty(advice, 'name', {
+          value: advice.name,
+        });
+
+        advices.push(advice);
+      }
+
+      const expressions = adviceAnnotation.args as PointcutExpression[];
+      expressions.forEach((expression) => {
+        let pointcut = new Pointcut({
+          type,
+          expression: expression,
+        });
+
+        // dedupe same advices found on child classes for a similar pointcut
+        const similarPointcut = processedAdvices.filter((p) =>
+          p.isAssignableFrom(pointcut),
+        )[0];
+        if (similarPointcut) {
+          pointcut = similarPointcut.merge(pointcut);
+        } else {
+          advice.pointcuts.push(pointcut);
+          processedAdvices.push(pointcut);
+          this.registerAdvice(aspect, pointcut, advice);
         }
 
-        const expressions = pointcutAnnotation.args as PointcutExpression[];
-        expressions.forEach((expression) => {
-          let pointcut = new Pointcut({
-            type,
-            expression: expression,
-          });
-
-          // dedupe same advices found on child classes for a similar pointcut
-          const similarPointcut = processedPointcuts.filter((p) =>
-            p.isAssignableFrom(pointcut),
-          )[0];
-          if (similarPointcut) {
-            pointcut = similarPointcut.merge(pointcut);
-          } else {
-            advice.pointcuts.push(pointcut);
-            processedPointcuts.push(pointcut);
-            this.registerAdvice(aspect, pointcut, advice);
-          }
-
-          if (type === AdviceType.COMPILE) {
-            this.assertAnnotationNotProcessedBeforeCompileAdvice(
-              aspect,
-              advice as CompileAdvice,
-            );
-          }
-        });
+        if (type === AdviceType.COMPILE) {
+          this.assertAnnotationNotProcessedBeforeCompileAdvice(
+            aspect,
+            advice as CompileAdvice,
+          );
+        }
       });
+    });
 
     advices.forEach(Object.seal);
+  }
+
+  unregister(aspectId: string) {
+    const pointcutTypes = [
+      PointcutType.CLASS,
+      PointcutType.GET_PROPERTY,
+      PointcutType.SET_PROPERTY,
+      PointcutType.METHOD,
+      PointcutType.PARAMETER,
+    ];
+
+    pointcutTypes
+      .map((pointcutType) => (this.buckets[pointcutType] ??= {}))
+      .forEach((byTarget) => {
+        Object.values(byTarget).forEach((byAdviceType) =>
+          byAdviceType.set(aspectId, []),
+        );
+      });
   }
 
   select(filters: AdviceRegistryFilters): AdvicesSelection {
@@ -135,7 +153,7 @@ export class AdviceRegistry {
     pointcut: Pointcut,
     advice: Advice,
   ) {
-    const aspectCtor = getPrototype(aspect).constructor;
+    const aspectId = getAspectMetadata(aspect).id;
 
     const pointcutTypes =
       pointcut.type === PointcutType.ANY
@@ -152,12 +170,12 @@ export class AdviceRegistry {
       .map((pointcutType) => (this.buckets[pointcutType] ??= {}))
       .forEach((byTarget) => {
         const byAdviceType = (byTarget[pointcut.adviceType] ??= new Map<
-          ConstructorType<AspectType>,
+          string,
           AdviceEntry[]
         >());
 
-        const byAspect = byAdviceType.get(aspectCtor) ?? [];
-        byAdviceType.set(aspectCtor, byAspect);
+        const byAspect = byAdviceType.get(aspectId) ?? [];
+        byAdviceType.set(aspectId, byAspect);
 
         byAspect.push(AdviceEntry.of(aspect, advice));
       });
@@ -182,15 +200,7 @@ export class AdviceRegistry {
         .all()
         .find()
         .map((a) => a.ref),
-      // .filter((r) => annotations.has(r)),
     );
-
-    // Allow @Aspect a advice annotations to be processed already
-    // if (processedAnnotations.size) {
-    //   [Aspect.ref, Order.ref, ...KNOWN_POINTCUT_ANNOTATION_REFS].forEach(
-    //     (ref) => processedAnnotations.delete(ref),
-    //   );
-    // }
 
     if (processedAnnotations.size) {
       const err = `Could not enable aspect ${

@@ -6,32 +6,36 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { abstract } from '@aspectjs/common/utils';
 import { AspectError, getWeaver, WeaverModule } from '@aspectjs/core';
 import { HttypedClientFactory } from '../client-factory/client.factory';
-import { Mapper, MapperContext } from '../mapper.type';
 import { HttypedClientAspect } from '../public_api';
+import { MapperContext, MappersRegistry } from '../types/mapper.type';
 import { Body } from './body.annotation';
 import { Post } from './fetch/post.annotation';
 import { HttypedClient } from './http-client.annotation';
 
 interface IHttpClientApi {
-  method(...args: any[]): any;
+  method(...args: any[]): Promise<any>;
 }
+
+const TEST_BASE_URL = 'http://testBaseUrl';
 
 describe('@Body() on a method parameter', () => {
   let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
   let httypedClientFactory: HttypedClientFactory;
   let api: IHttpClientApi;
-  let responseBodyMappers: Mapper[] = [];
-  let requestBodyMappers: Mapper[] = [];
+  let responseBodyMappers: MappersRegistry;
+  let requestBodyMappers: MappersRegistry;
   let httypedClientAspect: HttypedClientAspect;
   beforeEach(() => {
     fetchAdapter = jest.fn((..._args: any[]) => {
-      return Promise.resolve(undefined as any);
+      return Promise.resolve(new Response('{}') as any);
     });
     configureTesting(WeaverModule);
-    responseBodyMappers = [];
+    responseBodyMappers = new MappersRegistry();
+    requestBodyMappers = new MappersRegistry();
 
     httypedClientFactory = new HttypedClientFactory({
-      fetchAdapter,
+      baseUrl: TEST_BASE_URL,
+      fetchAdapter: fetchAdapter,
       requestBodyMappers,
       responseBodyMappers,
     });
@@ -52,7 +56,7 @@ describe('@Body() on a method parameter', () => {
     it('throws an error', () => {
       @HttypedClient()
       abstract class HttpClientApi implements IHttpClientApi {
-        method(@Body() arg?: string) {
+        async method(@Body() arg?: string) {
           return abstract();
         }
       }
@@ -67,9 +71,9 @@ describe('@Body() on a method parameter', () => {
     });
   });
 
-  it('calls the http adapter with the provided body', () => {
+  it('calls the http adapter with the provided body', async () => {
     expect(fetchAdapter).not.toBeCalled();
-    api.method('rest-body');
+    await api.method('rest-body');
 
     expect(fetchAdapter).toBeCalledTimes(1);
     expect(fetchAdapter.mock.calls[0][1].body).toEqual('rest-body');
@@ -78,7 +82,7 @@ describe('@Body() on a method parameter', () => {
   describe('when the aspect is given a mapper', () => {
     describe('that does not accept the given body', () => {
       beforeEach(() => {
-        requestBodyMappers.push({
+        requestBodyMappers.add({
           accepts(obj, mapperContext) {
             return typeof obj === 'boolean';
           },
@@ -88,9 +92,9 @@ describe('@Body() on a method parameter', () => {
         });
       });
 
-      it('calls the http adapter with original body', () => {
+      it('calls the http adapter with original body', async () => {
         expect(fetchAdapter).not.toBeCalled();
-        api.method('rest-body');
+        await api.method('rest-body');
 
         expect(fetchAdapter).toBeCalledTimes(1);
         expect(fetchAdapter.mock.calls[0][1].body).toEqual('rest-body');
@@ -100,9 +104,7 @@ describe('@Body() on a method parameter', () => {
       const map = jest.fn();
 
       beforeEach(() => {
-        jest.resetAllMocks();
-
-        requestBodyMappers.push({
+        requestBodyMappers.add({
           accepts(obj, mapperContext) {
             return typeof obj === 'string';
           },
@@ -123,9 +125,10 @@ describe('@Body() on a method parameter', () => {
 
       it('calls the mapper with proper type hint', () => {
         api.method('rest-body');
-        expect(map).toBeCalledWith('rest-body', {
-          typeHint: String,
-        } satisfies MapperContext);
+        expect(map).toBeCalled();
+        const mapperContext = map.mock.calls[0][1] as MapperContext;
+        expect(mapperContext.typeHint).toEqual(String);
+        expect(mapperContext.mappers).toEqual(expect.any(MappersRegistry));
       });
     });
   });

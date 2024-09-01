@@ -19,7 +19,7 @@ export * from './advices/before/before.context';
 export * from './advices/before/before.type';
 export * from './advices/compile/compile.annotation';
 export * from './annotations/order.annotation';
-export * from './aspect/aspect-options.type';
+export * from './aspect/aspect-metadata.type';
 export * from './aspect/aspect.annotation';
 export * from './errors/advice.error';
 export * from './errors/aspect.error';

@@ -4,5 +4,5 @@ import { ASPECTJS_HTTP_ANNOTATION_FACTORY } from './annotation-factory';
 export const HttypedClient = ASPECTJS_HTTP_ANNOTATION_FACTORY.create(
   AnnotationType.CLASS,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function HttypedClient(config?: HttypedClientConfig | string) {},
+  function HttypedClient(config?: Partial<HttypedClientConfig> | string) {},
 );

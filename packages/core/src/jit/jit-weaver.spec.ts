@@ -39,32 +39,9 @@ describe('JitWeaver', () => {
   });
 
   describe('.enable(<CLASS>)', () => {
-    describe('after a compile annotation has been applied already', () => {
-      it('throws an error', () => {
-        const AClass = new AnnotationFactory('tests').create(
-          AnnotationType.CLASS,
-          'AClass',
-        );
-        @AClass()
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        class A {}
-
-        @Aspect()
-        class LateAspectA {
-          @Compile(on.classes.withAnnotations(AClass))
-          shouldThrow() {}
-        }
-
-        expect(() => {
-          weaver.enable(new LateAspectA());
-        }).toThrow(
-          new WeavingError(
-            'Could not enable aspect LateAspectA: Annotations have already been processed: @tests:AClass',
-          ),
-        );
-      });
-      describe('after a before annotation has been applied already', () => {
-        it('does not throw an error', () => {
+    describe('given a class that is annotated with @Aspect()', () => {
+      describe('after a compile annotation has been applied already', () => {
+        it('throws an error', () => {
           const AClass = new AnnotationFactory('tests').create(
             AnnotationType.CLASS,
             'AClass',
@@ -75,57 +52,132 @@ describe('JitWeaver', () => {
 
           @Aspect()
           class LateAspectA {
-            @Before(on.classes.withAnnotations(AClass))
-            shouldNotThrow() {}
+            @Compile(on.classes.withAnnotations(AClass))
+            shouldThrow() {}
           }
 
           expect(() => {
             weaver.enable(new LateAspectA());
-          }).not.toThrow();
+          }).toThrow(
+            new WeavingError(
+              'Could not enable aspect LateAspectA: Annotations have already been processed: @tests:AClass',
+            ),
+          );
+        });
+        describe('after a before annotation has been applied already', () => {
+          it('does not throw an error', () => {
+            const AClass = new AnnotationFactory('tests').create(
+              AnnotationType.CLASS,
+              'AClass',
+            );
+            @AClass()
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            class A {}
+
+            @Aspect()
+            class LateAspectA {
+              @Before(on.classes.withAnnotations(AClass))
+              shouldNotThrow() {}
+            }
+
+            expect(() => {
+              weaver.enable(new LateAspectA());
+            }).not.toThrow();
+          });
+
+          it('calls the before advice', () => {
+            const adviceImpl = jest.fn();
+            const AClass = new AnnotationFactory('tests').create(
+              AnnotationType.CLASS,
+              'AClass',
+            );
+            @AClass()
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            class A {}
+
+            @Aspect()
+            class LateAspectA {
+              @Before(on.classes.withAnnotations(AClass))
+              shouldNotThrow() {
+                adviceImpl();
+              }
+            }
+
+            weaver.enable(new LateAspectA());
+            new A();
+            expect(adviceImpl).toHaveBeenCalled();
+          });
+        });
+      });
+
+      describe('given a class that is not annotated with @Aspect', () => {
+        it('throws an error', () => {
+          expect(() => {
+            weaver.enable({});
+          }).toThrow(
+            new WeavingError(`class Object is not annotated with ${Aspect}`),
+          );
         });
 
-        it('calls the before advice', () => {
-          const adviceImpl = jest.fn();
-          const AClass = new AnnotationFactory('tests').create(
-            AnnotationType.CLASS,
-            'AClass',
-          );
-          @AClass()
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          class A {}
+        describe('but parent class is', () => {
+          it('does not throw an error', () => {
+            @Aspect()
+            class AspectA {}
 
+            class ChildAspectA extends AspectA {}
+
+            expect(() => {
+              weaver.enable(new ChildAspectA());
+            }).not.toThrow();
+          });
+        });
+      });
+
+      describe('given an aspect instance that already has been enabled', () => {
+        it('throws an error', () => {
           @Aspect()
-          class LateAspectA {
-            @Before(on.classes.withAnnotations(AClass))
-            shouldNotThrow() {
-              adviceImpl();
+          class Aspect1 {}
+
+          const a1 = new Aspect1();
+          expect(() => {
+            weaver.enable(a1, a1);
+          }).toThrow(
+            new WeavingError(
+              `Aspect "${Aspect1.name}" has already been registered`,
+            ),
+          );
+        });
+      });
+
+      describe('given an instance of an class aspect that has already been enabled', () => {
+        it('replaces the previously registered aspect ', () => {
+          const advice = jest.fn();
+          const TestAnnotation = new AnnotationFactory('tests').create(
+            function TestAnnotation() {},
+          );
+          @Aspect()
+          class Aspect1 {
+            constructor(private name: string) {}
+            @Before(on.methods.withAnnotations(TestAnnotation))
+            before() {
+              advice(this.name);
             }
           }
 
-          weaver.enable(new LateAspectA());
-          new A();
-          expect(adviceImpl).toHaveBeenCalled();
-        });
-      });
-    });
-
-    describe('given a class that is not annotated with @Aspect', () => {
-      it('throws an error', () => {
-        expect(() => {
-          weaver.enable({});
-        }).toThrow(new WeavingError('class Object is not an aspect'));
-      });
-
-      describe('but parent class is', () => {
-        it('does not throw an error', () => {
-          @Aspect()
-          class AspectA {}
-
-          class ChildAspectA extends AspectA {}
+          class X {
+            @TestAnnotation()
+            m() {}
+          }
+          const a1 = new Aspect1('a1');
+          const a2 = new Aspect1('a2');
 
           expect(() => {
-            weaver.enable(new ChildAspectA());
+            weaver.enable(a1, a2);
           }).not.toThrow();
+
+          new X().m();
+          expect(advice).toBeCalledWith('a2');
+          expect(advice).toHaveBeenCalledTimes(1);
         });
       });
     });

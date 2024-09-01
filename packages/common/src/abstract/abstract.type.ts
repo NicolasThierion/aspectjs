@@ -1,3 +1,5 @@
+import { _AbstractTokenImpl } from './abstract-token-impl.type';
+
 let abstractThrows = true;
 let abstractCounter = 0;
 /**
@@ -19,7 +21,7 @@ export const _defuseAbstract = (receipe: () => {}) => {
 
     const multipleAbstractCalls =
       (_isAbstractToken(val) &&
-        (val as AbstractToken).counter - abstractCounter !== 0) ||
+        (val as _AbstractTokenImpl).counter - abstractCounter !== 0) ||
       (_abstractThrows && abstractCounter - _abstractCounter !== 1);
     if (multipleAbstractCalls) {
       throw new Error(
@@ -33,13 +35,6 @@ export const _defuseAbstract = (receipe: () => {}) => {
   }
 };
 
-class AbstractToken {
-  constructor(public readonly counter: number) {}
-  toSting() {
-    return '[ABSTRACT_TOKEN placeholder]';
-  }
-}
-
 /**
  * Annotating abstract methods is not allowed in TypeScript.
  * Instead, we have to define concrete, empty methods, awaiting for an annotation to actually define its behaviour.
@@ -49,14 +44,14 @@ class AbstractToken {
  *
  * @param T the type of the value to be replaced.
  */
-export const abstract = <T extends any>(): T => {
+export const abstract = <T extends any>(template?: T): T => {
   if (abstractThrows) {
     throw new Error(
       'abstract value has not been superseded by an annotation behavior.',
     );
   }
 
-  return new AbstractToken(++abstractCounter) as any;
+  return new _AbstractTokenImpl<T>(++abstractCounter, template) as any;
 };
 
-export const _isAbstractToken = (val: any) => val instanceof AbstractToken;
+export const _isAbstractToken = (val: any) => val instanceof _AbstractTokenImpl;

@@ -1,6 +1,7 @@
 import { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 
+import { getAspectMetadata } from '../../aspect/aspect.type';
 import { Pointcut } from '../../pointcut/pointcut';
 import { PointcutType } from '../../pointcut/pointcut-target.type';
 import { AdviceSorter } from '../advice-sort';
@@ -59,7 +60,9 @@ export class AdvicesSelection {
           if (map) {
             const adviceEntries = (
               filters.aspects?.length
-                ? filters.aspects.map((a) => map.get(a)).flat()
+                ? filters.aspects
+                    .map((a) => map.get(getAspectMetadata(a).id))
+                    .flat()
                 : [...map.values()].flat()
             )
               .filter((a) => !!a)

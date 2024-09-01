@@ -1,6 +1,6 @@
-import { AnnotationType } from '../../src/annotation/annotation.types';
-import { AnnotationFactory } from '../../src/annotation/factory/annotation.factory';
-import { _defuseAbstract, abstract } from './abstract.util';
+import { AnnotationType } from '../annotation/annotation.types';
+import { AnnotationFactory } from '../annotation/factory/annotation.factory';
+import { _defuseAbstract, abstract } from './abstract.type';
 
 describe('abstract() helper', () => {
   let MethodAnnotation: any;

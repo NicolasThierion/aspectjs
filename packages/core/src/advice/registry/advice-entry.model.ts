@@ -1,4 +1,4 @@
-import { ConstructorType, getMetadata } from '@aspectjs/common/utils';
+import { getMetadata } from '@aspectjs/common/utils';
 
 import type { AspectType } from '../../aspect/aspect.type';
 import type { PointcutType } from '../../pointcut/pointcut-target.type';
@@ -7,7 +7,7 @@ import type { Advice } from '../advice.type';
 
 export type AdviceRegBuckets = {
   [t in PointcutType]?: {
-    [p in AdviceType]?: Map<ConstructorType<AspectType>, AdviceEntry[]>;
+    [p in AdviceType]?: Map<string, AdviceEntry[]>;
   };
 };
 
