@@ -1,50 +1,53 @@
 import { ConstructorType, assert, getPrototype } from '@aspectjs/common/utils';
-import { AnnotationContext } from '../annotation-context';
-import { AnnotationRef } from '../annotation-ref';
-import { AnnotationStub, AnnotationType } from '../annotation.types';
-import { AnnotationTarget } from '../target/annotation-target';
-import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { _AnnotationTargetImpl } from '../target/annotation-target.impl';
-import { _AnnotationsSet } from './annotation-set';
-import { BoundAnnotationContext } from './bound-annotation-context';
+import { AnnotationContext } from '../../annotation-context';
+import { AnnotationRef } from '../../annotation-ref';
+import {
+  Annotation,
+  AnnotationStub,
+  AnnotationType,
+} from '../../annotation.types';
+import { AnnotationTarget } from '../../target/annotation-target';
+import { AnnotationTargetFactory } from '../../target/annotation-target.factory';
+import { _AnnotationContextSet } from './annotation-context-set';
+import { AnnotationsSelector } from './selector';
 
-export interface AnnotationSelectorOptions {
+export interface AnnotationsByTypeSelectionOptions {
   /**
    * Search for the annotation in parent classes.
    */
   searchParents: boolean;
 }
 
-export class AnnotationsSelector<
+export class AnnotationsByRefSelector<
   T extends AnnotationType = AnnotationType,
   S extends AnnotationStub = AnnotationStub,
   X = unknown,
 > {
   private readonly targetFactory: AnnotationTargetFactory;
-  private readonly annotationSet: _AnnotationsSet;
+  private readonly annotationSet: _AnnotationContextSet;
   private readonly annotationsRefs: Set<AnnotationRef> | undefined;
   private readonly decoratorTypes: T[];
   private readonly type?: ConstructorType<X>;
   private readonly propertyKey?: string | symbol;
 
-  constructor(selector: AnnotationsSelector<T, S, X>);
+  constructor(selection: AnnotationsByRefSelector<T, S, X>);
   constructor(
     targetFactory: AnnotationTargetFactory,
-    annotationSet: _AnnotationsSet,
+    annotationSet: _AnnotationContextSet,
     annotationsRefs: Set<AnnotationRef> | undefined,
     decoratorTypes: T[],
     type?: ConstructorType<X> | X,
     propertyKey?: string | symbol,
   );
   constructor(
-    targetFactory: AnnotationTargetFactory | AnnotationsSelector<T, S, X>,
-    annotationSet?: _AnnotationsSet,
+    targetFactory: AnnotationTargetFactory | AnnotationsByRefSelector<T, S, X>,
+    annotationSet?: _AnnotationContextSet,
     annotationsRefs?: Set<AnnotationRef> | undefined,
     decoratorTypes?: T[],
     type?: ConstructorType<X> | X,
     propertyKey?: string | symbol,
   ) {
-    if (targetFactory instanceof AnnotationsSelector) {
+    if (targetFactory instanceof AnnotationsByRefSelector) {
       const selection = targetFactory;
       this.targetFactory = selection.targetFactory;
       this.annotationSet = selection.annotationSet;
@@ -61,10 +64,45 @@ export class AnnotationsSelector<
       this.propertyKey = propertyKey;
     }
   }
-  find(options?: AnnotationSelectorOptions): AnnotationContext<T, S, X>[] {
+
+  annotations<S2 extends AnnotationStub>(
+    annotation: Annotation<AnnotationType, S2>,
+  ): AnnotationsSelector<T, S2, X>;
+  annotations(
+    ...annotations: (AnnotationRef | Annotation)[]
+  ): AnnotationsSelector<T, S, X>;
+  annotations(
+    ...annotations: (Annotation | AnnotationRef)[]
+  ): AnnotationsSelector<T, S, X> {
+    let annotationRefs = this.annotationsRefs;
+    if (annotations.length) {
+      if (!annotationRefs) {
+        annotationRefs = new Set(annotations.map(AnnotationRef.of));
+      } else {
+        annotationRefs = new Set(
+          annotations
+            .map(AnnotationRef.of)
+            .filter((a) => annotationRefs!.has(a)),
+        );
+      }
+    }
+
+    return new AnnotationsSelector(
+      this.targetFactory,
+      this.annotationSet,
+      annotationRefs,
+      this.decoratorTypes,
+      this.type,
+      this.propertyKey,
+    );
+  }
+
+  find(
+    options?: AnnotationsByTypeSelectionOptions,
+  ): AnnotationContext<T, S, X>[] {
     if (!this.type) {
       assert(!options?.searchParents);
-
+      assert(!!this.annotationSet);
       return this.annotationSet.getAnnotations(
         this.decoratorTypes,
         this.annotationsRefs,
@@ -109,34 +147,4 @@ function getAncestors<T extends AnnotationType>(
     target.parent as AnnotationTarget<T, any>,
     ...getAncestors<T>(target.parent as AnnotationTarget<T, any>),
   ];
-}
-
-export class BoundAnnotationsSelector<
-  T extends AnnotationType = AnnotationType,
-  S extends AnnotationStub = AnnotationStub,
-  X = unknown,
-> extends AnnotationsSelector<T, S, X> {
-  constructor(
-    selector: AnnotationsSelector<T, S, X>,
-    private instance: unknown,
-    private args?: unknown[],
-  ) {
-    super(selector);
-  }
-  override find(
-    options?: AnnotationSelectorOptions,
-  ): BoundAnnotationContext<T, S, X>[] {
-    return super.find(options).map((ctxt) => {
-      return Object.setPrototypeOf(
-        {
-          ...ctxt,
-          target: (ctxt.target as _AnnotationTargetImpl)._bind(
-            this.instance,
-            this.args,
-          ),
-        },
-        Object.getPrototypeOf(ctxt),
-      );
-    });
-  }
 }

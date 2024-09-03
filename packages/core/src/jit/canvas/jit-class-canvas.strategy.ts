@@ -1,4 +1,8 @@
-import { assert, ConstructorType } from '@aspectjs/common/utils';
+import {
+  _copyPropsAndMeta,
+  assert,
+  ConstructorType,
+} from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
 import { PointcutType } from './../../pointcut/pointcut-target.type';
@@ -48,18 +52,26 @@ export class JitClassCanvasStrategy<
         assert(typeof entry.advice === 'function');
         ctxt.target.proto.constructor = constructor;
 
-        constructor = (entry.advice.call(
+        const newConstructor = entry.advice.call(
           entry.aspect,
           ctxt.asCompileContext(),
-        ) ?? constructor) as ConstructorType<X>;
-        if (typeof constructor !== 'function') {
-          throw new AdviceError(
-            entry.aspect,
-            entry.advice,
-            ctxt.target,
-            'should return void or a class constructor',
-          );
+        ) as ConstructorType<X>;
+
+        if (newConstructor) {
+          if (typeof newConstructor !== 'function') {
+            throw new AdviceError(
+              entry.aspect,
+              entry.advice,
+              ctxt.target,
+              'should return void or a class constructor',
+            );
+          }
+
+          _copyPropsAndMeta(newConstructor, constructor); // copy static props
+
+          constructor = newConstructor;
         }
+
         ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
       });
 

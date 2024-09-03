@@ -1,8 +1,8 @@
 import { assert } from '@aspectjs/common/utils';
-import { AnnotationContext } from '../annotation-context';
-import { AnnotationRef } from '../annotation-ref';
-import { AnnotationType } from '../annotation.types';
-import { AnnotationTargetRef } from '../target/annotation-target';
+import { AnnotationContext } from '../../annotation-context';
+import { AnnotationRef } from '../../annotation-ref';
+import { AnnotationType } from '../../annotation.types';
+import { AnnotationTargetRef } from '../../target/annotation-target';
 
 type ByAnnotationSet = {
   byClassTargetRef: Map<AnnotationTargetRef, AnnotationContext[]>;
@@ -10,7 +10,7 @@ type ByAnnotationSet = {
 
  * @internal
  */
-export class _AnnotationsSet {
+export class _AnnotationContextSet {
   private buckets: {
     [k in AnnotationType]: Map<AnnotationRef, ByAnnotationSet>;
   } = {

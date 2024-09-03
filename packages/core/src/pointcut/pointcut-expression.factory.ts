@@ -1,11 +1,13 @@
-import type { Annotation } from '@aspectjs/common';
+import type { Annotation, AnnotationRef } from '@aspectjs/common';
 import { PointcutExpression } from './pointcut-expression.type';
 import { PointcutType } from './pointcut-target.type';
 
 class PointcutExpressionFactory<T extends PointcutType> {
   constructor(private readonly type: T) {}
 
-  withAnnotations(...annotations: Annotation[]): PointcutExpression<T> {
+  withAnnotations(
+    ...annotations: (Annotation | AnnotationRef)[]
+  ): PointcutExpression<T> {
     return new PointcutExpression({
       type: this.type,
       annotations,

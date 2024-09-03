@@ -1,3 +1,4 @@
+import { configureTesting } from '@aspectjs/common/testing';
 import { AnnotationType } from '../annotation/annotation.types';
 import { AnnotationFactory } from '../annotation/factory/annotation.factory';
 import { _defuseAbstract, abstract } from './abstract.type';
@@ -5,6 +6,7 @@ import { _defuseAbstract, abstract } from './abstract.type';
 describe('abstract() helper', () => {
   let MethodAnnotation: any;
   beforeEach(() => {
+    configureTesting();
     const af = new AnnotationFactory('test');
     MethodAnnotation = af.create(AnnotationType.METHOD, 'ClassAnnotation');
   });

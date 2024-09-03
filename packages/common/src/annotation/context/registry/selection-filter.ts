@@ -1,5 +1,5 @@
-import { AnnotationType } from '../annotation.types';
-import { AnnotationTarget } from '../target/annotation-target';
+import { AnnotationType } from '../../annotation.types';
+import { AnnotationTarget } from '../../target/annotation-target';
 
 export type AnnotationSelectionFilter = {
   target: AnnotationTarget<AnnotationType, any>;

@@ -1,8 +1,8 @@
-import { AnnotationRegistry } from './annotation.registry';
+import { AnnotationContextRegistry } from './registry/annotation-context.registry';
 
 import { reflectContext } from '../../reflect/reflect.context.global';
 import type { Annotation, AnnotationStub } from '../annotation.types';
-import { AnnotationByTargetSelector } from './by-target-selector';
+import { AnnotationByTargetSelector } from './registry/by-target-selector';
 
 export function getAnnotations<S extends AnnotationStub>(
   annotation: S,
@@ -14,6 +14,6 @@ export function getAnnotations(
   ...annotations: Annotation[]
 ): AnnotationByTargetSelector {
   return reflectContext()
-    .get(AnnotationRegistry)
+    .get(AnnotationContextRegistry)
     .select(...annotations);
 }

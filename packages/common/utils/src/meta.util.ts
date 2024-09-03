@@ -13,11 +13,13 @@ declare let Reflect: {
     target: object,
     propertyKey?: string | symbol,
   ): void;
+
+  getOwnMetadataKeys(target: any): string[];
 };
 
 // rough Reflect polyfill
 if (!Reflect.getOwnMetadata || !Reflect.defineMetadata) {
-  const _meta = new Map<object, Map<string, Map<string, any>>>();
+  const _meta = new Map<any, Map<string, Map<string, any>>>();
 
   Reflect.getOwnMetadata = function (
     key: string,
@@ -42,6 +44,16 @@ if (!Reflect.getOwnMetadata || !Reflect.defineMetadata) {
     tBucket.set(key, kBucket);
     kBucket.set(propertyKey ?? '', value);
   };
+
+  Reflect.getOwnMetadataKeys = function (target: object): string[] {
+    const tBucket = _meta.get(target) ?? new Map();
+
+    return [...tBucket.keys()];
+  };
+}
+
+export function getMetadataKeys(target: object): string[] {
+  return Reflect.getOwnMetadataKeys(target);
 }
 
 export function defineMetadata(

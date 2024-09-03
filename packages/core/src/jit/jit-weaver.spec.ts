@@ -149,7 +149,7 @@ describe('JitWeaver', () => {
         });
       });
 
-      describe('given an instance of an class aspect that has already been enabled', () => {
+      describe('given a new instance of an aspect that has already been enabled', () => {
         it('replaces the previously registered aspect ', () => {
           const advice = jest.fn();
           const TestAnnotation = new AnnotationFactory('tests').create(
@@ -170,6 +170,47 @@ describe('JitWeaver', () => {
           }
           const a1 = new Aspect1('a1');
           const a2 = new Aspect1('a2');
+
+          expect(() => {
+            weaver.enable(a1, a2);
+          }).not.toThrow();
+
+          new X().m();
+          expect(advice).toBeCalledWith('a2');
+          expect(advice).toHaveBeenCalledTimes(1);
+        });
+      });
+
+      describe('given an aspect that has the same ID of another aspect that has already been enabled', () => {
+        it('replaces the previously registered aspect ', () => {
+          const advice = jest.fn();
+          const TestAnnotation = new AnnotationFactory('tests').create(
+            function TestAnnotation() {},
+          );
+          @Aspect('test')
+          class Aspect1 {
+            constructor(private name: string) {}
+            @Before(on.methods.withAnnotations(TestAnnotation))
+            before() {
+              advice(this.name);
+            }
+          }
+
+          @Aspect('test')
+          class Aspect2 {
+            constructor(private name: string) {}
+            @Before(on.methods.withAnnotations(TestAnnotation))
+            before() {
+              advice(this.name);
+            }
+          }
+
+          class X {
+            @TestAnnotation()
+            m() {}
+          }
+          const a1 = new Aspect1('a1');
+          const a2 = new Aspect2('a2');
 
           expect(() => {
             weaver.enable(a1, a2);

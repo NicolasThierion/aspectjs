@@ -5,6 +5,7 @@ import { assert, ConstructorType } from '@aspectjs/common/utils';
  */
 
 import { getProviderName, getProviders } from '../../utils/src/module.utils';
+import { ANNOTATION_CONTEXT_REGISTRY_PROVIDERS } from '../annotation/context/registry/annotation-context-registry.provider';
 import { ANNOTATION_HOOK_REGISTRY_PROVIDERS } from '../annotation/factory/annotation-factory.provider';
 import { ANNOTATION_REGISTRY_PROVIDERS } from '../annotation/registry/annotation-registry.provider';
 import { ANNOTATION_TARGET_FACTORY_PROVIDERS } from '../annotation/target/annotation-target-factory.provider';
@@ -14,6 +15,7 @@ import type { ReflectProvider } from './reflect-provider.type';
 @ReflectModule({
   providers: [
     ...ANNOTATION_REGISTRY_PROVIDERS,
+    ...ANNOTATION_CONTEXT_REGISTRY_PROVIDERS,
     ...ANNOTATION_HOOK_REGISTRY_PROVIDERS,
     ...ANNOTATION_TARGET_FACTORY_PROVIDERS,
   ],
@@ -29,15 +31,14 @@ const DEFAULT_MODULES = [AnnotationsModule];
  * through the use of {@link ReflectModuleConfiguration}s.
  */
 export class ReflectContext {
-  protected readonly providersToResolve: Map<string, ReflectProvider[]> =
-    new Map();
+  protected providersToResolve: Map<string, ReflectProvider[]> = new Map();
 
-  protected readonly providersRegistry: Map<
+  protected providersRegistry: Map<
     string,
     { component: unknown; provider: ReflectProvider }[]
   > = new Map();
-  protected readonly addedProviders: Set<ReflectProvider> = new Set();
-  protected readonly modules: Set<ConstructorType> = new Set();
+  protected addedProviders: Set<ReflectProvider> = new Set();
+  protected modules: Set<ConstructorType> = new Set();
 
   /**
    * @internal
@@ -119,18 +120,12 @@ export class ReflectContext {
     return !!this.get(providerType);
   }
 
-  protected apply(context: ReflectContext) {
+  protected assign(context: ReflectContext) {
     assert(!!context);
-    context.modules.forEach((m) => this.modules.add(m));
-    context.addedProviders.forEach((p) => this.addedProviders.add(p));
-
-    context.providersRegistry.forEach((provider, name) =>
-      this.providersRegistry.set(name, provider),
-    );
-
-    context.providersToResolve.forEach((p, n) => {
-      this.providersToResolve.set(n, [...p]);
-    });
+    this.modules = context.modules;
+    this.addedProviders = context.addedProviders;
+    this.providersRegistry = context.providersRegistry;
+    this.providersToResolve = context.providersToResolve;
 
     return this;
   }

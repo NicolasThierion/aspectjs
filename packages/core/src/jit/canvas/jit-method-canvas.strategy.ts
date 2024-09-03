@@ -3,6 +3,7 @@ import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import {
   MethodPropertyDescriptor,
+  _copyPropsAndMeta,
   _defuseAbstract,
   assert,
 } from '@aspectjs/common/utils';
@@ -65,29 +66,34 @@ export abstract class AbstractJitMethodCanvasStrategy<
           methodDescriptor,
         );
 
-        methodDescriptor = (entry.advice.call(
+        let newMethodDescriptor = entry.advice.call(
           entry.aspect,
           ctxt.asCompileContext(),
-        ) ?? methodDescriptor) as CompiledSymbol<T, X>;
+        ) as CompiledSymbol<T, X>;
 
-        if (typeof methodDescriptor === 'function') {
-          const surrogate = {
-            fn: methodDescriptor,
-          };
-          methodDescriptor = Object.getOwnPropertyDescriptor(
-            surrogate,
-            'fn',
-          )! as CompiledSymbol<T, X>;
+        if (newMethodDescriptor) {
+          if (typeof newMethodDescriptor === 'function') {
+            const surrogate = {
+              fn: newMethodDescriptor,
+            };
+            newMethodDescriptor = Object.getOwnPropertyDescriptor(
+              surrogate,
+              'fn',
+            )! as CompiledSymbol<T, X>;
+          }
+          if (typeof newMethodDescriptor.value !== 'function') {
+            throw new AdviceError(
+              entry.aspect,
+              entry.advice,
+              ctxt.target,
+              'should return void, a function, or a Method property descriptor',
+            );
+          }
+
+          _copyPropsAndMeta(newMethodDescriptor.value, methodDescriptor.value); // copy static props
+          methodDescriptor = newMethodDescriptor;
         }
 
-        if (typeof methodDescriptor.value !== 'function') {
-          throw new AdviceError(
-            entry.aspect,
-            entry.advice,
-            ctxt.target,
-            'should return void, a function, or a Method property descriptor',
-          );
-        }
         ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
       });
     ctxt.target.defineMetadata('@ajs:compiledSymbol', methodDescriptor);

@@ -6,4 +6,4 @@
 
 ## Advanced Usage
 - [] TargetFactory.of()
-- [] AnnotationRegistry.find()
+- [] AnnotationContextRegistry.find()

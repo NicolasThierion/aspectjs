@@ -1,5 +1,5 @@
 import {
-  AnnotationRegistry,
+  AnnotationContextRegistry,
   AnnotationTargetFactory,
   DecoratorProviderRegistry,
   ReflectModule,
@@ -40,12 +40,15 @@ export const ASPECT_PROVIDERS: ReflectProvider[] = [];
     },
     {
       provide: AdviceSorter,
-      deps: [AnnotationRegistry, AnnotationTargetFactory],
+      deps: [AnnotationContextRegistry, AnnotationTargetFactory],
       factory: (
-        annotationRegistry: AnnotationRegistry,
+        annotationContextRegistry: AnnotationContextRegistry,
         annotationTargetFactory: AnnotationTargetFactory,
       ) => {
-        return new AdviceSorter(annotationRegistry, annotationTargetFactory);
+        return new AdviceSorter(
+          annotationContextRegistry,
+          annotationTargetFactory,
+        );
       },
     },
     {

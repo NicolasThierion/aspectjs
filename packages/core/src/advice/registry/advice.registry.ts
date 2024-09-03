@@ -1,4 +1,4 @@
-import { AnnotationRef, AnnotationRegistry } from '@aspectjs/common';
+import { AnnotationContextRegistry, AnnotationRef } from '@aspectjs/common';
 import { ConstructorType, assert, getPrototype } from '@aspectjs/common/utils';
 
 import { AfterReturn } from '../../advices/after-return/after-return.annotation';
@@ -62,7 +62,7 @@ export class AdviceRegistry {
     const processedAdvicesMap = new Map<string, Pointcut[]>();
     // find advices annotations
     const adviceAnnotations = this.weaverContext
-      .get(AnnotationRegistry)
+      .get(AnnotationContextRegistry)
       .select(...KNOWN_POINTCUT_ANNOTATION_REFS)
       .onMethod(aspectCtor)
       .find({ searchParents: true });
@@ -75,6 +75,7 @@ export class AdviceRegistry {
 
       advice.pointcuts ??= [];
 
+      assert(advice.name.length > 0, 'advice name cannot be empty');
       // do not process advice if it has been processed on a child class already
       let processedAdvices = processedAdvicesMap.get(advice.name)!;
       if (!processedAdvices) {
@@ -195,7 +196,7 @@ export class AdviceRegistry {
 
     const processedAnnotations = new Set(
       this.weaverContext
-        .get(AnnotationRegistry)
+        .get(AnnotationContextRegistry)
         .select(...annotations)
         .all()
         .find()

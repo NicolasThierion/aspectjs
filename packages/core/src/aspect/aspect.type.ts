@@ -1,6 +1,6 @@
 import {
   AnnotationContext,
-  AnnotationRegistry,
+  AnnotationContextRegistry,
   AnnotationTarget,
   AnnotationTargetFactory,
   AnnotationType,
@@ -28,7 +28,7 @@ export function getAspectMetadata(
     const annotation:
       | AnnotationContext<AnnotationType.CLASS, typeof Aspect>
       | undefined = reflectContext()
-      .get(AnnotationRegistry)
+      .get(AnnotationContextRegistry)
       .select(Aspect)
       .on({ target })
       .find({ searchParents: true })[0];

@@ -8,6 +8,7 @@ import type {
 
 import {
   Annotation,
+  AnnotationRef,
   AnnotationsSelector,
   AnnotationTarget,
   BoundAnnotationsSelector,
@@ -166,7 +167,7 @@ function copyProps<A extends AdviceContext>(
 
   const annotations = newContext.annotations;
   const newAnnotations: AdviceContext['annotations'] = (
-    ...ans: Annotation[]
+    ...ans: (Annotation | AnnotationRef)[]
   ) => {
     const selector = new BoundAnnotationsSelector(
       annotations(...ans),

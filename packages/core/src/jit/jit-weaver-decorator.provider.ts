@@ -5,9 +5,8 @@ import {
   AnnotationType,
   DecoratorProvider,
 } from '@aspectjs/common';
-import { assert } from '@aspectjs/common/utils';
-import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
 import { JitWeaver } from './jit-weaver';
+import { createJitWeaverDecorator } from './jit-weaver-decorator.utils';
 
 export const CALL_JIT_WEAVER_HOOK: DecoratorProvider = {
   name: '@aspectjs::weaver.enhance',
@@ -22,15 +21,4 @@ export const CALL_JIT_WEAVER_HOOK: DecoratorProvider = {
     const targetFactory = reflect.get(AnnotationTargetFactory);
     return createJitWeaverDecorator(weaver, targetFactory);
   },
-};
-
-export const createJitWeaverDecorator = (
-  weaver: JitWeaver,
-  targetFactory: AnnotationTargetFactory,
-) => {
-  return function (...args: any) {
-    const target = targetFactory.of(...args) as _BindableAnnotationTarget;
-    assert(typeof target._bind === 'function');
-    return weaver.enhance(target);
-  };
 };

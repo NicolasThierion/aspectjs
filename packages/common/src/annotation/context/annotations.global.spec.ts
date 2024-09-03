@@ -1,10 +1,10 @@
 import { configureTesting } from '@aspectjs/common/testing';
 import { AnnotationFactory } from '../factory/annotation.factory';
-import { AnnotationRegistry } from './annotation.registry';
 import { getAnnotations } from './annotations.global';
+import { AnnotationContextRegistry } from './registry/annotation-context.registry';
 
 describe('getAnnotations()', () => {
-  let annotationRegistry: AnnotationRegistry;
+  let annotationContextRegistry: AnnotationContextRegistry;
 
   let A = class A {};
 
@@ -20,7 +20,9 @@ describe('getAnnotations()', () => {
   let A2ParameterAnnotation: any;
   function setup() {
     A = class A {};
-    annotationRegistry = configureTesting().get(AnnotationRegistry);
+    annotationContextRegistry = configureTesting().get(
+      AnnotationContextRegistry,
+    );
 
     const af = new AnnotationFactory('test');
     A1Annotation = af.create('A1Annotation');
@@ -66,22 +68,26 @@ describe('getAnnotations()', () => {
       fnX() {}
     }
     A = _A;
-    annotationRegistry.select = jest.fn(annotationRegistry.select);
+    annotationContextRegistry.select = jest.fn(
+      annotationContextRegistry.select,
+    );
   }
 
   beforeEach(setup);
   describe('given no parameters', () => {
-    it('calls AnnotationRegistry.find()', () => {
+    it('calls AnnotationContextRegistry.find()', () => {
       getAnnotations();
-      expect(annotationRegistry.select).toHaveBeenCalledTimes(1);
-      expect(annotationRegistry.select).toHaveBeenCalledWith();
+      expect(annotationContextRegistry.select).toHaveBeenCalledTimes(1);
+      expect(annotationContextRegistry.select).toHaveBeenCalledWith();
     });
   });
   describe('given the parameter "A1ClassAnnotation"', () => {
-    it('calls AnnotationRegistry.find(A1ClassAnnotation)', () => {
+    it('calls AnnotationContextRegistry.find(A1ClassAnnotation)', () => {
       getAnnotations(A1ClassAnnotation);
-      expect(annotationRegistry.select).toHaveBeenCalledTimes(1);
-      expect(annotationRegistry.select).toHaveBeenCalledWith(A1ClassAnnotation);
+      expect(annotationContextRegistry.select).toHaveBeenCalledTimes(1);
+      expect(annotationContextRegistry.select).toHaveBeenCalledWith(
+        A1ClassAnnotation,
+      );
     });
   });
 });

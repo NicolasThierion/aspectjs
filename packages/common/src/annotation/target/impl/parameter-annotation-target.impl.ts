@@ -111,7 +111,7 @@ export class _ParameterAnnotationTargetImpl<X>
   }
 
   asDecoratorArgs() {
-    return [this.proto, this.propertyKey, this.descriptor, this.parameterIndex];
+    return [this.proto, this.propertyKey, this.parameterIndex];
   }
   get declaringClass() {
     if (this._declaringClassTarget) {

@@ -31,7 +31,7 @@
     "strict": true,
 
     // Type-checking settings.
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "ES2021.String"],
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "paths": {

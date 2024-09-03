@@ -36,7 +36,6 @@ export function renameFunction<T, F extends (...args: any[]) => T>(
     renamedNewFn.prototype = newFn.prototype;
     newFn = renamedNewFn;
   } catch (e) {
-    assert(false);
     // won't work if name is a keyword (eg: delete). Let newFn as is.
   }
   Object.defineProperty(newFn, 'name', {

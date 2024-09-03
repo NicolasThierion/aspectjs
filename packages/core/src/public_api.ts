@@ -28,6 +28,7 @@ export * from './pointcut/pointcut';
 export * from './pointcut/pointcut-expression.factory';
 export * from './pointcut/pointcut-expression.type';
 export * from './pointcut/pointcut-target.type';
+export * from './utils/decorator-bridge.aspect';
 export * from './weaver/context/weaver.context.global';
 export * from './weaver/weaver';
 export * from './weaver/weaver.module';

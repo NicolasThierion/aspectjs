@@ -1,7 +1,7 @@
 import {
   _AnnotationTargetImpl,
   Annotation,
-  AnnotationRegistry,
+  AnnotationContextRegistry,
   AnnotationTarget,
   AnnotationTargetFactory,
   AnnotationTargetRef,
@@ -27,7 +27,7 @@ import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
 import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
-import { createJitWeaverDecorator } from './jit-weaver-decorator.provider';
+import { createJitWeaverDecorator } from './jit-weaver-decorator.utils';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
@@ -38,17 +38,16 @@ export class JitWeaver implements Weaver {
     [AnnotationType.PARAMETER]: this.enhanceParameter.bind(this),
   };
 
-  private readonly annotationRegistry: AnnotationRegistry;
+  private readonly annotationContextRegistry: AnnotationContextRegistry;
   private readonly aspectRegistry: AspectRegistry;
   private readonly adviceRegistry: AdviceRegistry;
-  private readonly enhancedTargets = new WeakMap<
-    AnnotationTargetRef,
-    AnnotationTarget
-  >();
+  private readonly enhancedTargets = new Set<AnnotationTargetRef>();
   private lastAnnotationsCount = 0;
 
   constructor(private readonly weaverContext: WeaverContext) {
-    this.annotationRegistry = this.weaverContext.get(AnnotationRegistry);
+    this.annotationContextRegistry = this.weaverContext.get(
+      AnnotationContextRegistry,
+    );
     this.aspectRegistry = this.weaverContext.get(AspectRegistry);
     this.adviceRegistry = this.weaverContext.get(AdviceRegistry);
   }
@@ -74,9 +73,9 @@ export class JitWeaver implements Weaver {
   enhance<T extends AnnotationType, X = unknown>(
     target: _AnnotationTargetImpl<T, X> & AnnotationTarget<T, X>,
   ): void | ConstructorType<X> | PropertyDescriptor {
-    this.enhancedTargets.set(target.ref, target);
+    this.enhancedTargets.add(target.ref);
     const annotations = (...annotations: Annotation[]) => {
-      return this.annotationRegistry.select(...annotations).on({
+      return this.annotationContextRegistry.select(...annotations).on({
         target,
         // types: [target.type]
       });
@@ -94,7 +93,7 @@ export class JitWeaver implements Weaver {
     ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
   ): ConstructorType<X> | void {
     const { target } = ctxt;
-    const annotationsForType = this.annotationRegistry
+    const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
@@ -127,7 +126,7 @@ export class JitWeaver implements Weaver {
     >,
   ): PropertyDescriptor | void {
     const { target } = ctxt;
-    const annotationsForType = this.annotationRegistry
+    const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
@@ -158,7 +157,7 @@ export class JitWeaver implements Weaver {
     ctxt: MutableAdviceContext<PointcutType.METHOD, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
-    const annotationsForType = this.annotationRegistry
+    const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
@@ -187,7 +186,7 @@ export class JitWeaver implements Weaver {
     ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
-    const annotationsForType = this.annotationRegistry
+    const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
@@ -214,7 +213,7 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceEarlyAnnotationDeclarations() {
-    const allAnnotations = this.annotationRegistry.select().all().find();
+    const allAnnotations = this.annotationContextRegistry.select().all().find();
     const lastAnnotationsCount = allAnnotations.length;
     if (lastAnnotationsCount !== this.lastAnnotationsCount) {
       // new annotation since last enhance ?

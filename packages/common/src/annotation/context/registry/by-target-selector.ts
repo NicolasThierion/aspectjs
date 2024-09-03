@@ -5,11 +5,11 @@ import {
   isClassInstance,
   isObject,
 } from '@aspectjs/common/utils';
-import { AnnotationRef } from '../annotation-ref';
-import { AnnotationStub, AnnotationType } from '../annotation.types';
-import { AnnotationTarget } from '../target/annotation-target';
-import { AnnotationTargetFactory } from '../target/annotation-target.factory';
-import { _AnnotationsSet } from './annotation-set';
+import { AnnotationRef } from '../../annotation-ref';
+import { AnnotationStub, AnnotationType } from '../../annotation.types';
+import { AnnotationTarget } from '../../target/annotation-target';
+import { AnnotationTargetFactory } from '../../target/annotation-target.factory';
+import { _AnnotationContextSet } from './annotation-context-set';
 import { AnnotationSelectionFilter } from './selection-filter';
 import { AnnotationsSelector, BoundAnnotationsSelector } from './selector';
 
@@ -21,7 +21,7 @@ export class AnnotationByTargetSelector<
 > {
   constructor(
     private readonly targetFactory: AnnotationTargetFactory,
-    private readonly annotationSet: _AnnotationsSet,
+    private readonly annotationSet: _AnnotationContextSet,
     private readonly annotationsRefs: Set<AnnotationRef> | undefined,
   ) {}
 

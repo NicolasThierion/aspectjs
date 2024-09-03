@@ -11,9 +11,10 @@ import { DecoratorProviderRegistry } from './decorator-provider.registry';
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { assert } from '@aspectjs/common/utils';
+import { _copyPropsAndMeta, assert } from '@aspectjs/common/utils';
 import { reflectContext } from '../../reflect/reflect.context.global';
 import type { AnnotationStub } from '../annotation.types';
+import { AnnotationRegistry } from '../registry/annotation.registry';
 import { inferTypeFromArgs } from '../target/annotation-target.factory';
 let anonymousAnnotationId = 0;
 
@@ -209,13 +210,19 @@ export class AnnotationFactory {
                 ?.apply(this, targetArgs);
 
               if (newDecoree) {
-                if (inferTypeFromArgs(...targetArgs) === AnnotationType.CLASS) {
-                  assert(
-                    typeof newDecoree === 'function' &&
-                      typeof decoree === 'function',
-                  );
-                  Object.assign(newDecoree, decoree); // copy static props
+                if (decoree) {
+                  const type = inferTypeFromArgs(...targetArgs);
+                  if (type === AnnotationType.CLASS) {
+                    assert(
+                      typeof newDecoree === 'function' &&
+                        typeof decoree === 'function',
+                    );
+                    _copyPropsAndMeta(newDecoree, decoree); // copy static props
+                  } else {
+                    _copyPropsAndMeta(newDecoree.value, (decoree as any).value); // copy static props
+                  }
                 }
+
                 decoree = newDecoree;
               }
               return decoree;
@@ -228,7 +235,7 @@ export class AnnotationFactory {
               throw e;
             }
           },
-          noopDecorator.apply(this, targetArgs as any),
+          noopDecorator.apply(this, targetArgs as any) as any,
         ) as any;
     };
   }
@@ -240,6 +247,9 @@ export class AnnotationFactory {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _factory = this;
     const annotationRef = AnnotationRef.of(groupId, name);
+
+    reflectContext().get(AnnotationRegistry).register(annotationRef);
+
     const annotation = function (...annotationArgs: any[]): Decorator {
       return _factory._createDecorator(annotation, stub, annotationArgs);
     } as any as Annotation<T, S>;
