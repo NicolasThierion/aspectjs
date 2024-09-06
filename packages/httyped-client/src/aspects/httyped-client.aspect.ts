@@ -12,7 +12,6 @@ import {
   Aspect,
   AspectError,
   Before,
-  BeforeContext,
   PointcutType,
   on,
 } from '@aspectjs/core';
@@ -21,25 +20,30 @@ import {
   FETCH_ANNOTATIONS,
   FetchAnnotationContext,
 } from '../annotations/fetch/fetch-annotations';
+import { Header } from '../annotations/header.annotation';
+import { Headers } from '../annotations/headers.annotation';
 import { HttypedClient } from '../annotations/http-client.annotation';
 import { PathVariable } from '../annotations/path-variable.annotation';
-import { Type } from '../annotations/type.annotation';
+import { TypeHint } from '../annotations/type.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
-import {
-  MissingPathVariableError,
-  PathVariableNotMatchedError,
-} from '../client-factory/path-variables-handler.type';
+import { RequestParam } from '../public_api';
+import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
-import { MapperContext } from '../types/mapper.type';
 import type { Request } from '../types/request-handler.type';
 import '../url-canparse.polyfill';
+import { AbstractAopHttpClientAspect } from './abstract-aop-http-client.aspect';
 
-@Aspect('@aspectjs/http:client')
-export class HttypedClientAspect {
-  constructor() {}
+const ASPECT_ID = 'ajs.httyped-client';
+@Aspect(ASPECT_ID)
+export class HttypedClientAspect extends AbstractAopHttpClientAspect {
+  constructor() {
+    super(ASPECT_ID);
+  }
 
-  defineClientConfig<T>(clientInstance: T, config: HttypedClientConfig): T {
+  // Public methods
+  // =====================
+  addClient<T>(clientInstance: T, config: Required<HttypedClientConfig>): T {
     const ctor = Object.getPrototypeOf(clientInstance).constructor;
     const httypedAnnotation = getAnnotations(HttypedClient)
       .onClass(ctor)
@@ -52,35 +56,76 @@ export class HttypedClientAspect {
       );
     }
 
-    Reflect.defineMetadata('@ajs/http:client-config', config, clientInstance!);
+    this.setClientConfig(config, clientInstance);
     return clientInstance;
   }
 
-  @Before(on.parameters.withAnnotations(Body))
-  protected assertBodyImpliesFetch(
-    ctxt: BeforeContext<PointcutType.PARAMETER>,
+  // Advice methods
+  // =====================
+
+  @Before(
+    on.parameters.withAnnotations(Body),
+    on.parameters.withAnnotations(RequestParam),
+    on.parameters.withAnnotations(RequestParam),
+    on.parameters.withAnnotations(PathVariable),
+  )
+  protected assertIsFetchMethod(ctxt: AdviceContext<PointcutType.PARAMETER>) {
+    ctxt.target.getMetadata(`${ASPECT_ID}:assertBodyImpliesFetch`, () => {
+      if (!this.findHttpMethodAnnotation(ctxt)) {
+        throw new AspectError(
+          this,
+          `${ctxt.target.label} is missing a fetch annotation`,
+        );
+      }
+      return true;
+    });
+  }
+
+  @Before(
+    on.classes.withAnnotations(Header),
+    on.methods.withAnnotations(Header),
+    on.parameters.withAnnotations(Body),
+    ...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)),
+  )
+  protected assertIsFetchClient(
+    ctxt: AdviceContext<PointcutType.CLASS | PointcutType.METHOD>,
   ) {
-    if (ctxt.target.getMetadata('@ajs/http:assertBodyImpliesFetch')) {
-      return;
-    }
-    if (!this.findFetchAnnotation(ctxt)) {
-      throw new AspectError(
-        this,
-        `${ctxt.target.label} is missing a fetch annotation`,
-      );
-    }
-    ctxt.target.defineMetadata('@ajs/http:assertBodyImpliesFetch', true);
+    ctxt.target.getMetadata(`${ASPECT_ID}:assertHeaderImpliesClient`, () => {
+      if (!this.findHttpClientAnnotation(ctxt)) {
+        throw new AspectError(
+          this,
+          `${ctxt.target.declaringClass.label} is missing a ${HttypedClient} annotation`,
+        );
+      }
+      return true;
+    });
+  }
+
+  @Before(
+    on.properties.withAnnotations(Header),
+    on.parameters.withAnnotations(Header),
+  )
+  protected prohibitWrongTarget(
+    ctxt: AdviceContext<PointcutType.CLASS | PointcutType.METHOD>,
+  ) {
+    throw new AspectError(
+      this,
+      `Annotations are not allowed: ${ctxt
+        .annotations()
+        .find()
+        .map((a) => `${a}`)}`,
+    );
   }
 
   @AfterReturn(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
-  protected fetch(ctxt: AfterReturnContext) {
-    let config = this.getClientConfig(ctxt);
-    if (!config) {
+  protected fetch(ctxt: AfterReturnContext<PointcutType.METHOD>) {
+    if (!this.isManagedInstance(ctxt.instance!)) {
       // not received a client config = not created through the HttypedClientFactory.
       return;
     }
+    let config = this.getClientConfig(ctxt.instance!);
 
-    const endpointMetadata = this.getEndpointMedatada(ctxt);
+    const endpointMetadata = this.getEndpointMetadata(ctxt);
     const classMetadata = this.getClassMetadata(ctxt);
 
     const endpointConfig = this.mergeConfig(
@@ -89,9 +134,11 @@ export class HttypedClientAspect {
       endpointMetadata,
     );
 
-    let url = joinUrls(endpointConfig.baseUrl, endpointMetadata.url);
-
-    url = this.replacePathVariables(url, endpointConfig, ctxt);
+    let url = this.replacePathVariables(
+      this.joinUrls(endpointConfig.baseUrl, endpointMetadata.url),
+      endpointConfig,
+      ctxt,
+    );
 
     let requestInit: Request = {
       ...endpointConfig.requestInit,
@@ -103,34 +150,35 @@ export class HttypedClientAspect {
       requestInit.body = body;
     }
 
+    requestInit.headers = this.getHeadersMetadata(ctxt);
+
     requestInit = this.applyRequestHandlers(config, requestInit);
     url = requestInit.url;
 
     delete (requestInit as Partial<Request> & RequestInit).url;
 
     return this.callHttpAdapter(endpointConfig, url, requestInit).then(
-      async (r) => this.applyResponseHandlers(config, r as Response),
+      async (r) => this.applyResponseHandlers(config, r as Response, ctxt),
     );
   }
-  callHttpAdapter(
-    endpointConfig: Required<HttypedClientConfig>,
-    url: string,
-    requestInit: RequestInit,
-  ) {
-    return endpointConfig.fetchAdapter(url, requestInit as any);
-  }
-  protected replacePathVariables(
-    url: string,
-    endpointConfig: Required<HttypedClientConfig>,
-    ctxt: AfterReturnContext<PointcutType, unknown>,
-  ): string {
-    const variableHandler = endpointConfig.pathVariablesHandler;
 
-    const variables = ctxt
+  // protected methods
+  ////////////////////:
+
+  protected override findPathVariables(
+    ctxt: AdviceContext<PointcutType, unknown>,
+  ): Record<string, any> {
+    return ctxt
       .annotations(PathVariable)
       .find({ searchParents: true })
       .reduce(
         (variables, annotation) => {
+          if (Object.getOwnPropertyDescriptor(variables, annotation.args[0])) {
+            throw new AspectError(
+              this,
+              `${PathVariable}(${annotation.args[0]}) is specified twice for ${ctxt.target.label}`,
+            );
+          }
           return {
             ...variables,
             [annotation.args[0]]: annotation.target.eval(),
@@ -138,80 +186,88 @@ export class HttypedClientAspect {
         },
         {} as Record<string, any>,
       );
-
-    try {
-      return variableHandler.replace(url, variables);
-    } catch (e) {
-      if (e instanceof MissingPathVariableError) {
-        throw new AspectError(
-          this,
-          `${PathVariable}(${e.variable}) parameter is missing for ${ctxt.target.label}`,
-        );
-      } else if (e instanceof PathVariableNotMatchedError) {
-        throw new AspectError(
-          this,
-          `${PathVariable}(${e.variable}) parameter of ${ctxt.target.label} does not match url ${url}`,
-        );
-      } else {
-        throw e;
-      }
-    }
-  }
-  protected applyRequestHandlers(
-    config: Required<HttypedClientConfig>,
-    requestInit: Request,
-  ) {
-    for (const h of config.requestHandlers) {
-      requestInit = h(requestInit) ?? requestInit;
-    }
-    return requestInit;
-  }
-
-  protected async applyResponseHandlers(
-    config: Required<HttypedClientConfig>,
-    response: Response,
-  ): Promise<any> {
-    let mappedResponse: any;
-    for (const handler of config.responseHandler) {
-      mappedResponse = await handler(response);
-    }
-
-    return mappedResponse;
-  }
-
-  protected getClientConfig(
-    ctxt: AfterReturnContext,
-  ): Required<HttypedClientConfig> {
-    return Reflect.getMetadata('@ajs/http:client-config', ctxt.instance!);
   }
 
   /**
    * Extracts the endpoint metadata from the fetch annotation
    */
-  protected getEndpointMedatada(
-    ctxt: AfterReturnContext<PointcutType.METHOD>,
+  protected override getEndpointMetadata(
+    ctxt: AdviceContext<PointcutType.METHOD>,
   ): HttpEndpointMetadata {
-    let metadata =
-      ctxt.target.getMetadata<HttpEndpointMetadata>('@ajs/http:endpoint');
+    return ctxt.target.getMetadata<HttpEndpointMetadata>(
+      `${ASPECT_ID}:endpoint`,
+      () => {
+        const fetchAnnotation = this.findHttpMethodAnnotation(ctxt)!;
 
-    if (metadata) {
-      return metadata;
-    }
-    const fetchAnnotation = this.findFetchAnnotation(ctxt)!;
+        let url = fetchAnnotation.args[0] ?? '';
 
-    let url = fetchAnnotation.args[0] ?? '';
+        const metadata = {
+          url,
+          method:
+            fetchAnnotation.ref.name.toLowerCase() as HttpEndpointMetadata['method'],
+          requestInit: fetchAnnotation.args[1],
+        };
 
-    metadata = {
-      url,
-      method:
-        fetchAnnotation.ref.name.toLowerCase() as HttpEndpointMetadata['method'],
-      requestInit: fetchAnnotation.args[1],
-    };
+        ctxt.target.defineMetadata(`${ASPECT_ID}:endpoint`, metadata);
 
-    ctxt.target.defineMetadata('@ajs/http:endpoint', metadata);
+        assert(!!metadata);
+        return metadata!;
+      },
+    );
+  }
 
-    assert(!!metadata);
-    return metadata!;
+  protected getHeadersMetadata(
+    ctxt: AfterReturnContext<PointcutType.METHOD>,
+  ): HeadersInit {
+    return ctxt.target.getMetadata(`${ASPECT_ID}:headers`, () => {
+      // reverse annotations order in order to let child annotations override parent annotations
+      const headerAnnotations = this.findHeaderAnnotations(ctxt).reverse();
+      const headersAnnotations = this.findHeadersAnnotations(ctxt).reverse();
+
+      const headers = [
+        headersAnnotations.map((a) => ({
+          type: a.target.type,
+          headers: a.args[0],
+        })),
+        headerAnnotations.map((a) => ({
+          type: a.target.type,
+          headers: { [a.args[0]]: a.args[1] },
+        })),
+      ]
+        .flat()
+        // sort class annotations first
+        .sort((a1, a2) => a1.type - a2.type)
+        .reduce((res, { headers }) => {
+          return { ...res, ...headers } as HeadersInit;
+        }, {} as HeadersInit);
+
+      return headers;
+    });
+  }
+
+  protected findHeaderAnnotations(
+    ctxt: AfterReturnContext<PointcutType.METHOD>,
+  ) {
+    return getAnnotations(Header)
+      .on({
+        target: ctxt.target,
+        types: [AnnotationType.CLASS, AnnotationType.METHOD],
+      })
+      .find({
+        searchParents: true,
+      });
+  }
+  protected findHeadersAnnotations(
+    ctxt: AfterReturnContext<PointcutType.METHOD>,
+  ) {
+    return getAnnotations(Headers)
+      .on({
+        target: ctxt.target,
+        types: [AnnotationType.CLASS, AnnotationType.METHOD],
+      })
+      .find({
+        searchParents: true,
+      });
   }
 
   /**
@@ -219,12 +275,11 @@ export class HttypedClientAspect {
    */
 
   protected getClassMetadata(
-    ctxt: AfterReturnContext<PointcutType.CLASS>,
+    ctxt: AdviceContext<PointcutType.METHOD>,
   ): HttpClassMetadata {
-    let metadata =
-      ctxt.target.declaringClass.getMetadata<HttpClassMetadata>(
-        '@ajs/http:class',
-      );
+    let metadata = ctxt.target.declaringClass.getMetadata<HttpClassMetadata>(
+      `${ASPECT_ID}:class`,
+    );
 
     if (metadata) {
       return metadata!;
@@ -238,25 +293,36 @@ export class HttypedClientAspect {
             baseUrl: arg,
           }
         : arg ?? {};
-    ctxt.target.defineMetadata('@ajs/http:class', metadata);
-
+    `${ASPECT_ID}:class`;
     return metadata!;
   }
 
-  protected mergeConfig(
-    config: Required<HttypedClientConfig>,
-    classConfig: HttpClassMetadata,
-    endpointMetadata: HttpEndpointMetadata,
-  ): Required<HttypedClientConfig> {
-    const baseUrl = URL.canParse(classConfig.baseUrl ?? '')
-      ? classConfig.baseUrl!
-      : joinUrls(config.baseUrl, classConfig.baseUrl);
+  protected findRequestBodyMetadata(
+    ctxt: AdviceContext,
+  ): BodyMetadata | undefined {
+    const bodyAnnotation = this.findBodyAnnotation(ctxt);
+    if (bodyAnnotation === undefined) {
+      return;
+    }
+
+    // const typeHint =
+    // ctxt.annotations(Type).find({ searchParents: true })[0]?.args[0] ??
+    // (
+    //   bodyAnnotation.target.parent.getMetadata(
+    //     'design:paramtypes',
+    //   ) as unknown[]
+    // )[bodyAnnotation.target.parameterIndex];
+
     return {
-      ...config,
-      ...classConfig,
-      ...endpointMetadata,
-      baseUrl,
+      value: bodyAnnotation.target.eval(),
+      typeHint: Object.getPrototypeOf(bodyAnnotation.target.eval()).constructor,
     };
+  }
+
+  protected findTypeHintAnnotation(
+    ctxt: AdviceContext<PointcutType.METHOD>,
+  ): Function | string | undefined {
+    return ctxt.annotations(TypeHint).find({ searchParents: true })[0]?.args[0];
   }
 
   /**
@@ -285,49 +351,9 @@ export class HttypedClientAspect {
     return bodyAnnotations[0];
   }
 
-  /**
-   * Extracts the method body from metadata, then use the configured mappers to map the body object indo a BodyInit
-   * @param config The config of the HttpClientAspect
-   * @param ctxt the advice context
-   * @returns the method body
-   */
-  protected serializeRequestBody(
-    config: Required<HttypedClientConfig>,
+  protected findHttpMethodAnnotation(
     ctxt: AdviceContext,
-  ): BodyInit | undefined {
-    const bodyAnnotation = this.findBodyAnnotation(ctxt);
-    if (bodyAnnotation === undefined) {
-      return;
-    }
-
-    let body = bodyAnnotation.target.eval();
-
-    if (typeof body === undefined) {
-      return;
-    }
-    const typeHint =
-      ctxt.annotations(Type).find({ searchParents: true })[0]?.args[0] ??
-      (
-        bodyAnnotation.target.parent.getMetadata(
-          'design:paramtypes',
-        ) as unknown[]
-      )[bodyAnnotation.target.parameterIndex];
-
-    const mappers = config.requestBodyMappers;
-    const context: MapperContext = {
-      typeHint,
-      mappers,
-    };
-    for (let mapper of mappers) {
-      if (mapper.accepts(body, context)) {
-        body = mapper.map(body, context);
-        break;
-      }
-    }
-
-    return typeof body === 'string' ? body : JSON.stringify(body);
-  }
-  protected findFetchAnnotation(ctxt: AdviceContext): FetchAnnotationContext {
+  ): FetchAnnotationContext {
     const fetchAnnotations = ctxt
       .annotations(...FETCH_ANNOTATIONS)
       .find({ searchParents: true });
@@ -376,12 +402,4 @@ export class HttypedClientAspect {
     }
     return httpClientAnnotation;
   }
-}
-
-function joinUrls(...paths: (string | undefined)[]): string {
-  return paths
-    .map((u) => u ?? '')
-    .map((u) => u.replace(/^\//, ''))
-    .filter((url) => url !== '')
-    .join('/');
 }

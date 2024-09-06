@@ -5,12 +5,11 @@ import { Mapper, MappersRegistry } from '../types/mapper.type';
 import { RequestHandler } from '../types/request-handler.type';
 import { ResponseHandler } from '../types/response-handler.type';
 import { HttypedClientConfig } from './client-config.type';
+import { MAP_JSON_RESPONSE_HANDLER } from './default-json-response-handler';
 import { DefaultPathVariablesHandler } from './path-variables-handler.type';
 
-const JSON_RESPONSE_HANDLER: ResponseHandler = (r) => r.json();
-
 const DEFAULT_CONFIG: Required<HttypedClientConfig> = {
-  responseHandler: [JSON_RESPONSE_HANDLER],
+  responseHandlers: [MAP_JSON_RESPONSE_HANDLER],
   requestHandlers: [],
   baseUrl: '',
   requestInit: {},
@@ -21,14 +20,13 @@ const DEFAULT_CONFIG: Required<HttypedClientConfig> = {
 };
 
 const configureAspect = () => {
-  let clientAspect = getWeaver().getAspects(HttypedClientAspect)[0];
+  let clientAspect = getWeaver().getAspect(HttypedClientAspect);
 
   if (clientAspect) {
     return clientAspect;
   }
   clientAspect = new HttypedClientAspect();
   getWeaver().enable(clientAspect);
-
   return clientAspect;
 };
 
@@ -43,35 +41,32 @@ export class HttypedClientFactory {
   }
 
   addResonseHandler(...handlers: ResponseHandler[]): HttypedClientFactory {
-    return new HttypedClientFactory({
-      ...this.config,
-      responseHandler: [...this.config.responseHandler, ...handlers],
-    });
+    this.config.responseHandlers = [
+      ...this.config.responseHandlers,
+      ...handlers,
+    ];
+
+    return this;
   }
 
   addRequestHandler(...handlers: RequestHandler[]): HttypedClientFactory {
-    return new HttypedClientFactory({
-      ...this.config,
-      requestHandlers: [...this.config.requestHandlers, ...handlers],
-    });
+    this.config.requestHandlers = [...this.config.requestHandlers, ...handlers];
+
+    return this;
   }
 
   addRequestBodyMappers(...mappers: Mapper[]): HttypedClientFactory {
-    return new HttypedClientFactory({
-      ...this.config,
-      requestBodyMappers: new MappersRegistry(
-        this.config.requestBodyMappers,
-      ).add(...mappers),
-    });
+    this.config.requestBodyMappers = new MappersRegistry(
+      this.config.requestBodyMappers,
+    ).add(...mappers);
+    return this;
   }
 
   addResponseBodyMappers(...mappers: Mapper[]): HttypedClientFactory {
-    return new HttypedClientFactory({
-      ...this.config,
-      responseBodyMappers: new MappersRegistry(
-        this.config.responseBodyMappers,
-      ).add(...mappers),
-    });
+    this.config.responseBodyMappers = new MappersRegistry(
+      this.config.responseBodyMappers,
+    ).add(...mappers);
+    return this;
   }
 
   create<C extends ConstructorType>(
@@ -83,7 +78,7 @@ export class HttypedClientFactory {
       args ?? ([] as any),
     );
 
-    return configureAspect().defineClientConfig(client, this.config);
+    return configureAspect().addClient(client, this.config);
   }
 }
 

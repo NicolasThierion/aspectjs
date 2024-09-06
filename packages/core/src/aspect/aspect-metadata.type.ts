@@ -1,4 +1,6 @@
+export interface AspectOptions {
+  readonly id?: string;
+}
 export interface AspectMetadata {
-  id?: string;
-  // TODO: add unique?: boolean flag
+  readonly id: string;
 }

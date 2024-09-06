@@ -1,3 +1,4 @@
+import { ConstructorType } from '@aspectjs/common/utils';
 import type { AspectType } from '../aspect/aspect.type';
 
 /**
@@ -12,9 +13,17 @@ export interface Weaver {
   enable(...aspects: AspectType[]): this;
 
   /**
-   * Find aspects among enabled aspects given an aspect id or constructor.
+   * Find an aspect among enabled aspects given an aspect id or constructor.
    * @param aspect - The aspect id or constructor to find.
-   * @returns The aspects maching the given id, or an empty array if no aspects found. Returns all aspects if no parameter given.
+   * @returns The aspects maching the given id, or undefined
    */
-  getAspects<T = AspectType>(aspect?: string | (new () => T)): T[];
+  getAspect<T = AspectType>(
+    aspect: string | ConstructorType<T>,
+  ): (T & AspectType) | undefined;
+
+  /**
+   * Find all aspects among enabled aspects given.
+   * @returns all aspects registered
+   */
+  getAspects(): AspectType[];
 }

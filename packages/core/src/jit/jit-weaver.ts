@@ -64,10 +64,14 @@ export class JitWeaver implements Weaver {
     return this;
   }
 
-  getAspects<T = unknown>(
-    aspect?: string | ConstructorType<T>,
-  ): (T & AspectType)[] {
-    return this.aspectRegistry.getAspects(aspect);
+  getAspect<T = unknown>(
+    aspect: string | ConstructorType<T>,
+  ): (T & AspectType) | undefined {
+    return this.aspectRegistry.getAspect(aspect);
+  }
+
+  getAspects(): AspectType[] {
+    return this.aspectRegistry.getAspects();
   }
 
   enhance<T extends AnnotationType, X = unknown>(
@@ -113,9 +117,9 @@ export class JitWeaver implements Weaver {
     });
 
     return new JitWeaverCanvas<PointcutType.CLASS, X>(
-      new JitClassCanvasStrategy<X>(this.weaverContext),
+      new JitClassCanvasStrategy<X>(this.weaverContext, advicesSelection),
     )
-      .compile(ctxt, advicesSelection)
+      .compile(ctxt)
       .link();
   }
 
@@ -148,8 +152,8 @@ export class JitWeaver implements Weaver {
     return new JitWeaverCanvas<
       PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
-    >(new JitPropertyCanvasStrategy<X>(this.weaverContext))
-      .compile(ctxt, advicesSelection)
+    >(new JitPropertyCanvasStrategy<X>(this.weaverContext, advicesSelection))
+      .compile(ctxt)
       .link();
   }
 
@@ -161,7 +165,7 @@ export class JitWeaver implements Weaver {
       .select()
       .on({
         target,
-        types: [AnnotationType.METHOD, AnnotationType.PARAMETER],
+        types: [AnnotationType.METHOD],
       })
       .find();
     if (!annotationsForType.length) {
@@ -175,10 +179,29 @@ export class JitWeaver implements Weaver {
       annotations: annotationsForType.map((a) => a.ref),
     });
 
+    const annotationsForParameters = this.annotationContextRegistry
+      .select()
+      .on({
+        target,
+        types: [AnnotationType.PARAMETER],
+      })
+      .find();
+
+    // find all method advices for enabled aspects
+    const parameterAdvicesSelection = annotationsForParameters.length
+      ? this.adviceRegistry.select({
+          annotations: annotationsForParameters.map((a) => a.ref),
+        })
+      : undefined;
+
     return new JitWeaverCanvas<PointcutType.METHOD | PointcutType.PARAMETER, X>(
-      new JitMethodCanvasStrategy<X>(this.weaverContext),
+      new JitMethodCanvasStrategy<X>(
+        this.weaverContext,
+        advicesSelection,
+        parameterAdvicesSelection,
+      ),
     )
-      .compile(ctxt, advicesSelection)
+      .compile(ctxt)
       .link();
   }
 
@@ -206,9 +229,9 @@ export class JitWeaver implements Weaver {
     });
 
     return new JitWeaverCanvas<PointcutType.PARAMETER, X>(
-      new JitParameterCanvasStrategy<X>(this.weaverContext),
+      new JitParameterCanvasStrategy<X>(this.weaverContext, advicesSelection),
     )
-      .compile(ctxt, advicesSelection)
+      .compile(ctxt)
       .link();
   }
 

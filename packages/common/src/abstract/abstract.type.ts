@@ -20,7 +20,7 @@ export const _defuseAbstract = (receipe: () => {}) => {
     }
 
     const multipleAbstractCalls =
-      (_isAbstractToken(val) &&
+      (isAbstractToken(val) &&
         (val as _AbstractTokenImpl).counter - abstractCounter !== 0) ||
       (_abstractThrows && abstractCounter - _abstractCounter !== 1);
     if (multipleAbstractCalls) {
@@ -54,4 +54,4 @@ export const abstract = <T extends any>(template?: T): T => {
   return new _AbstractTokenImpl<T>(++abstractCounter, template) as any;
 };
 
-export const _isAbstractToken = (val: any) => val instanceof _AbstractTokenImpl;
+export const isAbstractToken = (val: any) => val instanceof _AbstractTokenImpl;

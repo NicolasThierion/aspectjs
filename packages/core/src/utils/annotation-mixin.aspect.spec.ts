@@ -1,12 +1,12 @@
 import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { getWeaver, WeaverModule } from '../public_api';
-import { DecoratorBridgeAspect } from './decorator-bridge.aspect';
+import { AnnotationMixinAspect } from './annotation-mixin.aspect';
 
-describe('DecoratorBridgeAspect', () => {
+describe(`${AnnotationMixinAspect.name}`, () => {
   describe('configured to bridge decorator XDecorator(<args>) to annotation X(<args>)', () => {
     const af = new AnnotationFactory('test');
-    let decoratorBridgeAspect: DecoratorBridgeAspect;
+    let annotationMixinAspect: AnnotationMixinAspect;
 
     const XClass = af.create(
       AnnotationType.CLASS,
@@ -76,7 +76,7 @@ describe('DecoratorBridgeAspect', () => {
     }
 
     beforeEach(() => {
-      decoratorBridgeAspect = new DecoratorBridgeAspect()
+      annotationMixinAspect = new AnnotationMixinAspect()
         .bridge(XClass, (a: string, b: string) =>
           XClassDecorator(
             a.toLocaleUpperCase() as Uppercase<string>,
@@ -112,7 +112,7 @@ describe('DecoratorBridgeAspect', () => {
 
       configureTesting(WeaverModule);
 
-      getWeaver().enable(decoratorBridgeAspect);
+      getWeaver().enable(annotationMixinAspect);
     });
 
     describe('using the X annotation on a class', () => {

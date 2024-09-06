@@ -6,20 +6,14 @@ import {
   AnnotationType,
   reflectContext,
 } from '@aspectjs/common';
-import { AspectMetadata } from './aspect-metadata.type';
+import { AspectMetadata, AspectOptions } from './aspect-metadata.type';
 import { Aspect } from './aspect.annotation';
 
-export const ASPECT_ID_SYMBOL = Symbol.for('aspectjs:aspectId');
-
-export type AspectType = object & {
-  [ASPECT_ID_SYMBOL]?: string;
-};
+export type AspectType = object & {};
 
 let _globalAspectId = 0;
 
-export function getAspectMetadata(
-  aspect: AspectType,
-): Required<AspectMetadata> {
+export function getAspectMetadata(aspect: AspectType): AspectMetadata {
   const target = reflectContext()
     .get(AnnotationTargetFactory)
     .of<AspectType>(aspect);
@@ -46,14 +40,15 @@ export function isAspect(aspect: AspectType) {
 function coerceAspectOptions(
   aspectTarget: AnnotationTarget<AnnotationType.CLASS, AspectType>,
   idOrOptions: unknown,
-): Required<AspectMetadata> {
-  const options: AspectMetadata =
+): AspectMetadata {
+  const options: AspectOptions =
     typeof idOrOptions === 'object' ? { ...idOrOptions } : {};
 
-  options.id =
-    typeof idOrOptions === 'string'
-      ? idOrOptions
-      : options.id ??
-        `${aspectTarget.proto.constructor.name}#${_globalAspectId++}`;
-  return options as Required<AspectMetadata>;
+  return {
+    id:
+      typeof idOrOptions === 'string'
+        ? idOrOptions
+        : options.id ??
+          `${aspectTarget.proto.constructor.name}#${_globalAspectId++}`,
+  } satisfies AspectMetadata;
 }

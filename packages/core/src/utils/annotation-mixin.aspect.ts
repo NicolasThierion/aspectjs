@@ -5,8 +5,8 @@ import { Compile } from '../advices/compile/compile.annotation';
 import { Aspect } from '../aspect/aspect.annotation';
 import { on } from '../pointcut/pointcut-expression.factory';
 
-@Aspect() // no id, so multiple DecoratorBridgeAspect will not replace each other
-export class DecoratorBridgeAspect {
+@Aspect() // no id, so multiple AnnotationMixinAspect will not replace each other
+export class AnnotationMixinAspect {
   private bridgeCounter = 0;
   constructor() {}
 

@@ -12,7 +12,7 @@ import { Aspect } from '../aspect/aspect.annotation';
 import { WeavingError } from '../errors/weaving.error';
 import { on } from '../pointcut/pointcut-expression.factory';
 import { Before, Compile } from '../public_api';
-import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
+import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import { WeaverModule } from '../weaver/weaver.module';
 import { JitWeaver } from './jit-weaver';
 

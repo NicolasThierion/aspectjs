@@ -49,7 +49,7 @@ describe('@Body() on a method parameter', () => {
     }
 
     api = httypedClientFactory.create(HttpClientApi);
-    httypedClientAspect = getWeaver().getAspects(HttypedClientAspect)[0]!;
+    httypedClientAspect = getWeaver().getAspect(HttypedClientAspect)!;
   });
 
   describe('when the method is not annotated with a fetch annotation', () => {
@@ -83,9 +83,7 @@ describe('@Body() on a method parameter', () => {
     describe('that does not accept the given body', () => {
       beforeEach(() => {
         requestBodyMappers.add({
-          accepts(obj, mapperContext) {
-            return typeof obj === 'boolean';
-          },
+          typeHint: 'Void',
           map(body, mapperContext) {
             return false;
           },
@@ -105,9 +103,7 @@ describe('@Body() on a method parameter', () => {
 
       beforeEach(() => {
         requestBodyMappers.add({
-          accepts(obj, mapperContext) {
-            return typeof obj === 'string';
-          },
+          typeHint: String,
           map(body: string, mapperContext) {
             map(body, mapperContext);
             return body.toUpperCase();
@@ -127,7 +123,6 @@ describe('@Body() on a method parameter', () => {
         api.method('rest-body');
         expect(map).toBeCalled();
         const mapperContext = map.mock.calls[0][1] as MapperContext;
-        expect(mapperContext.typeHint).toEqual(String);
         expect(mapperContext.mappers).toEqual(expect.any(MappersRegistry));
       });
     });

@@ -21,3 +21,4 @@ export * from './reflect/module/reflect-module.type';
 export * from './reflect/reflect-provider.type';
 export * from './reflect/reflect.context';
 export * from './reflect/reflect.context.global';
+export * from './reflect/reflect.error';

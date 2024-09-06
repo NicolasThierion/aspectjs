@@ -1,11 +1,10 @@
-import { _isAbstractToken, assert } from '@aspectjs/common/utils';
+import { assert, isAbstractToken } from '@aspectjs/common/utils';
 
 import { WeavingError } from '../../errors/weaving.error';
 
 import type { PointcutType } from '../../pointcut/pointcut-target.type';
 
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
-import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import type { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
 import type { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
@@ -22,10 +21,7 @@ export class JitWeaverCanvas<
 > {
   constructor(private readonly strategy: JitWeaverCanvasStrategy<T, X>) {}
 
-  compile<C extends MutableAdviceContext<T, X>>(
-    ctxt: C,
-    selection: AdvicesSelection,
-  ): CompiledCanvas<T, X> {
+  compile<C extends MutableAdviceContext<T, X>>(ctxt: C): CompiledCanvas<T, X> {
     // if no advices, do not compile.
     // in fact, this condition makes it impossible to enable aspects lately, we enhance the target anyway
     // if (selection.find().next().done) {
@@ -35,7 +31,7 @@ export class JitWeaverCanvas<
     //   };
     // }
 
-    const compiledSymbol = this.strategy.compile(ctxt, selection);
+    const compiledSymbol = this.strategy.compile(ctxt);
     if (!compiledSymbol) {
       assert(false);
     }
@@ -58,11 +54,11 @@ export class JitWeaverCanvas<
         ctxt.args = args;
 
         try {
-          this.strategy.before(ctxt, selection);
+          this.strategy.before(ctxt);
 
           this.strategy.callJoinpoint(ctxt, compiledSymbol);
 
-          return this.strategy.afterReturn(ctxt, selection);
+          return this.strategy.afterReturn(ctxt);
         } catch (error) {
           // consider WeavingErrors as not recoverable by an aspect
           if (error instanceof WeavingError) {
@@ -70,15 +66,15 @@ export class JitWeaverCanvas<
           }
 
           ctxt.error = error;
-          return this.strategy.afterThrow(ctxt, selection);
+          return this.strategy.afterThrow(ctxt);
         } finally {
-          this.strategy.after(ctxt, selection);
+          this.strategy.after(ctxt);
         }
       };
 
-      const returnValue = this.strategy.around(ctxt, selection)(...args);
+      const returnValue = this.strategy.around(ctxt)(...args);
 
-      if (_isAbstractToken(returnValue)) {
+      if (isAbstractToken(returnValue)) {
         throw new WeavingError(
           `${ctxt.target} returned "abstract()" token. "abstract()" is meant to be superseded by a @AfterReturn advice or an @Around advice.`,
         );

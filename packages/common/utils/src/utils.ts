@@ -32,7 +32,7 @@ export function isFunction(
 }
 
 export function isObject(value: unknown): value is object {
-  return typeof value === 'object' && !(value instanceof Array);
+  return typeof value === 'object' && !Array.isArray(value);
 }
 
 export function isNumber(value: unknown): value is number {

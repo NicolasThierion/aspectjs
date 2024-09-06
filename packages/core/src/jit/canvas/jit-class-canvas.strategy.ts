@@ -22,13 +22,12 @@ import { renameFunction } from './canvas.utils';
 export class JitClassCanvasStrategy<
   X = unknown,
 > extends JitWeaverCanvasStrategy<PointcutType.CLASS, X> {
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.CLASS]);
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutType.CLASS]);
   }
 
   compile(
     ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-    selection: AdvicesSelection,
   ): ConstructorType<X> {
     // if class already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
@@ -38,7 +37,7 @@ export class JitClassCanvasStrategy<
     ) as ConstructorType<X>;
 
     const adviceEntries = [
-      ...selection.find([PointcutType.CLASS], [AdviceType.COMPILE]),
+      ...this.advices.find([PointcutType.CLASS], [AdviceType.COMPILE]),
     ];
     //  if no class compile advices, return ctor as is
     if (!adviceEntries.length) {
@@ -79,11 +78,8 @@ export class JitClassCanvasStrategy<
     return constructor;
   }
 
-  override before(
-    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-    selection: AdvicesSelection,
-  ): void {
-    super.before(withNullInstance(ctxt), selection);
+  override before(ctxt: MutableAdviceContext<PointcutType.CLASS, X>): void {
+    super.before(withNullInstance(ctxt));
   }
 
   override callJoinpoint(

@@ -19,6 +19,7 @@ export interface AfterReturnContext<
   readonly annotations: AnnotationsByRefSelector<
     ToAnnotationType<T>
   >['annotations'];
+
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

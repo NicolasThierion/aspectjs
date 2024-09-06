@@ -4,7 +4,7 @@ import type { Weaver } from './../weaver/weaver';
 
 import { _CORE_ANNOTATION_FACTORY } from '../utils';
 
-import type { AspectMetadata } from './aspect-metadata.type';
+import type { AspectOptions } from './aspect-metadata.type';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
@@ -24,5 +24,5 @@ export const Aspect = _CORE_ANNOTATION_FACTORY.create(
   AnnotationType.CLASS,
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/no-unused-vars
   // @ts-ignore
-  function Aspect(id: string | AspectMetadata = {}) {},
+  function Aspect(id: string | AspectOptions = {}) {},
 );

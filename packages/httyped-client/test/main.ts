@@ -1,5 +1,5 @@
-import { Annotation, AnnotationFactory } from '@aspectjs/common';
-import { Aspect, BeforeContext, Compile, getWeaver, on } from '@aspectjs/core';
+import { AnnotationFactory } from '@aspectjs/common';
+import { AnnotationMixinAspect, getWeaver } from '@aspectjs/core';
 import 'reflect-metadata';
 import 'whatwg-fetch';
 
@@ -16,44 +16,7 @@ const GetAnnotation = new AnnotationFactory('test').create(function Get(
   ...args: any[]
 ) {});
 
-@Aspect('test')
-class DecoratorBridgeAspect {
-  private bridgeCounter = 0;
-  constructor() {}
-
-  bridge(
-    annotation: Annotation,
-    decorator: (...args: any[]) => MethodDecorator,
-  ) {
-    const proto = Object.getPrototypeOf(this);
-    const bridgeAdviceName = `bridge_${annotation.ref}_${decorator.name}_${this
-      .bridgeCounter++}`;
-
-    const bridgeAdvice: PropertyDescriptor = {
-      value: (ctxt: BeforeContext) => {
-        console.log(`Invoking decorator ${decorator.name}`);
-
-        return (decorator(ctxt.annotations(annotation).find()[0]!.args) as any)(
-          ...ctxt.target.asDecoratorArgs(),
-        );
-      },
-      writable: true,
-      configurable: true,
-    };
-
-    Object.defineProperty(proto, bridgeAdviceName, bridgeAdvice);
-
-    Compile(on.any.withAnnotations(annotation))(
-      proto,
-      bridgeAdviceName,
-      bridgeAdvice,
-    );
-
-    return this;
-  }
-}
-
-getWeaver().enable(new DecoratorBridgeAspect().bridge(GetAnnotation, Get));
+getWeaver().enable(new AnnotationMixinAspect().bridge(GetAnnotation, Get));
 
 class X {
   @GetAnnotation('annotationArg1')

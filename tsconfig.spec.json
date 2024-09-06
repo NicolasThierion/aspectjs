@@ -6,7 +6,7 @@
     "emitDecoratorMetadata": true,
     "outDir": "./out-tsc/spec",
     "lib": ["DOM", "ES2021"],
-    "types": ["jest", "node"],
+    "types": ["jest", "node", "reflect-metadata"],
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {

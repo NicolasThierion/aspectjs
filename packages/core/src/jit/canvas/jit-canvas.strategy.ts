@@ -24,40 +24,37 @@ export abstract class JitWeaverCanvasStrategy<
 {
   constructor(
     protected readonly weaverContext: WeaverContext,
+    protected readonly advices: AdvicesSelection,
     public readonly pointcutTypes: T[],
   ) {}
 
   abstract compile(
     ctxt: MutableAdviceContext<T, X>,
-    selection: AdvicesSelection,
   ): CompiledSymbol<T, X> | undefined;
 
-  before(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
+  before(ctxt: MutableAdviceContext<T, X>): void {
     this._applyNotReturn(
       ctxt,
       () => ctxt.asBeforeContext(),
-      selection.find(this.pointcutTypes, [AdviceType.BEFORE]),
+      this.advices.find(this.pointcutTypes, [AdviceType.BEFORE]),
     );
   }
 
-  after(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
+  after(ctxt: MutableAdviceContext<T, X>): void {
     this._applyNotReturn(
       ctxt,
 
       () => ctxt.asAfterContext(),
-      selection.find(this.pointcutTypes, [AdviceType.AFTER]),
+      this.advices.find(this.pointcutTypes, [AdviceType.AFTER]),
     );
   }
 
-  afterReturn(
-    ctxt: MutableAdviceContext<T, X>,
-    selection: AdvicesSelection,
-  ): T {
+  afterReturn(ctxt: MutableAdviceContext<T, X>): unknown {
     const advices = [
-      ...selection.find(this.pointcutTypes, [AdviceType.AFTER_RETURN]),
+      ...this.advices.find(this.pointcutTypes, [AdviceType.AFTER_RETURN]),
     ];
     if (!advices.length) {
-      return ctxt.value as T;
+      return ctxt.value;
     }
 
     advices.forEach((advice) => {
@@ -69,16 +66,12 @@ export abstract class JitWeaverCanvasStrategy<
       ]);
     });
 
-    return ctxt.value as T;
+    return ctxt.value;
   }
 
-  afterThrow(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesSelection: AdvicesSelection,
-    allowReturn = true,
-  ): any {
+  afterThrow(ctxt: MutableAdviceContext<T, X>, allowReturn = true): any {
     const adviceEntries = [
-      ...advicesSelection.find(this.pointcutTypes, [AdviceType.AFTER_THROW]),
+      ...this.advices.find(this.pointcutTypes, [AdviceType.AFTER_THROW]),
     ];
 
     if (!adviceEntries.length) {
@@ -112,13 +105,9 @@ export abstract class JitWeaverCanvasStrategy<
     return ctxt.value;
   }
 
-  around(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-    allowReturn = true,
-  ): JoinPoint {
+  around(ctxt: MutableAdviceContext<T, X>, allowReturn = true): JoinPoint {
     const advices = [
-      ...advicesEntries.find(this.pointcutTypes, [AdviceType.AROUND]),
+      ...this.advices.find(this.pointcutTypes, [AdviceType.AROUND]),
     ];
     if (!advices.length) {
       return ctxt.joinpoint!;

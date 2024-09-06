@@ -68,13 +68,29 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
       });
       it('throws an error', async () => {
         expect(() => api.method('a', 'b')).toThrowError(
-          `[${HttypedClientAspect.name}]: ${PathVariable}(:unmatched) parameter of method HttpClientApi.method does not match url ${TEST_BASE_URL}/:variable`,
+          `[ajs.httyped-client]: ${PathVariable}(:unmatched) parameter of method HttpClientApi.method does not match url ${TEST_BASE_URL}/:variable`,
         );
       });
     });
 
-    xdescribe(`when the method has the same ${PathVariable} more than once`, () => {
-      it('throws an error', () => {});
+    describe(`when the method has the same ${PathVariable} more than once`, () => {
+      beforeEach(() => {
+        @HttypedClient()
+        class HttpClientApi {
+          @annotation('/:variable')
+          method(
+            @PathVariable('variable') var1: string,
+            @PathVariable('variable') var2: string,
+          ) {}
+        }
+
+        api = httypedClientFactory.create(HttpClientApi);
+      });
+      it('throws an error', async () => {
+        expect(() => api.method('a', 'b')).toThrowError(
+          `[ajs.httyped-client]: ${PathVariable}(variable) is specified twice for method HttpClientApi.method`,
+        );
+      });
     });
 
     describe(`when the method has an argument annotated with ${PathVariable}`, () => {
@@ -94,9 +110,12 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
       it(`calls fetch("<path>", { method: ${method}})`, async () => {
         await api.method('a', 'b');
         expect(fetchAdapter).toHaveBeenCalled();
-        expect(fetchAdapter).toHaveBeenCalledWith(`${TEST_BASE_URL}/a/b`, {
-          method,
-        });
+        expect(fetchAdapter).toHaveBeenCalledWith(
+          `${TEST_BASE_URL}/a/b`,
+          expect.objectContaining({
+            method,
+          }),
+        );
       });
     });
   },

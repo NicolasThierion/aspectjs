@@ -6,7 +6,7 @@ import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
-import { AbstractJitMethodCanvasStrategy } from './jit-method-canvas.strategy';
+import { AbstractJitMethodCanvasStrategy } from './jit-abstract-method-canvas.strategy';
 
 const _defineProperty = Object.defineProperty;
 
@@ -16,24 +16,22 @@ const _defineProperty = Object.defineProperty;
 export class JitParameterCanvasStrategy<
   X = unknown,
 > extends AbstractJitMethodCanvasStrategy<PointcutType.PARAMETER, X> {
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.PARAMETER]);
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutType.PARAMETER]);
   }
 
   override compile(
     ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
-    selection: AdvicesSelection,
   ): MethodPropertyDescriptor {
-    const compiledDescriptor = super.compile(ctxt, selection);
+    const compiledDescriptor = super.compile(ctxt);
 
     return compiledDescriptor;
   }
 
   protected override getAdviceEntries<P extends AdviceType>(
-    selection: AdvicesSelection,
     pointcutType: P,
   ): AdviceEntry<PointcutType.PARAMETER, X, P>[] {
-    return [...selection.find([PointcutType.PARAMETER], [pointcutType])];
+    return [...this.advices.find([PointcutType.PARAMETER], [pointcutType])];
   }
 
   override link(

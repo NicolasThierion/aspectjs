@@ -27,8 +27,8 @@ export class JitPropertyCanvasStrategy<
     X
   >;
 
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.GET_PROPERTY]);
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutType.GET_PROPERTY]);
     this.propertySetterStrategy = this.createPropertySetterStrategy();
   }
 
@@ -37,11 +37,10 @@ export class JitPropertyCanvasStrategy<
       PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
-    selection: AdvicesSelection,
   ): PropertyDescriptor | undefined {
     this.propertySetterCanvas = new JitWeaverCanvas(
       this.propertySetterStrategy,
-    ).compile(new MutableAdviceContext<any, any>(ctxt), selection);
+    ).compile(new MutableAdviceContext<any, any>(ctxt));
 
     return this.propertySetterCanvas.compiledSymbol!;
   }
@@ -99,7 +98,7 @@ export class JitPropertyCanvasStrategy<
   }
 
   private createPropertySetterStrategy() {
-    return new JitPropertySetCanvasStrategy(this.weaverContext);
+    return new JitPropertySetCanvasStrategy(this.weaverContext, this.advices);
   }
 }
 
@@ -107,8 +106,8 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
   PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
   X
 > {
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.SET_PROPERTY]);
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutType.SET_PROPERTY]);
   }
 
   override callJoinpoint(
@@ -150,7 +149,6 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
       PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
       X
     >,
-    selection: AdvicesSelection,
   ): CompiledSymbol<PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY, X> {
     // if property already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
@@ -164,8 +162,8 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     const target = ctxt.target;
 
     const adviceEntries = [
-      ...selection.find([PointcutType.GET_PROPERTY], [AdviceType.COMPILE]),
-      ...selection.find([PointcutType.SET_PROPERTY], [AdviceType.COMPILE]),
+      ...this.advices.find([PointcutType.GET_PROPERTY], [AdviceType.COMPILE]),
+      ...this.advices.find([PointcutType.SET_PROPERTY], [AdviceType.COMPILE]),
     ];
 
     adviceEntries
@@ -213,15 +211,11 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
   override afterThrow(
     ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>,
-    advicesSelection: AdvicesSelection,
   ) {
-    return super.afterThrow(ctxt, advicesSelection, false);
+    return super.afterThrow(ctxt, false);
   }
-  override around(
-    ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>,
-    advicesEntries: AdvicesSelection,
-  ) {
-    return super.around(ctxt, advicesEntries, false);
+  override around(ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>) {
+    return super.around(ctxt, false);
   }
 
   private normalizeDescriptor(descriptor: PropertyDescriptor): any {

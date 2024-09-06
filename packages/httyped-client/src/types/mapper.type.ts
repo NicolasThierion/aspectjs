@@ -1,45 +1,33 @@
-import { assert } from '@aspectjs/common/utils';
+import { ConstructorType } from '@aspectjs/common/utils';
+import { TypeHintType } from './type-hint.type';
 
 export interface MapperContext {
-  typeHint: Function;
-  mappers: MappersRegistry;
+  readonly mappers: MappersRegistry;
+  readonly data: Record<string, unknown>;
 }
 export interface Mapper<T = unknown, U = unknown> {
-  accepts(obj: T, context: MapperContext): boolean;
+  typeHint: TypeHintType | TypeHintType[];
   map(obj: T, context: MapperContext): U;
 }
 
 export class MappersRegistry {
-  private readonly knownMappers: Map<Function, Mapper> = new Map();
-  private readonly mappers: Mapper[] = [];
+  private readonly mappers: Map<TypeHintType, Mapper> = new Map();
 
   constructor(mappersReg?: MappersRegistry) {
     if (mappersReg) {
-      this.knownMappers = new Map(mappersReg.knownMappers);
-      this.mappers = [...mappersReg.mappers];
-    }
-  }
-  accepts<T>(obj: T, context: MapperContext): boolean {
-    return !!this.findMapper(obj, context);
-  }
-  map<T, U>(obj: T, context: MapperContext): U {
-    const mapper = this.findMapper(obj, context);
-    if (mapper) {
-      return mapper.map(obj, context) as U;
-    } else {
-      throw new Error(
-        `No mapper found for object of type ${
-          Object.getPrototypeOf(obj).constructor.name
-        }`,
-      );
+      this.mappers = new Map(mappersReg.mappers);
     }
   }
 
   add(...mappers: Mapper[]) {
-    this.mappers.unshift(...mappers);
-
-    // have to refresk all known mappers
-    this.knownMappers.clear();
+    mappers.forEach((mapper) => {
+      [mapper.typeHint].flat().forEach((typeHint) => {
+        this.mappers.set(typeHint, mapper);
+        if (typeof typeHint === 'function') {
+          this.mappers.set(typeHint.name, mapper);
+        }
+      });
+    });
 
     return this;
   }
@@ -48,23 +36,28 @@ export class MappersRegistry {
     return this.mappers[Symbol.iterator]();
   }
 
-  private findMapper<T>(obj: T, context: MapperContext): Mapper | undefined {
-    const ctor = Object.getPrototypeOf(obj).constructor;
-    let mapper = this.knownMappers.get(ctor);
-    if (mapper) {
-      assert(
-        mapper.accepts(obj, context),
-        `Mapper ${mapper.constructor.name} does not accept object of type ${
-          Object.getPrototypeOf(obj).constructor.name
-        }`,
-      );
-    } else {
-      for (const m of this.mappers) {
-        if (m.accepts(obj, context)) {
-          this.knownMappers.set(ctor, m);
-          mapper = m;
-          break;
-        }
+  findMapper<T, U extends T>(typeHint: TypeHintType<U>): Mapper<T> | undefined {
+    let mapper = this.mappers.get(typeHint);
+    if (!mapper && typeof (typeHint as Function) === 'function') {
+      // try to lookup mappers by type name
+      mapper = this._findMapperByCtor<T, U>(typeHint as ConstructorType<T>);
+    }
+
+    return mapper;
+  }
+
+  private _findMapperByCtor<T, U extends T>(
+    ctor: ConstructorType<T>,
+  ): Mapper<U> | undefined {
+    let mapper =
+      this.mappers.get(ctor) ?? (this.mappers.get(ctor.name) as Mapper<U>);
+
+    if (!mapper) {
+      const parent = ctor.prototype
+        ? Object.getPrototypeOf(ctor.prototype)?.constructor
+        : null;
+      if (parent && parent !== Object) {
+        return this._findMapperByCtor(parent);
       }
     }
 

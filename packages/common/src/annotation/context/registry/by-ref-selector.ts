@@ -69,10 +69,16 @@ export class AnnotationsByRefSelector<
     annotation: Annotation<AnnotationType, S2>,
   ): AnnotationsSelector<T, S2, X>;
   annotations(
-    ...annotations: (AnnotationRef | Annotation)[]
+    ...annotations: (
+      | AnnotationRef
+      | Annotation<AnnotationType, AnnotationStub>
+    )[]
   ): AnnotationsSelector<T, S, X>;
   annotations(
-    ...annotations: (Annotation | AnnotationRef)[]
+    ...annotations: (
+      | Annotation<AnnotationType, AnnotationStub>
+      | AnnotationRef
+    )[]
   ): AnnotationsSelector<T, S, X> {
     let annotationRefs = this.annotationsRefs;
     if (annotations.length) {

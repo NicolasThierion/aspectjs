@@ -12,12 +12,7 @@ import { AdviceRegistry } from '../advice/registry/advice.registry';
 import { WeavingError } from '../errors/weaving.error';
 import { WeaverContext } from '../weaver/context/weaver.context';
 
-import {
-  ASPECT_ID_SYMBOL,
-  AspectType,
-  getAspectMetadata,
-  isAspect,
-} from './aspect.type';
+import { AspectType, getAspectMetadata, isAspect } from './aspect.type';
 let _globalRegId = 0;
 
 export class AspectRegistry {
@@ -76,19 +71,19 @@ export class AspectRegistry {
     }
     this.aspectsMap.set(id, aspect);
 
-    aspect[ASPECT_ID_SYMBOL] = id;
-
     this.adviceReg.register(aspect);
   }
 
-  getAspects<T = unknown>(
-    aspect?: string | ConstructorType<T>,
-  ): (T & AspectType)[] {
-    return (
-      aspect
-        ? this.aspectsMap.get(getAspectId(aspect)) ?? []
-        : [...this.aspectsMap.values()].flatMap((a) => a)
-    ) as (T & AspectType)[];
+  getAspect<T = unknown>(
+    aspect: string | ConstructorType<T>,
+  ): (T & AspectType) | undefined {
+    return this.aspectsMap.get(getAspectId(aspect)) as
+      | (T & AspectType)
+      | undefined;
+  }
+
+  getAspects(): AspectType[] {
+    return [...this.aspectsMap.values()].flatMap((a) => a);
   }
 
   private __isAspectRegistered(aspect: AspectType) {
@@ -100,7 +95,5 @@ export class AspectRegistry {
 }
 
 function getAspectId(aspect: AspectType | string): string {
-  return typeof aspect === 'string'
-    ? aspect
-    : getPrototype(aspect).constructor.name;
+  return typeof aspect === 'string' ? aspect : getAspectMetadata(aspect).id;
 }

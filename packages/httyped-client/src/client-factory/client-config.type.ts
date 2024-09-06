@@ -9,7 +9,7 @@ export interface HttypedClientConfig {
   requestInit?: RequestInit;
   fetchAdapter?: FetchAdapter;
   requestHandlers?: RequestHandler[];
-  responseHandler?: ResponseHandler[];
+  responseHandlers?: ResponseHandler[];
   responseBodyMappers?: MappersRegistry;
   requestBodyMappers?: MappersRegistry;
   pathVariablesHandler?: PathVariablesHandler;

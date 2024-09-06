@@ -1,6 +1,6 @@
 import { AnnotationTargetFactory } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
-import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
+import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import { JitWeaver } from './jit-weaver';
 
 export const createJitWeaverDecorator = (

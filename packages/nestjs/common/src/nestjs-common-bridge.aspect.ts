@@ -1,5 +1,4 @@
-import { AnnotationRef } from '@aspectjs/common';
-import { Aspect, DecoratorBridgeAspect } from '@aspectjs/core';
+import { AnnotationMixinAspect, Aspect } from '@aspectjs/core';
 import {
   Body as NBody,
   Controller as NController,
@@ -22,20 +21,10 @@ import { Options } from './annotations/options.annotation';
 import { Patch } from './annotations/patch.annotation';
 import { Post } from './annotations/post.annotation';
 import { Put } from './annotations/put.annotation';
-@Aspect('@aspectjs/nestjs:common-bridge')
-export class NestJSCommonBridgeAspect extends DecoratorBridgeAspect {
+@Aspect('ajs.nestjs:common-bridge')
+export class NestJSCommonMixinAspect extends AnnotationMixinAspect {
   constructor() {
     super();
-
-    // bridge @aspectjs/http-client annotations
-    this.bridge(AnnotationRef.of('aspectjs.http', 'Get'), NGet)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Post'), NPost)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Put'), NPut)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Patch'), NPatch)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Delete'), NDelete)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Options'), NOptions)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Head'), NHead)
-      .bridge(AnnotationRef.of('aspectjs.http', 'Body'), NBody);
 
     // bridge @aspectjs/nestjs/common annotations
     this.bridge(Get, NGet)

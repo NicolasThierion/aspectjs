@@ -12,6 +12,7 @@ import { DecoratorProviderRegistry } from './decorator-provider.registry';
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { _copyPropsAndMeta, assert } from '@aspectjs/common/utils';
+import { ReflectError } from '../../public_api';
 import { reflectContext } from '../../reflect/reflect.context.global';
 import type { AnnotationStub } from '../annotation.types';
 import { AnnotationRegistry } from '../registry/annotation.registry';
@@ -227,11 +228,14 @@ export class AnnotationFactory {
               }
               return decoree;
             } catch (e) {
-              console.error(
-                `Error applying annotation hook ${name}: ${
-                  (e as Error).message
-                }`,
-              );
+              if (!(e instanceof ReflectError)) {
+                console.error(
+                  `Error applying annotation hook ${name}: ${
+                    (e as Error).message
+                  }`,
+                );
+              }
+
               throw e;
             }
           },

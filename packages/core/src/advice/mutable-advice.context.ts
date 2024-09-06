@@ -18,7 +18,7 @@ import type { AfterThrowContext } from '../advices/after-throw/after-throw.conte
 import type { AroundContext } from '../advices/around/around.context';
 import type { BeforeContext } from '../advices/before/before.context';
 import type { CompileContext } from '../advices/compile/compile.context';
-import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
+import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import { AdviceContext } from './advice.context';
 
 export class MutableAdviceContext<

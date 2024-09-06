@@ -93,9 +93,12 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
         it(`calls fetch("", { method: ${method}})`, async () => {
           await api.method();
           expect(fetchAdapter).toHaveBeenCalled();
-          expect(fetchAdapter).toHaveBeenCalledWith(TEST_BASE_URL, {
-            method,
-          });
+          expect(fetchAdapter).toHaveBeenCalledWith(
+            TEST_BASE_URL,
+            expect.objectContaining({
+              method,
+            }),
+          );
         });
       });
 
@@ -104,9 +107,12 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
         it(`calls fetch("<path>", { method: ${method}})`, async () => {
           await api.method();
           expect(fetchAdapter).toHaveBeenCalled();
-          expect(fetchAdapter).toHaveBeenCalledWith(`${TEST_BASE_URL}/path`, {
-            method,
-          });
+          expect(fetchAdapter).toHaveBeenCalledWith(
+            `${TEST_BASE_URL}/path`,
+            expect.objectContaining({
+              method,
+            }),
+          );
         });
       });
     });
