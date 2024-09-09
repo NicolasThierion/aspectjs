@@ -1,14 +1,12 @@
-import { AnnotationTargetFactory } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import { JitWeaver } from './jit-weaver';
 
 export const createJitWeaverDecorator = (
   weaver: JitWeaver,
-  targetFactory: AnnotationTargetFactory,
+  target: _BindableAnnotationTarget,
 ) => {
   return function (...args: any) {
-    const target = targetFactory.of(...args) as _BindableAnnotationTarget;
     assert(typeof target._bind === 'function');
     return weaver.enhance(target);
   };

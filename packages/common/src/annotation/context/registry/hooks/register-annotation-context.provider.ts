@@ -1,6 +1,5 @@
-import { AnnotationContext } from '../../../annotation-context';
+import { reflectContext } from '../../../../public_api';
 import type { DecoratorProvider } from '../../../factory/decorator-provider.type';
-import { AnnotationTargetFactory } from '../../../target/annotation-target.factory';
 import { AnnotationContextRegistry } from '../annotation-context.registry';
 
 /**
@@ -10,20 +9,13 @@ import { AnnotationContextRegistry } from '../annotation-context.registry';
  */
 export const REGISTER_ANNOTATION_PROVIDER: DecoratorProvider = {
   name: '@aspectjs::hook:registerAnnotation',
-  createDecorator: (reflect, annotation, annotationArgs) => {
-    const targetFactory = reflect.get(AnnotationTargetFactory);
+  createDecorator: (context) => {
+    const reflect = reflectContext();
     const annotationContextRegistry = reflect.get(AnnotationContextRegistry);
 
     return (...args: any[]) => {
-      const target = targetFactory.of(...args);
-
-      const annotationContext = new AnnotationContext(
-        annotation,
-        annotationArgs,
-        target,
-      );
-      annotationContextRegistry.register(annotationContext);
+      annotationContextRegistry.register(context);
     };
   },
-  order: 10,
+  order: -130,
 };

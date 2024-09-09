@@ -1,6 +1,5 @@
-import type { ReflectContext } from '../../reflect/reflect.context';
+import { AnnotationContext } from '../annotation-context';
 import type {
-  Annotation,
   AnnotationStub,
   AnnotationType,
   Decorator,
@@ -15,10 +14,9 @@ export type DecoratorProvider<
   T extends AnnotationType = AnnotationType,
   S extends AnnotationStub<T> = AnnotationStub<T>,
 > = {
+  // TODO: refactor into a single parameter
   createDecorator: (
-    context: ReflectContext,
-    annotation: Annotation<T>,
-    annotationArgs: unknown[],
+    context: AnnotationContext<T, S>,
     annotationStub: S,
   ) => Decorator<T> | void;
   order?: number;

@@ -3,7 +3,6 @@ import {
   Annotation,
   AnnotationContextRegistry,
   AnnotationTarget,
-  AnnotationTargetFactory,
   AnnotationTargetRef,
   AnnotationType,
 } from '@aspectjs/common';
@@ -26,6 +25,7 @@ import type { WeaverContext } from './../weaver/context/weaver.context';
 
 import { AdviceType } from '../advice/advice-type.type';
 import { WeavingError } from '../errors/weaving.error';
+import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
@@ -250,7 +250,7 @@ export class JitWeaver implements Weaver {
         .forEach((a) => {
           const decorator = createJitWeaverDecorator(
             this,
-            this.weaverContext.get(AnnotationTargetFactory),
+            a.target as _BindableAnnotationTarget,
           );
 
           const decoree = decorator.apply(null, a.target.asDecoratorArgs());

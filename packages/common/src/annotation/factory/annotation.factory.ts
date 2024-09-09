@@ -12,11 +12,13 @@ import { DecoratorProviderRegistry } from './decorator-provider.registry';
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { _copyPropsAndMeta, assert } from '@aspectjs/common/utils';
+import { ReflectContext } from '../../reflect/reflect.context';
 import { reflectContext } from '../../reflect/reflect.context.global';
 import { ReflectError } from '../../reflect/reflect.error';
+import { AnnotationContext } from '../annotation-context';
 import type { AnnotationStub } from '../annotation.types';
 import { AnnotationRegistry } from '../registry/annotation.registry';
-import { inferTypeFromArgs } from '../target/annotation-target.factory';
+import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 let anonymousAnnotationId = 0;
 
 /**
@@ -186,11 +188,20 @@ export class AnnotationFactory {
     annotationStub: S,
     annotationArgs: any[],
   ): Decorator {
+    const _this = this;
     return function (
       this: any,
       ...targetArgs: any[]
     ): Function | PropertyDescriptor | void {
-      const context = reflectContext();
+      const reflect = reflectContext();
+
+      const annotationContext = _this._createAnnotationContext<T, S>(
+        reflect,
+        annotation as any,
+        annotationArgs,
+        targetArgs,
+      );
+
       return [...reflectContext().get(DecoratorProviderRegistry).values()]
         .sort(
           (c1, c2) =>
@@ -202,17 +213,12 @@ export class AnnotationFactory {
           (decoree, { name, createDecorator: decorator }) => {
             try {
               const newDecoree = (decorator as any)
-                .apply(this, [
-                  context,
-                  annotation,
-                  annotationArgs,
-                  annotationStub,
-                ])
+                .apply(this, [annotationContext, annotationStub])
                 ?.apply(this, targetArgs);
 
               if (newDecoree) {
                 if (decoree) {
-                  const type = inferTypeFromArgs(...targetArgs);
+                  const type = annotationContext.target.type;
                   if (type === AnnotationType.CLASS) {
                     assert(
                       typeof newDecoree === 'function' &&
@@ -242,6 +248,20 @@ export class AnnotationFactory {
           noopDecorator.apply(this, targetArgs as any) as any,
         ) as any;
     };
+  }
+
+  private _createAnnotationContext<
+    T extends AnnotationType,
+    S extends AnnotationStub<T>,
+  >(
+    reflect: ReflectContext,
+    annotation: Annotation<T, S>,
+    annotationArgs: unknown[],
+    targetArgs: any[],
+  ) {
+    const targetFactory = reflect.get(AnnotationTargetFactory);
+    const target = targetFactory.of(...targetArgs);
+    return new AnnotationContext(annotation, annotationArgs, target);
   }
 
   private _createAnnotation<
