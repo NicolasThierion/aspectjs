@@ -47,10 +47,12 @@
   },
   "module": "./fesm2020/nestjs.mjs",
   "main": "./cjs/nestjs.cjs",
-  "peerDependencies": {
+  "optionalDependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0"
+  },
+  "peerDependencies": {
     "@aspectjs/common": "^0.3.17",
     "@aspectjs/core": "^0.3.17"
   },

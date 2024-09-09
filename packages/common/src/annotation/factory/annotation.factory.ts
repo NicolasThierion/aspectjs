@@ -12,8 +12,8 @@ import { DecoratorProviderRegistry } from './decorator-provider.registry';
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { _copyPropsAndMeta, assert } from '@aspectjs/common/utils';
-import { ReflectError } from '../../public_api';
 import { reflectContext } from '../../reflect/reflect.context.global';
+import { ReflectError } from '../../reflect/reflect.error';
 import type { AnnotationStub } from '../annotation.types';
 import { AnnotationRegistry } from '../registry/annotation.registry';
 import { inferTypeFromArgs } from '../target/annotation-target.factory';

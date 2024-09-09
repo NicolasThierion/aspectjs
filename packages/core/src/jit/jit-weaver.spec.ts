@@ -40,32 +40,9 @@ describe('JitWeaver', () => {
 
   describe('.enable(<CLASS>)', () => {
     describe('given a class that is annotated with @Aspect()', () => {
-      describe('after a compile annotation has been applied already', () => {
-        it('throws an error', () => {
-          const AClass = new AnnotationFactory('tests').create(
-            AnnotationType.CLASS,
-            'AClass',
-          );
-          @AClass()
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          class A {}
-
-          @Aspect()
-          class LateAspectA {
-            @Compile(on.classes.withAnnotations(AClass))
-            shouldThrow() {}
-          }
-
-          expect(() => {
-            weaver.enable(new LateAspectA());
-          }).toThrow(
-            new WeavingError(
-              'Could not enable aspect LateAspectA: Annotations have already been processed: @tests:AClass',
-            ),
-          );
-        });
-        describe('after a before annotation has been applied already', () => {
-          it('does not throw an error', () => {
+      describe('that defines a @Compile advice', () => {
+        describe('when a compile annotation has been applied already', () => {
+          it('throws an error', () => {
             const AClass = new AnnotationFactory('tests').create(
               AnnotationType.CLASS,
               'AClass',
@@ -76,36 +53,64 @@ describe('JitWeaver', () => {
 
             @Aspect()
             class LateAspectA {
-              @Before(on.classes.withAnnotations(AClass))
-              shouldNotThrow() {}
+              @Compile(on.classes.withAnnotations(AClass))
+              shouldThrow() {}
             }
 
             expect(() => {
               weaver.enable(new LateAspectA());
-            }).not.toThrow();
-          });
-
-          it('calls the before advice', () => {
-            const adviceImpl = jest.fn();
-            const AClass = new AnnotationFactory('tests').create(
-              AnnotationType.CLASS,
-              'AClass',
+            }).toThrow(
+              new WeavingError(
+                'Could not enable aspect LateAspectA: Annotations have already been processed: @tests:AClass',
+              ),
             );
-            @AClass()
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            class A {}
+          });
+        });
 
-            @Aspect()
-            class LateAspectA {
-              @Before(on.classes.withAnnotations(AClass))
-              shouldNotThrow() {
-                adviceImpl();
+        describe('that defines a @Before advice', () => {
+          describe('after a before annotation has been applied already', () => {
+            it('does not throw an error', () => {
+              const AClass = new AnnotationFactory('tests').create(
+                AnnotationType.CLASS,
+                'AClass',
+              );
+              @AClass()
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              class A {}
+
+              @Aspect()
+              class LateAspectA {
+                @Before(on.classes.withAnnotations(AClass))
+                shouldNotThrow() {}
               }
-            }
 
-            weaver.enable(new LateAspectA());
-            new A();
-            expect(adviceImpl).toHaveBeenCalled();
+              expect(() => {
+                weaver.enable(new LateAspectA());
+              }).not.toThrow();
+            });
+
+            it('calls the before advice', () => {
+              const adviceImpl = jest.fn();
+              const AClass = new AnnotationFactory('tests').create(
+                AnnotationType.CLASS,
+                'AClass',
+              );
+              @AClass()
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              class A {}
+
+              @Aspect()
+              class LateAspectA {
+                @Before(on.classes.withAnnotations(AClass))
+                shouldNotThrow() {
+                  adviceImpl();
+                }
+              }
+
+              weaver.enable(new LateAspectA());
+              new A();
+              expect(adviceImpl).toHaveBeenCalled();
+            });
           });
         });
       });

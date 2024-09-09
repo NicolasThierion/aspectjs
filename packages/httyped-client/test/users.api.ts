@@ -12,19 +12,19 @@ export abstract class UsersApi {
   @Get('users/:id', {
     // responseMapper: (r) => new User(r.json())
   })
-  // @Type(User)
+  // @TypeHint(User)
   // @Type([User])
   getOne(@PathVariable('id') _id: number) {
     // return abstract.any(User);
     // return abstract.any([User]);
     // return abstract(new User());
     // return abstract([new User()]);
-    return abstract<User>();
+    return abstract(new User());
   }
 
   @Get('users')
   searchByName(@RequestParam('name') _name: string) {
-    return abstract<User[]>();
+    return abstract([new User()]);
   }
 }
 

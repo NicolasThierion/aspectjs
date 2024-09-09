@@ -1,0 +1,25 @@
+{
+  "jest.jestCommandLine": "../../node_modules/.bin/jest",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#f442a2",
+    "activityBar.background": "#f442a2",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#335a05",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#f442a2",
+    "statusBar.background": "#f1128a",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#f442a2",
+    "statusBarItem.remoteBackground": "#f1128a",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#f1128a",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#f1128a99",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#f1128a"
+  // "jest.rootPath": "../../",
+  // "jest.jestCommandLine": "npm run test:unit"
+}

@@ -4,6 +4,7 @@ module.exports = createConfig({
   rootDir: __dirname,
   external: ['@nestjs/common'],
   output: {
+    globals: {},
     umd: false,
   },
 });

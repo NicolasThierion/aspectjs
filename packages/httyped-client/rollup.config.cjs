@@ -1,15 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const commonjs = require('@rollup/plugin-commonjs');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const nodeResolve = require('@rollup/plugin-node-resolve');
-
 /* eslint-disable */
 
-const external = [];
 const { createConfig } = require('../../rollup.config.cjs');
 module.exports = createConfig({
+  output: {
+    commonJS: true,
+    dts: true,
+    esm2020: true,
+    fesm2020: true,
+    umd: true,
+  },
   rootDir: __dirname,
-  // external,
-  output: {},
-  plugins: [commonjs(), nodeResolve(external)],
 });

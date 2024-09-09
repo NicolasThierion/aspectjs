@@ -9,7 +9,6 @@ import { Before } from '../../advices/before/before.annotation';
 import { Compile } from '../../advices/compile/compile.annotation';
 import { WeavingError } from '../../errors/weaving.error';
 import { Pointcut } from '../../pointcut/pointcut';
-import { PointcutExpression } from '../../pointcut/pointcut-expression.type';
 import { WeaverContext } from '../../weaver/context/weaver.context';
 import { AdvicesSelection } from './advices-selection.model';
 
@@ -56,75 +55,19 @@ export class AdviceRegistry {
   ) {}
 
   register(aspect: AspectType) {
-    const aspectCtor = getPrototype(aspect).constructor;
+    const advices = getAspectMetadata(aspect).advices;
 
-    const advices: Advice[] = [];
-    const processedAdvicesMap = new Map<string, Pointcut[]>();
-    // find advices annotations
-    const adviceAnnotations = this.weaverContext
-      .get(AnnotationContextRegistry)
-      .select(...KNOWN_POINTCUT_ANNOTATION_REFS)
-      .onMethod(aspectCtor)
-      .find({ searchParents: true });
-
-    adviceAnnotations.forEach((adviceAnnotation) => {
-      const advice: Advice = adviceAnnotation.target.descriptor.value as Advice;
-
-      const type = KNOWN_ADVICE_TYPES[adviceAnnotation.ref.name]!;
-      assert(!!type);
-
-      advice.pointcuts ??= [];
-
-      assert(advice.name.length > 0, 'advice name cannot be empty');
-      // do not process advice if it has been processed on a child class already
-      let processedAdvices = processedAdvicesMap.get(advice.name)!;
-      if (!processedAdvices) {
-        processedAdvices = [];
-        processedAdvicesMap.set(advice.name, processedAdvices);
-        Reflect.defineProperty(advice, Symbol.toPrimitive, {
-          value: () =>
-            [...advice.pointcuts]
-              .map((p) => `@${p.adviceType}(${p.annotations.join(',')})`)
-              .join('|') +
-            ` ${aspect.constructor.name}.${String(advice.name)}()`,
-        });
-
-        Reflect.defineProperty(advice, 'name', {
-          value: advice.name,
-        });
-
-        advices.push(advice);
-      }
-
-      const expressions = adviceAnnotation.args as PointcutExpression[];
-      expressions.forEach((expression) => {
-        let pointcut = new Pointcut({
-          type,
-          expression: expression,
-        });
-
-        // dedupe same advices found on child classes for a similar pointcut
-        const similarPointcut = processedAdvices.filter((p) =>
-          p.isAssignableFrom(pointcut),
-        )[0];
-        if (similarPointcut) {
-          pointcut = similarPointcut.merge(pointcut);
-        } else {
-          advice.pointcuts.push(pointcut);
-          processedAdvices.push(pointcut);
-          this.registerAdvice(aspect, pointcut, advice);
-        }
-
-        if (type === AdviceType.COMPILE) {
+    advices.forEach((advice) => {
+      advice.pointcuts.forEach((pointcut) => {
+        if (pointcut.adviceType === AdviceType.COMPILE) {
           this.assertAnnotationNotProcessedBeforeCompileAdvice(
             aspect,
             advice as CompileAdvice,
           );
         }
+        this.registerAdvice(aspect, pointcut, advice);
       });
     });
-
-    advices.forEach(Object.seal);
   }
 
   unregister(aspectId: string) {

@@ -80,7 +80,9 @@ export const createConfig = (
     .split('/')
     .concat(subExportsPath)
     .filter((p) => !!p)
-    .join('.');
+    .join('.')
+    .replaceAll(/-(\w)/g, (_m, g) => g.toUpperCase());
+
   const pkg = options.pkg!;
   const external = [
     ...(options.external ?? []),

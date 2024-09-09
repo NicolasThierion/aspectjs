@@ -1,11 +1,11 @@
 {
-  "name": "httyped-client",
+  "name": "nestjs-client",
   "version": "0.3.17",
-  "description": "An AOP powered typesafe http client, inspired by Retrofit library for java",
+  "description": "An AOP powered typesafe http client for your NestJS controllers, inspired by Retrofit library for java",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",
-    "directory": "packages/httyped-client"
+    "directory": "packages/nestjs-client"
   },
   "scripts": {
     "test": "npm run clean && npm run test:lint && npm run test:unit",
@@ -27,24 +27,23 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/httyped-client.js",
-      "es2020": "./fesm2020/httyped-client.mjs",
-      "node": "./cjs/httyped-client.cjs",
-      "require": "./cjs/httyped-client.cjs",
-      "default": "./cjs/httyped-client.cjs",
-      "unpkg": "./umd/httyped-client.umd.min.js"
+      "esm2020": "./esm2020/nestjs-client.js",
+      "es2020": "./fesm2020/nestjs-client.mjs",
+      "node": "./cjs/nestjs-client.cjs",
+      "require": "./cjs/nestjs-client.cjs",
+      "default": "./cjs/nestjs-client.cjs",
+      "unpkg": "./umd/nestjs-client.umd.min.js"
     }
   },
-  "module": "./fesm2020/httyped-client.mjs",
-  "main": "./umd/httyped-client.umd.min.js",
+  "module": "./fesm2020/nestjs-client.mjs",
+  "main": "./umd/nestjs-client.umd.min.js",
   "devDependencies": {
     "bun": "^1.1.26",
     "jest": "^29.5.0",
     "tsx": "^4.19.0",
     "whatwg-fetch": "^3.6.2"
   },
-  "peerDependencies": {
-    "@aspectjs/common": "^0.3.17",
-    "@aspectjs/core": "^0.3.17"
+  "dependencies": {
+    "@aspectjs/httyped-client": "^0.3.17"
   }
 }

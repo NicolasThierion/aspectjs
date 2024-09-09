@@ -17,7 +17,9 @@
 
     // disable errors
     "noUnusedParameters": false,
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "lib": ["DOM", "ES2015", "ES2022"],
+    "types": ["reflect-metadata"]
   },
   "exclude": ["**/*.spec.ts", "**/jest.config.ts"]
 }

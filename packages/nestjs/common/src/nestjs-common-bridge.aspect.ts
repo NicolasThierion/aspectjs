@@ -22,7 +22,7 @@ import { Patch } from './annotations/patch.annotation';
 import { Post } from './annotations/post.annotation';
 import { Put } from './annotations/put.annotation';
 @Aspect('ajs.nestjs:common-bridge')
-export class NestJSCommonMixinAspect extends AnnotationMixinAspect {
+export class NestCommonMixinAspect extends AnnotationMixinAspect {
   constructor() {
     super();
 
@@ -36,6 +36,9 @@ export class NestJSCommonMixinAspect extends AnnotationMixinAspect {
       .bridge(Head, NHead)
       .bridge(Body, NBody);
 
-    this.bridge(Injectable, NInjectable).bridge(Controller, NController);
+    this.bridge(Injectable, NInjectable).bridge(
+      Controller as any,
+      NController as any,
+    );
   }
 }

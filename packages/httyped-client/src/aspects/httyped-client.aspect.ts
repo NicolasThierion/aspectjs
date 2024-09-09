@@ -12,6 +12,7 @@ import {
   Aspect,
   AspectError,
   Before,
+  Compile,
   PointcutType,
   on,
 } from '@aspectjs/core';
@@ -24,13 +25,12 @@ import { Header } from '../annotations/header.annotation';
 import { Headers } from '../annotations/headers.annotation';
 import { HttypedClient } from '../annotations/http-client.annotation';
 import { PathVariable } from '../annotations/path-variable.annotation';
+import { RequestParam } from '../annotations/request-param.annotation';
 import { TypeHint } from '../annotations/type.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
-import { RequestParam } from '../public_api';
 import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
-import type { Request } from '../types/request-handler.type';
 import '../url-canparse.polyfill';
 import { AbstractAopHttpClientAspect } from './abstract-aop-http-client.aspect';
 
@@ -63,12 +63,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   // Advice methods
   // =====================
 
-  @Before(
-    on.parameters.withAnnotations(Body),
-    on.parameters.withAnnotations(RequestParam),
-    on.parameters.withAnnotations(RequestParam),
-    on.parameters.withAnnotations(PathVariable),
-  )
+  @Before(on.parameters.withAnnotations(Body, RequestParam, PathVariable))
   protected assertIsFetchMethod(ctxt: AdviceContext<PointcutType.PARAMETER>) {
     ctxt.target.getMetadata(`${ASPECT_ID}:assertBodyImpliesFetch`, () => {
       if (!this.findHttpMethodAnnotation(ctxt)) {
@@ -82,8 +77,8 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   @Before(
-    on.classes.withAnnotations(Header),
-    on.methods.withAnnotations(Header),
+    on.classes.withAnnotations(Header, Headers),
+    on.methods.withAnnotations(Header, Headers),
     on.parameters.withAnnotations(Body),
     ...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)),
   )
@@ -101,9 +96,9 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     });
   }
 
-  @Before(
-    on.properties.withAnnotations(Header),
-    on.parameters.withAnnotations(Header),
+  @Compile(
+    on.properties.withAnnotations(Header, Headers),
+    on.parameters.withAnnotations(Header, Headers),
   )
   protected prohibitWrongTarget(
     ctxt: AdviceContext<PointcutType.CLASS | PointcutType.METHOD>,
@@ -140,10 +135,9 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       ctxt,
     );
 
-    let requestInit: Request = {
+    let requestInit: RequestInit = {
       ...endpointConfig.requestInit,
       method: endpointMetadata.method,
-      url,
     };
     const body = this.serializeRequestBody(endpointConfig, ctxt);
     if (body !== undefined) {
@@ -152,10 +146,11 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
 
     requestInit.headers = this.getHeadersMetadata(ctxt);
 
-    requestInit = this.applyRequestHandlers(config, requestInit);
-    url = requestInit.url;
-
-    delete (requestInit as Partial<Request> & RequestInit).url;
+    requestInit = this.applyRequestHandlers(config, {
+      ...requestInit,
+      url,
+    } as Request);
+    url = (requestInit as Request).url;
 
     return this.callHttpAdapter(endpointConfig, url, requestInit).then(
       async (r) => this.applyResponseHandlers(config, r as Response, ctxt),

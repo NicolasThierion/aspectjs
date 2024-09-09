@@ -14,7 +14,6 @@ import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
 import { MapperContext } from '../types/mapper.type';
-import type { Request } from '../types/request-handler.type';
 import '../url-canparse.polyfill';
 
 export abstract class AbstractAopHttpClientAspect {

@@ -1,7 +1,7 @@
 import { Delete } from '../annotations/fetch/delete.annotation';
 import { Get } from '../annotations/fetch/get.annotation';
 import { Head } from '../annotations/fetch/head.annotation';
-import { Option } from '../annotations/fetch/option.annotation';
+import { Options } from '../annotations/fetch/options.annotation';
 import { Patch } from '../annotations/fetch/patch.annotation';
 import { Post } from '../annotations/fetch/post.annotation';
 import { Put } from '../annotations/fetch/put.annotation';
@@ -33,8 +33,8 @@ export const ALL_FETCH_ANNOTATIONS = [
     method: 'patch',
   },
   {
-    annotation: Option,
-    annotationName: `${Option}`,
+    annotation: Options,
+    annotationName: `${Options}`,
     method: 'option',
   },
   {

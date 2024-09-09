@@ -8,7 +8,7 @@ import nodeFetch from 'node-fetch';
 import { HttypedClientAspect } from '../aspects/httyped-client.aspect';
 import { HttypedClientFactory } from '../client-factory/client.factory';
 import { ALL_FETCH_ANNOTATIONS } from '../test-helpers/all-fetch-annotations.helper';
-import { Header } from './header.annotation';
+import { Headers } from './headers.annotation';
 import { HttypedClient } from './http-client.annotation';
 
 const TEST_BASE_URL = 'http://testBaseUrl';
@@ -18,7 +18,7 @@ interface IApi {
 }
 
 describe.each(ALL_FETCH_ANNOTATIONS)(
-  `${Header}(<name>, <value>) annotation`,
+  `${Headers}({<name>: <value>}) annotation`,
   ({ annotation, method }) => {
     let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
     let httypedClientFactory: HttypedClientFactory;
@@ -44,8 +44,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
     describe(`on a class annotated with ${HttypedClient}`, () => {
       beforeEach(() => {
         @HttypedClient()
-        @Header('header1', 'value1')
-        @Header('header2', 'value2')
+        @Headers({ header1: 'value1', header2: 'value2' })
         abstract class Api implements IApi {
           @annotation()
           async method(args: any[]): Promise<any> {
@@ -69,11 +68,10 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
           );
         });
 
-        describe(`when parent class is annotated with ${Header}`, () => {
+        describe(`when parent class is annotated with ${Headers}`, () => {
           it(`merges with the parent headers`, async () => {
             @HttypedClient()
-            @Header('header1', 'parentValue1')
-            @Header('parentHeader', 'parentValue')
+            @Headers({ header1: 'parentValue1', parentHeader: 'parentValue' })
             abstract class ParentApi implements IApi {
               @annotation()
               async method(...args: any[]): Promise<any> {
@@ -82,8 +80,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
             }
 
             @HttypedClient()
-            @Header('header1', 'value1')
-            @Header('header2', 'value2')
+            @Headers({ header1: 'value1', header2: 'value2' })
             abstract class Api extends ParentApi {
               @annotation()
               override async method(...args: any[]): Promise<any> {
@@ -108,11 +105,10 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
       describe(`on a method annotated with ${annotation}`, () => {
         beforeEach(() => {
           @HttypedClient()
-          @Header('header1', 'classValue1')
-          @Header('header2', 'classValue2')
+          @Headers({ header1: 'classValue1', header2: 'classValue2' })
           abstract class Api implements IApi {
             @annotation()
-            @Header('header2', 'methodValue2')
+            @Headers({ header2: 'methodValue2' })
             async method(...args: any[]): Promise<any> {
               return abstract<unknown>();
             }
@@ -132,32 +128,32 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
           );
         });
       });
-      xdescribe('on a property', () => {
+      describe('on a property', () => {
         it('throws an error', () => {
           expect(() => {
             @HttypedClient()
             abstract class Api implements IApi {
-              @Header('header2', 'methodValue2')
+              @Headers({ header2: 'methodValue2' })
               prop!: string;
               async method(...args: any[]): Promise<any> {}
             }
           }).toThrow(
-            `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+            `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
           );
         });
       });
-      xdescribe('on a parameter', () => {
+      describe('on a parameter', () => {
         it('throws an error', () => {
           expect(() => {
             @HttypedClient()
             abstract class Api implements IApi {
               async method(
-                @Header('header2', 'methodValue2')
+                @Headers({ header2: 'methodValue2' })
                 x: string,
               ): Promise<any> {}
             }
           }).toThrow(
-            `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+            `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
           );
         });
       });
