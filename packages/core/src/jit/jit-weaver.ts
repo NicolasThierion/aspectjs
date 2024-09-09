@@ -10,19 +10,22 @@ import {
 import {
   assert,
   ConstructorType,
+  getPrototype,
   MethodPropertyDescriptor,
 } from '@aspectjs/common/utils';
 
 import { MutableAdviceContext } from '../advice/mutable-advice.context';
 import { AdviceRegistry } from '../advice/registry/advice.registry';
 import { AspectRegistry } from '../aspect/aspect.registry';
-import { AspectType } from '../aspect/aspect.type';
+import { AspectType, getAspectMetadata } from '../aspect/aspect.type';
 import { JitWeaverCanvas } from './canvas/jit-canvas.type';
 import { JitClassCanvasStrategy } from './canvas/jit-class-canvas.strategy';
 
 import type { PointcutType } from '../pointcut/pointcut-target.type';
 import type { WeaverContext } from './../weaver/context/weaver.context';
 
+import { AdviceType } from '../advice/advice-type.type';
+import { WeavingError } from '../errors/weaving.error';
 import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
@@ -54,6 +57,7 @@ export class JitWeaver implements Weaver {
 
   enable(...aspects: AspectType[]): this {
     aspects.forEach((aspect) => {
+      this.assertAnnotationNotProcessedBeforeCompileAdvice(aspect);
       this.aspectRegistry.register(aspect);
     });
 
@@ -264,5 +268,35 @@ export class JitWeaver implements Weaver {
           }
         });
     }
+  }
+
+  private assertAnnotationNotProcessedBeforeCompileAdvice(aspect: AspectType) {
+    getAspectMetadata(aspect)
+      .advices.map((advice) => ({
+        compileAnnotations: advice.pointcuts
+          .filter((p) => p.adviceType === AdviceType.COMPILE)
+          .flatMap((a) => a.annotations),
+      }))
+      .filter(({ compileAnnotations }) => compileAnnotations.length)
+      .forEach(({ compileAnnotations }) => {
+        const processedAnnotations = new Set(
+          this.weaverContext
+            .get(AnnotationContextRegistry)
+            .select(...compileAnnotations)
+            .all()
+            .find()
+            .map((a) => a.ref),
+        );
+
+        if (processedAnnotations.size) {
+          const err = `Could not enable aspect ${
+            getPrototype(aspect).constructor.name
+          }: Annotations have already been processed: ${[
+            ...processedAnnotations,
+          ].join(',')}`;
+          assert(false, err);
+          throw new WeavingError(err);
+        }
+      });
   }
 }
