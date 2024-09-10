@@ -1,4 +1,4 @@
-import { assert, isUndefined } from '@aspectjs/common/utils';
+import { assert, isAbstractToken, isUndefined } from '@aspectjs/common/utils';
 import { JoinPoint } from './../../advice/joinpoint';
 
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
@@ -14,6 +14,7 @@ import type {
 import { AdviceType } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
+import { WeavingError } from '../../errors/weaving.error';
 import type { PointcutType } from '../../pointcut/pointcut-target.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { JoinPointFactory } from '../joinpoint.factory';
@@ -24,7 +25,7 @@ export abstract class JitWeaverCanvasStrategy<
 {
   constructor(
     protected readonly weaverContext: WeaverContext,
-    protected readonly advices: AdvicesSelection,
+    public readonly advices: AdvicesSelection,
     public readonly pointcutTypes: T[],
   ) {}
 
@@ -140,6 +141,16 @@ export abstract class JitWeaverCanvasStrategy<
     return jp;
   }
 
+  handleReturnValue(ctxt: MutableAdviceContext<T, X>, returnValue: any) {
+    ctxt.value = returnValue;
+    if (isAbstractToken(returnValue)) {
+      throw new WeavingError(
+        `${ctxt.target} returned "abstract()" token. "abstract()" is meant to be superseded by a @AfterReturn advice or an @Around advice.`,
+      );
+    }
+
+    return returnValue;
+  }
   abstract callJoinpoint(
     ctxt: MutableAdviceContext<T, X>,
     originalSymbol: CompiledSymbol<T, X>,

@@ -16,7 +16,7 @@ interface IHttpClientApi {
   method(...args: any[]): Promise<any>;
 }
 
-const TEST_BASE_URL = 'http://testBaseUrl';
+const TEST_BASE_URL = 'http://testbaseurl';
 
 describe('@Body() on a method parameter', () => {
   let fetchAdapter: typeof nodeFetch & jest.SpyInstance;

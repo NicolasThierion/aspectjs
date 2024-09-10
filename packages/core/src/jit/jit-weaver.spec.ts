@@ -57,9 +57,10 @@ describe('JitWeaver', () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             class A {}
 
+            new A();
             expect(() => {
               weaver.enable(new LateAspectA());
-            }).not.toThrow(
+            }).toThrow(
               new WeavingError(
                 'Could not enable aspect LateAspectA: Annotations have already been processed: @tests:AClass',
               ),

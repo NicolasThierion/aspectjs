@@ -22,14 +22,9 @@ describe('method advice', () => {
   let aaspect: any;
   let baspect: any;
   let methodImpl: any;
-  const AMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
-    'AMethod',
-  );
-  const BMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
-    'BMethod',
-  );
+  const af = new AnnotationFactory('test');
+  const AMethod = af.create(AnnotationType.METHOD, 'AMethod');
+  const BMethod = af.create(AnnotationType.METHOD, 'BMethod');
   let weaver: JitWeaver;
   beforeEach(() => {
     const context = configureTesting(WeaverModule);
@@ -135,6 +130,43 @@ describe('method advice', () => {
       new A().method();
       expect(aroundAdviceA).toHaveBeenCalledTimes(2);
       expect(methodImpl).toHaveBeenCalledTimes(1);
+    });
+
+    describe('when used together with parameter advices', () => {
+      it('calls through each matching advice once', () => {
+        const D = af.create('D');
+        const paramAdviceImpl = jest.fn();
+
+        @Aspect()
+        class DAspect {
+          @Before(on.parameters.withAnnotations(D))
+          paramAdvice() {
+            paramAdviceImpl();
+          }
+        }
+        weaver.enable(new DAspect());
+        class X {
+          @AMethod()
+          method(@D() args: any): any {
+            return methodImpl(...args);
+          }
+        }
+
+        expect(aroundAdviceA).not.toHaveBeenCalled();
+        aroundAdviceA = jest.fn(function (
+          this: any,
+          _ctxt: AroundContext,
+          jp: JoinPoint,
+          jpArgs: any[],
+        ) {
+          return jp(...jpArgs);
+        });
+
+        new X().method('methodArg');
+        expect(paramAdviceImpl).toHaveBeenCalledTimes(1);
+        expect(aroundAdviceA).toHaveBeenCalledTimes(2);
+        expect(methodImpl).toHaveBeenCalledTimes(1);
+      });
     });
   });
 

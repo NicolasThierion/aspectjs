@@ -5,13 +5,17 @@ import {
   AnyDecorator,
   Decorator,
 } from '../annotation.types';
-import { DecoratorProviderRegistry } from './decorator-provider.registry';
+import { DecoratorHookRegistry } from './decorator-hook.registry';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { _copyPropsAndMeta, assert } from '@aspectjs/common/utils';
+import {
+  _copyPropsAndMeta,
+  assert,
+  getPrototype,
+} from '@aspectjs/common/utils';
 import { ReflectContext } from '../../reflect/reflect.context';
 import { reflectContext } from '../../reflect/reflect.context.global';
 import { ReflectError } from '../../reflect/reflect.error';
@@ -202,7 +206,7 @@ export class AnnotationFactory {
         targetArgs,
       );
 
-      return [...reflectContext().get(DecoratorProviderRegistry).values()]
+      return [...reflect.get(DecoratorHookRegistry).values()]
         .sort(
           (c1, c2) =>
             (c1.order ?? Number.MAX_SAFE_INTEGER) -
@@ -213,13 +217,20 @@ export class AnnotationFactory {
           (decoree, { name, createDecorator: decorator }) => {
             try {
               const newDecoree = (decorator as any)
-                .apply(this, [annotationContext, annotationStub])
+                .apply(this, [reflect, annotationContext, annotationStub])
                 ?.apply(this, targetArgs);
 
               if (newDecoree) {
                 if (decoree) {
                   const type = annotationContext.target.type;
                   if (type === AnnotationType.CLASS) {
+                    const proto = getPrototype(
+                      annotationContext.target.proto.constructor,
+                    );
+                    proto.constructor = newDecoree;
+                    newDecoree.prototype = proto;
+                    targetArgs[0] = newDecoree;
+
                     assert(
                       typeof newDecoree === 'function' &&
                         typeof decoree === 'function',
@@ -260,7 +271,8 @@ export class AnnotationFactory {
     targetArgs: any[],
   ) {
     const targetFactory = reflect.get(AnnotationTargetFactory);
-    const target = targetFactory.of(...targetArgs);
+    const target = targetFactory.of.apply(targetFactory, targetArgs as any);
+    assert(!!target);
     return new AnnotationContext(annotation, annotationArgs, target);
   }
 

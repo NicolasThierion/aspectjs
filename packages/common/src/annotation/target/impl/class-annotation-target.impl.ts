@@ -100,10 +100,6 @@ export class _ClassAnnotationTargetImpl<X = unknown>
     return parentClass;
   }
 
-  get parent(): ClassAnnotationTarget<any> | undefined {
-    return this.parentClass;
-  }
-
   override _bind(instance: X): ClassAnnotationTarget<X> {
     if (this[BOUND_INSTANCE_SYMBOL] === instance) {
       return this;

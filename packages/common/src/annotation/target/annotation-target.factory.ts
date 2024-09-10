@@ -40,11 +40,11 @@ export class AnnotationTargetFactory {
   of<X = unknown>(
     target: ConstructorType<X>,
     propertyKey: keyof X,
-  ): AnnotationTarget<AnnotationType.PARAMETER, X>;
+  ): AnnotationTarget<AnnotationType.PROPERTY, X>;
   of<X = unknown>(
     target: X,
     propertyKey: keyof X,
-  ): BoundAnnotationTarget<AnnotationType.PARAMETER, X>;
+  ): BoundAnnotationTarget<AnnotationType.PROPERTY, X>;
 
   of<X = unknown>(
     target: ConstructorType<X>,
@@ -63,9 +63,6 @@ export class AnnotationTargetFactory {
     parameterIndex: number,
   ): AnnotationTarget<AnnotationType.PARAMETER, X>;
 
-  of<T extends AnnotationType = AnnotationType, X = unknown>(
-    ...args: unknown[]
-  ): AnnotationTarget<T, X>;
   of<T extends AnnotationType = AnnotationType, X = unknown>(
     ...args: unknown[]
   ): AnnotationTarget<T, X> {

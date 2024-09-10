@@ -28,23 +28,6 @@ describe('abstract() helper', () => {
       });
     });
 
-    xdescribe('when used for anything other than a return value', () => {
-      xit('throws an error', () => {
-        class X {
-          @MethodAnnotation()
-          method() {
-            abstract<string>();
-            return 'test';
-          }
-        }
-        expect(() => _defuseAbstract(() => new X().method())).toThrow(
-          new Error(
-            '"abstract()" placeholder should only be used as a return value.',
-          ),
-        );
-      });
-    });
-
     describe('when used more than once', () => {
       it('throws an error', () => {
         class X {

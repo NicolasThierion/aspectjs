@@ -7,6 +7,7 @@ import { PropertyAnnotationTarget } from '@aspectjs/common';
 import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
+import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
@@ -161,50 +162,97 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
     assert(!!ctxt.target.propertyKey);
     const target = ctxt.target;
 
-    const adviceEntries = [
-      ...this.advices.find([PointcutType.GET_PROPERTY], [AdviceType.COMPILE]),
-      ...this.advices.find([PointcutType.SET_PROPERTY], [AdviceType.COMPILE]),
-    ];
+    const findCompileAdvices = () => {
+      return [
+        ...new Set([
+          ...this.advices.find(
+            [PointcutType.GET_PROPERTY],
+            [AdviceType.COMPILE],
+          ),
+          ...this.advices.find(
+            [PointcutType.SET_PROPERTY],
+            [AdviceType.COMPILE],
+          ),
+        ]),
+      ];
+    };
 
-    adviceEntries
-      //  prevent calling them twice.
-      .filter((e) => !ctxt.target.getMetadata(`compiled_${e.id}`, () => false))
-      .forEach((entry) => {
-        assert(typeof entry.advice === 'function');
-        const descriptor = entry.advice.call(
-          entry.aspect,
-          ctxt.asCompileContext(),
-        );
-
-        if (descriptor) {
-          if (typeof descriptor !== 'object') {
-            throw new AdviceError(
-              entry.aspect,
+    const applyCompileAdvices = () => {
+      adviceEntries
+        //  prevent calling them twice.
+        .filter(
+          (e) =>
+            !getMetadata(
+              `ajs.compiled`,
+              e.advice,
+              ctxt.target.ref.value,
+              () => false,
+            ),
+        )
+        .forEach((entry) => {
+          try {
+            defineMetadata(
+              `ajs.compiled`,
+              true,
               entry.advice,
-              ctxt.target,
-              'should return void or a property descriptor',
+              ctxt.target.ref.value,
             );
-          }
 
-          if (propertyDescriptor.configurable === false) {
-            throw new AdviceError(
+            assert(typeof entry.advice === 'function');
+            const descriptor = entry.advice.call(
               entry.aspect,
-              entry.advice,
-              ctxt.target,
-              `${target.label} is not configurable`,
+              ctxt.asCompileContext(),
             );
-          }
-          propertyDescriptor = this.normalizeDescriptor(descriptor);
-          Reflect.defineProperty(
-            ctxt.target.proto,
-            ctxt.target.propertyKey,
-            propertyDescriptor,
-          );
-        }
-        ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
 
-        return descriptor;
-      });
+            if (descriptor) {
+              if (typeof descriptor !== 'object') {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  'should return void or a property descriptor',
+                );
+              }
+
+              if (propertyDescriptor.configurable === false) {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  `${target.label} is not configurable`,
+                );
+              }
+              propertyDescriptor = this.normalizeDescriptor(descriptor);
+              Reflect.defineProperty(
+                ctxt.target.proto,
+                ctxt.target.propertyKey,
+                propertyDescriptor,
+              );
+            }
+
+            return descriptor;
+          } catch (e) {
+            defineMetadata(
+              `ajs.compiled`,
+              false,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            throw e;
+          }
+        });
+    };
+
+    // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
+    // apply compile advices until state got stable
+    let previousAdviceEntries: AdviceEntry[] = [];
+    let adviceEntries = findCompileAdvices();
+
+    while (adviceEntries.length !== previousAdviceEntries.length) {
+      previousAdviceEntries = adviceEntries;
+      applyCompileAdvices();
+      adviceEntries = findCompileAdvices();
+    }
 
     return propertyDescriptor;
   }

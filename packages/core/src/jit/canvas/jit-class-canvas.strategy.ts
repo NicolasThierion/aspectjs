@@ -2,6 +2,8 @@ import {
   _copyPropsAndMeta,
   assert,
   ConstructorType,
+  defineMetadata,
+  getMetadata,
 } from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
@@ -36,45 +38,77 @@ export class JitClassCanvasStrategy<
       () => ctxt.target.proto.constructor,
     ) as ConstructorType<X>;
 
-    const adviceEntries = [
-      ...this.advices.find([PointcutType.CLASS], [AdviceType.COMPILE]),
-    ];
-    //  if no class compile advices, return ctor as is
-    if (!adviceEntries.length) {
-      return constructor;
+    const findCompileAdvices = () => {
+      return [...this.advices.find([PointcutType.CLASS], [AdviceType.COMPILE])];
+    };
+
+    const applyCompileAdvices = () => {
+      adviceEntries
+        //  prevent calling them twice.
+        .filter(
+          (e) =>
+            !getMetadata(
+              `ajs.compiled`,
+              e.advice,
+              ctxt.target.ref.value,
+              () => false,
+            ),
+        )
+        .forEach((entry) => {
+          try {
+            defineMetadata(
+              `ajs.compiled`,
+              true,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            assert(typeof entry.advice === 'function');
+            ctxt.target.proto.constructor = constructor;
+
+            const newConstructor = entry.advice.call(
+              entry.aspect,
+              ctxt.asCompileContext(),
+            ) as ConstructorType<X>;
+
+            if (newConstructor) {
+              if (typeof newConstructor !== 'function') {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  'should return void or a class constructor',
+                );
+              }
+
+              _copyPropsAndMeta(newConstructor, constructor); // copy static props
+
+              constructor = newConstructor;
+            }
+          } catch (e) {
+            defineMetadata(
+              `ajs.compiled`,
+              false,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            throw e;
+          }
+        });
+
+      ctxt.target.defineMetadata('@ajs:compiledSymbol', constructor);
+    };
+
+    // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
+    // apply compile advices until state got stable
+    let previousAdviceEntries: AdviceEntry[] = [];
+    let adviceEntries = findCompileAdvices();
+
+    while (adviceEntries.length !== previousAdviceEntries.length) {
+      previousAdviceEntries = adviceEntries;
+      applyCompileAdvices();
+      adviceEntries = findCompileAdvices();
     }
 
-    adviceEntries
-      //  prevent calling them twice.
-      .filter((e) => !ctxt.target.getMetadata(`compiled_${e.id}`, () => false))
-      .forEach((entry) => {
-        assert(typeof entry.advice === 'function');
-        ctxt.target.proto.constructor = constructor;
-
-        const newConstructor = entry.advice.call(
-          entry.aspect,
-          ctxt.asCompileContext(),
-        ) as ConstructorType<X>;
-
-        if (newConstructor) {
-          if (typeof newConstructor !== 'function') {
-            throw new AdviceError(
-              entry.aspect,
-              entry.advice,
-              ctxt.target,
-              'should return void or a class constructor',
-            );
-          }
-
-          _copyPropsAndMeta(newConstructor, constructor); // copy static props
-
-          constructor = newConstructor;
-        }
-
-        ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
-      });
-
-    ctxt.target.defineMetadata('@ajs:compiledSymbol', constructor);
     return constructor;
   }
 

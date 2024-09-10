@@ -1,11 +1,18 @@
-import { assert, isAbstractToken } from '@aspectjs/common/utils';
+import { assert, getPrototype } from '@aspectjs/common/utils';
 
 import { WeavingError } from '../../errors/weaving.error';
 
 import type { PointcutType } from '../../pointcut/pointcut-target.type';
 
+import {
+  Annotation,
+  AnnotationContextRegistry,
+  AnnotationTargetFactory,
+  reflectContext,
+} from '@aspectjs/common';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
+import { _CompilationState } from '../../weaver/compilation-state.provider';
 import type { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 export interface CompiledCanvas<
@@ -23,7 +30,7 @@ export class JitWeaverCanvas<
 
   compile<C extends MutableAdviceContext<T, X>>(ctxt: C): CompiledCanvas<T, X> {
     // if no advices, do not compile.
-    // in fact, this condition makes it impossible to enable aspects lately, we enhance the target anyway
+    // in fact, this condition makes it impossible to enable aspects lately, so we enhance the target anyway
     // if (selection.find().next().done) {
     //   return {
     //     compiledSymbol: undefined,
@@ -31,10 +38,19 @@ export class JitWeaverCanvas<
     //   };
     // }
 
+    // leak advices selection, as compile advices such as mixins may have to add their own annotations
+    // to the advice filters
+    const state = reflectContext().get(_CompilationState);
+    state.status = _CompilationState.Status.PENDING;
+    state.advices = this.strategy.advices;
+
     const compiledSymbol = this.strategy.compile(ctxt);
     if (!compiledSymbol) {
       assert(false);
     }
+
+    delete state.advices;
+    state.status = _CompilationState.Status.DONE;
 
     assert(!!compiledSymbol);
 
@@ -52,6 +68,31 @@ export class JitWeaverCanvas<
       // create the joinpoint for the original method
       ctxt.joinpoint = (...args: any[]) => {
         ctxt.args = args;
+        // actual prototype can differ from context.target.proto if we are in a subclass
+        if (
+          ctxt.instance &&
+          getPrototype(ctxt.instance) !== ctxt.target.proto
+        ) {
+          const actualTarget = reflectContext()
+            .get(AnnotationTargetFactory)
+            .of(ctxt.instance);
+
+          const annotations = (...annotations: Annotation[]) => {
+            return reflectContext()
+              .get(AnnotationContextRegistry)
+              .select(...annotations)
+              .on({
+                target: actualTarget,
+                // types: [target.type]
+              });
+          };
+          ctxt = new MutableAdviceContext({
+            ...ctxt,
+            target: actualTarget,
+            annotations,
+          }) as C;
+          ctxt.bind(ctxt.instance!);
+        }
 
         try {
           this.strategy.before(ctxt);
@@ -72,13 +113,11 @@ export class JitWeaverCanvas<
         }
       };
 
-      const returnValue = this.strategy.around(ctxt)(...args);
+      const returnValue = this.strategy.handleReturnValue(
+        ctxt,
+        this.strategy.around(ctxt)(...args),
+      );
 
-      if (isAbstractToken(returnValue)) {
-        throw new WeavingError(
-          `${ctxt.target} returned "abstract()" token. "abstract()" is meant to be superseded by a @AfterReturn advice or an @Around advice.`,
-        );
-      }
       return returnValue;
     };
 

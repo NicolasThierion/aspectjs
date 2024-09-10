@@ -1,5 +1,6 @@
 import {
   AnnotationContext,
+  AnnotationTarget,
   AnnotationType,
   BoundAnnotationContext,
   getAnnotations,
@@ -16,6 +17,10 @@ import {
   PointcutType,
   on,
 } from '@aspectjs/core';
+import {
+  MissingPathVariableError,
+  PathVariableNotMatchedError,
+} from 'httyped-client';
 import { Body } from '../annotations/body.annotation';
 import {
   FETCH_ANNOTATIONS,
@@ -26,6 +31,7 @@ import { Headers } from '../annotations/headers.annotation';
 import { HttypedClient } from '../annotations/http-client.annotation';
 import { PathVariable } from '../annotations/path-variable.annotation';
 import { RequestParam } from '../annotations/request-param.annotation';
+import { RequestParams } from '../annotations/request-params.annotation';
 import { TypeHint } from '../annotations/type.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
 import { BodyMetadata } from '../types/body-metadata.type';
@@ -63,7 +69,14 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   // Advice methods
   // =====================
 
-  @Before(on.parameters.withAnnotations(Body, RequestParam, PathVariable))
+  @Before(
+    on.parameters.withAnnotations(
+      Body,
+      RequestParam,
+      RequestParams,
+      PathVariable,
+    ),
+  )
   protected assertIsFetchMethod(ctxt: AdviceContext<PointcutType.PARAMETER>) {
     ctxt.target.getMetadata(`${ASPECT_ID}:assertBodyImpliesFetch`, () => {
       if (!this.findHttpMethodAnnotation(ctxt)) {
@@ -129,36 +142,81 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       endpointMetadata,
     );
 
-    let url = this.replacePathVariables(
-      this.joinUrls(endpointConfig.baseUrl, endpointMetadata.url),
-      endpointConfig,
-      ctxt,
-    );
+    let url = this.joinUrls(endpointConfig.baseUrl, endpointMetadata.url);
+    try {
+      url = super.handleUrl(endpointConfig, ctxt, url);
 
-    let requestInit: RequestInit = {
-      ...endpointConfig.requestInit,
-      method: endpointMetadata.method,
-    };
-    const body = this.serializeRequestBody(endpointConfig, ctxt);
-    if (body !== undefined) {
-      requestInit.body = body;
+      let requestInit: RequestInit = {
+        ...endpointConfig.requestInit,
+        method: endpointMetadata.method,
+      };
+
+      const body = this.serializeRequestBody(endpointConfig, ctxt);
+      if (body !== undefined) {
+        requestInit.body = body;
+      }
+
+      requestInit.headers = this.getHeadersMetadata(ctxt);
+
+      requestInit = this.applyRequestHandlers(config, {
+        ...requestInit,
+        url,
+      } as Request);
+      url = (requestInit as Request).url;
+
+      return this.callHttpAdapter(endpointConfig, url, requestInit).then(
+        async (r) => this.applyResponseHandlers(config, r as Response, ctxt),
+      );
+    } catch (e) {
+      if (e instanceof MissingPathVariableError) {
+        throw new AspectError(
+          this,
+          `${PathVariable}(${e.variable}) parameter is missing for ${ctxt.target.label}`,
+        );
+      } else if (e instanceof PathVariableNotMatchedError) {
+        throw new AspectError(
+          this,
+          `${PathVariable}(${e.variable}) parameter of ${ctxt.target.label} does not match url ${url}`,
+        );
+      } else {
+        throw e;
+      }
     }
-
-    requestInit.headers = this.getHeadersMetadata(ctxt);
-
-    requestInit = this.applyRequestHandlers(config, {
-      ...requestInit,
-      url,
-    } as Request);
-    url = (requestInit as Request).url;
-
-    return this.callHttpAdapter(endpointConfig, url, requestInit).then(
-      async (r) => this.applyResponseHandlers(config, r as Response, ctxt),
-    );
   }
 
   // protected methods
   ////////////////////:
+
+  protected override findRequestParams(
+    ctxt: AdviceContext<PointcutType, unknown>,
+  ): [string, unknown][] {
+    const requestParamsAnnotations = ctxt
+      .annotations(RequestParams)
+      .find({ searchParents: true })
+      .map((annotation) => annotation.args[0])
+      .flatMap((params) =>
+        params instanceof Map ? [...params.entries()] : Object.entries(params),
+      );
+
+    const requestParamAnnotations = ctxt
+      .annotations(RequestParam)
+      .find({ searchParents: true })
+      // sort first parameters first
+      .sort(
+        (a1, a2) =>
+          (a1.target as AnnotationTarget<AnnotationType.PARAMETER>)
+            .parameterIndex -
+          (a2.target as AnnotationTarget<AnnotationType.PARAMETER>)
+            .parameterIndex,
+      )
+      .map((annotation) => {
+        const [name] = annotation.args;
+        const value = annotation.target.eval();
+        return [name, value] as [string, unknown];
+      });
+
+    return [...requestParamsAnnotations, ...requestParamAnnotations];
+  }
 
   protected override findPathVariables(
     ctxt: AdviceContext<PointcutType, unknown>,
@@ -374,7 +432,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     if (!fetchAnnotation) {
       const label =
         ctxt.target.type === AnnotationType.PARAMETER
-          ? ctxt.target.parent.label
+          ? ctxt.target.declaringMethod.label
           : ctxt.target.label;
 
       throw new AspectError(this, `${label} is missing a fetch annotation`);

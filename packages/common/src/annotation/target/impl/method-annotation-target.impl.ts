@@ -113,11 +113,8 @@ export class _MethodAnnotationTargetImpl<X>
 
     return this._declaringClassTarget;
   }
-  get parent() {
-    return this.declaringClass;
-  }
   override get parentClass() {
-    return this.declaringClass.parent;
+    return this.declaringClass.parentClass;
   }
 
   override _bind(instance: X): MethodAnnotationTarget<X> {

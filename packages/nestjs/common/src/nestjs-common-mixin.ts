@@ -1,4 +1,4 @@
-import { AnnotationMixinAspect, Aspect } from '@aspectjs/core';
+import { AnnotationMixin, Aspect } from '@aspectjs/core';
 import {
   Body as NBody,
   Controller as NController,
@@ -22,9 +22,9 @@ import { Patch } from './annotations/patch.annotation';
 import { Post } from './annotations/post.annotation';
 import { Put } from './annotations/put.annotation';
 @Aspect('ajs.nestjs:common-bridge')
-export class NestCommonMixinAspect extends AnnotationMixinAspect {
+export class NestCommonMixin extends AnnotationMixin {
   constructor() {
-    super();
+    super('NestCommonMixin');
 
     // bridge @aspectjs/nestjs/common annotations
     this.bridge(Get, NGet)

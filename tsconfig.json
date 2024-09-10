@@ -31,7 +31,8 @@
     "strict": true,
 
     // Type-checking settings.
-    "lib": ["ES2020", "ES2021.String"],
+    "lib": ["ES2015.Reflect", "ES2015", "ES2021"],
+
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "paths": {
@@ -41,7 +42,10 @@
       ],
       "@aspectjs/common/utils": ["./packages/common/utils/src/public_api.ts"],
       "@aspectjs/core": ["./packages/core/src/public_api.ts"],
-      "@aspectjs/core/testing": ["./packages/core/testing/src/public_api.ts"]
+      "@aspectjs/core/testing": ["./packages/core/testing/src/public_api.ts"],
+      "@aspectjs/nestjs/common": ["./packages/nestjs/common/src/public_api.ts"],
+      "httyped-client": ["./packages/httyped-client/src/public_api.ts"],
+      "nestjs-client": ["./packages/nestjs-client/src/public_api.ts"]
     }
   },
   "ts-node": {

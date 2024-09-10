@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import 'reflect-metadata';
 import 'whatwg-fetch';
 
@@ -14,7 +17,7 @@ interface IHttpClientApi {
   method(...args: any[]): any;
 }
 
-const TEST_BASE_URL = 'http://testBaseUrl';
+const TEST_BASE_URL = 'http://testbaseurl:8080';
 
 describe.each(ALL_FETCH_ANNOTATIONS)(
   '$annotationName(path/:pathVariable) annotation on a method',

@@ -7,6 +7,7 @@ import { ResponseHandler } from '../types/response-handler.type';
 import { HttypedClientConfig } from './client-config.type';
 import { MAP_JSON_RESPONSE_HANDLER } from './default-json-response-handler';
 import { DefaultPathVariablesHandler } from './path-variables-handler.type';
+import { DefaultRequestParamHandler } from './request-param-handler.type';
 
 const DEFAULT_CONFIG: Required<HttypedClientConfig> = {
   responseHandlers: [MAP_JSON_RESPONSE_HANDLER],
@@ -16,7 +17,8 @@ const DEFAULT_CONFIG: Required<HttypedClientConfig> = {
   fetchAdapter: fetch,
   requestBodyMappers: new MappersRegistry(),
   responseBodyMappers: new MappersRegistry(),
-  pathVariablesHandler: new DefaultPathVariablesHandler(),
+  pathVariablesHandler: new DefaultPathVariablesHandler().replace,
+  requestParamsHandler: new DefaultRequestParamHandler().stringify,
 };
 
 const configureAspect = () => {

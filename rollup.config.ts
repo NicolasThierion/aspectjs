@@ -142,6 +142,7 @@ export const createConfig = (
       typescript({
         // cacheDir: '.rollup.tscache',
         tsconfig: options.tsconfig,
+        target: 'ES6',
         // explicitly disable declarations, as a rollup config is dedicated for them
         declaration: false,
         declarationDir: undefined,
@@ -212,8 +213,8 @@ export const createConfig = (
    * Generate only types into dist/types/index.d.ts
    */
   if (options.output?.dts ?? true) {
-    const dtsOutput = bundleOptions.output[0]!;
-
+    const dtsOutput = { ...bundleOptions.output[0]! };
+    dtsOutput.file = `./dist/dts/${baseName}.js`;
     const dtsOptions: RollupOptions = {
       input: options.input,
 
@@ -258,7 +259,7 @@ export const createConfig = (
 
         dts(),
         del({
-          targets: 'dist/types',
+          targets: ['dist/types', 'dist/dts'],
           hook: 'buildEnd',
         }),
       ],
@@ -283,7 +284,7 @@ export const createConfig = (
     tmp.setGracefulCleanup();
     // rollup throw an error if no input, so give a dummy one
     const dumyInput = tmp.fileSync({
-      name: 'DUMMY_INPUT_ASSETS_GOAL',
+      template: 'DUMMY_INPUT_ASSETS_GOAL-XXXXXX',
     }).name;
     definedOptions.push({
       input: dumyInput,

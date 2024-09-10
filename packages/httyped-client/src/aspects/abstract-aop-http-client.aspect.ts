@@ -1,15 +1,9 @@
 import {
   AdviceContext,
   AfterReturnContext,
-  AspectError,
   PointcutType,
 } from '@aspectjs/core';
-import { PathVariable } from '../annotations/path-variable.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
-import {
-  MissingPathVariableError,
-  PathVariableNotMatchedError,
-} from '../client-factory/path-variables-handler.type';
 import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
@@ -24,6 +18,10 @@ export abstract class AbstractAopHttpClientAspect {
 
   // protected methods
   ////////////////////:
+
+  protected abstract findRequestParams(
+    ctxt: AdviceContext<PointcutType, unknown>,
+  ): [string, unknown][];
 
   protected callHttpAdapter(
     endpointConfig: Required<HttypedClientConfig>,
@@ -41,23 +39,39 @@ export abstract class AbstractAopHttpClientAspect {
     const variableHandler = endpointConfig.pathVariablesHandler;
     const variables = this.findPathVariables(ctxt);
 
-    try {
-      return variableHandler.replace(url, variables);
-    } catch (e) {
-      if (e instanceof MissingPathVariableError) {
-        throw new AspectError(
-          this,
-          `${PathVariable}(${e.variable}) parameter is missing for ${ctxt.target.label}`,
-        );
-      } else if (e instanceof PathVariableNotMatchedError) {
-        throw new AspectError(
-          this,
-          `${PathVariable}(${e.variable}) parameter of ${ctxt.target.label} does not match url ${url}`,
-        );
-      } else {
-        throw e;
-      }
+    return variableHandler(url, variables);
+  }
+
+  protected handleUrl(
+    endpointConfig: Required<HttypedClientConfig>,
+    ctxt: AdviceContext,
+    url: string,
+  ): string {
+    let { protocol, host, pathname, hash, searchParams } = new URL(url);
+    url = `${protocol}//${host}`;
+
+    if (pathname) {
+      pathname = this.replacePathVariables(pathname, endpointConfig, ctxt);
+
+      url = `${url}${pathname}`;
     }
+
+    let requestParamsEntries = [
+      ...searchParams.entries(),
+      ...this.findRequestParams(ctxt),
+    ];
+
+    if (requestParamsEntries.length) {
+      const searchParamsString =
+        endpointConfig.requestParamsHandler(requestParamsEntries);
+      url = `${url}${searchParamsString}`;
+    }
+
+    if (hash) {
+      url = `${url}${hash}`;
+    }
+
+    return url;
   }
   protected abstract findPathVariables(
     ctxt: AdviceContext<PointcutType, unknown>,

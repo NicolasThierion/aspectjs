@@ -13,7 +13,7 @@ import { Mapper } from '../../types/mapper.type';
 import { HttypedClient } from '../http-client.annotation';
 import { TypeHint } from '../type.annotation';
 
-const TEST_BASE_URL = 'http://testBaseUrl';
+const TEST_BASE_URL = 'http://testbaseurl';
 
 interface IApi {
   method(): Promise<any>;

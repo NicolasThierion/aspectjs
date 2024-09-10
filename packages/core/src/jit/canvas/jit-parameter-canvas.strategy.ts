@@ -20,14 +20,6 @@ export class JitParameterCanvasStrategy<
     super(weaverContext, advices, [PointcutType.PARAMETER]);
   }
 
-  override compile(
-    ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
-  ): MethodPropertyDescriptor {
-    const compiledDescriptor = super.compile(ctxt);
-
-    return compiledDescriptor;
-  }
-
   protected override getAdviceEntries<P extends AdviceType>(
     pointcutType: P,
   ): AdviceEntry<PointcutType.PARAMETER, X, P>[] {

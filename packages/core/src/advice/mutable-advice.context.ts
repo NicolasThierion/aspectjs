@@ -13,6 +13,11 @@ import {
   AnnotationTarget,
   BoundAnnotationsSelector,
 } from '@aspectjs/common';
+import {
+  defineMetadata,
+  getMetadata,
+  getMetadataKeys,
+} from '@aspectjs/common/utils';
 import type { AfterReturnContext } from '../advices/after-return/after-return.context';
 import type { AfterThrowContext } from '../advices/after-throw/after-throw.context';
 import type { AroundContext } from '../advices/around/around.context';
@@ -176,6 +181,11 @@ function copyProps<A extends AdviceContext>(
     );
     return selector;
   };
+
+  // copy over metadata
+  getMetadataKeys(ctxt).forEach((key) => {
+    defineMetadata(key, getMetadata(key, ctxt), newContext);
+  });
 
   (newContext.annotations as any) = newAnnotations;
   return newContext;

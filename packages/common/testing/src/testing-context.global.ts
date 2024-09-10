@@ -63,7 +63,7 @@ export class ReflectTestingContext extends ReflectContext {
     //     );
     //   });
 
-    // undo side-effects of factories (eg: DecoratorProviderRegistry.add())
+    // undo side-effects of factories (eg: DecoratorHookRegistry.add())
     this.testedModules.forEach((m) => {
       (m as any)[Symbol.for('@ajs:ttd')]?.();
       this.modules.delete(m);

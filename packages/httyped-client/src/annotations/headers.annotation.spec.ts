@@ -11,7 +11,7 @@ import { ALL_FETCH_ANNOTATIONS } from '../test-helpers/all-fetch-annotations.hel
 import { Headers } from './headers.annotation';
 import { HttypedClient } from './http-client.annotation';
 
-const TEST_BASE_URL = 'http://testBaseUrl';
+const TEST_BASE_URL = 'http://testbaseurl';
 
 interface IApi {
   method(...args: any[]): Promise<any>;

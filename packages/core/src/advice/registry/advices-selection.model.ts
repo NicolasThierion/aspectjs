@@ -12,7 +12,7 @@ import { AdviceRegistryFilters } from './advice.registry';
 export class AdvicesSelection {
   constructor(
     private readonly buckets: AdviceRegBuckets,
-    private readonly filters: AdviceRegistryFilters,
+    public readonly filters: AdviceRegistryFilters,
     private readonly adviceSorter: AdviceSorter,
   ) {
     if (this.filters.annotations) {
@@ -55,8 +55,8 @@ export class AdvicesSelection {
           ? adviceTypes
           : (Object.keys(byPointcutType) as AdviceType[]);
 
-        for (const pointcutType of _adviceTypes) {
-          const map = byPointcutType[pointcutType];
+        for (const adviceType of _adviceTypes) {
+          const map = byPointcutType[adviceType];
           if (map) {
             const adviceEntries = (
               filters.aspects?.length

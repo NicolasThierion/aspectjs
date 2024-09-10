@@ -29,7 +29,7 @@ export * from './pointcut/pointcut';
 export * from './pointcut/pointcut-expression.factory';
 export * from './pointcut/pointcut-expression.type';
 export * from './pointcut/pointcut-target.type';
-export * from './utils/annotation-mixin.aspect';
+export * from './utils/annotation-mixin';
 export * from './weaver/context/weaver.context.global';
 export * from './weaver/weaver';
 export * from './weaver/weaver.module';

@@ -93,14 +93,14 @@ export function getMetadata<T>(
   valueGenerator?: (() => T) | boolean,
   save = true,
 ): T {
-  let _propertyKey = propertyKey as string;
+  let _propertyKey = propertyKey as string | symbol | undefined;
   let _valueGenerator = valueGenerator as () => T | void;
   if (typeof valueGenerator === 'boolean') {
     save = valueGenerator;
   }
   if (typeof propertyKey === 'function') {
     _valueGenerator = propertyKey;
-    _propertyKey = '';
+    _propertyKey = undefined;
   }
   _valueGenerator = _valueGenerator ?? (() => {});
 

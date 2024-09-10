@@ -119,9 +119,6 @@ export class _PropertyAnnotationTargetImpl<X>
     return this._declaringClassTarget;
   }
 
-  get parent() {
-    return this.declaringClass;
-  }
   get parentClass() {
     return this.declaringClass.parentClass;
   }

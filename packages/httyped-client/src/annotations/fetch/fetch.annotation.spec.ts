@@ -15,7 +15,7 @@ interface IHttpClientApi {
   method(): any;
 }
 
-const TEST_BASE_URL = 'http://testBaseUrl';
+const TEST_BASE_URL = 'http://testbaseurl/';
 
 describe.each(ALL_FETCH_ANNOTATIONS)(
   '$annotationName(<path>) annotation on a method',
@@ -75,7 +75,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
           jest.fn().mock;
           expect(() => api.method()).not.toThrow();
           expect(fetchAdapter).toHaveBeenCalled();
-          expect(fetchAdapter.mock.calls[0][0]).toEqual('http://example.com');
+          expect(fetchAdapter.mock.calls[0][0]).toEqual('http://example.com/');
           expect(fetchAdapter.mock.calls[0][1].method).toEqual(method);
         });
       });

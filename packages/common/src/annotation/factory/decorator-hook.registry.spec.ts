@@ -1,5 +1,5 @@
 import { configureTesting } from '@aspectjs/common/testing';
-import { DecoratorProviderRegistry } from './decorator-provider.registry';
+import { DecoratorHookRegistry } from './decorator-hook.registry';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ReflectModule, reflectContext } from '../../public_api';
@@ -9,7 +9,7 @@ import { AnnotationFactory } from './annotation.factory';
 
 const af = new AnnotationFactory('test');
 
-describe('DecoratorProviderRegistry', () => {
+describe('DecoratorHookRegistry', () => {
   describe('when configured as a ReflectProvider', () => {
     let hookedDecorator = jest.fn();
     beforeEach(() => {
@@ -18,9 +18,9 @@ describe('DecoratorProviderRegistry', () => {
       @ReflectModule({
         providers: [
           {
-            provide: DecoratorProviderRegistry,
-            deps: [DecoratorProviderRegistry],
-            factory: (reg: DecoratorProviderRegistry) => {
+            provide: DecoratorHookRegistry,
+            deps: [DecoratorHookRegistry],
+            factory: (reg: DecoratorHookRegistry) => {
               reg.add({
                 name: '@aspectjs::test',
                 createDecorator: function () {
@@ -37,9 +37,7 @@ describe('DecoratorProviderRegistry', () => {
       })
       class TestingModule {
         static [TEST_TEARDOWN_SYMBOL] = () => {
-          reflectContext()
-            .get(DecoratorProviderRegistry)
-            .remove('@aspectjs::test');
+          reflectContext().get(DecoratorHookRegistry).remove('@aspectjs::test');
         };
       }
 

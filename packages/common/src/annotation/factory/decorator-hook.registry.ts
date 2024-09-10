@@ -1,26 +1,26 @@
 import { assert } from '@aspectjs/common/utils';
 
-import type { DecoratorProvider } from './decorator-provider.type';
+import type { DecoratorHook } from './decorator-hook.type';
 
 /**
  * @internal
  */
-export class DecoratorProviderRegistry {
-  protected readonly hooks: Map<string, DecoratorProvider> = new Map();
+export class DecoratorHookRegistry {
+  protected readonly hooks: Map<string, DecoratorHook> = new Map();
 
-  static readonly __providerName = 'DecoratorProviderRegistry';
+  static readonly __providerName = 'DecoratorHookRegistry';
   values() {
     return this.hooks.values();
   }
 
-  add(annotationsHook: DecoratorProvider) {
+  add(annotationsHook: DecoratorHook) {
     assert(!!annotationsHook.name);
     assert(!this.hooks.has(annotationsHook.name));
     this.hooks.set(annotationsHook.name, annotationsHook);
     return this;
   }
 
-  remove(annotationsHook: DecoratorProvider | string) {
+  remove(annotationsHook: DecoratorHook | string) {
     const name =
       typeof annotationsHook === 'string'
         ? annotationsHook

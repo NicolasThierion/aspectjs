@@ -30,7 +30,6 @@ import type { Weaver } from '../weaver/weaver';
 import { JitMethodCanvasStrategy } from './canvas/jit-method-canvas.strategy';
 import { JitParameterCanvasStrategy } from './canvas/jit-parameter-canvas.strategy';
 import { JitPropertyCanvasStrategy } from './canvas/jit-property-canvas.strategy';
-import { createJitWeaverDecorator } from './jit-weaver-decorator.utils';
 export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
@@ -248,12 +247,7 @@ export class JitWeaver implements Weaver {
       allAnnotations
         .filter((a) => !this.enhancedTargets.has(a.target.ref))
         .forEach((a) => {
-          const decorator = createJitWeaverDecorator(
-            this,
-            a.target as _BindableAnnotationTarget,
-          );
-
-          const decoree = decorator.apply(null, a.target.asDecoratorArgs());
+          const decoree = this.enhance(a.target as _BindableAnnotationTarget);
           if (decoree) {
             if (a.target.type === AnnotationType.CLASS) {
               assert(typeof decoree === 'function');

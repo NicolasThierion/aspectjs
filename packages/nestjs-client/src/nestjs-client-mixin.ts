@@ -1,4 +1,4 @@
-import { AnnotationMixinAspect, Aspect, AspectError } from '@aspectjs/core';
+import { AnnotationMixin, Aspect, AspectError } from '@aspectjs/core';
 import {
   Delete,
   Get,
@@ -19,15 +19,16 @@ import {
   Post as HPost,
   Put as HPut,
   HttypedClient,
+  HttypedClientAspect,
   PathVariable,
   RequestParam,
 } from 'httyped-client';
 import { NestClient } from './nestjs-client.annotation';
 
 @Aspect('nestjs-client')
-export class NestClientMixinAspect extends AnnotationMixinAspect {
+export class NestClientMixin extends AnnotationMixin {
   constructor() {
-    super();
+    super('NestClientMixin');
     this.bridge(NestClient, HttypedClient);
 
     this.bridge(Get, this.httpMethodAdapter(HGet))
@@ -44,6 +45,15 @@ export class NestClientMixinAspect extends AnnotationMixinAspect {
     );
   }
 
+  override createAspect(): HttypedClientAspect {
+    return super.createAspect() as any as HttypedClientAspect;
+  }
+  protected override createAspectTemplate(): HttypedClientAspect {
+    @Aspect('NestClientMixin')
+    class NestClientAspect extends HttypedClientAspect {}
+
+    return new NestClientAspect() as any;
+  }
   private httpArgumentAdapter(annotation: typeof PathVariable) {
     return (...args: any[]) => {
       if (args.length > 1) {

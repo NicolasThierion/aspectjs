@@ -127,7 +127,7 @@ export class _ParameterAnnotationTargetImpl<X>
 
     return this._declaringClassTarget;
   }
-  get parent(): MethodAnnotationTarget<X> {
+  get declaringMethod(): MethodAnnotationTarget<X> {
     if (this._methodTarget) {
       return this._methodTarget;
     }
@@ -144,7 +144,7 @@ export class _ParameterAnnotationTargetImpl<X>
     return this._methodTarget;
   }
   override get parentClass() {
-    return this.declaringClass.parent;
+    return this.declaringClass.parentClass;
   }
 
   override _bind(instance: X, args: unknown[]): ParameterAnnotationTarget<X> {

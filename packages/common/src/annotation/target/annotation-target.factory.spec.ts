@@ -112,11 +112,6 @@ describe('AnnotationTargetFactory', () => {
       expect(target.declaringClass).toEqual(targetFactory.of(new X()));
     });
 
-    it('.parent === <class target>', () => {
-      const target = targetFactory.of(new X(), 'prop');
-      expect(target.parent).toEqual(targetFactory.of(new X()));
-    });
-
     it('.eval() === x', () => {
       const x = new X();
       const target = targetFactory.of(x, 'prop');
@@ -142,11 +137,6 @@ describe('AnnotationTargetFactory', () => {
     it('.declaringClass === <class target>', () => {
       const target = targetFactory.of(X.prototype, 'prop');
       expect(target.declaringClass).toBe(targetFactory.of(X));
-    });
-
-    it('.parent === <class target>', () => {
-      const target = targetFactory.of(X.prototype, 'prop');
-      expect(target.parent).toEqual(targetFactory.of(X));
     });
 
     it('.eval() throws an error', () => {
@@ -181,11 +171,6 @@ describe('AnnotationTargetFactory', () => {
     it('.declaringClass === <class target>', () => {
       const target = targetFactory.of(X.prototype, 'method');
       expect(target.declaringClass).toBe(targetFactory.of(X));
-    });
-
-    it('.parent === <class target>', () => {
-      const target = targetFactory.of(X.prototype, 'method');
-      expect(target.parent).toBe(targetFactory.of(X));
     });
 
     it('.eval() throws an error', () => {
@@ -247,15 +232,6 @@ describe('AnnotationTargetFactory', () => {
       expect(target.declaringClass).toBe(targetFactory.of(X));
     });
 
-    it('.parent === <class target>', () => {
-      const target = targetFactory.of(
-        X.prototype,
-        'method',
-        Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
-      );
-      expect(target.parent).toBe(targetFactory.of(X));
-    });
-
     it('.eval() === x', () => {
       const target = targetFactory.of(
         X.prototype,
@@ -307,7 +283,7 @@ describe('AnnotationTargetFactory', () => {
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.parent).toEqual(targetFactory.of(new X()));
+      expect(target.declaringClass).toEqual(targetFactory.of(new X()));
     });
 
     it('.eval() === x', () => {
@@ -341,7 +317,7 @@ describe('AnnotationTargetFactory', () => {
 
     it('.parent === <class target>', () => {
       const target = targetFactory.of(X, 'method', 1);
-      expect(target.parent).toBe(targetFactory.of(X, 'method'));
+      expect(target.declaringMethod).toBe(targetFactory.of(X, 'method'));
     });
   });
 });

@@ -146,11 +146,11 @@ export class AnnotationsByRefSelector<
 function getAncestors<T extends AnnotationType>(
   target: AnnotationTarget<T, any>,
 ): Array<AnnotationTarget<T, any>> {
-  if (!target.parent) {
+  if (!target.parentClass) {
     return [];
   }
   return [
-    target.parent as AnnotationTarget<T, any>,
-    ...getAncestors<T>(target.parent as AnnotationTarget<T, any>),
+    target.parentClass as AnnotationTarget<T, any>,
+    ...getAncestors<T>(target.parentClass as AnnotationTarget<T, any>),
   ];
 }

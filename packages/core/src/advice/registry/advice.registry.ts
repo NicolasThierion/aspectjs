@@ -2,7 +2,6 @@ import { AnnotationRef } from '@aspectjs/common';
 import { ConstructorType } from '@aspectjs/common/utils';
 
 import { Pointcut } from '../../pointcut/pointcut';
-import { WeaverContext } from '../../weaver/context/weaver.context';
 import { AdvicesSelection } from './advices-selection.model';
 
 import { getAspectMetadata, type AspectType } from '../../aspect/aspect.type';
@@ -23,10 +22,7 @@ export interface AdviceRegistryFilters {
 export class AdviceRegistry {
   private readonly buckets: AdviceRegBuckets = {};
 
-  constructor(
-    private readonly weaverContext: WeaverContext,
-    private readonly adviceSorter: AdviceSorter,
-  ) {}
+  constructor(private readonly adviceSorter: AdviceSorter) {}
 
   register(aspect: AspectType) {
     const advices = getAspectMetadata(aspect).advices;

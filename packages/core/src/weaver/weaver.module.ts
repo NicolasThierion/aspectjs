@@ -1,7 +1,7 @@
 import {
   AnnotationContextRegistry,
   AnnotationTargetFactory,
-  DecoratorProviderRegistry,
+  DecoratorHookRegistry,
   ReflectModule,
   ReflectProvider,
   reflectContext,
@@ -10,12 +10,13 @@ import {
 import { WeaverContext } from './context/weaver.context';
 
 import { JitWeaver } from '../jit/jit-weaver';
-import { CALL_JIT_WEAVER_HOOK } from '../jit/jit-weaver-decorator.provider';
+import { CALL_JIT_WEAVER_HOOK } from '../jit/jit-weaver.hook';
 import { JoinPointFactory } from '../jit/joinpoint.factory';
 
 import { AdviceSorter } from '../advice/advice-sort';
 import { AdviceRegistry } from '../advice/registry/advice.registry';
 import { AspectRegistry } from '../aspect/aspect.registry';
+import { _CompilationState } from './compilation-state.provider';
 
 /**
  * @internal
@@ -33,9 +34,9 @@ export const ASPECT_PROVIDERS: ReflectProvider[] = [];
     },
     {
       provide: AdviceRegistry,
-      deps: [WeaverContext, AdviceSorter],
-      factory: (weaverContext: WeaverContext, adviceSort: AdviceSorter) => {
-        return new AdviceRegistry(weaverContext, adviceSort);
+      deps: [AdviceSorter],
+      factory: (adviceSort: AdviceSorter) => {
+        return new AdviceRegistry(adviceSort);
       },
     },
     {
@@ -61,15 +62,19 @@ export const ASPECT_PROVIDERS: ReflectProvider[] = [];
       factory: (weaverContext: WeaverContext) => new JitWeaver(weaverContext),
     } as any,
     {
-      provide: DecoratorProviderRegistry,
-      deps: [DecoratorProviderRegistry],
-      factory: (decoratorProviderRegistry: DecoratorProviderRegistry) => {
-        return decoratorProviderRegistry.add(CALL_JIT_WEAVER_HOOK);
+      provide: DecoratorHookRegistry,
+      deps: [DecoratorHookRegistry],
+      factory: (decoratorHookRegistry: DecoratorHookRegistry) => {
+        return decoratorHookRegistry.add(CALL_JIT_WEAVER_HOOK);
       },
     },
     {
       provide: JoinPointFactory,
       factory: () => new JoinPointFactory(),
+    },
+    {
+      provide: _CompilationState,
+      factory: () => new _CompilationState(),
     },
   ],
 })
@@ -81,7 +86,5 @@ const TEST_TEARDOWN_SYMBOL = Symbol.for('@ajs:ttd');
 
 Object.defineProperty(WeaverModule, TEST_TEARDOWN_SYMBOL, {
   value: () =>
-    reflectContext()
-      .get(DecoratorProviderRegistry)
-      .remove(CALL_JIT_WEAVER_HOOK),
+    reflectContext().get(DecoratorHookRegistry).remove(CALL_JIT_WEAVER_HOOK),
 });

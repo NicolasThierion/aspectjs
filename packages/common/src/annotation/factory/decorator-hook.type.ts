@@ -1,3 +1,4 @@
+import { ReflectContext } from '../../reflect/reflect.context';
 import { AnnotationContext } from '../annotation-context';
 import type {
   AnnotationStub,
@@ -7,15 +8,16 @@ import type {
 
 /**
  * @internal
- * @description A DecoratorProvider is a configuration for the {@link AnnotationFactory}
+ * @description A DecoratorHook is a configuration for the {@link AnnotationFactory}
  * to create typescript decorators that corresponds to a given annotation.
  */
-export type DecoratorProvider<
+export type DecoratorHook<
   T extends AnnotationType = AnnotationType,
   S extends AnnotationStub<T> = AnnotationStub<T>,
 > = {
   // TODO: refactor into a single parameter
   createDecorator: (
+    reflect: ReflectContext,
     context: AnnotationContext<T, S>,
     annotationStub: S,
   ) => Decorator<T> | void;

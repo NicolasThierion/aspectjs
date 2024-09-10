@@ -6,6 +6,8 @@ import {
   _copyPropsAndMeta,
   _defuseAbstract,
   assert,
+  defineMetadata,
+  getMetadata,
 } from '@aspectjs/common/utils';
 import { AdviceType } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
@@ -35,10 +37,15 @@ export abstract class AbstractJitMethodCanvasStrategy<
     )!;
     assert(!!methodDescriptor);
 
-    //  if no method compile advices, return method as is
-    const adviceEntries = this.getAdviceEntries(AdviceType.COMPILE);
-    if (!adviceEntries.length) {
-      return methodDescriptor;
+    // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
+    // apply compile advices until state got stable
+    let previousAdviceEntries: AdviceEntry<any, any, AdviceType.COMPILE>[] = [];
+    let adviceEntries = this.getAdviceEntries(AdviceType.COMPILE);
+
+    while (adviceEntries.length !== previousAdviceEntries.length) {
+      previousAdviceEntries = adviceEntries;
+      applyCompileAdvices();
+      adviceEntries = this.getAdviceEntries(AdviceType.COMPILE);
     }
 
     assert(!!ctxt.target.propertyKey);
@@ -49,48 +56,77 @@ export abstract class AbstractJitMethodCanvasStrategy<
     //   ) as CompiledSymbol<T, X>;
     // }
 
-    adviceEntries
-      //  prevent calling them twice.
-      .filter((e) => !ctxt.target.getMetadata(`compiled_${e.id}`, () => false))
-      .forEach((entry) => {
-        assert(typeof entry.advice === 'function');
-        Object.defineProperty(
-          ctxt.target.proto,
-          ctxt.target.propertyKey,
-          methodDescriptor,
-        );
-
-        let newMethodDescriptor = entry.advice.call(
-          entry.aspect,
-          ctxt.asCompileContext(),
-        ) as CompiledSymbol<T, X>;
-
-        if (newMethodDescriptor) {
-          if (typeof newMethodDescriptor === 'function') {
-            const surrogate = {
-              fn: newMethodDescriptor,
-            };
-            newMethodDescriptor = Object.getOwnPropertyDescriptor(
-              surrogate,
-              'fn',
-            )! as CompiledSymbol<T, X>;
-          }
-          if (typeof newMethodDescriptor.value !== 'function') {
-            throw new AdviceError(
-              entry.aspect,
+    function applyCompileAdvices() {
+      adviceEntries
+        //  prevent calling them twice.
+        .filter(
+          (e) =>
+            !getMetadata(
+              `ajs.compiled`,
+              e.advice,
+              ctxt.target.ref.value,
+              () => false,
+            ),
+        )
+        .forEach((entry) => {
+          try {
+            defineMetadata(
+              `ajs.compiled`,
+              true,
               entry.advice,
-              ctxt.target,
-              'should return void, a function, or a Method property descriptor',
+              ctxt.target.ref.value,
             );
+
+            assert(typeof entry.advice === 'function');
+            Object.defineProperty(
+              ctxt.target.proto,
+              ctxt.target.propertyKey,
+              methodDescriptor,
+            );
+
+            let newMethodDescriptor = entry.advice.call(
+              entry.aspect,
+              ctxt.asCompileContext(),
+            ) as CompiledSymbol<T, X>;
+
+            if (newMethodDescriptor) {
+              if (typeof newMethodDescriptor === 'function') {
+                const surrogate = {
+                  fn: newMethodDescriptor,
+                };
+                newMethodDescriptor = Object.getOwnPropertyDescriptor(
+                  surrogate,
+                  'fn',
+                )! as CompiledSymbol<T, X>;
+              }
+              if (typeof newMethodDescriptor.value !== 'function') {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  'should return void, a function, or a Method property descriptor',
+                );
+              }
+
+              _copyPropsAndMeta(
+                newMethodDescriptor.value,
+                methodDescriptor.value,
+              ); // copy static props
+              methodDescriptor = newMethodDescriptor;
+            }
+          } catch (e) {
+            defineMetadata(
+              `ajs.compiled`,
+              false,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            throw e;
           }
+        });
+      ctxt.target.defineMetadata('@ajs:compiledSymbol', methodDescriptor);
+    }
 
-          _copyPropsAndMeta(newMethodDescriptor.value, methodDescriptor.value); // copy static props
-          methodDescriptor = newMethodDescriptor;
-        }
-
-        ctxt.target.defineMetadata(`compiled_${entry.id}`, true);
-      });
-    ctxt.target.defineMetadata('@ajs:compiledSymbol', methodDescriptor);
     return methodDescriptor;
   }
 

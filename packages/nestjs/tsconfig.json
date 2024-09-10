@@ -5,8 +5,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "types": ["jest", "node"],
-    "emitDecoratorMetadata": true,
-    "lib": []
+    "emitDecoratorMetadata": true
   },
   "exclude": ["./dist", "./**/*.spec.ts"]
 }
