@@ -1,4 +1,5 @@
 import { assert } from '@aspectjs/common/utils';
+import 'reflect-metadata';
 import { isUndefined } from './utils';
 
 declare let Reflect: {
@@ -18,11 +19,7 @@ declare let Reflect: {
 };
 
 // rough Reflect polyfill
-if (
-  !Reflect.getOwnMetadata ||
-  !Reflect.defineMetadata ||
-  !Reflect.getOwnMetadataKeys
-) {
+if (!Reflect.getOwnMetadata || !Reflect.defineMetadata) {
   const _meta = new Map<
     any,
     Map<string | symbol | undefined, Map<string, any>>
@@ -45,7 +42,7 @@ if (
     const pkBucket = tBucket.get(propertyKey) ?? new Map();
 
     _meta.set(target, tBucket);
-    tBucket.set(propertyKey, pkBucket);
+    tBucket.set(key, pkBucket);
     pkBucket.set(key, value);
   };
 
@@ -53,7 +50,7 @@ if (
     target: object,
     propertyKey?: string | symbol,
   ): string[] {
-    const pkBucket = _meta.get(target)?.get(propertyKey) ?? new Map();
+    const pkBucket = _meta.get(target)?.get(propertyKey ?? '') ?? new Map();
 
     return [...pkBucket.keys()];
   };

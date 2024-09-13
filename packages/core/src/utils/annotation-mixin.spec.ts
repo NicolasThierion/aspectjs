@@ -116,7 +116,7 @@ describe(`AnnotationMixin`, () => {
         };
       }
 
-      annotationMixin = new AnnotationMixin('test')
+      annotationMixin = new AnnotationMixin()
         .bridge(BClass, (a: string, b: string) =>
           AClassDecorator(
             a.toLocaleUpperCase() as Uppercase<string>,
@@ -152,7 +152,9 @@ describe(`AnnotationMixin`, () => {
 
       configureTesting(WeaverModule);
 
-      getWeaver().enable(annotationMixin.createAspect());
+      @Aspect()
+      class AAspect {}
+      getWeaver().enable(annotationMixin.createAspect(new AAspect()));
     });
 
     describe('using the X annotation on a class', () => {
@@ -252,9 +254,9 @@ describe(`AnnotationMixin`, () => {
       A = af.create(function A(a: string, b: string) {});
       B = af.create(function B(a: string, b: string) {});
 
-      annotationMixin = new AnnotationMixin('test').bridge(A, B);
+      annotationMixin = new AnnotationMixin().bridge(A, B);
       configureTesting(WeaverModule);
-      getWeaver().enable(annotationMixin.createAspect());
+      getWeaver().enable(annotationMixin.createAspect('test'));
     });
     describe('using the A annotation on a class', () => {
       it.each([Compile, Before, Around, After, AfterReturn, AfterThrow])(
@@ -282,7 +284,7 @@ describe(`AnnotationMixin`, () => {
             expect(adviceBSpy).not.toHaveBeenCalled();
             new X();
           }
-          expect(adviceBSpy).toHaveBeenCalled();
+          expect(adviceBSpy).toHaveBeenCalledTimes(1);
         },
       );
     });
@@ -313,7 +315,7 @@ describe(`AnnotationMixin`, () => {
             expect(adviceBSpy).not.toHaveBeenCalled();
             new X().m('arg');
           }
-          expect(adviceBSpy).toHaveBeenCalled();
+          expect(adviceBSpy).toHaveBeenCalledTimes(1);
         },
       );
     });
@@ -350,7 +352,7 @@ describe(`AnnotationMixin`, () => {
           const x = new X();
           let prop = x.prop;
         }
-        expect(adviceBSpy).toHaveBeenCalled();
+        expect(adviceBSpy).toHaveBeenCalledTimes(1);
       });
     });
     describe('using the A annotation on a parameter', () => {
@@ -382,7 +384,7 @@ describe(`AnnotationMixin`, () => {
             const x = new X();
             x.method('x');
           }
-          expect(adviceBSpy).toHaveBeenCalled();
+          expect(adviceBSpy).toHaveBeenCalledTimes(1);
         },
       );
     });

@@ -16,14 +16,13 @@ export const CALL_JIT_WEAVER_HOOK: DecoratorHook = {
       // dynamically add the annotation to advices selection filter
       const state = reflectContext().get(_CompilationState);
       if (state.status === _CompilationState.Status.PENDING) {
-        // already advised, skip.
-        // this might happen when doing a bridge from one annotation to another.
+        // already enhanced, skip calling the weaver.
+        // this might happen when doing a mixin between two annotations.
 
         assert(!!state.advices);
         // add the current annotation to the list of known annotations for advices
-        if (state.advices!.filters.annotations) {
-          state.advices!.filters.annotations.push(context.ref);
-        }
+        state.advices!.filters.annotations ??= [];
+        state.advices!.filters.annotations.push(context.ref);
         return;
       } else {
         const decoree = weaver.enhance(target);

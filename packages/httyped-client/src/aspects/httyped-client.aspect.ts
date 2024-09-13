@@ -17,10 +17,6 @@ import {
   PointcutType,
   on,
 } from '@aspectjs/core';
-import {
-  MissingPathVariableError,
-  PathVariableNotMatchedError,
-} from 'httyped-client';
 import { Body } from '../annotations/body.annotation';
 import {
   FETCH_ANNOTATIONS,
@@ -34,6 +30,10 @@ import { RequestParam } from '../annotations/request-param.annotation';
 import { RequestParams } from '../annotations/request-params.annotation';
 import { TypeHint } from '../annotations/type.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
+import {
+  MissingPathVariableError,
+  PathVariableNotMatchedError,
+} from '../client-factory/path-variables-handler.type';
 import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';

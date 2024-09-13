@@ -18,6 +18,9 @@ export * from './advices/before/before.annotation';
 export * from './advices/before/before.context';
 export * from './advices/before/before.type';
 export * from './advices/compile/compile.annotation';
+export * from './advices/compile/compile.context';
+export * from './advices/compile/compile.type';
+
 export * from './annotations/order.annotation';
 export * from './aspect/aspect-metadata.type';
 export * from './aspect/aspect.annotation';

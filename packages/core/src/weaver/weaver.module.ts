@@ -3,7 +3,6 @@ import {
   AnnotationTargetFactory,
   DecoratorHookRegistry,
   ReflectModule,
-  ReflectProvider,
   reflectContext,
 } from '@aspectjs/common';
 
@@ -17,11 +16,6 @@ import { AdviceSorter } from '../advice/advice-sort';
 import { AdviceRegistry } from '../advice/registry/advice.registry';
 import { AspectRegistry } from '../aspect/aspect.registry';
 import { _CompilationState } from './compilation-state.provider';
-
-/**
- * @internal
- */
-export const ASPECT_PROVIDERS: ReflectProvider[] = [];
 
 @ReflectModule({
   providers: [

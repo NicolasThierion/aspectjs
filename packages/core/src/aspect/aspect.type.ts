@@ -118,8 +118,8 @@ function _getAdvices(aspect: AspectType) {
       });
 
       // dedupe same advices found on child classes for a similar pointcut
-      const similarPointcut = processedAdvices.filter((p) =>
-        p.isAssignableFrom(pointcut),
+      const similarPointcut = [...advice.pointcuts, ...processedAdvices].filter(
+        (p) => p.isAssignableFrom(pointcut),
       )[0];
       if (similarPointcut) {
         pointcut = similarPointcut.merge(pointcut);
@@ -127,6 +127,13 @@ function _getAdvices(aspect: AspectType) {
         advice.pointcuts.push(pointcut);
         processedAdvices.push(pointcut);
       }
+    });
+
+    assert(() => {
+      return (
+        new Set(advice.pointcuts.map((p) => p.toString())).size ===
+        advice.pointcuts.length
+      );
     });
   });
 

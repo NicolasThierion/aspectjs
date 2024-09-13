@@ -73,9 +73,11 @@ export class JitWeaverCanvas<
           ctxt.instance &&
           getPrototype(ctxt.instance) !== ctxt.target.proto
         ) {
+          const [_proto, propertyKey, parameterIndex] =
+            ctxt.target.asDecoratorArgs();
           const actualTarget = reflectContext()
             .get(AnnotationTargetFactory)
-            .of(ctxt.instance);
+            .of(instance, propertyKey, parameterIndex);
 
           const annotations = (...annotations: Annotation[]) => {
             return reflectContext()

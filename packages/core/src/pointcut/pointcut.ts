@@ -30,7 +30,11 @@ export class Pointcut<
     this.name = this._expr.name;
   }
 
-  [Symbol.toPrimitive] = () => `${this.adviceType}(${this._expr})`;
+  [Symbol.toPrimitive] = () => this.toString();
+
+  toString(): string {
+    return `${this.adviceType}(${this._expr})`;
+  }
 
   isAssignableFrom(pointcut: Pointcut): boolean {
     return (

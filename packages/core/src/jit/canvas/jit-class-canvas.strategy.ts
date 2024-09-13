@@ -142,6 +142,24 @@ export class JitClassCanvasStrategy<
       `class ${ctorName}$$advised {}`,
       compiledConstructor.toString.bind(compiledConstructor),
     );
+
+    // enhanced method / props may have put their own metadata.
+    // iterate over enhanced properties & copy metadata from them.
+    const enhancedPropertyKeys = [
+      ...ctxt.target.declaringClass
+        .getMetadata(
+          '@ajs:weaver.enhanced-properties',
+          () => new Set<string | symbol>(),
+        )
+        .values(),
+    ];
+
+    _copyPropsAndMeta(
+      joinpoint,
+      compiledConstructor as unknown as (...args: any[]) => any,
+      enhancedPropertyKeys,
+    ); // copy static props
+
     joinpoint.prototype = ctxt.target.proto;
     joinpoint.prototype.constructor = joinpoint;
 

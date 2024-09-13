@@ -21,17 +21,6 @@ const DEFAULT_CONFIG: Required<HttypedClientConfig> = {
   requestParamsHandler: new DefaultRequestParamHandler().stringify,
 };
 
-const configureAspect = () => {
-  let clientAspect = getWeaver().getAspect(HttypedClientAspect);
-
-  if (clientAspect) {
-    return clientAspect;
-  }
-  clientAspect = new HttypedClientAspect();
-  getWeaver().enable(clientAspect);
-  return clientAspect;
-};
-
 export class HttypedClientFactory {
   protected readonly config: Required<HttypedClientConfig>;
 
@@ -80,7 +69,18 @@ export class HttypedClientFactory {
       args ?? ([] as any),
     );
 
-    return configureAspect().addClient(client, this.config);
+    return this.registerAspect().addClient(client, this.config);
+  }
+
+  protected registerAspect() {
+    let clientAspect = getWeaver().getAspect(HttypedClientAspect);
+
+    if (clientAspect) {
+      return clientAspect;
+    }
+    clientAspect = new HttypedClientAspect();
+    getWeaver().enable(clientAspect);
+    return clientAspect;
   }
 }
 

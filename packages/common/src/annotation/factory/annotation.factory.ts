@@ -26,7 +26,7 @@ import { AnnotationTargetFactory } from '../target/annotation-target.factory';
 let anonymousAnnotationId = 0;
 
 /**
- * Options given to the {@link AnnotationFactory} to create a new annotation.
+ * Options given to decoree.annotations {@link AnnotationFactory} to create a new annotation.
  * @typeParam T the type of annotation to create
  * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
  */
@@ -236,7 +236,7 @@ export class AnnotationFactory {
                         typeof decoree === 'function',
                     );
                     _copyPropsAndMeta(newDecoree, decoree); // copy static props
-                  } else {
+                  } else if (newDecoree.value) {
                     _copyPropsAndMeta(newDecoree.value, (decoree as any).value); // copy static props
                   }
                 }

@@ -5,6 +5,7 @@ import {
   AnnotationTarget,
   AnnotationTargetRef,
   AnnotationType,
+  PropertyAnnotationTarget,
 } from '@aspectjs/common';
 import {
   assert,
@@ -92,6 +93,13 @@ export class JitWeaver implements Weaver {
       target,
       annotations,
     });
+    if (target.type !== AnnotationType.CLASS) {
+      const enhancedProperties = target.declaringClass.getMetadata(
+        '@ajs:weaver.enhanced-properties',
+        () => new Set<string | symbol>(),
+      );
+      enhancedProperties.add((target as PropertyAnnotationTarget).propertyKey);
+    }
 
     return this.enhancers[target.type](ctxt as any);
   }

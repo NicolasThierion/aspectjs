@@ -11,4 +11,4 @@ export * from './annotations/patch.annotation';
 export * from './annotations/post.annotation';
 export * from './annotations/put.annotation';
 export * from './annotations/query.annotation';
-export * from './nestjs-common-mixin';
+export * from './nestjs-common.aspect';

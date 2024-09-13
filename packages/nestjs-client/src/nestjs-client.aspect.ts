@@ -25,36 +25,31 @@ import {
 } from 'httyped-client';
 import { NestClient } from './nestjs-client.annotation';
 
-@Aspect('nestjs-client')
-export class NestClientMixin extends AnnotationMixin {
+@Aspect('ajs:nest-client')
+export class NestClientAspect extends HttypedClientAspect {
+  private readonly mixin = new AnnotationMixin();
+
   constructor() {
-    super('NestClientMixin');
-    this.bridge(NestClient, HttypedClient);
+    super();
+    this.mixin.bridge(NestClient, HttypedClient);
 
-    this.bridge(Get, this.httpMethodAdapter(HGet))
-      .bridge(Post, this.httpMethodAdapter(HPost))
-      .bridge(Patch, this.httpMethodAdapter(HPatch))
-      .bridge(Put, this.httpMethodAdapter(HPut))
-      .bridge(Delete, this.httpMethodAdapter(HDelete))
-      .bridge(Options, this.httpMethodAdapter(HOptions))
-      .bridge(Head, this.httpMethodAdapter(HHead));
+    this.mixin
+      .bridge(Get, this.httpMethodMixinAdapter(HGet))
+      .bridge(Post, this.httpMethodMixinAdapter(HPost))
+      .bridge(Patch, this.httpMethodMixinAdapter(HPatch))
+      .bridge(Put, this.httpMethodMixinAdapter(HPut))
+      .bridge(Delete, this.httpMethodMixinAdapter(HDelete))
+      .bridge(Options, this.httpMethodMixinAdapter(HOptions))
+      .bridge(Head, this.httpMethodMixinAdapter(HHead));
 
-    this.bridge(Param, this.httpArgumentAdapter(PathVariable)).bridge(
-      Query,
-      this.httpArgumentAdapter(RequestParam),
-    );
+    this.mixin
+      .bridge(Param, this.httpArgumentMixinAdapter(PathVariable))
+      .bridge(Query, this.httpArgumentMixinAdapter(RequestParam));
+
+    this.mixin.createAspect(this);
   }
 
-  override createAspect(): HttypedClientAspect {
-    return super.createAspect() as any as HttypedClientAspect;
-  }
-  protected override createAspectTemplate(): HttypedClientAspect {
-    @Aspect('NestClientMixin')
-    class NestClientAspect extends HttypedClientAspect {}
-
-    return new NestClientAspect() as any;
-  }
-  private httpArgumentAdapter(annotation: typeof PathVariable) {
+  private httpArgumentMixinAdapter(annotation: typeof PathVariable) {
     return (...args: any[]) => {
       if (args.length > 1) {
         throw new AspectError(
@@ -67,7 +62,7 @@ export class NestClientMixin extends AnnotationMixin {
     };
   }
 
-  private httpMethodAdapter(
+  private httpMethodMixinAdapter(
     annotation:
       | typeof HGet
       | typeof HPost

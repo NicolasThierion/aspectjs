@@ -4,12 +4,13 @@ import { Compile } from '../advices/compile/compile.annotation';
 import { CompileContext } from '../advices/compile/compile.context';
 import { Aspect } from '../aspect/aspect.annotation';
 import { on } from '../pointcut/pointcut-expression.factory';
+import { AspectType } from '../public_api';
 
 export class AnnotationMixin {
   private bridgeCounter = 0;
   private bridges: [Annotation | AnnotationRef, (...args: any) => any][] = [];
 
-  constructor(private readonly name: string) {}
+  constructor() {}
 
   bridge<
     A extends
@@ -55,18 +56,26 @@ export class AnnotationMixin {
     return this;
   }
 
-  createAspect() {
-    const aspect = this.createAspectTemplate();
+  createAspect(name: string | AspectType) {
+    let aspect: AspectType;
 
+    if (typeof name === 'string') {
+      @Aspect(name)
+      class AnnotationMixinAspect {}
+
+      aspect = new AnnotationMixinAspect();
+    } else {
+      aspect = name;
+    }
     const proto = getPrototype(aspect);
 
     this.bridges.forEach(([annotation, decorator]) => {
       const ref1 = AnnotationRef.of(annotation);
       const ref2 = isAnnotation(decorator)
         ? AnnotationRef.of(decorator as any)
-        : `${decorator.name}`;
+        : `${decorator.name}_${this.bridgeCounter++}`;
 
-      const bridgeAdviceName = `bridge_${ref1}_${ref2}_${this.bridgeCounter++}`;
+      const bridgeAdviceName = `bridge_${ref1}_${ref2}`;
 
       Object.defineProperty(proto, bridgeAdviceName, {
         enumerable: false,
@@ -100,14 +109,6 @@ export class AnnotationMixin {
     });
 
     return aspect;
-  }
-
-  protected createAspectTemplate() {
-    const name = this.name;
-    @Aspect(name)
-    class AnnotationMixinAspect {}
-
-    return new AnnotationMixinAspect();
   }
 }
 

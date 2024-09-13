@@ -34,13 +34,14 @@ export class JitMethodCanvasStrategy<
     ctxt: MutableAdviceContext<PointcutType.METHOD, X>,
   ): MethodPropertyDescriptor {
     if (this.parameterAdvices) {
+      const methodDescriptor = super.compile(ctxt) as MethodPropertyDescriptor;
       const parameterCanvas = new JitWeaverCanvas(
         new _JitNestedParameterCanvasStrategy(
           this.weaverContext,
           this.parameterAdvices,
+          methodDescriptor,
         ),
       );
-      const methodDescriptor = super.compile(ctxt) as MethodPropertyDescriptor;
       ctxt.joinpoint = (...args) => {
         return methodDescriptor.value(...args);
       };
@@ -60,11 +61,25 @@ export class JitMethodCanvasStrategy<
 class _JitNestedParameterCanvasStrategy<
   X,
 > extends JitParameterCanvasStrategy<X> {
-  // allow retuning abstract placeholders
+  constructor(
+    weaverContext: WeaverContext,
+    advices: AdvicesSelection,
+    private methodDescriptor: MethodPropertyDescriptor,
+  ) {
+    super(weaverContext, advices);
+  }
+
+  override compile(
+    _ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
+  ): MethodPropertyDescriptor {
+    // skip compilation as methodDescriptor already compiled
+    return this.methodDescriptor;
+  }
   override handleReturnValue(
     ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
     returnValue: any,
   ) {
+    // allow retuning abstract placeholders
     return (ctxt.value = returnValue);
   }
 }

@@ -14,6 +14,7 @@ import {
   BoundAnnotationsSelector,
 } from '@aspectjs/common';
 import {
+  assert,
   defineMetadata,
   getMetadata,
   getMetadataKeys,
@@ -184,6 +185,7 @@ function copyProps<A extends AdviceContext>(
 
   // copy over metadata
   getMetadataKeys(ctxt).forEach((key) => {
+    assert(false);
     defineMetadata(key, getMetadata(key, ctxt), newContext);
   });
 
