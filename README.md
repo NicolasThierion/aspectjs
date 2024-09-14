@@ -1,9 +1,6 @@
-# AspectJS
-
 <p align="center"><a href="https://github.com/NicolasThierion/aspectjs"><img src="https://aspectjs.gitlab.io/logo.png" alt="AspectJS logo" height="140"/></a></p>
-<h1 align="center">@aspectjs</h1>
 
-<h3 align="center">The AOP framework for Javascript, Typescript, Browser & Node.</p>
+<h3 align="center">An AOP framework for Typescript, compatible with Browsers & Node.</p>
 
 <p align="center">
 
@@ -13,9 +10,12 @@
 [![license]](https://www.npmjs.com/package/@aspectjs/core)
 [![NPM Downloads]](https://www.npmjs.com/package/@aspectjs/core)
 [![bundlejs]](https://bundlejs.com/?q=%40aspectjs%2Fcommon%2C%40aspectjs%2Fcore&treeshake=[*]%2C[*])
+
 <!--[![Latest Release]](https://gitlab.com/aspectjs/aspectjs/-/releases)-->
 
 </p><br/><br/>
+
+# AspectJS
 
 ## 📜 Abstract
 
@@ -23,7 +23,57 @@ Inspired by the [AspectJ](https://www.eclipse.org/aspectj/) java framework,
 **AspectJS** leverages **[ES Decorators](https://github.com/tc39/proposal-decorators)** to bring
 Aspect Oriented Programming to Javascript and Typescript.
 
-![demo-gif]
+## 🚀 Why?
+
+[ECMAScript Decorators](https://github.com/tc39/proposal-decorators) are fantastic: they allow developers to **hide boilerplate code** behind a simple `@` sign, keeping the code clean, easy to read, and easy to write. Widely used in popular projects such as [Angular](https://angular.io/), [Nest.js](https://nestjs.com/) or [TypeORM](https://github.com/typeorm/typeorm), decorators have one major drawback: they come with their own built-in behavior, making interoperability between tools difficult, and preventing them from being repurposed for other uses.
+
+_AspectJS_ takes a different approach, by introducing two important concepts: **Annotations** and **Aspects**.
+
+- An _Annotation_ is essentially an empty decorator that marks a target (_class_, _property_, _method_ or _parameter_) as a candidate for further enhancements.
+- **Aspects** can be selectively enabled to introduce new behaviors into the annotated elements.
+
+<ul style="display: flex; justify-content: space-around; flex-flow: row wrap; list-style-type: none">
+<li style="min-width: 300px">
+without aspects
+
+
+```ts
+const A = function( target: Function) {
+   // behaviorA
+}
+const B = function( target: Function) {
+   // behaviorB
+}
+ 
+@A() 
+@B()
+class MyClass {}
+```
+
+</li>
+<li>
+with aspects
+
+```ts
+const af = new AnnotationFactory('my.org')
+const A = af.create('A');
+const B = af.create('B');
+
+@A()
+@B()
+class MyClass {}
+
+@Aspect()
+class AB_Aspect {
+  // behavior A
+  // behavior B
+}
+
+getWeaver().enable(new AB_Aspect())
+```
+
+</li>
+</ul>
 
 
 ## ⚙️ Usage:
@@ -35,6 +85,7 @@ Aspect Oriented Programming to Javascript and Typescript.
 - Create an annotation:
 
   ```ts
+  // toasted.annotation.ts
   import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
 
   const ANNOTATION_FACTORY = new AnnotationFactory('demo');
@@ -44,8 +95,9 @@ Aspect Oriented Programming to Javascript and Typescript.
   );
   ```
 
-- Use that annotation on a class, a method, a property or a parameter
+- Use that annotation on a class, a property, a method or a parameter:
   ```ts
+  // main.ts
   class Main {
     @Toasted()
     run() {
@@ -55,6 +107,7 @@ Aspect Oriented Programming to Javascript and Typescript.
   ```
 - Declare an aspect triggered by the annotation:
   ```ts
+  // toasted.aspect.ts
   import { Around, AroundContext, Aspect, JoinPoint, on } from '@aspectjs/core';
   @Aspect()
   class ToastedAspect {
@@ -70,20 +123,12 @@ Aspect Oriented Programming to Javascript and Typescript.
 - Enable the aspect
 
   ```ts
+  // aop.ts
   import { getWeaver } from '@aspectjs/core';
 
   getWeaver().enable(new ToastedAspect());
   ```
 
-## 🚀 Why?
-
-AOP is a core concept of popular frameworks such as [Angular](https://angular.io/), [Nest.js](https://nestjs.com/) or [TypeORM](https://github.com/typeorm/typeorm). All these frameworks use [ECMAScript Decorators](https://github.com/tc39/proposal-decorators) to add behavior to classes and methods with a simple `@` sign, and it works fairly well; However, a decorator ships with the additional behavior built-in, making it hard to extend and impossible to seamlessly integrate with other third party libs.
-
-![without-aspectjs]
-
-_AspectJS_ introduces the concept of annotations for Javascript. Simply put, an _AspectJS annotation_ is an _ECMAScript decorator_ with no implementation. The actual behavior is added later through the introduction of _Aspects_.
-
-![with-aspectjs]
 
 ## 🔗 Documentation
 
@@ -100,4 +145,5 @@ MIT Licensed
 [demo-gif]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/demo.gif
 [with-aspectjs]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/with-aspectjs.png
 [without-aspectjs]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/without-aspectjs.png
+
 [bundlejs]: https://deno.bundlejs.com/badge?q=@aspectjs/common,@aspectjs/core&treeshake=[*],[*]
