@@ -1,8 +1,7 @@
 import { AnnotationFactory } from '@aspectjs/common';
-import { ConstructorType } from '@aspectjs/common/utils';
-
+import { TypeHintType } from './../types/type-hint.type';
 export const TypeHint = new AnnotationFactory('aspectjs.utils').create(
   // @ts-ignore
   // eslint-disable @typescript-eslint/no-unused-vars
-  function TypeHint(type: ConstructorType<any> | string) {},
+  function TypeHint(type: TypeHintType | TypeHintType[]) {},
 );

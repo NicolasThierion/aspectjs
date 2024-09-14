@@ -1,10 +1,11 @@
+import { AnnotationMixin, Aspect, Compile, on } from '@aspectjs/core';
+
 import {
-  AnnotationMixin,
-  Aspect,
-  Compile,
-  CompileContext,
-  on,
-} from '@aspectjs/core';
+  Annotation,
+  AnnotationContext,
+  AnnotationType,
+} from '@aspectjs/common';
+import type { CompileContext } from '@aspectjs/core';
 import {
   Body as NBody,
   Controller as NController,
@@ -32,7 +33,7 @@ import { Post } from './annotations/post.annotation';
 import { Put } from './annotations/put.annotation';
 import { Query } from './annotations/query.annotation';
 
-const HTTP_ANNOTATIONS = [
+const HTTP_ANNOTATIONS: [Annotation, any][] = [
   [Get, NGet],
   [Post, NPost],
   [Put, NPut],
@@ -64,7 +65,9 @@ export class NestCommonAspect {
       .bridge(Param, NParam)
       .bridge(Query, NQuery);
 
-    this.mixin.bridge(Injectable, NInjectable).bridge(Controller, NController);
+    this.mixin
+      .bridge(Injectable, NInjectable)
+      .bridge(Controller as any, NController);
 
     this.mixin.createAspect(this);
   }
@@ -75,5 +78,31 @@ export class NestCommonAspect {
    * As we aliased NestJS decorators to annotations, we use it as an opportunity to apply metadata annotations (`@Get`, `@Param`, ...) found in parent class to the actual child class.
    */
   @Compile(on.classes.withAnnotations(Controller))
-  applyMetadataFromParent(ctxt: CompileContext) {}
+  applyMetadataFromParent(ctxt: CompileContext) {
+    HTTP_ANNOTATIONS.forEach(
+      ([annotation, nestDecorator]: [Annotation, any]) => {
+        ctxt
+          .annotations(annotation)
+          .find({ searchParents: true })
+          .filter((c) => {
+            // get only annotations on parents
+            return c.target.declaringClass !== ctxt.target.declaringClass;
+          })
+          .forEach((c: AnnotationContext<AnnotationType.PARAMETER>) => {
+            const childDescriptor = Object.getOwnPropertyDescriptor(
+              ctxt.target.proto,
+              c.target.propertyKey,
+            );
+            if (childDescriptor) {
+              // take only methods that are defined in the current class
+              nestDecorator(...c.args)(
+                ctxt.target.proto,
+                c.target.propertyKey,
+                c.target.parameterIndex ?? childDescriptor,
+              );
+            }
+          });
+      },
+    );
+  }
 }

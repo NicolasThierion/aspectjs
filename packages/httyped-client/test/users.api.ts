@@ -1,30 +1,24 @@
 import { abstract } from '@aspectjs/common/utils';
 import { PathVariable } from '../src/annotations/path-variable.annotation';
+import { TypeHint } from '../src/annotations/type.annotation';
 import { Get, HttypedClient, RequestParam } from '../src/public_api';
 
 @HttypedClient()
 export abstract class UsersApi {
   @Get('users')
+  @TypeHint([User])
   getAll() {
     return abstract<User[]>();
   }
 
-  @Get('users/:id', {
-    // responseMapper: (r) => new User(r.json())
-  })
-  // @TypeHint(User)
-  // @Type([User])
+  @Get('users/:id', {})
   getOne(@PathVariable('id') _id: number) {
-    // return abstract.any(User);
-    // return abstract.any([User]);
-    // return abstract(new User());
-    // return abstract([new User()]);
-    return abstract(new User());
+    return abstract<User>(User);
   }
 
   @Get('users')
-  searchByName(@RequestParam('name') _name: string) {
-    return abstract([new User()]);
+  searchByUserName(@RequestParam('username') _name: string) {
+    return abstract([User]);
   }
 }
 

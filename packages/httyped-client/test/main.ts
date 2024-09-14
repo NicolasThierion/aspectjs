@@ -17,7 +17,7 @@ async function main() {
     })
     .create(UsersApi);
 
-  const user = await usersApi.getOne(2);
+  const user = (await usersApi.searchByUserName('Bret'))[0]!;
   console.log(user.address.print());
 }
 

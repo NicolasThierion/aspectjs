@@ -1,6 +1,7 @@
 import {
   AbstractToken,
   ConstructorType,
+  getPrototype,
   isAbstractToken,
 } from '@aspectjs/common/utils';
 import { AfterReturnContext, PointcutType } from '@aspectjs/core';
@@ -63,10 +64,13 @@ async function _findTypeHint(
         ? (returnValue as AbstractToken).template
         : undefined;
 
-      if (abstractTokenTemplate !== undefined) {
+      if (
+        abstractTokenTemplate !== undefined &&
+        abstractTokenTemplate !== null
+      ) {
         return Array.isArray(abstractTokenTemplate)
           ? _arrayToTypeArray(abstractTokenTemplate)
-          : Object.getPrototypeOf(abstractTokenTemplate).constructor;
+          : (getPrototype(abstractTokenTemplate).constructor as any);
       }
     },
   );
@@ -76,7 +80,7 @@ function _arrayToTypeArray<T = unknown>(array: T[]): ConstructorType<T>[] {
   return array.map((t) => {
     return Array.isArray(t)
       ? _arrayToTypeArray(t)
-      : Object.getPrototypeOf(t).constructor;
+      : (getPrototype(t as any).constructor as any);
   });
 }
 
@@ -87,11 +91,7 @@ function _arrayToMappedType<T = unknown, U = unknown>(
 ): U[] {
   if (Array.isArray(typeHint) && typeHint.length === 1) {
     // take single typehint as a template for all array items
-    return _arrayToMappedType(
-      array,
-      context,
-      (typeHint = typeHint[0] as TypeHintType),
-    );
+    return _arrayToMappedType(array, context, typeHint[0] as TypeHintType);
   } else if (!Array.isArray(typeHint)) {
     const mapper = context.mappers.findMapper(typeHint);
     const res = mapper ? array.map((u) => mapper.map(u, context)) : array;

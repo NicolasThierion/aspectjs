@@ -1,3 +1,4 @@
+import { ConstructorType } from '@aspectjs/common/utils';
 import { _AbstractTokenImpl } from './abstract-token-impl.type';
 
 let abstractThrows = true;
@@ -44,7 +45,12 @@ export const _defuseAbstract = (receipe: () => {}) => {
  *
  * @param T the type of the value to be replaced.
  */
-export const abstract = <T extends any>(template?: T): T => {
+export function abstract<T extends any>(): T;
+
+export function abstract<T extends any>(template: [ConstructorType<T>]): T[];
+export function abstract<T extends any>(template: ConstructorType<T>): T;
+export function abstract<T extends any>(template: T): T;
+export function abstract<T extends any>(template?: T | ConstructorType<T>): T {
   if (abstractThrows) {
     throw new Error(
       'abstract value has not been superseded by an annotation behavior.',
@@ -52,6 +58,6 @@ export const abstract = <T extends any>(template?: T): T => {
   }
 
   return new _AbstractTokenImpl<T>(++abstractCounter, template) as any;
-};
+}
 
 export const isAbstractToken = (val: any) => val instanceof _AbstractTokenImpl;
