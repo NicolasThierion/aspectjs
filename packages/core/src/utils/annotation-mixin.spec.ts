@@ -1,7 +1,7 @@
 import {
   Annotation,
   AnnotationFactory,
-  AnnotationType,
+  AnnotationKind,
 } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { AdviceContext } from '../advice/advice.context';
@@ -33,36 +33,36 @@ describe(`AnnotationMixin`, () => {
     let decoratedParameterSpy = jest.fn();
 
     let BClass: Annotation<
-      AnnotationType.CLASS,
+      AnnotationKind.CLASS,
       (a: string, b: string) => void
     >;
     let BMethod: Annotation<
-      AnnotationType.METHOD,
+      AnnotationKind.METHOD,
       (a: string, b: string) => void
     >;
     let BProperty: Annotation<
-      AnnotationType.PROPERTY,
+      AnnotationKind.PROPERTY,
       (a: string, b: string) => void
     >;
     let BParameter: Annotation<
-      AnnotationType.PARAMETER,
+      AnnotationKind.PARAMETER,
       (a: string, b: string) => void
     >;
     beforeEach(() => {
       BClass = af.create(
-        AnnotationType.CLASS,
+        AnnotationKind.CLASS,
         function BClass(a: string, b: string) {},
       );
       BMethod = af.create(
-        AnnotationType.METHOD,
+        AnnotationKind.METHOD,
         function BMethod(a: string, b: string) {},
       );
       BProperty = af.create(
-        AnnotationType.PROPERTY,
+        AnnotationKind.PROPERTY,
         function BProperty(a: string, b: string) {},
       );
       BParameter = af.create(
-        AnnotationType.PARAMETER,
+        AnnotationKind.PARAMETER,
         function BParameter(a: string, b: string) {},
       );
 

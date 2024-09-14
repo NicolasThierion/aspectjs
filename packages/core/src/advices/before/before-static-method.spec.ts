@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -9,7 +9,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -19,7 +19,7 @@ describe('static method advice', () => {
   let aaspect: any;
 
   const AMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
+    AnnotationKind.METHOD,
     'AMethod',
   );
 
@@ -37,7 +37,7 @@ describe('static method advice', () => {
     class AAspect {
       @Before(on.methods.withAnnotations(...aannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.METHOD>,
+        ctxt: BeforeContext<PointcutKind.METHOD>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);

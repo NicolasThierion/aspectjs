@@ -1,4 +1,4 @@
-import { PointcutType } from '../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import {
@@ -9,7 +9,7 @@ import {
   defineMetadata,
   getMetadata,
 } from '@aspectjs/common/utils';
-import { AdviceType } from '../../advice/advice-type.type';
+import { AdviceKind } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
@@ -21,11 +21,11 @@ import { renameFunction } from './canvas.utils';
  * Canvas to advise method and parameters
  */
 export abstract class AbstractJitMethodCanvasStrategy<
-  T extends PointcutType.METHOD | PointcutType.PARAMETER,
+  T extends PointcutKind.METHOD | PointcutKind.PARAMETER,
   X = unknown,
 > extends JitWeaverCanvasStrategy<T, X> {
-  protected abstract getAdviceEntries<P extends AdviceType>(
-    pointcutType: P,
+  protected abstract getAdviceEntries<P extends AdviceKind>(
+    pointcutKind: P,
   ): AdviceEntry<T, X, P>[];
 
   compile(ctxt: MutableAdviceContext<T, X>): CompiledSymbol<T, X> {
@@ -40,13 +40,13 @@ export abstract class AbstractJitMethodCanvasStrategy<
 
     // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
     // apply compile advices until state got stable
-    let previousAdviceEntries: AdviceEntry<any, any, AdviceType.COMPILE>[] = [];
-    let adviceEntries = this.getAdviceEntries(AdviceType.COMPILE);
+    let previousAdviceEntries: AdviceEntry<any, any, AdviceKind.COMPILE>[] = [];
+    let adviceEntries = this.getAdviceEntries(AdviceKind.COMPILE);
 
     while (adviceEntries.length !== previousAdviceEntries.length) {
       previousAdviceEntries = adviceEntries;
       applyCompileAdvices();
-      adviceEntries = this.getAdviceEntries(AdviceType.COMPILE);
+      adviceEntries = this.getAdviceEntries(AdviceKind.COMPILE);
     }
 
     assert(!!ctxt.target.propertyKey);
@@ -151,10 +151,10 @@ export abstract class AbstractJitMethodCanvasStrategy<
 }
 
 function wrapMethodDescriptor<X>(
-  ctxt: MutableAdviceContext<PointcutType.METHOD | PointcutType.PARAMETER, X>,
+  ctxt: MutableAdviceContext<PointcutKind.METHOD | PointcutKind.PARAMETER, X>,
   descriptor: MethodPropertyDescriptor,
   joinpoint: JoinPoint,
-): CompiledSymbol<PointcutType.METHOD | PointcutType.PARAMETER, X> {
+): CompiledSymbol<PointcutKind.METHOD | PointcutKind.PARAMETER, X> {
   return {
     ...descriptor,
     value: renameFunction(

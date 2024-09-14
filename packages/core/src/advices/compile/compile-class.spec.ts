@@ -1,14 +1,14 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { ConcreteConstructorType } from '@aspectjs/common/utils';
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { AdviceError, PointcutType } from '../../public_api';
+import { AdviceError, PointcutKind } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Compile } from './compile.annotation';
 import { CompileContext } from './compile.context';
@@ -22,11 +22,11 @@ describe('class advice', () => {
   let baspect: any;
   let ctorImpl: any;
   const AClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'AClass',
   );
   const BClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'BClass',
   );
   let weaver: JitWeaver;
@@ -43,7 +43,7 @@ describe('class advice', () => {
     class AAspect {
       @Compile(on.classes.withAnnotations(...aanotations))
       applyCompile(
-        ctxt: CompileContext<PointcutType.CLASS>,
+        ctxt: CompileContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return compileAdviceA.bind(this)(ctxt, ...args);
@@ -54,7 +54,7 @@ describe('class advice', () => {
     class BAspect {
       @Compile(on.classes.withAnnotations(...bannotations))
       applyCompile(
-        ctxt: CompileContext<PointcutType.CLASS>,
+        ctxt: CompileContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return compileAdviceB.bind(this)(ctxt, ...args);
@@ -210,7 +210,7 @@ describe('class advice', () => {
           constructor() {}
         }
         compileAdviceA = jest.fn(
-          (ctxt: CompileContext<PointcutType.CLASS, A>) => {
+          (ctxt: CompileContext<PointcutKind.CLASS, A>) => {
             expect(ctxt.annotations().find().length).toEqual(2);
             const aclassAnnotationContext = ctxt.annotations(AClass).find()[0];
             const bclassAnnotationContext = ctxt.annotations(BClass).find()[0];

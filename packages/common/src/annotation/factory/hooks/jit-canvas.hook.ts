@@ -1,5 +1,5 @@
 import { assert, ConcreteConstructorType } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import { DecoratorHook } from '../decorator-hook.type';
 
 /**
@@ -11,7 +11,7 @@ export const SETUP_JIT_CANVAS_JOOK: DecoratorHook = {
   order: -120,
   createDecorator: (_reflect, context) => {
     return (...targetArgs: any[]) => {
-      if (context.target.type === AnnotationType.CLASS) {
+      if (context.target.kind === AnnotationKind.CLASS) {
         assert(targetArgs.length === 1);
         assert(typeof targetArgs[0] === 'function');
         const decoree = function XXX(this: any, ...args: any[]) {

@@ -1,8 +1,8 @@
 import { ReflectContext } from '../../reflect/reflect.context';
 import { AnnotationContext } from '../annotation-context';
 import type {
+  AnnotationKind,
   AnnotationStub,
-  AnnotationType,
   Decorator,
 } from '../annotation.types';
 
@@ -12,7 +12,7 @@ import type {
  * to create typescript decorators that corresponds to a given annotation.
  */
 export type DecoratorHook<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   S extends AnnotationStub<T> = AnnotationStub<T>,
 > = {
   // TODO: refactor into a single parameter

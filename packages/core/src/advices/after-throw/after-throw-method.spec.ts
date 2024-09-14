@@ -3,7 +3,7 @@ import 'jest-extended/all';
 import { Before } from '../before/before.annotation';
 import { AfterThrowContext } from './after-throw.context';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -21,11 +21,11 @@ describe('method advice', () => {
   let aaspect: any;
   let baspect: any;
   const AMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
+    AnnotationKind.METHOD,
     'AMethod',
   );
   const BMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
+    AnnotationKind.METHOD,
     'BMethod',
   );
   let weaver: JitWeaver;

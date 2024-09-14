@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -9,7 +9,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AdviceError } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
@@ -21,10 +21,10 @@ describe('property get advice', () => {
   let baspect: any;
   const af = new AnnotationFactory('test');
   const AProperty = af.create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     function AProperty(..._args: any[]) {},
   );
-  const BProperty = af.create(AnnotationType.PROPERTY, function BProperty() {});
+  const BProperty = af.create(AnnotationKind.PROPERTY, function BProperty() {});
   let weaver: JitWeaver;
 
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('property get advice', () => {
     class AAspect {
       @Before(on.properties.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -52,7 +52,7 @@ describe('property get advice', () => {
     class BAspect {
       @Before(on.properties.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -97,7 +97,7 @@ describe('property get advice', () => {
       class AAspect {
         @Before(on.properties.withAnnotations(AProperty))
         applyBefore(
-          ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+          ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
           ...args: unknown[]
         ): void {
           return advice.bind(this)(ctxt, ...args);
@@ -190,7 +190,7 @@ describe('property get advice', () => {
       const a = new A();
       advice = jest.fn(function (
         this: any,
-        _ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        _ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
       ) {
         expect(this).toBe(aaspect);
         a.labels = ['a', 'B'];

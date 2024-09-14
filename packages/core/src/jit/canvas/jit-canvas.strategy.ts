@@ -11,22 +11,22 @@ import type {
   WeaverCanvasStrategy,
 } from '../../weaver/canvas/canvas-strategy.type';
 
-import { AdviceType } from '../../advice/advice-type.type';
+import { AdviceKind } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { WeavingError } from '../../errors/weaving.error';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { JoinPointFactory } from '../joinpoint.factory';
 export abstract class JitWeaverCanvasStrategy<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
 > implements WeaverCanvasStrategy<T, X>
 {
   constructor(
     protected readonly weaverContext: WeaverContext,
     public readonly advices: AdvicesSelection,
-    public readonly pointcutTypes: T[],
+    public readonly pointcutKinds: T[],
   ) {}
 
   abstract compile(
@@ -37,7 +37,7 @@ export abstract class JitWeaverCanvasStrategy<
     this._applyNotReturn(
       ctxt,
       () => ctxt.asBeforeContext(),
-      this.advices.find(this.pointcutTypes, [AdviceType.BEFORE]),
+      this.advices.find(this.pointcutKinds, [AdviceKind.BEFORE]),
     );
   }
 
@@ -46,13 +46,13 @@ export abstract class JitWeaverCanvasStrategy<
       ctxt,
 
       () => ctxt.asAfterContext(),
-      this.advices.find(this.pointcutTypes, [AdviceType.AFTER]),
+      this.advices.find(this.pointcutKinds, [AdviceKind.AFTER]),
     );
   }
 
   afterReturn(ctxt: MutableAdviceContext<T, X>): unknown {
     const advices = [
-      ...this.advices.find(this.pointcutTypes, [AdviceType.AFTER_RETURN]),
+      ...this.advices.find(this.pointcutKinds, [AdviceKind.AFTER_RETURN]),
     ];
     if (!advices.length) {
       return ctxt.value;
@@ -72,7 +72,7 @@ export abstract class JitWeaverCanvasStrategy<
 
   afterThrow(ctxt: MutableAdviceContext<T, X>, allowReturn = true): any {
     const adviceEntries = [
-      ...this.advices.find(this.pointcutTypes, [AdviceType.AFTER_THROW]),
+      ...this.advices.find(this.pointcutKinds, [AdviceKind.AFTER_THROW]),
     ];
 
     if (!adviceEntries.length) {
@@ -108,7 +108,7 @@ export abstract class JitWeaverCanvasStrategy<
 
   around(ctxt: MutableAdviceContext<T, X>, allowReturn = true): JoinPoint {
     const advices = [
-      ...this.advices.find(this.pointcutTypes, [AdviceType.AROUND]),
+      ...this.advices.find(this.pointcutKinds, [AdviceKind.AROUND]),
     ];
     if (!advices.length) {
       return ctxt.joinpoint!;

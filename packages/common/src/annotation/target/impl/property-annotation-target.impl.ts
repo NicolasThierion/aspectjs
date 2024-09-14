@@ -6,7 +6,7 @@ import {
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -23,7 +23,7 @@ import { _ClassAnnotationTargetImpl } from './class-annotation-target.impl';
 let _globalTargetId = 0;
 
 export class _PropertyAnnotationTargetImpl<X>
-  extends _AnnotationTargetImpl<AnnotationType.PROPERTY, X>
+  extends _AnnotationTargetImpl<AnnotationKind.PROPERTY, X>
   implements PropertyAnnotationTarget<X>
 {
   override defineMetadata(key: string, value: any): void {
@@ -50,7 +50,7 @@ export class _PropertyAnnotationTargetImpl<X>
     isStatic: boolean,
   ) {
     super(
-      AnnotationType.PROPERTY,
+      AnnotationKind.PROPERTY,
       proto,
       String(propertyKey),
       `${isStatic ? 'static ' : ''}property ${proto.constructor.name}.${String(

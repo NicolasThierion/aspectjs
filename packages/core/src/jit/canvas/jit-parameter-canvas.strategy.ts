@@ -1,7 +1,7 @@
-import { PointcutType } from '../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 
 import { MethodPropertyDescriptor } from '@aspectjs/common/utils';
-import { AdviceType } from '../../advice/advice-type.type';
+import { AdviceKind } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
@@ -15,19 +15,19 @@ const _defineProperty = Object.defineProperty;
  */
 export class JitParameterCanvasStrategy<
   X = unknown,
-> extends AbstractJitMethodCanvasStrategy<PointcutType.PARAMETER, X> {
+> extends AbstractJitMethodCanvasStrategy<PointcutKind.PARAMETER, X> {
   constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
-    super(weaverContext, advices, [PointcutType.PARAMETER]);
+    super(weaverContext, advices, [PointcutKind.PARAMETER]);
   }
 
-  protected override getAdviceEntries<P extends AdviceType>(
-    pointcutType: P,
-  ): AdviceEntry<PointcutType.PARAMETER, X, P>[] {
-    return [...this.advices.find([PointcutType.PARAMETER], [pointcutType])];
+  protected override getAdviceEntries<P extends AdviceKind>(
+    pointcutKind: P,
+  ): AdviceEntry<PointcutKind.PARAMETER, X, P>[] {
+    return [...this.advices.find([PointcutKind.PARAMETER], [pointcutKind])];
   }
 
   override link(
-    ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
+    ctxt: MutableAdviceContext<PointcutKind.PARAMETER, X>,
     compiledSymbol: MethodPropertyDescriptor,
     joinpoint: (...args: any[]) => unknown,
   ): MethodPropertyDescriptor {
@@ -38,7 +38,7 @@ export class JitParameterCanvasStrategy<
   }
 }
 function preventRevertMethodDescriptor<X>(
-  ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
+  ctxt: MutableAdviceContext<PointcutKind.PARAMETER, X>,
   methodDescriptor: PropertyDescriptor,
 ) {
   // save original descriptor.

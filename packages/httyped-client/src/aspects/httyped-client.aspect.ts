@@ -1,7 +1,7 @@
 import {
   AnnotationContext,
+  AnnotationKind,
   AnnotationTarget,
-  AnnotationType,
   BoundAnnotationContext,
   getAnnotations,
 } from '@aspectjs/common';
@@ -14,7 +14,7 @@ import {
   AspectError,
   Before,
   Compile,
-  PointcutType,
+  PointcutKind,
   on,
 } from '@aspectjs/core';
 import { Body } from '../annotations/body.annotation';
@@ -37,6 +37,7 @@ import {
 import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
+import { TypeHintType } from '../types/type-hint.type';
 import '../url-canparse.polyfill';
 import { AbstractAopHttpClientAspect } from './abstract-aop-http-client.aspect';
 
@@ -77,7 +78,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       PathVariable,
     ),
   )
-  protected assertIsFetchMethod(ctxt: AdviceContext<PointcutType.PARAMETER>) {
+  protected assertIsFetchMethod(ctxt: AdviceContext<PointcutKind.PARAMETER>) {
     ctxt.target.getMetadata(`${ASPECT_ID}:assertBodyImpliesFetch`, () => {
       if (!this.findHttpMethodAnnotation(ctxt)) {
         throw new AspectError(
@@ -96,7 +97,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     ...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)),
   )
   protected assertIsFetchClient(
-    ctxt: AdviceContext<PointcutType.CLASS | PointcutType.METHOD>,
+    ctxt: AdviceContext<PointcutKind.CLASS | PointcutKind.METHOD>,
   ) {
     ctxt.target.getMetadata(`${ASPECT_ID}:assertHeaderImpliesClient`, () => {
       if (!this.findHttpClientAnnotation(ctxt)) {
@@ -114,7 +115,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     on.parameters.withAnnotations(Header, Headers),
   )
   protected prohibitWrongTarget(
-    ctxt: AdviceContext<PointcutType.CLASS | PointcutType.METHOD>,
+    ctxt: AdviceContext<PointcutKind.CLASS | PointcutKind.METHOD>,
   ) {
     throw new AspectError(
       this,
@@ -126,7 +127,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   @AfterReturn(...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)))
-  protected fetch(ctxt: AfterReturnContext<PointcutType.METHOD>) {
+  protected fetch(ctxt: AfterReturnContext<PointcutKind.METHOD>) {
     if (!this.isManagedInstance(ctxt.instance!)) {
       // not received a client config = not created through the HttypedClientFactory.
       return;
@@ -188,7 +189,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   ////////////////////:
 
   protected override findRequestParams(
-    ctxt: AdviceContext<PointcutType, unknown>,
+    ctxt: AdviceContext<PointcutKind, unknown>,
   ): [string, unknown][] {
     const requestParamsAnnotations = ctxt
       .annotations(RequestParams)
@@ -204,9 +205,9 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       // sort first parameters first
       .sort(
         (a1, a2) =>
-          (a1.target as AnnotationTarget<AnnotationType.PARAMETER>)
+          (a1.target as AnnotationTarget<AnnotationKind.PARAMETER>)
             .parameterIndex -
-          (a2.target as AnnotationTarget<AnnotationType.PARAMETER>)
+          (a2.target as AnnotationTarget<AnnotationKind.PARAMETER>)
             .parameterIndex,
       )
       .map((annotation) => {
@@ -219,7 +220,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   protected override findPathVariables(
-    ctxt: AdviceContext<PointcutType, unknown>,
+    ctxt: AdviceContext<PointcutKind, unknown>,
   ): Record<string, any> {
     return ctxt
       .annotations(PathVariable)
@@ -245,7 +246,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
    * Extracts the endpoint metadata from the fetch annotation
    */
   protected override getEndpointMetadata(
-    ctxt: AdviceContext<PointcutType.METHOD>,
+    ctxt: AdviceContext<PointcutKind.METHOD>,
   ): HttpEndpointMetadata {
     return ctxt.target.getMetadata<HttpEndpointMetadata>(
       `${ASPECT_ID}:endpoint`,
@@ -270,7 +271,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   protected getHeadersMetadata(
-    ctxt: AfterReturnContext<PointcutType.METHOD>,
+    ctxt: AfterReturnContext<PointcutKind.METHOD>,
   ): HeadersInit {
     return ctxt.target.getMetadata(`${ASPECT_ID}:headers`, () => {
       // reverse annotations order in order to let child annotations override parent annotations
@@ -279,17 +280,17 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
 
       const headers = [
         headersAnnotations.map((a) => ({
-          type: a.target.type,
+          kind: a.target.kind,
           headers: a.args[0],
         })),
         headerAnnotations.map((a) => ({
-          type: a.target.type,
+          kind: a.target.kind,
           headers: { [a.args[0]]: a.args[1] },
         })),
       ]
         .flat()
         // sort class annotations first
-        .sort((a1, a2) => a1.type - a2.type)
+        .sort((a1, a2) => a1.kind - a2.kind)
         .reduce((res, { headers }) => {
           return { ...res, ...headers } as HeadersInit;
         }, {} as HeadersInit);
@@ -299,24 +300,24 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   protected findHeaderAnnotations(
-    ctxt: AfterReturnContext<PointcutType.METHOD>,
+    ctxt: AfterReturnContext<PointcutKind.METHOD>,
   ) {
     return getAnnotations(Header)
       .on({
         target: ctxt.target,
-        types: [AnnotationType.CLASS, AnnotationType.METHOD],
+        types: [AnnotationKind.CLASS, AnnotationKind.METHOD],
       })
       .find({
         searchParents: true,
       });
   }
   protected findHeadersAnnotations(
-    ctxt: AfterReturnContext<PointcutType.METHOD>,
+    ctxt: AfterReturnContext<PointcutKind.METHOD>,
   ) {
     return getAnnotations(Headers)
       .on({
         target: ctxt.target,
-        types: [AnnotationType.CLASS, AnnotationType.METHOD],
+        types: [AnnotationKind.CLASS, AnnotationKind.METHOD],
       })
       .find({
         searchParents: true,
@@ -328,7 +329,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
    */
 
   protected getClassMetadata(
-    ctxt: AdviceContext<PointcutType.METHOD>,
+    ctxt: AdviceContext<PointcutKind.METHOD>,
   ): HttpClassMetadata {
     let metadata = ctxt.target.declaringClass.getMetadata<HttpClassMetadata>(
       `${ASPECT_ID}:class`,
@@ -373,8 +374,8 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   protected findTypeHintAnnotation(
-    ctxt: AdviceContext<PointcutType.METHOD>,
-  ): Function | string | undefined {
+    ctxt: AdviceContext<PointcutKind.METHOD>,
+  ): TypeHintType | TypeHintType[] | undefined {
     return ctxt.annotations(TypeHint).find({ searchParents: true })[0]?.args[0];
   }
 
@@ -386,9 +387,9 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
    */
   protected findBodyAnnotation(
     ctxt: AdviceContext,
-  ): BoundAnnotationContext<AnnotationType.PARAMETER, typeof Body> | undefined {
+  ): BoundAnnotationContext<AnnotationKind.PARAMETER, typeof Body> | undefined {
     const bodyAnnotations: AnnotationContext<
-      AnnotationType.PARAMETER,
+      AnnotationKind.PARAMETER,
       typeof Body
     >[] = ctxt.annotations(Body).find({ searchParents: true });
 
@@ -431,7 +432,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
 
     if (!fetchAnnotation) {
       const label =
-        ctxt.target.type === AnnotationType.PARAMETER
+        ctxt.target.kind === AnnotationKind.PARAMETER
           ? ctxt.target.declaringMethod.label
           : ctxt.target.label;
 
@@ -442,7 +443,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
 
   protected findHttpClientAnnotation(
     ctxt: AdviceContext,
-  ): AnnotationContext<AnnotationType.CLASS, typeof HttypedClient> {
+  ): AnnotationContext<AnnotationKind.CLASS, typeof HttypedClient> {
     const [httpClientAnnotation] = ctxt
       .annotations(HttypedClient)
       .find({ searchParents: true });

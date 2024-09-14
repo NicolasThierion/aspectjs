@@ -1,13 +1,14 @@
 import {
   AdviceContext,
   AfterReturnContext,
-  PointcutType,
+  PointcutKind,
 } from '@aspectjs/core';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
 import { BodyMetadata } from '../types/body-metadata.type';
 import { HttpClassMetadata } from '../types/http-class-metadata.type';
 import { HttpEndpointMetadata } from '../types/http-endpoint-metadata.type';
 import { MapperContext } from '../types/mapper.type';
+import { TypeHintType } from '../types/type-hint.type';
 import '../url-canparse.polyfill';
 
 export abstract class AbstractAopHttpClientAspect {
@@ -20,7 +21,7 @@ export abstract class AbstractAopHttpClientAspect {
   ////////////////////:
 
   protected abstract findRequestParams(
-    ctxt: AdviceContext<PointcutType, unknown>,
+    ctxt: AdviceContext<PointcutKind, unknown>,
   ): [string, unknown][];
 
   protected callHttpAdapter(
@@ -34,7 +35,7 @@ export abstract class AbstractAopHttpClientAspect {
   protected replacePathVariables(
     url: string,
     endpointConfig: Required<HttypedClientConfig>,
-    ctxt: AdviceContext<PointcutType, unknown>,
+    ctxt: AdviceContext<PointcutKind, unknown>,
   ): string {
     const variableHandler = endpointConfig.pathVariablesHandler;
     const variables = this.findPathVariables(ctxt);
@@ -74,7 +75,7 @@ export abstract class AbstractAopHttpClientAspect {
     return url;
   }
   protected abstract findPathVariables(
-    ctxt: AdviceContext<PointcutType, unknown>,
+    ctxt: AdviceContext<PointcutKind, unknown>,
   ): Record<string, any>;
 
   protected applyRequestHandlers(
@@ -90,7 +91,7 @@ export abstract class AbstractAopHttpClientAspect {
   protected async applyResponseHandlers(
     config: Required<HttypedClientConfig>,
     response: Response,
-    ctxt: AfterReturnContext<PointcutType.METHOD>,
+    ctxt: AfterReturnContext<PointcutKind.METHOD>,
   ): Promise<any> {
     let mappedResponse: any;
     for (const handler of config.responseHandlers) {
@@ -127,7 +128,7 @@ export abstract class AbstractAopHttpClientAspect {
    * Extracts the endpoint metadata from the fetch annotation
    */
   protected abstract getEndpointMetadata(
-    ctxt: AdviceContext<PointcutType.METHOD>,
+    ctxt: AdviceContext<PointcutKind.METHOD>,
   ): HttpEndpointMetadata;
 
   /**
@@ -135,7 +136,7 @@ export abstract class AbstractAopHttpClientAspect {
    */
 
   protected abstract getClassMetadata(
-    ctxt: AdviceContext<PointcutType.METHOD>,
+    ctxt: AdviceContext<PointcutKind.METHOD>,
   ): HttpClassMetadata;
 
   protected mergeConfig(
@@ -194,8 +195,8 @@ export abstract class AbstractAopHttpClientAspect {
   }
 
   protected abstract findTypeHintAnnotation(
-    ctxt: AdviceContext<PointcutType.METHOD>,
-  ): Function | string | undefined;
+    ctxt: AdviceContext<PointcutKind.METHOD>,
+  ): TypeHintType | TypeHintType[] | undefined;
 
   protected joinUrls(...paths: (string | undefined)[]): string {
     return paths

@@ -7,7 +7,7 @@ import {
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -25,7 +25,7 @@ import { _MethodAnnotationTargetImpl } from './method-annotation-target.impl';
 let _globalTargetId = 0;
 
 export class _ParameterAnnotationTargetImpl<X>
-  extends _AnnotationTargetImpl<AnnotationType.PARAMETER, X>
+  extends _AnnotationTargetImpl<AnnotationKind.PARAMETER, X>
   implements ParameterAnnotationTarget<X>
 {
   readonly propertyKey: string | symbol;
@@ -47,7 +47,7 @@ export class _ParameterAnnotationTargetImpl<X>
     isStatic: boolean,
   ) {
     super(
-      AnnotationType.PARAMETER,
+      AnnotationKind.PARAMETER,
       proto,
       argsNames(proto[propertyKey as any])[parameterIndex!] ??
         `#${parameterIndex!}`,

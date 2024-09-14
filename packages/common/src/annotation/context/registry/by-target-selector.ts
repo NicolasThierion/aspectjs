@@ -6,7 +6,7 @@ import {
   isObject,
 } from '@aspectjs/common/utils';
 import { AnnotationRef } from '../../annotation-ref';
-import { AnnotationStub, AnnotationType } from '../../annotation.types';
+import { AnnotationKind, AnnotationStub } from '../../annotation.types';
 import { AnnotationTarget } from '../../target/annotation-target';
 import { AnnotationTargetFactory } from '../../target/annotation-target.factory';
 import { _AnnotationContextSet } from './annotation-context-set';
@@ -27,17 +27,17 @@ export class AnnotationByTargetSelector<
 
   all<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationsSelector<AnnotationType, S, X>;
-  all<X = unknown>(type?: X): BoundAnnotationsSelector<AnnotationType, S, X>;
+  ): AnnotationsSelector<AnnotationKind, S, X>;
+  all<X = unknown>(type?: X): BoundAnnotationsSelector<AnnotationKind, S, X>;
   all<X = unknown>(
     type?: X | ConstructorType<X>,
-  ): AnnotationsSelector<AnnotationType, S, X> {
+  ): AnnotationsSelector<AnnotationKind, S, X> {
     return this.createSelector(
       [
-        AnnotationType.CLASS,
-        AnnotationType.METHOD,
-        AnnotationType.PROPERTY,
-        AnnotationType.PARAMETER,
+        AnnotationKind.CLASS,
+        AnnotationKind.METHOD,
+        AnnotationKind.PROPERTY,
+        AnnotationKind.PARAMETER,
       ],
       type,
     );
@@ -45,22 +45,22 @@ export class AnnotationByTargetSelector<
 
   onClass<X = unknown>(
     type?: ConstructorType<X>,
-  ): AnnotationsSelector<AnnotationType.CLASS, S, X>;
+  ): AnnotationsSelector<AnnotationKind.CLASS, S, X>;
   onClass<X = unknown>(
     type?: X,
-  ): BoundAnnotationsSelector<AnnotationType.CLASS, S, X>;
+  ): BoundAnnotationsSelector<AnnotationKind.CLASS, S, X>;
   onClass<X = unknown>(
     type?: ConstructorType<X> | X,
-  ): AnnotationsSelector<AnnotationType.CLASS, S, X> {
-    return this.createSelector([AnnotationType.CLASS], type);
+  ): AnnotationsSelector<AnnotationKind.CLASS, S, X> {
+    return this.createSelector([AnnotationKind.CLASS], type);
   }
 
   onMethod<X = any, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
-  ): AnnotationsSelector<AnnotationType.METHOD, S, X> {
+  ): AnnotationsSelector<AnnotationKind.METHOD, S, X> {
     return this.createSelector(
-      [AnnotationType.METHOD],
+      [AnnotationKind.METHOD],
       type ? getPrototype(type).constructor : undefined,
       propertyKey,
     );
@@ -68,27 +68,27 @@ export class AnnotationByTargetSelector<
   onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X>,
     propertyKey?: K,
-  ): AnnotationsSelector<AnnotationType.PROPERTY, S, X>;
+  ): AnnotationsSelector<AnnotationKind.PROPERTY, S, X>;
   onProperty<X, K extends keyof X = keyof X>(
     type?: X,
     propertyKey?: K,
-  ): BoundAnnotationsSelector<AnnotationType.PROPERTY, S, X>;
+  ): BoundAnnotationsSelector<AnnotationKind.PROPERTY, S, X>;
   onProperty<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
-  ): AnnotationsSelector<AnnotationType.PROPERTY, S, X> {
-    return this.createSelector([AnnotationType.PROPERTY], type, propertyKey);
+  ): AnnotationsSelector<AnnotationKind.PROPERTY, S, X> {
+    return this.createSelector([AnnotationKind.PROPERTY], type, propertyKey);
   }
 
   onArgs<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
-  ): AnnotationsSelector<AnnotationType.PARAMETER, S, X> {
-    return this.createSelector([AnnotationType.PARAMETER], type, propertyKey);
+  ): AnnotationsSelector<AnnotationKind.PARAMETER, S, X> {
+    return this.createSelector([AnnotationKind.PARAMETER], type, propertyKey);
   }
 
   private createSelector<
-    T extends AnnotationType = AnnotationType,
+    T extends AnnotationKind = AnnotationKind,
     X = unknown,
     K extends keyof X = any,
   >(
@@ -113,20 +113,20 @@ export class AnnotationByTargetSelector<
 
   on<X>(
     filter: AnnotationSelectionFilter,
-  ): AnnotationsSelector<AnnotationType, S, X> {
+  ): AnnotationsSelector<AnnotationKind, S, X> {
     const { target, types } = filter;
     assert(isObject(target));
 
-    return new AnnotationsSelector<AnnotationType, S, X>(
+    return new AnnotationsSelector<AnnotationKind, S, X>(
       this.targetFactory,
       this.annotationSet,
       this.annotationsRefs,
       types ??
-        (Object.values(AnnotationType).filter(
+        (Object.values(AnnotationKind).filter(
           (x: any) => !isNaN(x),
-        ) as AnnotationType[]),
+        ) as AnnotationKind[]),
       target.proto?.constructor,
-      (target as AnnotationTarget<AnnotationType.METHOD>).propertyKey as any,
+      (target as AnnotationTarget<AnnotationKind.METHOD>).propertyKey as any,
     );
   }
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { configureTesting } from '@aspectjs/common/testing';
-import type { Annotation, AnnotationType } from './annotation.types';
+import type { Annotation, AnnotationKind } from './annotation.types';
 import { AnnotationFactory } from './factory/annotation.factory';
 
 let factory: AnnotationFactory;
@@ -11,7 +11,7 @@ describe(`Property Annotations`, () => {
     _x?: string,
     _y?: number,
   ) {});
-  let AProperty: Annotation<AnnotationType.PROPERTY, typeof APropertyStub>;
+  let AProperty: Annotation<AnnotationKind.PROPERTY, typeof APropertyStub>;
 
   beforeEach(() => {
     configureTesting();

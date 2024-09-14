@@ -86,11 +86,11 @@ getWeaver().enable(new AB_Aspect())
 
   ```ts
   // toasted.annotation.ts
-  import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+  import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 
   const ANNOTATION_FACTORY = new AnnotationFactory('demo');
   const Toasted = ANNOTATION_FACTORY.create(
-    AnnotationType.METHOD,
+    AnnotationKind.METHOD,
     function Toasted() {},
   );
   ```

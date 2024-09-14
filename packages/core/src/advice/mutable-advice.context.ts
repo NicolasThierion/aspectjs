@@ -2,9 +2,9 @@ import { JoinPoint } from './joinpoint';
 
 import type { AfterContext } from '../advices/after/after.context';
 import type {
-  PointcutType,
-  ToAnnotationType,
-} from '../pointcut/pointcut-target.type';
+  PointcutKind,
+  ToAnnotationKind,
+} from '../pointcut/pointcut-kind.type';
 
 import {
   Annotation,
@@ -28,20 +28,20 @@ import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import { AdviceContext } from './advice.context';
 
 export class MutableAdviceContext<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
 > {
   /** The annotations contexts **/
   annotations: (
     ...annotations: Annotation[]
-  ) => AnnotationsSelector<ToAnnotationType<T>>;
+  ) => AnnotationsSelector<ToAnnotationKind<T>>;
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/
   args?: any[];
   /** The symbol targeted by this advice (class, method, property or parameter **/
-  target: AnnotationTarget<ToAnnotationType<T>, X> &
-    _BindableAnnotationTarget<ToAnnotationType<T>, X>;
+  target: AnnotationTarget<ToAnnotationKind<T>, X> &
+    _BindableAnnotationTarget<ToAnnotationKind<T>, X>;
   /** The value originally returned by the joinpoint **/
   value?: unknown;
   /** Hold the original function, bound to its execution context and it original parameters **/
@@ -143,7 +143,7 @@ export class MutableAdviceContext<
 
   bind(instance: X) {
     this.target = this.target._bind(instance) as _BindableAnnotationTarget<
-      ToAnnotationType<T>,
+      ToAnnotationKind<T>,
       X
     >;
     return this;

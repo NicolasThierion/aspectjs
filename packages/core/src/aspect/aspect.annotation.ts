@@ -1,4 +1,4 @@
-import { AnnotationType } from '@aspectjs/common';
+import { AnnotationKind } from '@aspectjs/common';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Weaver } from './../weaver/weaver';
 
@@ -21,7 +21,7 @@ import type { AspectOptions } from './aspect-metadata.type';
  * ```
  */
 export const Aspect = _CORE_ANNOTATION_FACTORY.create(
-  AnnotationType.CLASS,
+  AnnotationKind.CLASS,
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/no-unused-vars
   // @ts-ignore
   function Aspect(id: string | AspectOptions = {}) {},

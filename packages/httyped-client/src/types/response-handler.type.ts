@@ -1,8 +1,8 @@
-import { AfterReturnContext, PointcutType } from '@aspectjs/core';
+import { AfterReturnContext, PointcutKind } from '@aspectjs/core';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
 
 export type ResponseHandler = (
   response: Response,
   config: Readonly<Required<HttypedClientConfig>>,
-  ctxt: AfterReturnContext<PointcutType.METHOD>,
+  ctxt: AfterReturnContext<PointcutKind.METHOD>,
 ) => Promise<unknown>;

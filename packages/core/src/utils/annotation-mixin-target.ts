@@ -1,7 +1,7 @@
-import { AnnotationTarget, AnnotationType } from '@aspectjs/common';
+import { AnnotationKind, AnnotationTarget } from '@aspectjs/common';
 
 export type _BindableAnnotationTarget<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   X = unknown,
 > = AnnotationTarget<T, X> & {
   /**

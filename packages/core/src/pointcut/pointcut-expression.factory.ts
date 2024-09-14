@@ -1,15 +1,15 @@
 import type { Annotation, AnnotationRef } from '@aspectjs/common';
 import { PointcutExpression } from './pointcut-expression.type';
-import { PointcutType } from './pointcut-target.type';
+import { PointcutKind } from './pointcut-kind.type';
 
-class PointcutExpressionFactory<T extends PointcutType> {
+class PointcutExpressionFactory<T extends PointcutKind> {
   constructor(private readonly type: T) {}
 
   withAnnotations(
     ...annotations: (Annotation | AnnotationRef)[]
   ): PointcutExpression<T> {
     return new PointcutExpression({
-      type: this.type,
+      kind: this.type,
       annotations,
     });
   }
@@ -20,18 +20,18 @@ class PointcutExpressionFactory<T extends PointcutType> {
   // }
 }
 
-class PropertyPointcutFactory extends PointcutExpressionFactory<PointcutType.GET_PROPERTY> {
-  readonly setter: PointcutExpressionFactory<PointcutType.SET_PROPERTY>;
+class PropertyPointcutFactory extends PointcutExpressionFactory<PointcutKind.GET_PROPERTY> {
+  readonly setter: PointcutExpressionFactory<PointcutKind.SET_PROPERTY>;
   constructor() {
-    super(PointcutType.GET_PROPERTY);
-    this.setter = new PointcutExpressionFactory(PointcutType.SET_PROPERTY);
+    super(PointcutKind.GET_PROPERTY);
+    this.setter = new PointcutExpressionFactory(PointcutKind.SET_PROPERTY);
   }
 }
 
 export const on = {
-  classes: new PointcutExpressionFactory(PointcutType.CLASS),
-  methods: new PointcutExpressionFactory(PointcutType.METHOD),
-  parameters: new PointcutExpressionFactory(PointcutType.PARAMETER),
+  classes: new PointcutExpressionFactory(PointcutKind.CLASS),
+  methods: new PointcutExpressionFactory(PointcutKind.METHOD),
+  parameters: new PointcutExpressionFactory(PointcutKind.PARAMETER),
   properties: new PropertyPointcutFactory(),
-  any: new PointcutExpressionFactory(PointcutType.ANY),
+  any: new PointcutExpressionFactory(PointcutKind.ANY),
 };

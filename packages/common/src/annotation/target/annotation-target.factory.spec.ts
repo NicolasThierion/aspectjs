@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import { configureTesting } from '@aspectjs/common/testing';
-import { AnnotationType } from '../annotation.types';
+import { AnnotationKind } from '../annotation.types';
 import { AnnotationTargetFactory } from './annotation-target.factory';
 
 // eslint-disable  @typescript-eslint/no-unused-vars
@@ -17,9 +17,9 @@ describe('AnnotationTargetFactory', () => {
     targetFactory = configureTesting().get(AnnotationTargetFactory);
   });
   describe('.of(<CLASS>)', () => {
-    it('.type === AnnotationType.CLASS', () => {
+    it('.type === AnnotationKind.CLASS', () => {
       const target = targetFactory.of(X);
-      expect(target.type).toBe(AnnotationType.CLASS);
+      expect(target.kind).toBe(AnnotationKind.CLASS);
     });
 
     it('.static === false', () => {
@@ -38,9 +38,9 @@ describe('AnnotationTargetFactory', () => {
     });
   });
   // xdescribe('.of(Prototype<CLASS>)', () => {
-  //   it('.type === AnnotationType.CLASS', () => {
+  //   it('.type === AnnotationKind.CLASS', () => {
   //     const target = targetFactory.of(X.prototype);
-  //     expect(target.type).toBe(AnnotationType.CLASS);
+  //     expect(target.type).toBe(AnnotationKind.CLASS);
   //   });
 
   //   it('.static === false', () => {
@@ -64,9 +64,9 @@ describe('AnnotationTargetFactory', () => {
   //   });
   // });
   describe('.of(x)', () => {
-    it('.type === AnnotationType.CLASS', () => {
+    it('.type === AnnotationKind.CLASS', () => {
       const target = targetFactory.of(new X());
-      expect(target.type).toBe(AnnotationType.CLASS);
+      expect(target.kind).toBe(AnnotationKind.CLASS);
     });
 
     it('.static === false', () => {
@@ -92,9 +92,9 @@ describe('AnnotationTargetFactory', () => {
   });
 
   describe('.of(new X(), propertyKey)', () => {
-    it('.type === AnnotationType.PROPERTY', () => {
+    it('.type === AnnotationKind.PROPERTY', () => {
       const target = targetFactory.of(new X(), 'prop');
-      expect(target.type).toBe(AnnotationType.PROPERTY);
+      expect(target.kind).toBe(AnnotationKind.PROPERTY);
     });
 
     it('.static === false', () => {
@@ -119,9 +119,9 @@ describe('AnnotationTargetFactory', () => {
     });
   });
   describe('.of(X.prototype, propertyKey)', () => {
-    it('.type === AnnotationType.PROPERTY', () => {
+    it('.type === AnnotationKind.PROPERTY', () => {
       const target = targetFactory.of(X.prototype, 'prop');
-      expect(target.type).toBe(AnnotationType.PROPERTY);
+      expect(target.kind).toBe(AnnotationKind.PROPERTY);
     });
 
     it('.static === false', () => {
@@ -154,9 +154,9 @@ describe('AnnotationTargetFactory', () => {
   });
 
   describe('.of(X.prototype, methodName)', () => {
-    it('.type === AnnotationType.METHOD', () => {
+    it('.type === AnnotationKind.METHOD', () => {
       const target = targetFactory.of(X.prototype, 'method');
-      expect(target.type).toBe(AnnotationType.METHOD);
+      expect(target.kind).toBe(AnnotationKind.METHOD);
     });
     it('.static === false', () => {
       const target = targetFactory.of(X.prototype, 'method');
@@ -200,13 +200,13 @@ describe('AnnotationTargetFactory', () => {
     });
   });
   describe('.of(X.prototype, <propertyKey>, <descriptor>)', () => {
-    it('.type === AnnotationType.METHOD', () => {
+    it('.type === AnnotationKind.METHOD', () => {
       const target = targetFactory.of(
         X.prototype,
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.type).toBe(AnnotationType.METHOD);
+      expect(target.kind).toBe(AnnotationKind.METHOD);
     });
 
     it('.static === false', () => {
@@ -243,14 +243,14 @@ describe('AnnotationTargetFactory', () => {
   });
 
   describe('.of(<object>, descriptor)', () => {
-    it('.type === AnnotationType.METHOD', () => {
+    it('.type === AnnotationKind.METHOD', () => {
       const x = new X();
       const target = targetFactory.of(
         x,
         'method',
         Object.getOwnPropertyDescriptor(X.prototype, 'method')!,
       );
-      expect(target.type).toBe(AnnotationType.METHOD);
+      expect(target.kind).toBe(AnnotationKind.METHOD);
     });
 
     it('.proto === Prototype<X>', () => {
@@ -299,9 +299,9 @@ describe('AnnotationTargetFactory', () => {
   });
 
   describe('.of(<constructor>, propertyKey, parameterIndex)', () => {
-    it('.type === AnnotationType.PARAMETER', () => {
+    it('.type === AnnotationKind.PARAMETER', () => {
       const target = targetFactory.of(X, 'method', 1);
-      expect(target.type).toBe(AnnotationType.PARAMETER);
+      expect(target.kind).toBe(AnnotationKind.PARAMETER);
     });
 
     it('.proto === Prototype<X>', () => {

@@ -2,9 +2,9 @@ import {
   _AnnotationTargetImpl,
   Annotation,
   AnnotationContextRegistry,
+  AnnotationKind,
   AnnotationTarget,
   AnnotationTargetRef,
-  AnnotationType,
   PropertyAnnotationTarget,
 } from '@aspectjs/common';
 import {
@@ -21,10 +21,10 @@ import { AspectType, getAspectMetadata } from '../aspect/aspect.type';
 import { JitWeaverCanvas } from './canvas/jit-canvas.type';
 import { JitClassCanvasStrategy } from './canvas/jit-class-canvas.strategy';
 
-import type { PointcutType } from '../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../pointcut/pointcut-kind.type';
 import type { WeaverContext } from './../weaver/context/weaver.context';
 
-import { AdviceType } from '../advice/advice-type.type';
+import { AdviceKind } from '../advice/advice-type.type';
 import { WeavingError } from '../errors/weaving.error';
 import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import type { Weaver } from '../weaver/weaver';
@@ -35,10 +35,10 @@ export class JitWeaver implements Weaver {
   static readonly __providerName = 'Weaver';
 
   private readonly enhancers = {
-    [AnnotationType.CLASS]: this.enhanceClass.bind(this),
-    [AnnotationType.PROPERTY]: this.enhanceProperty.bind(this),
-    [AnnotationType.METHOD]: this.enhanceMethod.bind(this),
-    [AnnotationType.PARAMETER]: this.enhanceParameter.bind(this),
+    [AnnotationKind.CLASS]: this.enhanceClass.bind(this),
+    [AnnotationKind.PROPERTY]: this.enhanceProperty.bind(this),
+    [AnnotationKind.METHOD]: this.enhanceMethod.bind(this),
+    [AnnotationKind.PARAMETER]: this.enhanceParameter.bind(this),
   };
 
   private readonly annotationContextRegistry: AnnotationContextRegistry;
@@ -78,7 +78,7 @@ export class JitWeaver implements Weaver {
     return this.aspectRegistry.getAspects();
   }
 
-  enhance<T extends AnnotationType, X = unknown>(
+  enhance<T extends AnnotationKind, X = unknown>(
     target: _AnnotationTargetImpl<T, X> & AnnotationTarget<T, X>,
   ): void | ConstructorType<X> | PropertyDescriptor {
     this.enhancedTargets.add(target.ref);
@@ -93,7 +93,7 @@ export class JitWeaver implements Weaver {
       target,
       annotations,
     });
-    if (target.type !== AnnotationType.CLASS) {
+    if (target.kind !== AnnotationKind.CLASS) {
       const enhancedProperties = target.declaringClass.getMetadata(
         '@ajs:weaver.enhanced-properties',
         () => new Set<string | symbol>(),
@@ -101,18 +101,18 @@ export class JitWeaver implements Weaver {
       enhancedProperties.add((target as PropertyAnnotationTarget).propertyKey);
     }
 
-    return this.enhancers[target.type](ctxt as any);
+    return this.enhancers[target.kind](ctxt as any);
   }
 
   private enhanceClass<X>(
-    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutKind.CLASS, X>,
   ): ConstructorType<X> | void {
     const { target } = ctxt;
     const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
-        types: [target.type],
+        types: [target.kind],
       })
       .find();
 
@@ -127,7 +127,7 @@ export class JitWeaver implements Weaver {
       annotations: annotationsForType.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<PointcutType.CLASS, X>(
+    return new JitWeaverCanvas<PointcutKind.CLASS, X>(
       new JitClassCanvasStrategy<X>(this.weaverContext, advicesSelection),
     )
       .compile(ctxt)
@@ -136,7 +136,7 @@ export class JitWeaver implements Weaver {
 
   private enhanceProperty<X>(
     ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
   ): PropertyDescriptor | void {
@@ -145,7 +145,7 @@ export class JitWeaver implements Weaver {
       .select()
       .on({
         target,
-        types: [target.type],
+        types: [target.kind],
       })
       .find();
 
@@ -161,7 +161,7 @@ export class JitWeaver implements Weaver {
     });
 
     return new JitWeaverCanvas<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >(new JitPropertyCanvasStrategy<X>(this.weaverContext, advicesSelection))
       .compile(ctxt)
@@ -169,14 +169,14 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceMethod<X>(
-    ctxt: MutableAdviceContext<PointcutType.METHOD, X>,
+    ctxt: MutableAdviceContext<PointcutKind.METHOD, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
     const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
-        types: [AnnotationType.METHOD],
+        types: [AnnotationKind.METHOD],
       })
       .find();
     if (!annotationsForType.length) {
@@ -194,7 +194,7 @@ export class JitWeaver implements Weaver {
       .select()
       .on({
         target,
-        types: [AnnotationType.PARAMETER],
+        types: [AnnotationKind.PARAMETER],
       })
       .find();
 
@@ -205,7 +205,7 @@ export class JitWeaver implements Weaver {
         })
       : undefined;
 
-    return new JitWeaverCanvas<PointcutType.METHOD | PointcutType.PARAMETER, X>(
+    return new JitWeaverCanvas<PointcutKind.METHOD | PointcutKind.PARAMETER, X>(
       new JitMethodCanvasStrategy<X>(
         this.weaverContext,
         advicesSelection,
@@ -217,14 +217,14 @@ export class JitWeaver implements Weaver {
   }
 
   private enhanceParameter<X>(
-    ctxt: MutableAdviceContext<PointcutType.PARAMETER, X>,
+    ctxt: MutableAdviceContext<PointcutKind.PARAMETER, X>,
   ): MethodPropertyDescriptor | void {
     const { target } = ctxt;
     const annotationsForType = this.annotationContextRegistry
       .select()
       .on({
         target,
-        types: [target.type],
+        types: [target.kind],
       })
       .find();
 
@@ -239,7 +239,7 @@ export class JitWeaver implements Weaver {
       annotations: annotationsForType.map((a) => a.ref),
     });
 
-    return new JitWeaverCanvas<PointcutType.PARAMETER, X>(
+    return new JitWeaverCanvas<PointcutKind.PARAMETER, X>(
       new JitParameterCanvasStrategy<X>(this.weaverContext, advicesSelection),
     )
       .compile(ctxt)
@@ -257,7 +257,7 @@ export class JitWeaver implements Weaver {
         .forEach((a) => {
           const decoree = this.enhance(a.target as _BindableAnnotationTarget);
           if (decoree) {
-            if (a.target.type === AnnotationType.CLASS) {
+            if (a.target.kind === AnnotationKind.CLASS) {
               assert(typeof decoree === 'function');
               a.target.proto['constructor'] = decoree as ConstructorType;
             } else {
@@ -276,7 +276,7 @@ export class JitWeaver implements Weaver {
     getAspectMetadata(aspect)
       .advices.map((advice) => ({
         compileAnnotations: advice.pointcuts
-          .filter((p) => p.adviceType === AdviceType.COMPILE)
+          .filter((p) => p.adviceKind === AdviceKind.COMPILE)
           .flatMap((a) => a.annotations),
       }))
       .filter(({ compileAnnotations }) => compileAnnotations.length)

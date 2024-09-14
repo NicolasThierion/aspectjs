@@ -3,8 +3,8 @@ import { AnnotationContext } from '../../annotation-context';
 import { AnnotationRef } from '../../annotation-ref';
 import {
   Annotation,
+  AnnotationKind,
   AnnotationStub,
-  AnnotationType,
 } from '../../annotation.types';
 import { AnnotationTarget } from '../../target/annotation-target';
 import { AnnotationTargetFactory } from '../../target/annotation-target.factory';
@@ -19,7 +19,7 @@ export interface AnnotationsByTypeSelectionOptions {
 }
 
 export class AnnotationsByRefSelector<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   S extends AnnotationStub = AnnotationStub,
   X = unknown,
 > {
@@ -66,17 +66,17 @@ export class AnnotationsByRefSelector<
   }
 
   annotations<S2 extends AnnotationStub>(
-    annotation: Annotation<AnnotationType, S2>,
+    annotation: Annotation<AnnotationKind, S2>,
   ): AnnotationsSelector<T, S2, X>;
   annotations(
     ...annotations: (
       | AnnotationRef
-      | Annotation<AnnotationType, AnnotationStub>
+      | Annotation<AnnotationKind, AnnotationStub>
     )[]
   ): AnnotationsSelector<T, S, X>;
   annotations(
     ...annotations: (
-      | Annotation<AnnotationType, AnnotationStub>
+      | Annotation<AnnotationKind, AnnotationStub>
       | AnnotationRef
     )[]
   ): AnnotationsSelector<T, S, X> {
@@ -143,7 +143,7 @@ export class AnnotationsByRefSelector<
   }
 }
 
-function getAncestors<T extends AnnotationType>(
+function getAncestors<T extends AnnotationKind>(
   target: AnnotationTarget<T, any>,
 ): Array<AnnotationTarget<T, any>> {
   if (!target.parentClass) {

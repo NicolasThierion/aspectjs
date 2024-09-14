@@ -31,7 +31,7 @@ export * from './errors/weaving.error';
 export * from './pointcut/pointcut';
 export * from './pointcut/pointcut-expression.factory';
 export * from './pointcut/pointcut-expression.type';
-export * from './pointcut/pointcut-target.type';
+export * from './pointcut/pointcut-kind.type';
 export * from './utils/annotation-mixin';
 export * from './weaver/context/weaver.context.global';
 export * from './weaver/weaver';

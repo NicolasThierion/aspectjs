@@ -1,4 +1,4 @@
-import { Annotation, AnnotationRef, AnnotationType } from '@aspectjs/common';
+import { Annotation, AnnotationKind, AnnotationRef } from '@aspectjs/common';
 import {
   assert,
   ConstructorType,
@@ -19,28 +19,28 @@ export class AnnotationMixin {
 
   bridge<
     A extends
-      Annotation<AnnotationType.CLASS> = Annotation<AnnotationType.CLASS>,
+      Annotation<AnnotationKind.CLASS> = Annotation<AnnotationKind.CLASS>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => ClassDecorator,
   ): this;
   bridge<
     A extends
-      Annotation<AnnotationType.METHOD> = Annotation<AnnotationType.METHOD>,
+      Annotation<AnnotationKind.METHOD> = Annotation<AnnotationKind.METHOD>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => MethodDecorator,
   ): this;
   bridge<
     A extends
-      Annotation<AnnotationType.PROPERTY> = Annotation<AnnotationType.PROPERTY>,
+      Annotation<AnnotationKind.PROPERTY> = Annotation<AnnotationKind.PROPERTY>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => PropertyDecorator,
   ): this;
   bridge<
     A extends
-      Annotation<AnnotationType.PARAMETER> = Annotation<AnnotationType.PARAMETER>,
+      Annotation<AnnotationKind.PARAMETER> = Annotation<AnnotationKind.PARAMETER>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => ParameterDecorator,
@@ -93,7 +93,7 @@ export class AnnotationMixin {
           );
 
           // Mixed annotations should take unlinked descriptor as a reference.
-          if (ctxt.target.type === AnnotationType.CLASS) {
+          if (ctxt.target.kind === AnnotationKind.CLASS) {
             // restore constructor before linked, cause it will get linked again.
             const compiledCtor = ctxt.target.getMetadata<ConstructorType>(
               '@ajs:compiledSymbol',

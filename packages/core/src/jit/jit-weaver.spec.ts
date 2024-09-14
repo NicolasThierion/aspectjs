@@ -1,7 +1,7 @@
 import {
   AnnotationFactory,
+  AnnotationKind,
   AnnotationTargetFactory,
-  AnnotationType,
 } from '@aspectjs/common';
 import {
   ReflectTestingContext,
@@ -44,7 +44,7 @@ describe('JitWeaver', () => {
         describe('when a compile annotation has been applied already', () => {
           it('throws an error', () => {
             const AClass = new AnnotationFactory('tests').create(
-              AnnotationType.CLASS,
+              AnnotationKind.CLASS,
               'AClass',
             );
             @Aspect()
@@ -72,7 +72,7 @@ describe('JitWeaver', () => {
           describe('after a before annotation has been applied already', () => {
             it('does not throw an error', () => {
               const AClass = new AnnotationFactory('tests').create(
-                AnnotationType.CLASS,
+                AnnotationKind.CLASS,
                 'AClass',
               );
               @AClass()
@@ -93,7 +93,7 @@ describe('JitWeaver', () => {
             it('calls the before advice', () => {
               const adviceImpl = jest.fn();
               const AClass = new AnnotationFactory('tests').create(
-                AnnotationType.CLASS,
+                AnnotationKind.CLASS,
                 'AClass',
               );
               @AClass()

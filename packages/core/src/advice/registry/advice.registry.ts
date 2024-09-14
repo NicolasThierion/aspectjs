@@ -5,7 +5,7 @@ import { Pointcut } from '../../pointcut/pointcut';
 import { AdvicesSelection } from './advices-selection.model';
 
 import { getAspectMetadata, type AspectType } from '../../aspect/aspect.type';
-import { PointcutType } from '../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AdviceSorter } from '../advice-sort';
 import { Advice } from '../advice.type';
 import type { AdviceRegBuckets } from './advice-entry.model';
@@ -35,16 +35,16 @@ export class AdviceRegistry {
   }
 
   unregister(aspectId: string) {
-    const pointcutTypes = [
-      PointcutType.CLASS,
-      PointcutType.GET_PROPERTY,
-      PointcutType.SET_PROPERTY,
-      PointcutType.METHOD,
-      PointcutType.PARAMETER,
+    const pointcutKinds = [
+      PointcutKind.CLASS,
+      PointcutKind.GET_PROPERTY,
+      PointcutKind.SET_PROPERTY,
+      PointcutKind.METHOD,
+      PointcutKind.PARAMETER,
     ];
 
-    pointcutTypes
-      .map((pointcutType) => (this.buckets[pointcutType] ??= {}))
+    pointcutKinds
+      .map((pointcutKind) => (this.buckets[pointcutKind] ??= {}))
       .forEach((byTarget) => {
         Object.values(byTarget).forEach((byAdviceType) =>
           byAdviceType.set(aspectId, []),
@@ -63,21 +63,21 @@ export class AdviceRegistry {
   ) {
     const aspectId = getAspectMetadata(aspect).id;
 
-    const pointcutTypes =
-      pointcut.type === PointcutType.ANY
+    const pointcutKinds =
+      pointcut.kind === PointcutKind.ANY
         ? [
-            PointcutType.CLASS,
-            PointcutType.GET_PROPERTY,
-            PointcutType.SET_PROPERTY,
-            PointcutType.METHOD,
-            PointcutType.PARAMETER,
+            PointcutKind.CLASS,
+            PointcutKind.GET_PROPERTY,
+            PointcutKind.SET_PROPERTY,
+            PointcutKind.METHOD,
+            PointcutKind.PARAMETER,
           ]
-        : [pointcut.type];
+        : [pointcut.kind];
 
-    pointcutTypes
-      .map((pointcutType) => (this.buckets[pointcutType] ??= {}))
+    pointcutKinds
+      .map((pointcutKind) => (this.buckets[pointcutKind] ??= {}))
       .forEach((byTarget) => {
-        const byAdviceType = (byTarget[pointcut.adviceType] ??= new Map<
+        const byAdviceType = (byTarget[pointcut.adviceKind] ??= new Map<
           string,
           AdviceEntry[]
         >());

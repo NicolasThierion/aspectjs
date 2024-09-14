@@ -1,13 +1,13 @@
 import {
   AnnotationContext,
   AnnotationContextRegistry,
+  AnnotationKind,
   AnnotationTarget,
   AnnotationTargetFactory,
-  AnnotationType,
   reflectContext,
 } from '@aspectjs/common';
 import { assert, getPrototype } from '@aspectjs/common/utils';
-import { AdviceType } from '../advice/advice-type.type';
+import { AdviceKind } from '../advice/advice-type.type';
 import { Advice } from '../advice/advice.type';
 import { AfterReturn } from '../advices/after-return/after-return.annotation';
 import { AfterThrow } from '../advices/after-throw/after-throw.annotation';
@@ -34,12 +34,12 @@ const KNOWN_POINTCUT_ANNOTATION_REFS = new Set([
 ]);
 
 const KNOWN_ADVICE_TYPES = {
-  [Compile.name]: AdviceType.COMPILE,
-  [Before.name]: AdviceType.BEFORE,
-  [Around.name]: AdviceType.AROUND,
-  [AfterReturn.name]: AdviceType.AFTER_RETURN,
-  [AfterThrow.name]: AdviceType.AFTER_THROW,
-  [After.name]: AdviceType.AFTER,
+  [Compile.name]: AdviceKind.COMPILE,
+  [Before.name]: AdviceKind.BEFORE,
+  [Around.name]: AdviceKind.AROUND,
+  [AfterReturn.name]: AdviceKind.AFTER_RETURN,
+  [AfterThrow.name]: AdviceKind.AFTER_THROW,
+  [After.name]: AdviceKind.AFTER,
 };
 export interface AspectMetadataWithAdvices extends AspectMetadata {
   advices: Advice[];
@@ -54,7 +54,7 @@ export function getAspectMetadata(
 
   return target.getMetadata('ajs.aspect.metadata', () => {
     const annotation:
-      | AnnotationContext<AnnotationType.CLASS, typeof Aspect>
+      | AnnotationContext<AnnotationKind.CLASS, typeof Aspect>
       | undefined = reflectContext()
       .get(AnnotationContextRegistry)
       .select(Aspect)
@@ -99,7 +99,7 @@ function _getAdvices(aspect: AspectType) {
       Reflect.defineProperty(advice, Symbol.toPrimitive, {
         value: () =>
           [...advice.pointcuts]
-            .map((p) => `@${p.adviceType}(${p.annotations.join(',')})`)
+            .map((p) => `@${p.adviceKind}(${p.annotations.join(',')})`)
             .join('|') + ` ${aspect.constructor.name}.${String(advice.name)}()`,
       });
 
@@ -113,7 +113,7 @@ function _getAdvices(aspect: AspectType) {
     const expressions = adviceAnnotation.args as PointcutExpression[];
     expressions.forEach((expression) => {
       let pointcut = new Pointcut({
-        type,
+        kind: type,
         expression: expression,
       });
 
@@ -143,7 +143,7 @@ export function isAspect(aspect: AspectType) {
   return !!getAspectMetadata(aspect);
 }
 function coerceAspectOptions(
-  aspectTarget: AnnotationTarget<AnnotationType.CLASS, AspectType>,
+  aspectTarget: AnnotationTarget<AnnotationKind.CLASS, AspectType>,
   idOrOptions: unknown,
 ): AspectMetadata {
   const options: AspectOptions =

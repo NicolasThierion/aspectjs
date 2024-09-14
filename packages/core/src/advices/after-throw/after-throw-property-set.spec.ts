@@ -3,14 +3,14 @@ import 'jest-extended/all';
 import { Before } from '../before/before.annotation';
 import { AfterThrowContext } from './after-throw.context';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AdviceError, AfterThrow } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 
@@ -22,11 +22,11 @@ describe('property advice', () => {
   let aaspect: any;
   let baspect: any;
   const AProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     'AProperty',
   );
   const BProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     'BProperty',
   );
   let weaver: JitWeaver;
@@ -69,7 +69,7 @@ describe('property advice', () => {
     class BAspect {
       @AfterThrow(on.properties.setter.withAnnotations(...bannotations))
       applyAfterThrow(
-        ctxt: AfterThrowContext<PointcutType.CLASS>,
+        ctxt: AfterThrowContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return afterThrowAdviceB.bind(this)(ctxt, ...args);

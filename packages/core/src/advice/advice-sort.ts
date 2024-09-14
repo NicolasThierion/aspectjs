@@ -1,7 +1,7 @@
 import {
   AnnotationContextRegistry,
+  AnnotationKind,
   AnnotationTargetFactory,
-  AnnotationType,
 } from '@aspectjs/common';
 import { getPrototype } from '@aspectjs/common/utils';
 import { Order } from '../annotations/order.annotation';
@@ -52,7 +52,7 @@ export class AdviceSorter {
       .select(Order)
       .on({
         target: adviceTarget,
-        types: [AnnotationType.CLASS, AnnotationType.METHOD],
+        types: [AnnotationKind.CLASS, AnnotationKind.METHOD],
       })
       .find({
         searchParents: true,

@@ -3,7 +3,7 @@ import { AnnotationMixin, Aspect, Compile, on } from '@aspectjs/core';
 import {
   Annotation,
   AnnotationContext,
-  AnnotationType,
+  AnnotationKind,
 } from '@aspectjs/common';
 import type { CompileContext } from '@aspectjs/core';
 import {
@@ -88,7 +88,7 @@ export class NestCommonAspect {
             // get only annotations on parents
             return c.target.declaringClass !== ctxt.target.declaringClass;
           })
-          .forEach((c: AnnotationContext<AnnotationType.PARAMETER>) => {
+          .forEach((c: AnnotationContext<AnnotationKind.PARAMETER>) => {
             const childDescriptor = Object.getOwnPropertyDescriptor(
               ctxt.target.proto,
               c.target.propertyKey,

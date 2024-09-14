@@ -1,4 +1,4 @@
-import { Annotation, AnnotationType } from '@aspectjs/common';
+import { Annotation, AnnotationKind } from '@aspectjs/common';
 import type {
   ControllerOptions,
   Controller as NController,
@@ -7,7 +7,7 @@ import { NESTJS_COMMON_ANNOTATION_FACTORY } from '../annotation-factory.global';
 import { ReplaceReturnType } from '../type.utils';
 
 export const Controller: Annotation<
-  AnnotationType.CLASS,
+  AnnotationKind.CLASS,
   | (() => void)
   | ((prefix: string | string[]) => void)
   | ((options: ControllerOptions) => void)

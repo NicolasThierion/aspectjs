@@ -10,7 +10,7 @@ import {
 } from '@aspectjs/common/utils';
 import { BoundAnnotationTarget } from './bound-annotation-target';
 
-import { AnnotationType } from '../annotation.types';
+import { AnnotationKind } from '../annotation.types';
 import { AnnotationTarget } from './annotation-target';
 import { _AnnotationTargetImpl } from './annotation-target.impl';
 import { _findPropertyDescriptor } from './annotation-target.utils';
@@ -20,12 +20,12 @@ import { _ParameterAnnotationTargetImpl } from './impl/parameter-annotation-targ
 import { _PropertyAnnotationTargetImpl } from './impl/property-annotation-target.impl';
 
 const _TARGET_GENERATORS: {
-  [t in AnnotationType]: (...args: any[]) => AnnotationTarget<t>;
+  [t in AnnotationKind]: (...args: any[]) => AnnotationTarget<t>;
 } = {
-  [AnnotationType.CLASS]: _ClassAnnotationTargetImpl.of,
-  [AnnotationType.PROPERTY]: _PropertyAnnotationTargetImpl.of,
-  [AnnotationType.METHOD]: _MethodAnnotationTargetImpl.of,
-  [AnnotationType.PARAMETER]: _ParameterAnnotationTargetImpl.of,
+  [AnnotationKind.CLASS]: _ClassAnnotationTargetImpl.of,
+  [AnnotationKind.PROPERTY]: _PropertyAnnotationTargetImpl.of,
+  [AnnotationKind.METHOD]: _MethodAnnotationTargetImpl.of,
+  [AnnotationKind.PARAMETER]: _ParameterAnnotationTargetImpl.of,
 };
 
 /**
@@ -34,36 +34,36 @@ const _TARGET_GENERATORS: {
 export class AnnotationTargetFactory {
   of<X = unknown>(
     target: ConstructorType<X>,
-  ): AnnotationTarget<AnnotationType.CLASS, X>;
-  of<X = unknown>(target: X): BoundAnnotationTarget<AnnotationType.CLASS, X>;
+  ): AnnotationTarget<AnnotationKind.CLASS, X>;
+  of<X = unknown>(target: X): BoundAnnotationTarget<AnnotationKind.CLASS, X>;
 
   of<X = unknown>(
     target: ConstructorType<X>,
     propertyKey: keyof X,
-  ): AnnotationTarget<AnnotationType.PROPERTY, X>;
+  ): AnnotationTarget<AnnotationKind.PROPERTY, X>;
   of<X = unknown>(
     target: X,
     propertyKey: keyof X,
-  ): BoundAnnotationTarget<AnnotationType.PROPERTY, X>;
+  ): BoundAnnotationTarget<AnnotationKind.PROPERTY, X>;
 
   of<X = unknown>(
     target: ConstructorType<X>,
     propertyKey: keyof X,
     descriptor: PropertyDescriptor,
-  ): AnnotationTarget<AnnotationType.METHOD, X>;
+  ): AnnotationTarget<AnnotationKind.METHOD, X>;
   of<X = unknown>(
     target: X,
     propertyKey: keyof X,
     descriptor: PropertyDescriptor,
-  ): BoundAnnotationTarget<AnnotationType.METHOD, X>;
+  ): BoundAnnotationTarget<AnnotationKind.METHOD, X>;
 
   of<X = unknown>(
     target: ConstructorType<X>,
     propertyKey: keyof X,
     parameterIndex: number,
-  ): AnnotationTarget<AnnotationType.PARAMETER, X>;
+  ): AnnotationTarget<AnnotationKind.PARAMETER, X>;
 
-  of<T extends AnnotationType = AnnotationType, X = unknown>(
+  of<T extends AnnotationKind = AnnotationKind, X = unknown>(
     ...args: unknown[]
   ): AnnotationTarget<T, X> {
     // ClassAnnotation = <TFunction extends Function>(target: TFunction) => TFunction | void;
@@ -94,12 +94,12 @@ export class AnnotationTargetFactory {
     if (isClassInstance(target)) {
       // target is a class instance. Decoree should be the class ctor for type=CLASS, or the class proto for type=METHOD/PROPERTY/PARAMETER
       args[0] =
-        type === AnnotationType.CLASS
+        type === AnnotationKind.CLASS
           ? getPrototype(target).constructor
           : getPrototype(target);
       classInstance = target as X;
     }
-    if (!args[2] && type === AnnotationType.METHOD) {
+    if (!args[2] && type === AnnotationKind.METHOD) {
       // Get the property descriptor if missing from args
       args[2] = _findPropertyDescriptor(args[0] as Prototype<X>, propertyKey!);
     }
@@ -114,14 +114,14 @@ export class AnnotationTargetFactory {
   }
 }
 
-export function inferTypeFromArgs(...args: unknown[]): AnnotationType;
+export function inferTypeFromArgs(...args: unknown[]): AnnotationKind;
 export function inferTypeFromArgs<X = unknown>(
   decoree: ConstructorType<X> | Prototype<X>,
   propertyKey?: string | symbol,
   parameterIndex?: number,
   descriptor?: PropertyDescriptor,
-): AnnotationType;
-export function inferTypeFromArgs<X = unknown>(...args: any[]): AnnotationType {
+): AnnotationKind;
+export function inferTypeFromArgs<X = unknown>(...args: any[]): AnnotationKind {
   const [decoree, propertyKey, parameterIndex, descriptor]: [
     ConstructorType<X> | Prototype<X>,
     string | symbol,
@@ -129,25 +129,25 @@ export function inferTypeFromArgs<X = unknown>(...args: any[]): AnnotationType {
     PropertyDescriptor,
   ] = args as any;
 
-  let type: AnnotationType;
+  let kind: AnnotationKind;
   if (isNumber(parameterIndex)) {
-    type = AnnotationType.PARAMETER;
+    kind = AnnotationKind.PARAMETER;
   } else if (!isUndefined(propertyKey)) {
     if (isObject(descriptor) && isFunction(descriptor.value)) {
-      type = AnnotationType.METHOD;
+      kind = AnnotationKind.METHOD;
     } else {
-      type = AnnotationType.PROPERTY;
+      kind = AnnotationKind.PROPERTY;
 
       // if called of(x, "method"), while method is a method, replace propertyKey with descriptor
       const descriptor = _findPropertyDescriptor(decoree, propertyKey!);
 
       if (typeof descriptor?.value === 'function') {
-        type = AnnotationType.METHOD;
+        kind = AnnotationKind.METHOD;
       }
     }
   } else {
-    type = AnnotationType.CLASS;
+    kind = AnnotationKind.CLASS;
   }
 
-  return type;
+  return kind;
 }

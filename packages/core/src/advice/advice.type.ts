@@ -4,23 +4,23 @@ import type { AfterAdvice } from '../advices/after/after.type';
 import type { AroundAdvice } from '../advices/around/around.type';
 import type { BeforeAdvice } from '../advices/before/before.type';
 import type { CompileAdvice } from '../advices/compile/compile.type';
-import type { PointcutType } from './../pointcut/pointcut-target.type';
-import { AdviceType } from './advice-type.type';
+import type { PointcutKind } from '../pointcut/pointcut-kind.type';
+import { AdviceKind } from './advice-type.type';
 
 export type Advice<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
-  V extends AdviceType = any,
-> = V extends AdviceType.COMPILE
+  V extends AdviceKind = any,
+> = V extends AdviceKind.COMPILE
   ? CompileAdvice<T, X>
-  : V extends AdviceType.BEFORE
+  : V extends AdviceKind.BEFORE
   ? BeforeAdvice<T, X>
-  : V extends AdviceType.AROUND
+  : V extends AdviceKind.AROUND
   ? AroundAdvice<T, X>
-  : V extends AdviceType.AFTER_RETURN
+  : V extends AdviceKind.AFTER_RETURN
   ? AfterReturnAdvice<T, X>
-  : V extends AdviceType.AFTER_THROW
+  : V extends AdviceKind.AFTER_THROW
   ? AfterThrowAdvice<T, X>
-  : V extends AdviceType.AFTER
+  : V extends AdviceKind.AFTER
   ? AfterAdvice<T, X>
   : never;

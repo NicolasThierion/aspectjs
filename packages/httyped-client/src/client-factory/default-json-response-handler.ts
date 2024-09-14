@@ -4,7 +4,7 @@ import {
   getPrototype,
   isAbstractToken,
 } from '@aspectjs/common/utils';
-import { AfterReturnContext, PointcutType } from '@aspectjs/core';
+import { AfterReturnContext, PointcutKind } from '@aspectjs/core';
 import { TypeHint } from '../annotations/type.annotation';
 import { MapperError } from '../types/mapper.error';
 import { MapperContext } from '../types/mapper.type';
@@ -46,7 +46,7 @@ export const MAP_JSON_RESPONSE_HANDLER: ResponseHandler = async (
   return body;
 };
 async function _findTypeHint(
-  ctxt: AfterReturnContext<PointcutType.METHOD>,
+  ctxt: AfterReturnContext<PointcutKind.METHOD>,
 ): Promise<TypeHintType | TypeHintType[]> {
   return ctxt.target.getMetadata<Promise<TypeHintType | TypeHintType[]>>(
     'ajs.httyped-client:response-typeHint',

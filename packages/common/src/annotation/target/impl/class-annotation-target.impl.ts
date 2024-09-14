@@ -6,7 +6,7 @@ import {
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -20,7 +20,7 @@ import {
 let _globalTargetId = 0;
 
 export class _ClassAnnotationTargetImpl<X = unknown>
-  extends _AnnotationTargetImpl<AnnotationType.CLASS, X>
+  extends _AnnotationTargetImpl<AnnotationKind.CLASS, X>
   implements ClassAnnotationTarget<X>
 {
   protected declare [BOUND_INSTANCE_SYMBOL]?: X;
@@ -29,7 +29,7 @@ export class _ClassAnnotationTargetImpl<X = unknown>
 
   private constructor(proto: Prototype<X>, ref: AnnotationTargetRef) {
     super(
-      AnnotationType.CLASS,
+      AnnotationKind.CLASS,
       proto,
       proto.constructor.name,
       `class ${proto.constructor.name}`,

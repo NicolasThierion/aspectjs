@@ -1,7 +1,7 @@
 import { ConstructorType, assert, getPrototype } from '@aspectjs/common/utils';
 import { AnnotationContext } from '../../annotation-context';
 import { AnnotationRef } from '../../annotation-ref';
-import { AnnotationStub, AnnotationType } from '../../annotation.types';
+import { AnnotationKind, AnnotationStub } from '../../annotation.types';
 import { AnnotationTarget } from '../../target/annotation-target';
 import { AnnotationTargetFactory } from '../../target/annotation-target.factory';
 import { _AnnotationTargetImpl } from '../../target/annotation-target.impl';
@@ -16,7 +16,7 @@ export interface AnnotationSelectorOptions {
 }
 
 export class AnnotationsSelector<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   S extends AnnotationStub = AnnotationStub,
   X = unknown,
 > {
@@ -100,7 +100,7 @@ export class AnnotationsSelector<
   }
 }
 
-function getAncestors<T extends AnnotationType>(
+function getAncestors<T extends AnnotationKind>(
   target: AnnotationTarget<T, any>,
 ): Array<AnnotationTarget<T, any>> {
   if (!target.parentClass) {
@@ -113,7 +113,7 @@ function getAncestors<T extends AnnotationType>(
 }
 
 export class BoundAnnotationsSelector<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   S extends AnnotationStub = AnnotationStub,
   X = unknown,
 > extends AnnotationsSelector<T, S, X> {

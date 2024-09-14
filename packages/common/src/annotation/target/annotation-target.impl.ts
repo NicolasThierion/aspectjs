@@ -1,5 +1,5 @@
 import { Prototype } from '@aspectjs/common/utils';
-import { AnnotationType } from '../annotation.types';
+import { AnnotationKind } from '../annotation.types';
 import {
   AnnotationTarget,
   AnnotationTargetRef,
@@ -14,7 +14,7 @@ const NOT_BOUND = {};
  * @internal
  */
 export abstract class _AnnotationTargetImpl<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   X = unknown,
 > implements BaseAnnotationTarget<T, X>
 {
@@ -37,7 +37,7 @@ export abstract class _AnnotationTargetImpl<
   }
 
   constructor(
-    public readonly type: T,
+    public readonly kind: T,
     public readonly proto: Prototype<X>,
     public readonly name: string,
     public readonly label: string,

@@ -1,7 +1,7 @@
 import { AnnotationRef } from '../annotation-ref';
 import {
   Annotation,
-  AnnotationType,
+  AnnotationKind,
   AnyDecorator,
   Decorator,
 } from '../annotation.types';
@@ -31,7 +31,7 @@ let anonymousAnnotationId = 0;
  * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
  */
 export interface AnnotationCreateOptions<
-  T extends AnnotationType,
+  T extends AnnotationKind,
   S extends AnnotationStub<T>,
 > {
   /**
@@ -75,10 +75,10 @@ export class AnnotationFactory {
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create();
    * // Or:
-   * const LogErrors = new AnnotationFactory('demo').create(AnnotationType.METHOD, 'LogErrors');
+   * const LogErrors = new AnnotationFactory('demo').create(AnnotationKind.METHOD, 'LogErrors');
    * ```
    */
-  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+  create<T extends AnnotationKind, S extends AnnotationStub<T>>(
     type?: T,
     name?: string,
   ): Annotation<T, S>;
@@ -107,13 +107,13 @@ export class AnnotationFactory {
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create(
-   *    AnnotationType.METHOD,
+   *    AnnotationKind.METHOD,
    *    function Log(
    *      level: 'info' | 'warn' | 'error' | 'debug' = 'error',
    * ) {});
    * ```
    */
-  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+  create<T extends AnnotationKind, S extends AnnotationStub<T>>(
     type?: T,
     annotationStub?: S,
   ): Annotation<T, S>;
@@ -128,7 +128,7 @@ export class AnnotationFactory {
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create(
-   *    AnnotationType.METHOD,
+   *    AnnotationKind.METHOD,
    *    function Log(
    *      level: 'info' | 'warn' | 'error' | 'debug' = 'error',
    * ) {});
@@ -142,11 +142,11 @@ export class AnnotationFactory {
    * @typeParam T the type of annotation to create
    * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    */
-  create<T extends AnnotationType, S extends AnnotationStub<T>>(
+  create<T extends AnnotationKind, S extends AnnotationStub<T>>(
     options?: AnnotationCreateOptions<T, S>,
   ): Annotation<T, S>;
-  create<T extends AnnotationType, S extends AnnotationStub<T>>(
-    init?: string | S | AnnotationCreateOptions<T, S> | AnnotationType,
+  create<T extends AnnotationKind, S extends AnnotationStub<T>>(
+    init?: string | S | AnnotationCreateOptions<T, S> | AnnotationKind,
     annotationStub?: S | string,
   ): Annotation<T, S> {
     const _opts = typeof init === 'object' ? init : {};
@@ -166,7 +166,7 @@ export class AnnotationFactory {
     } else if (typeof init === 'function') {
       _opts.name = init.name;
       _opts.annotationStub = init;
-    } else if (typeof init === typeof AnnotationType) {
+    } else if (typeof init === typeof AnnotationKind) {
       _opts.type = init as T;
     }
 
@@ -185,7 +185,7 @@ export class AnnotationFactory {
 
   // Turn an annotation into an ES decorator
   private _createDecorator<
-    T extends AnnotationType,
+    T extends AnnotationKind,
     S extends AnnotationStub<T>,
   >(
     annotation: Annotation<T, S>,
@@ -222,8 +222,8 @@ export class AnnotationFactory {
 
               if (newDecoree) {
                 if (decoree) {
-                  const type = annotationContext.target.type;
-                  if (type === AnnotationType.CLASS) {
+                  const type = annotationContext.target.kind;
+                  if (type === AnnotationKind.CLASS) {
                     const proto = getPrototype(
                       annotationContext.target.proto.constructor,
                     );
@@ -262,7 +262,7 @@ export class AnnotationFactory {
   }
 
   private _createAnnotationContext<
-    T extends AnnotationType,
+    T extends AnnotationKind,
     S extends AnnotationStub<T>,
   >(
     reflect: ReflectContext,
@@ -277,7 +277,7 @@ export class AnnotationFactory {
   }
 
   private _createAnnotation<
-    T extends AnnotationType,
+    T extends AnnotationKind,
     S extends AnnotationStub<T>,
   >(groupId: string, name: string, stub: S): Annotation<T, S> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias

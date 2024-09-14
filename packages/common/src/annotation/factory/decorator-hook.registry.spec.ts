@@ -4,7 +4,7 @@ import { DecoratorHookRegistry } from './decorator-hook.registry';
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ReflectModule, reflectContext } from '../../public_api';
 import { ReflectProvider } from '../../reflect/reflect-provider.type';
-import { AnnotationType } from '../annotation.types';
+import { AnnotationKind } from '../annotation.types';
 import { AnnotationFactory } from './annotation.factory';
 
 const af = new AnnotationFactory('test');
@@ -46,7 +46,7 @@ describe('DecoratorHookRegistry', () => {
 
     describe('calling a class annotation', () => {
       it('calls the configured hooks', () => {
-        const AClass = af.create(AnnotationType.CLASS, 'AClass');
+        const AClass = af.create(AnnotationKind.CLASS, 'AClass');
         expect(hookedDecorator).not.toHaveBeenCalled();
         @AClass()
         class X {
@@ -58,7 +58,7 @@ describe('DecoratorHookRegistry', () => {
       it('preserves class static properties', () => {
         hookedDecorator = jest.fn(() => function () {});
 
-        const AClass = af.create(AnnotationType.CLASS, 'AClass');
+        const AClass = af.create(AnnotationKind.CLASS, 'AClass');
         expect(hookedDecorator).not.toHaveBeenCalled();
         @AClass()
         class X {

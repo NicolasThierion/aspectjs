@@ -1,12 +1,12 @@
 import { AnnotationFactory } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 import { Aspect } from '@aspectjs/core';
-import { AdviceType } from './../advice-type.type';
+import { AdviceKind } from './../advice-type.type';
 
 import { After } from '../../advices/after/after.annotation';
 import { Before } from '../../advices/before/before.annotation';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { PointcutType } from '../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { AdviceRegistry } from './advice.registry';
 
@@ -173,7 +173,7 @@ describe('AdviceRegisrty', () => {
                 .select({
                   aspects: [Aaspect, Baspect],
                 })
-                .find([PointcutType.CLASS]),
+                .find([PointcutKind.CLASS]),
             ].map(({ aspect, advice }) => {
               return {
                 aspect,
@@ -195,7 +195,7 @@ describe('AdviceRegisrty', () => {
                 .select({
                   aspects: [Aaspect, Baspect],
                 })
-                .find([PointcutType.CLASS], [AdviceType.AFTER]),
+                .find([PointcutKind.CLASS], [AdviceKind.AFTER]),
             ].map(({ aspect, advice }) => {
               return {
                 aspect,

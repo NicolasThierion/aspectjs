@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -9,7 +9,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 // eslint-disable @typescript-eslint/no-unused-vars
@@ -19,7 +19,7 @@ describe('static property set advice', () => {
   let aaspect: any;
   const af = new AnnotationFactory('test');
   const AProperty = af.create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     function AProperty(..._args: any[]) {},
   );
   let weaver: JitWeaver;
@@ -37,7 +37,7 @@ describe('static property set advice', () => {
       class AAspect {
         @Before(on.properties.setter.withAnnotations(AProperty))
         applyBefore(
-          ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+          ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
           ...args: unknown[]
         ): void {
           return aadvice.bind(this)(ctxt, ...args);

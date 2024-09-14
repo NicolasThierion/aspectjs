@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { configureTesting } from '@aspectjs/common/testing';
-import type { Annotation, AnnotationType } from '../annotation.types';
+import type { Annotation, AnnotationKind } from '../annotation.types';
 import { AnnotationFactory } from './annotation.factory';
 
 let factory: AnnotationFactory;
@@ -9,7 +9,7 @@ const FACTORY_GROUP_TEST_ID = 'testFactory';
 
 describe('AnnotationFactory(groupId)', () => {
   const AClassStub = jest.fn(function AClass(_x?: string, _y?: number) {});
-  let AClass: Annotation<AnnotationType.CLASS, typeof AClassStub>;
+  let AClass: Annotation<AnnotationKind.CLASS, typeof AClassStub>;
 
   beforeEach(() => {
     configureTesting();

@@ -1,20 +1,20 @@
 import { getMetadata } from '@aspectjs/common/utils';
 
 import type { AspectType } from '../../aspect/aspect.type';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
-import { AdviceType } from '../advice-type.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
+import { AdviceKind } from '../advice-type.type';
 import type { Advice } from '../advice.type';
 
 export type AdviceRegBuckets = {
-  [t in PointcutType]?: {
-    [p in AdviceType]?: Map<string, AdviceEntry[]>;
+  [t in PointcutKind]?: {
+    [p in AdviceKind]?: Map<string, AdviceEntry[]>;
   };
 };
 
 export type AdviceEntry<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
-  P extends AdviceType = AdviceType,
+  P extends AdviceKind = AdviceKind,
 > = {
   advice: Advice<T, X, P>;
   aspect: AspectType;

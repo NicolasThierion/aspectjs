@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { JitWeaver } from '../../jit/jit-weaver';
@@ -10,7 +10,7 @@ import { on } from './../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -20,11 +20,11 @@ describe('class advice', () => {
   let baspect: any;
   let ctorImpl: any;
   const AClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'AClass',
   );
   const BClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'BClass',
   );
   let weaver: JitWeaver;
@@ -40,7 +40,7 @@ describe('class advice', () => {
     class AAspect {
       @Before(on.classes.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.CLASS>,
+        ctxt: BeforeContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -51,7 +51,7 @@ describe('class advice', () => {
     class BAspect {
       @Before(on.classes.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.CLASS>,
+        ctxt: BeforeContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
