@@ -9,16 +9,17 @@ export const CALL_JIT_WEAVER_HOOK: DecoratorHook = {
   order: 200,
   createDecorator: function (reflect, context) {
     const weaver = reflect.get(JitWeaver);
+
     return function (..._decoratorArgs: any) {
       const target = context.target as _BindableAnnotationTarget;
       assert(typeof target._bind === 'function');
+      const state = reflectContext().get(_CompilationState);
+
+      // already enhanced, skip calling the weaver.
+      // this might happen when doing a mixin between two annotations.
 
       // dynamically add the annotation to advices selection filter
-      const state = reflectContext().get(_CompilationState);
       if (state.status === _CompilationState.Status.PENDING) {
-        // already enhanced, skip calling the weaver.
-        // this might happen when doing a mixin between two annotations.
-
         assert(!!state.advices);
         // add the current annotation to the list of known annotations for advices
         state.advices!.filters.annotations ??= [];

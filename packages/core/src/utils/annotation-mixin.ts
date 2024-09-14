@@ -1,10 +1,15 @@
 import { Annotation, AnnotationRef, AnnotationType } from '@aspectjs/common';
-import { assert, getPrototype } from '@aspectjs/common/utils';
+import {
+  assert,
+  ConstructorType,
+  getPrototype,
+  MethodPropertyDescriptor,
+} from '@aspectjs/common/utils';
 import { Compile } from '../advices/compile/compile.annotation';
 import { CompileContext } from '../advices/compile/compile.context';
 import { Aspect } from '../aspect/aspect.annotation';
+import { AspectType } from '../aspect/aspect.type';
 import { on } from '../pointcut/pointcut-expression.factory';
-import { AspectType } from '../public_api';
 
 export class AnnotationMixin {
   private bridgeCounter = 0;
@@ -86,6 +91,27 @@ export class AnnotationMixin {
             !!annotationCtxt,
             `annotation ${annotation} should have been found on ${ctxt}`,
           );
+
+          // Mixed annotations should take unlinked descriptor as a reference.
+          if (ctxt.target.type === AnnotationType.CLASS) {
+            // restore constructor before linked, cause it will get linked again.
+            const compiledCtor = ctxt.target.getMetadata<ConstructorType>(
+              '@ajs:compiledSymbol',
+            )!;
+            assert(typeof compiledCtor === 'function');
+            ctxt.target.proto.constructor = compiledCtor;
+          } else {
+            const compiledDescriptor = ctxt.target.getMetadata<
+              PropertyDescriptor | MethodPropertyDescriptor
+            >('@ajs:compiledSymbol')!;
+            assert(typeof compiledDescriptor === 'object');
+
+            Object.defineProperty(
+              ctxt.target.proto,
+              ctxt.target.propertyKey,
+              compiledDescriptor,
+            );
+          }
 
           return (decorator(...annotationCtxt.args) as any)(
             ...ctxt.target.asDecoratorArgs(),

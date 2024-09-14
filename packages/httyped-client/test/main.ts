@@ -5,7 +5,7 @@ import { Address, User, UsersApi } from './users.api';
 
 async function main() {
   const usersApi = new HttypedClientFactory({
-    baseUrl: 'https://jsonplaceholder.typicode.com:80',
+    baseUrl: 'https://jsonplaceholder.typicode.com',
   })
     .addRequestHandler((r) => console.log(`[${r.method}] ${r.url}`))
     .addResponseBodyMappers({

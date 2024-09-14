@@ -28,17 +28,7 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/test/main.ts"
     },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "test with bun",
-      "runtimeExecutable": "bun",
-      "runtimeArgs": ["--inspect"],
-      "console": "integratedTerminal",
-      "outputCapture": "console",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/test/main.ts"
-    },
+
     {
       "type": "bun",
       "request": "launch",

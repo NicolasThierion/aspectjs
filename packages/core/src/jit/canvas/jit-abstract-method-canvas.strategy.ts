@@ -35,6 +35,7 @@ export abstract class AbstractJitMethodCanvasStrategy<
       '@ajs:compiledSymbol',
       () => ctxt.target.descriptor as CompiledSymbol<T, X>,
     )!;
+
     assert(!!methodDescriptor);
 
     // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
@@ -145,7 +146,6 @@ export abstract class AbstractJitMethodCanvasStrategy<
     joinpoint: (...args: any[]) => unknown,
   ): CompiledSymbol<T, X> {
     compiledSymbol = wrapMethodDescriptor(ctxt, compiledSymbol, joinpoint);
-
     return compiledSymbol as CompiledSymbol<T, X>;
   }
 }
