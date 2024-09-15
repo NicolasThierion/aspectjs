@@ -18,7 +18,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "test with tsx",
+      "name": "launch demo with tsx",
       "runtimeExecutable": "tsx",
       "runtimeArgs": ["--tsconfig", "./tsconfig.tsx.json"],
       // "runtimeArgs": ["-r", "ts-node/register"],
@@ -26,16 +26,16 @@
       "console": "integratedTerminal",
       "outputCapture": "console",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/test/main.ts"
+      "program": "${workspaceFolder}/demo/main.ts"
     },
 
     {
       "type": "bun",
       "request": "launch",
-      "name": "Debug Bun",
+      "name": "launch demo with Bun",
 
       // The path to a JavaScript or TypeScript file to run.
-      "program": "./test/main.ts",
+      "program": "./demo/main.ts",
 
       // The arguments to pass to the program, if any.
       "args": [],

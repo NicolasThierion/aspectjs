@@ -1,3 +1,5 @@
+# AspectJS
+
 <p align="center"><a href="https://github.com/NicolasThierion/aspectjs"><img src="https://aspectjs.gitlab.io/logo.png" alt="AspectJS logo" height="140"/></a></p>
 
 <h3 align="center">An AOP framework for Typescript, compatible with Browsers & Node.</p>
@@ -10,12 +12,10 @@
 [![license]](https://www.npmjs.com/package/@aspectjs/core)
 [![NPM Downloads]](https://www.npmjs.com/package/@aspectjs/core)
 [![bundlejs]](https://bundlejs.com/?q=%40aspectjs%2Fcommon%2C%40aspectjs%2Fcore&treeshake=[*]%2C[*])
-
-<!--[![Latest Release]](https://gitlab.com/aspectjs/aspectjs/-/releases)-->
+[![Latest Release]](https://gitlab.com/aspectjs/aspectjs/-/releases)
 
 </p><br/><br/>
 
-# AspectJS
 
 ## 📜 Abstract
 
@@ -142,8 +142,5 @@ MIT Licensed
 [npm version]: https://img.shields.io/npm/v/@aspectjs/core.svg
 [license]: https://img.shields.io/npm/l/@aspectjs/core.svg
 [NPM Downloads]: https://img.shields.io/npm/dm/@aspectjs/common.svg
-[demo-gif]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/demo.gif
-[with-aspectjs]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/with-aspectjs.png
-[without-aspectjs]: https://raw.githubusercontent.com/NicolasThierion/aspectjs/HEAD/.assets/without-aspectjs.png
 
 [bundlejs]: https://deno.bundlejs.com/badge?q=@aspectjs/common,@aspectjs/core&treeshake=[*],[*]

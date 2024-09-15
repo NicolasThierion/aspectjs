@@ -1,7 +1,7 @@
 {
   "name": "httyped-client",
   "version": "0.3.17",
-  "description": "An AOP powered typesafe http client, inspired by Retrofit library for java",
+  "description": "An AOP powered typesafe http client, inspired by the Retrofit library for java",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",

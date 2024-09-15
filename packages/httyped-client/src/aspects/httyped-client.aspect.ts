@@ -194,10 +194,26 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     const requestParamsAnnotations = ctxt
       .annotations(RequestParams)
       .find({ searchParents: true })
-      .map((annotation) => annotation.args[0])
-      .flatMap((params) =>
-        params instanceof Map ? [...params.entries()] : Object.entries(params),
-      );
+      .map(
+        (annotation) =>
+          annotation.target.eval() as Record<string, any> | Map<string, any>,
+      )
+      .flatMap((params) => {
+        if (params === null || params === undefined) {
+          return [];
+        }
+        if (params instanceof Map) {
+          return [...params.entries()];
+        } else if (typeof params === 'object') {
+          return Object.entries(params);
+        } else {
+          throw new TypeError(
+            `Argument annotated with ${RequestParams} on ${
+              ctxt.target.label
+            } cannot be of type ${typeof params}`,
+          );
+        }
+      });
 
     const requestParamAnnotations = ctxt
       .annotations(RequestParam)

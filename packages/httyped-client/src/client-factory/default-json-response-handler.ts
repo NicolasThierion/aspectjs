@@ -39,7 +39,7 @@ export const MAP_JSON_RESPONSE_HANDLER: ResponseHandler = async (
         );
       }
       const mapper = config.responseBodyMappers.findMapper(typeHint);
-      return mapper ? mapper.map(body, context) : body;
+      return mapper ? await mapper.map(body, context) : body;
     }
   }
 
@@ -84,23 +84,37 @@ function _arrayToTypeArray<T = unknown>(array: T[]): ConstructorType<T>[] {
   });
 }
 
-function _arrayToMappedType<T = unknown, U = unknown>(
-  array: T[],
+async function _arrayToMappedType<T = unknown, U = unknown>(
+  array: (T | Promise<T>)[],
   context: MapperContext,
   typeHint: TypeHintType | TypeHintType[],
-): U[] {
+): Promise<U[]> {
   if (Array.isArray(typeHint) && typeHint.length === 1) {
     // take single typehint as a template for all array items
     return _arrayToMappedType(array, context, typeHint[0] as TypeHintType);
   } else if (!Array.isArray(typeHint)) {
     const mapper = context.mappers.findMapper(typeHint);
-    const res = mapper ? array.map((u) => mapper.map(u, context)) : array;
-    return res as U[];
+    if (!mapper) {
+      return array as any[] as U[];
+    } else {
+      const res = [];
+      for (const u of array) {
+        res.push(await mapper.map(u, context));
+      }
+      return res as U[];
+    }
   } else if (typeHint.length === array.length) {
-    return typeHint.map((t, i) => {
+    const res: any[] = [];
+    for (let i in typeHint) {
+      const t = typeHint[i]!;
       const mapper = context.mappers.findMapper(t);
-      return (mapper ? mapper.map(array[i], context) : array[i]) as U;
-    });
+      if (!mapper) {
+        res.push(array[i]);
+      } else {
+        res.push(await mapper.map(array[i], context));
+      }
+    }
+    return res;
   } else {
     throw new TypeError(
       `Mapper expected a tuple (${typeHint.map((t) =>
