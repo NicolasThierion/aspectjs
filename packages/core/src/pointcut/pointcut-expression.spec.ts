@@ -1,10 +1,10 @@
 import { AnnotationRef } from '@aspectjs/common';
 import { PointcutExpression } from './pointcut-expression.type';
-import { PointcutType } from './pointcut-target.type';
+import { PointcutKind } from './pointcut-kind.type';
 
 describe('PointcutExpression', () => {
   describe('.of(exp: string)', () => {
-    let type: PointcutType;
+    let kind: PointcutKind;
     const name = '*';
     const annotations = [
       AnnotationRef.of('test:Test'),
@@ -13,7 +13,7 @@ describe('PointcutExpression', () => {
     let expression: string;
 
     function testAttributes(pe: PointcutExpression, testExpr?: string) {
-      expect(pe.type).toEqual(type);
+      expect(pe.kind).toEqual(kind);
       expect(pe.name).toEqual(name);
       expect(pe.annotations).toEqual(annotations);
       expect(`${pe}`).toEqual(testExpr ?? expression);
@@ -21,7 +21,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid class pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 class *';
-        type = PointcutType.CLASS;
+        kind = PointcutKind.CLASS;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -31,7 +31,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid method pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 method *';
-        type = PointcutType.METHOD;
+        kind = PointcutKind.METHOD;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -41,7 +41,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid parameter pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 parameter *';
-        type = PointcutType.PARAMETER;
+        kind = PointcutKind.PARAMETER;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -51,7 +51,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid property pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 property *';
-        type = PointcutType.GET_PROPERTY;
+        kind = PointcutKind.GET_PROPERTY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(
@@ -63,7 +63,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is a valid property setter pointcut expression', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 set property *';
-        type = PointcutType.SET_PROPERTY;
+        kind = PointcutKind.SET_PROPERTY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -73,7 +73,7 @@ describe('PointcutExpression', () => {
     describe('when parameter is pointcut expression that targets any', () => {
       beforeEach(() => {
         expression = '@test:Test|@test2:Test2 any *';
-        type = PointcutType.ANY;
+        kind = PointcutKind.ANY;
       });
       it('returns a class PointcutExpression with correct attributes', () => {
         testAttributes(PointcutExpression.of(expression));
@@ -82,4 +82,5 @@ describe('PointcutExpression', () => {
   });
 });
 
-export {};
+export { };
+

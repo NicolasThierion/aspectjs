@@ -1,4 +1,4 @@
-import { AnnotationType } from '../annotation.types';
+import { AnnotationKind } from '../annotation.types';
 import {
   ClassAnnotationTarget,
   MethodAnnotationTarget,
@@ -31,14 +31,14 @@ interface BoundPropertyAnnotationTarget<X = unknown>
  * @param X The type of the class that target belongs to.
  */
 export type BoundAnnotationTarget<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   X = unknown,
-> = T extends AnnotationType.CLASS
+> = T extends AnnotationKind.CLASS
   ? BoundClassAnnotationTarget<X>
-  : T extends AnnotationType.PARAMETER
+  : T extends AnnotationKind.PARAMETER
   ? BoundParameterAnnotationTarget<X>
-  : T extends AnnotationType.METHOD
+  : T extends AnnotationKind.METHOD
   ? BoundMethodAnnotationTarget<X>
-  : T extends AnnotationType.PROPERTY
+  : T extends AnnotationKind.PROPERTY
   ? BoundPropertyAnnotationTarget<X>
   : never;

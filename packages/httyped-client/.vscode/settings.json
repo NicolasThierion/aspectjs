@@ -1,0 +1,5 @@
+{
+  "jest.jestCommandLine": "../../node_modules/.bin/jest"
+  // "jest.rootPath": "../../",
+  // "jest.jestCommandLine": "npm run test:unit"
+}

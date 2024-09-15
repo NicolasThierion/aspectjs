@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import type { Annotation, AnnotationType } from '../annotation.types';
+import { configureTesting } from '@aspectjs/common/testing';
+import type { Annotation, AnnotationKind } from '../annotation.types';
 import { AnnotationFactory } from './annotation.factory';
 
 let factory: AnnotationFactory;
@@ -8,9 +9,10 @@ const FACTORY_GROUP_TEST_ID = 'testFactory';
 
 describe('AnnotationFactory(groupId)', () => {
   const AClassStub = jest.fn(function AClass(_x?: string, _y?: number) {});
-  let AClass: Annotation<AnnotationType.CLASS, typeof AClassStub>;
+  let AClass: Annotation<AnnotationKind.CLASS, typeof AClassStub>;
 
   beforeEach(() => {
+    configureTesting();
     factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
   });
 
@@ -32,22 +34,30 @@ describe('AnnotationFactory(groupId)', () => {
       expect(ref.value).toBeDefined();
     });
 
-    describe(':Annotation', () => {
+    describe('called twice with the same Annotation name', () => {
+      it('throws an error', () => {
+        factory.create(function X() {});
+        expect(() => factory.create(function X() {})).toThrow(
+          `Annotation "@${factory.groupId}:X" already exists`,
+        );
+      });
+    });
+    describe('returns an an Annotation with property', () => {
       beforeEach(() => {
         AClass = factory.create(AClassStub);
       });
       describe('.name', () => {
-        it('matchs stub name', () => {
+        it('matches stub name', () => {
           expect(AClass.name).toEqual(AClassStub.name);
         });
       });
       describe('.groupId', () => {
-        it(`should match AnnotationFactory's groupId`, () => {
+        it(`matches AnnotationFactory's groupId`, () => {
           expect(AClass.groupId).toEqual(factory.groupId);
         });
       });
       describe('.ref.value', () => {
-        it(`should match name:groupId`, () => {
+        it(`equals name:groupId`, () => {
           expect(AClass.ref.value).toEqual(`${AClass.groupId}:${AClass.name}`);
         });
       });

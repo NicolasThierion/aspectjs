@@ -1,4 +1,5 @@
 import {
+  _copyPropsAndMeta,
   assert,
   ConstructorType,
   defineMetadata,
@@ -6,10 +7,10 @@ import {
 } from '@aspectjs/common/utils';
 import { AdviceEntry } from './../../advice/registry/advice-entry.model';
 
-import { PointcutType } from './../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
-import { AdviceType } from '../../advice/advice-type.type';
+import { AdviceKind } from '../../advice/advice-type.type';
 import type { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
@@ -22,79 +23,113 @@ import { renameFunction } from './canvas.utils';
  */
 export class JitClassCanvasStrategy<
   X = unknown,
-> extends JitWeaverCanvasStrategy<PointcutType.CLASS, X> {
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.CLASS]);
+> extends JitWeaverCanvasStrategy<PointcutKind.CLASS, X> {
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutKind.CLASS]);
   }
 
   compile(
-    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-    selection: AdvicesSelection,
+    ctxt: MutableAdviceContext<PointcutKind.CLASS, X>,
   ): ConstructorType<X> {
     // if class already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
-    let constructor = getMetadata(
+    let constructor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
-      ctxt.target.ref,
       () => ctxt.target.proto.constructor,
-      true,
     ) as ConstructorType<X>;
 
-    const adviceEntries = [
-      ...selection.find([PointcutType.CLASS], [AdviceType.COMPILE]),
-    ];
-    //  if no class compile advices, return ctor as is
-    if (!adviceEntries.length) {
-      return constructor;
+    const findCompileAdvices = () => {
+      return [...this.advices.find([PointcutKind.CLASS], [AdviceKind.COMPILE])];
+    };
+
+    const applyCompileAdvices = () => {
+      adviceEntries
+        //  prevent calling them twice.
+        .filter(
+          (e) =>
+            !getMetadata(
+              `ajs.compiled`,
+              e.advice,
+              ctxt.target.ref.value,
+              () => false,
+            ),
+        )
+        .forEach((entry) => {
+          try {
+            defineMetadata(
+              `ajs.compiled`,
+              true,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            assert(typeof entry.advice === 'function');
+            ctxt.target.proto.constructor = constructor;
+
+            const newConstructor = entry.advice.call(
+              entry.aspect,
+              ctxt.asCompileContext(),
+            ) as ConstructorType<X>;
+
+            if (newConstructor) {
+              if (typeof newConstructor !== 'function') {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  'should return void or a class constructor',
+                );
+              }
+
+              _copyPropsAndMeta(newConstructor, constructor); // copy static props
+
+              constructor = newConstructor;
+            }
+          } catch (e) {
+            defineMetadata(
+              `ajs.compiled`,
+              false,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            throw e;
+          }
+        });
+
+      ctxt.target.defineMetadata('@ajs:compiledSymbol', constructor);
+    };
+
+    // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
+    // apply compile advices until state got stable
+    let previousAdviceEntries: AdviceEntry[] = [];
+    let adviceEntries = findCompileAdvices();
+
+    while (adviceEntries.length !== previousAdviceEntries.length) {
+      previousAdviceEntries = adviceEntries;
+      applyCompileAdvices();
+      adviceEntries = findCompileAdvices();
     }
 
-    adviceEntries
-      //  prevent calling them twice.
-      .filter((e) => !getMetadata('compiled', e, () => false))
-      .forEach((entry) => {
-        assert(typeof entry.advice === 'function');
-        ctxt.target.proto.constructor = constructor;
-
-        constructor = (entry.advice.call(
-          entry.aspect,
-          ctxt.asCompileContext(),
-        ) ?? constructor) as ConstructorType<X>;
-        if (typeof constructor !== 'function') {
-          throw new AdviceError(
-            entry.aspect,
-            entry.advice,
-            ctxt.target,
-            'should return void or a class constructor',
-          );
-        }
-        defineMetadata('compiled', true, entry);
-      });
-
-    defineMetadata('@ajs:compiledSymbol', constructor, ctxt.target.ref);
     return constructor;
   }
 
-  override before(
-    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-    selection: AdvicesSelection,
-  ): void {
-    super.before(withNullInstance(ctxt), selection);
+  override before(ctxt: MutableAdviceContext<PointcutKind.CLASS, X>): void {
+    super.before(withNullInstance(ctxt));
   }
 
   override callJoinpoint(
-    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutKind.CLASS, X>,
     originalSymbol: ConstructorType<X>,
   ): unknown {
     assert(!!ctxt.args);
     assert(!!ctxt.instance);
-    const newInstance = new originalSymbol(...ctxt.args!);
+    const newInstance = Reflect.construct(originalSymbol, ctxt.args!);
     Object.assign(ctxt.instance as any, newInstance);
     return (ctxt.value = ctxt.instance);
   }
 
   override link(
-    ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-    compiledConstructor: CompiledSymbol<PointcutType.CLASS, X>,
+    ctxt: MutableAdviceContext<PointcutKind.CLASS, X>,
+    compiledConstructor: CompiledSymbol<PointcutKind.CLASS, X>,
     joinpoint: (...args: any[]) => unknown,
   ): ConstructorType<X> {
     assert(!!ctxt.target?.proto);
@@ -107,6 +142,24 @@ export class JitClassCanvasStrategy<
       `class ${ctorName}$$advised {}`,
       compiledConstructor.toString.bind(compiledConstructor),
     );
+
+    // enhanced method / props may have put their own metadata.
+    // iterate over enhanced properties & copy metadata from them.
+    const enhancedPropertyKeys = [
+      ...ctxt.target.declaringClass
+        .getMetadata(
+          '@ajs:weaver.enhanced-properties',
+          () => new Set<string | symbol>(),
+        )
+        .values(),
+    ];
+
+    _copyPropsAndMeta(
+      joinpoint,
+      compiledConstructor as unknown as (...args: any[]) => any,
+      enhancedPropertyKeys,
+    ); // copy static props
+
     joinpoint.prototype = ctxt.target.proto;
     joinpoint.prototype.constructor = joinpoint;
 
@@ -114,8 +167,8 @@ export class JitClassCanvasStrategy<
   }
 
   protected override callAdvice(
-    adviceEntry: AdviceEntry<PointcutType.CLASS>,
-    ctxt: MutableAdviceContext<PointcutType.CLASS>,
+    adviceEntry: AdviceEntry<PointcutKind.CLASS>,
+    ctxt: MutableAdviceContext<PointcutKind.CLASS>,
     args: unknown[],
     allowReturn = true,
   ): unknown {
@@ -132,9 +185,9 @@ export class JitClassCanvasStrategy<
  * Void instance, as instance is not reliable before the actual call of the constructor
  */
 function withNullInstance<X>(
-  ctxt: MutableAdviceContext<PointcutType.CLASS, X>,
-): MutableAdviceContext<PointcutType.CLASS, X> {
-  return new MutableAdviceContext<PointcutType.CLASS, X>({
+  ctxt: MutableAdviceContext<PointcutKind.CLASS, X>,
+): MutableAdviceContext<PointcutKind.CLASS, X> {
+  return new MutableAdviceContext<PointcutKind.CLASS, X>({
     ...ctxt,
     instance: null,
   });

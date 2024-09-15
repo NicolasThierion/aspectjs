@@ -2,10 +2,11 @@ import {
   ConstructorType,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -22,13 +23,23 @@ import { _ClassAnnotationTargetImpl } from './class-annotation-target.impl';
 let _globalTargetId = 0;
 
 export class _PropertyAnnotationTargetImpl<X>
-  extends _AnnotationTargetImpl<AnnotationType.PROPERTY, X>
+  extends _AnnotationTargetImpl<AnnotationKind.PROPERTY, X>
   implements PropertyAnnotationTarget<X>
 {
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto, this.propertyKey);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, this.propertyKey, defaultvalue);
+  }
+
   readonly propertyKey: string | symbol;
   readonly descriptor: PropertyDescriptor;
-  override [BOUND_INSTANCE_SYMBOL]?: X;
-  override [BOUND_VALUE_SYMBOL]?: () => unknown;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: () => unknown;
 
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
   private constructor(
@@ -39,7 +50,7 @@ export class _PropertyAnnotationTargetImpl<X>
     isStatic: boolean,
   ) {
     super(
-      AnnotationType.PROPERTY,
+      AnnotationKind.PROPERTY,
       proto,
       String(propertyKey),
       `${isStatic ? 'static ' : ''}property ${proto.constructor.name}.${String(
@@ -87,6 +98,11 @@ export class _PropertyAnnotationTargetImpl<X>
         ),
     );
   }
+
+  asDecoratorArgs() {
+    return [this.proto, this.propertyKey];
+  }
+
   get declaringClass() {
     if (this._declaringClassTarget) {
       return this._declaringClassTarget;
@@ -103,9 +119,6 @@ export class _PropertyAnnotationTargetImpl<X>
     return this._declaringClassTarget;
   }
 
-  get parent() {
-    return this.declaringClass;
-  }
   get parentClass() {
     return this.declaringClass.parentClass;
   }

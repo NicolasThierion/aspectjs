@@ -1,14 +1,12 @@
 import { ReflectContext } from './reflect.context';
 
-let _context = new ReflectContext();
-
 /**
  * Get the reflect context.
  * @internal
  * @returns The reflect context.
  */
 export const reflectContext = () => {
-  return _context;
+  return (globalThis as any).__reflectContext as ReflectContext;
 };
 
 /**
@@ -18,4 +16,6 @@ export const reflectContext = () => {
  * @returns
  */
 export const _setReflectContext = (context: ReflectContext) =>
-  (_context = context);
+  ((globalThis as any).__reflectContext = context);
+
+_setReflectContext(reflectContext() ?? new ReflectContext());

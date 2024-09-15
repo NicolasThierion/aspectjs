@@ -3,14 +3,14 @@ import 'jest-extended/all';
 import { Before } from '../before/before.annotation';
 import { AfterReturnContext } from './after-return.context';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { AfterReturn } from './after-return.annotation';
 
@@ -22,11 +22,11 @@ describe('class advice', () => {
   let aaspect: any;
   let baspect: any;
   const AClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'AClass',
   );
   const BClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'BClass',
   );
   let weaver: JitWeaver;
@@ -186,7 +186,7 @@ describe('class advice', () => {
             constructor(public labels = ['A']) {}
           }
           afterReturnA1 = jest.fn(function (
-            ctxt: AfterReturnContext<PointcutType.CLASS, A>,
+            ctxt: AfterReturnContext<PointcutKind.CLASS, A>,
           ) {
             ctxt.instance.labels = ['B'];
           });
@@ -237,10 +237,8 @@ describe('class advice', () => {
           constructor(public labels = ['A']) {}
         }
         afterReturnA1 = jest.fn((ctxt: AfterReturnContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aclassAnnotationContext = ctxt.annotations
-            .filter(AClass)
-            .find()[0]!;
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aclassAnnotationContext = ctxt.annotations(AClass).find()[0]!;
           expect(aclassAnnotationContext).toBeTruthy();
           expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
         });

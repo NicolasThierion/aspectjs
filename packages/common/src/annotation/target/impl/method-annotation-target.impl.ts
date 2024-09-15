@@ -3,10 +3,11 @@ import {
   MethodPropertyDescriptor,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -22,13 +23,13 @@ import { _ClassAnnotationTargetImpl } from './class-annotation-target.impl';
 let _globalTargetId = 0;
 
 export class _MethodAnnotationTargetImpl<X>
-  extends _AnnotationTargetImpl<AnnotationType.METHOD, X>
+  extends _AnnotationTargetImpl<AnnotationKind.METHOD, X>
   implements MethodAnnotationTarget<X>
 {
   readonly propertyKey: string | symbol;
   readonly descriptor: MethodPropertyDescriptor;
-  protected override [BOUND_INSTANCE_SYMBOL]?: X;
-  protected override [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
 
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
 
@@ -40,7 +41,7 @@ export class _MethodAnnotationTargetImpl<X>
     isStatic: boolean,
   ) {
     super(
-      AnnotationType.METHOD,
+      AnnotationKind.METHOD,
       proto,
       String(propertyKey),
       `${isStatic ? 'static ' : ''}method ${proto.constructor.name}.${String(
@@ -51,6 +52,16 @@ export class _MethodAnnotationTargetImpl<X>
     );
     this.propertyKey = propertyKey;
     this.descriptor = descriptor;
+  }
+
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto, this.propertyKey);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, this.propertyKey, defaultvalue);
   }
 
   static of<X>(
@@ -84,6 +95,10 @@ export class _MethodAnnotationTargetImpl<X>
     );
   }
 
+  asDecoratorArgs() {
+    return [this.proto, this.propertyKey, this.descriptor];
+  }
+
   get declaringClass() {
     if (this._declaringClassTarget) {
       return this._declaringClassTarget;
@@ -98,11 +113,8 @@ export class _MethodAnnotationTargetImpl<X>
 
     return this._declaringClassTarget;
   }
-  get parent() {
-    return this.declaringClass;
-  }
   override get parentClass() {
-    return this.declaringClass.parent;
+    return this.declaringClass.parentClass;
   }
 
   override _bind(instance: X): MethodAnnotationTarget<X> {

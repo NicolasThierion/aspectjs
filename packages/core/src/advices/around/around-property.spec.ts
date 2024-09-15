@@ -2,14 +2,14 @@ import 'jest-extended';
 import 'jest-extended/all';
 import { Before } from '../before/before.annotation';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { JoinPoint } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Around } from './around.annotation';
@@ -23,11 +23,11 @@ describe('property advice', () => {
   let baspect: any;
   let getterImpl: any;
   const AProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     'AProperty',
   );
   const BProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     'BProperty',
   );
   let weaver: JitWeaver;
@@ -45,7 +45,7 @@ describe('property advice', () => {
     class AAspect {
       @Around(on.properties.withAnnotations(...aanotations))
       applyAround(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA.bind(this)(ctxt, ...args);
@@ -53,7 +53,7 @@ describe('property advice', () => {
 
       @Around(on.properties.withAnnotations(...aanotations))
       applyAround2(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceB.bind(this)(ctxt, ...args);
@@ -61,7 +61,7 @@ describe('property advice', () => {
 
       @Before(on.properties.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return beforeAdvice.bind(this)(ctxt, ...args);
@@ -72,7 +72,7 @@ describe('property advice', () => {
     class BAspect {
       @Around(on.properties.withAnnotations(...bannotations))
       applyAround(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA.bind(this)(ctxt, ...args);
@@ -94,7 +94,10 @@ describe('property advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
@@ -139,7 +142,10 @@ describe('property advice', () => {
     it('calls through the advice once', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       expect(aroundAdviceA).not.toHaveBeenCalled();
@@ -170,17 +176,22 @@ describe('property advice', () => {
       it('returns undefined', () => {
         class A {
           @AProperty()
-          labels = ['a'];
+          declare labels: string[];
+
+          constructor() {
+            this.labels = ['a'];
+          }
         }
 
-        expect(new A().labels).toBe(undefined);
+        const a = new A();
+        expect(a.labels).toBe(undefined);
         expect(aroundAdviceA).toHaveBeenCalled();
       });
     });
 
     describe('when the joinpoint is called', () => {
       beforeEach(() => {
-        aroundAdviceA = jest.fn((ctxt: AroundContext<PointcutType.CLASS>) => {
+        aroundAdviceA = jest.fn((ctxt: AroundContext<PointcutKind.CLASS>) => {
           return ctxt.joinpoint(...ctxt.args);
         });
       });
@@ -207,7 +218,10 @@ describe('property advice', () => {
         const newVal = 'newVal';
         class A {
           @AProperty()
-          labels = ['a'];
+          declare labels: string[];
+          constructor() {
+            this.labels = ['a'];
+          }
         }
         aroundAdviceA = jest.fn(function (this: any) {
           return newVal;
@@ -222,7 +236,10 @@ describe('property advice', () => {
     it('does not interfere with property setter', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       const a = new A();
@@ -250,7 +267,11 @@ describe('property advice', () => {
         it('should call them nested, in declaration order', () => {
           class A {
             @AProperty()
-            labels = ['a'];
+            declare labels: string[];
+
+            constructor() {
+              this.labels = ['a'];
+            }
           }
 
           new A().labels;
@@ -265,7 +286,10 @@ describe('property advice', () => {
       it('has context.instance = the class instance', () => {
         class A {
           @AProperty()
-          labels = ['a'];
+          declare labels: string[];
+          constructor() {
+            this.labels = ['a'];
+          }
         }
         aroundAdviceA = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
@@ -284,9 +308,9 @@ describe('property advice', () => {
           labels = ['a'];
         }
         aroundAdviceA = jest.fn((ctxt: AroundContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aPropertyAnnotationContext = ctxt.annotations
-            .filter(AProperty)
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aPropertyAnnotationContext = ctxt
+            .annotations(AProperty)
             .find()[0];
           expect(aPropertyAnnotationContext).toBeTruthy();
           expect(aPropertyAnnotationContext?.args).toEqual(['annotationArg']);

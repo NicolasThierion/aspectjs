@@ -1,4 +1,4 @@
-import { assert, isUndefined } from '@aspectjs/common/utils';
+import { assert, isAbstractToken, isUndefined } from '@aspectjs/common/utils';
 import { JoinPoint } from './../../advice/joinpoint';
 
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
@@ -11,53 +11,51 @@ import type {
   WeaverCanvasStrategy,
 } from '../../weaver/canvas/canvas-strategy.type';
 
-import { AdviceType } from '../../advice/advice-type.type';
+import { AdviceKind } from '../../advice/advice-type.type';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
 import type { AdviceEntry } from '../../advice/registry/advice-entry.model';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import { WeavingError } from '../../errors/weaving.error';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import type { WeaverContext } from '../../weaver/context/weaver.context';
 import { JoinPointFactory } from '../joinpoint.factory';
 export abstract class JitWeaverCanvasStrategy<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
 > implements WeaverCanvasStrategy<T, X>
 {
   constructor(
     protected readonly weaverContext: WeaverContext,
-    public readonly pointcutTypes: T[],
+    public readonly advices: AdvicesSelection,
+    public readonly pointcutKinds: T[],
   ) {}
 
   abstract compile(
     ctxt: MutableAdviceContext<T, X>,
-    selection: AdvicesSelection,
   ): CompiledSymbol<T, X> | undefined;
 
-  before(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
+  before(ctxt: MutableAdviceContext<T, X>): void {
     this._applyNotReturn(
       ctxt,
       () => ctxt.asBeforeContext(),
-      selection.find(this.pointcutTypes, [AdviceType.BEFORE]),
+      this.advices.find(this.pointcutKinds, [AdviceKind.BEFORE]),
     );
   }
 
-  after(ctxt: MutableAdviceContext<T, X>, selection: AdvicesSelection): void {
+  after(ctxt: MutableAdviceContext<T, X>): void {
     this._applyNotReturn(
       ctxt,
 
       () => ctxt.asAfterContext(),
-      selection.find(this.pointcutTypes, [AdviceType.AFTER]),
+      this.advices.find(this.pointcutKinds, [AdviceKind.AFTER]),
     );
   }
 
-  afterReturn(
-    ctxt: MutableAdviceContext<T, X>,
-    selection: AdvicesSelection,
-  ): T {
+  afterReturn(ctxt: MutableAdviceContext<T, X>): unknown {
     const advices = [
-      ...selection.find(this.pointcutTypes, [AdviceType.AFTER_RETURN]),
+      ...this.advices.find(this.pointcutKinds, [AdviceKind.AFTER_RETURN]),
     ];
     if (!advices.length) {
-      return ctxt.value as T;
+      return ctxt.value;
     }
 
     advices.forEach((advice) => {
@@ -69,16 +67,12 @@ export abstract class JitWeaverCanvasStrategy<
       ]);
     });
 
-    return ctxt.value as T;
+    return ctxt.value;
   }
 
-  afterThrow(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesSelection: AdvicesSelection,
-    allowReturn = true,
-  ): any {
+  afterThrow(ctxt: MutableAdviceContext<T, X>, allowReturn = true): any {
     const adviceEntries = [
-      ...advicesSelection.find(this.pointcutTypes, [AdviceType.AFTER_THROW]),
+      ...this.advices.find(this.pointcutKinds, [AdviceKind.AFTER_THROW]),
     ];
 
     if (!adviceEntries.length) {
@@ -112,13 +106,9 @@ export abstract class JitWeaverCanvasStrategy<
     return ctxt.value;
   }
 
-  around(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-    allowReturn = true,
-  ): JoinPoint {
+  around(ctxt: MutableAdviceContext<T, X>, allowReturn = true): JoinPoint {
     const advices = [
-      ...advicesEntries.find(this.pointcutTypes, [AdviceType.AROUND]),
+      ...this.advices.find(this.pointcutKinds, [AdviceKind.AROUND]),
     ];
     if (!advices.length) {
       return ctxt.joinpoint!;
@@ -151,6 +141,16 @@ export abstract class JitWeaverCanvasStrategy<
     return jp;
   }
 
+  handleReturnValue(ctxt: MutableAdviceContext<T, X>, returnValue: any) {
+    ctxt.value = returnValue;
+    if (isAbstractToken(returnValue)) {
+      throw new WeavingError(
+        `${ctxt.target} returned "abstract()" token. "abstract()" is meant to be superseded by a @AfterReturn advice or an @Around advice.`,
+      );
+    }
+
+    return returnValue;
+  }
   abstract callJoinpoint(
     ctxt: MutableAdviceContext<T, X>,
     originalSymbol: CompiledSymbol<T, X>,

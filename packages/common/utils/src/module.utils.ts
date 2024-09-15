@@ -3,6 +3,7 @@ import { ReflectModuleConfiguration } from '../../src/reflect/module/reflect-mod
 import { ReflectProvider } from '../../src/reflect/reflect-provider.type';
 
 export function getProviders(m: unknown): ReflectProvider[] {
+  assert(!!m);
   const config: ReflectModuleConfiguration = (m as any)[Symbol.for('@ajs:rmd')];
   if (!config) {
     throw new TypeError(`object ${m} is not a module`);

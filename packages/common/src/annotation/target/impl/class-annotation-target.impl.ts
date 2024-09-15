@@ -2,10 +2,11 @@ import {
   ConstructorType,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -19,17 +20,16 @@ import {
 let _globalTargetId = 0;
 
 export class _ClassAnnotationTargetImpl<X = unknown>
-  extends _AnnotationTargetImpl<AnnotationType.CLASS, X>
+  extends _AnnotationTargetImpl<AnnotationKind.CLASS, X>
   implements ClassAnnotationTarget<X>
 {
-  protected override [BOUND_INSTANCE_SYMBOL]?: X;
-  protected override [BOUND_VALUE_SYMBOL]?: X;
-  override proto!: Prototype<X>;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: X;
   private _parentClass?: ClassAnnotationTarget;
 
   private constructor(proto: Prototype<X>, ref: AnnotationTargetRef) {
     super(
-      AnnotationType.CLASS,
+      AnnotationKind.CLASS,
       proto,
       proto.constructor.name,
       `class ${proto.constructor.name}`,
@@ -39,6 +39,16 @@ export class _ClassAnnotationTargetImpl<X = unknown>
 
   get value() {
     return this.proto;
+  }
+
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, defaultvalue);
   }
 
   static of<X>(decoree: ConstructorType<X>) {
@@ -56,6 +66,10 @@ export class _ClassAnnotationTargetImpl<X = unknown>
           new AnnotationTargetRef(`${ref}#${_globalTargetId++}`),
         ),
     );
+  }
+
+  asDecoratorArgs() {
+    return [this.proto.constructor];
   }
 
   public get declaringClass() {
@@ -84,10 +98,6 @@ export class _ClassAnnotationTargetImpl<X = unknown>
 
     this._parentClass = parentClass;
     return parentClass;
-  }
-
-  get parent(): ClassAnnotationTarget<any> | undefined {
-    return this.parentClass;
   }
 
   override _bind(instance: X): ClassAnnotationTarget<X> {

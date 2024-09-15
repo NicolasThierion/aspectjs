@@ -7,7 +7,6 @@
     "types": ["jest", "node"],
     "emitDecoratorMetadata": true,
     "lib": ["DOM", "ES2018", "ES2019.Array"],
-    "module": "nodenext",
     "paths": {
       "*": ["node_modules/*", "src/*"],
       "@aspectjs/persistence": ["./src/public_api.ts"],

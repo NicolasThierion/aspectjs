@@ -1,5 +1,5 @@
 import { MethodPropertyDescriptor, Prototype } from '@aspectjs/common/utils';
-import type { AnnotationType } from '../annotation.types';
+import type { AnnotationKind } from '../annotation.types';
 
 /**
  * @internal
@@ -15,10 +15,10 @@ export class AnnotationTargetRef {
  * @internal
  */
 export interface BaseAnnotationTarget<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   X = unknown,
 > {
-  readonly type: T;
+  readonly kind: T;
   readonly proto: Prototype<X>;
   readonly name: string;
   readonly label: string;
@@ -26,8 +26,16 @@ export interface BaseAnnotationTarget<
   readonly declaringClass: ClassAnnotationTarget<X>;
   readonly parentClass: ClassAnnotationTarget<unknown> | undefined;
   readonly static: boolean;
+  asDecoratorArgs(): any[];
 
   eval(): unknown;
+
+  defineMetadata(key: string, value: any): void;
+  getMetadata<T extends unknown>(key: string, defaultvalue: () => T): T;
+  getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: () => T,
+  ): T | undefined;
 }
 
 /**
@@ -35,8 +43,8 @@ export interface BaseAnnotationTarget<
  * @param X the type of the class
  */
 export interface ClassAnnotationTarget<X = unknown>
-  extends BaseAnnotationTarget<AnnotationType.CLASS, X> {
-  readonly parent?: ClassAnnotationTarget<unknown>;
+  extends BaseAnnotationTarget<AnnotationKind.CLASS, X> {
+  readonly parentClass: ClassAnnotationTarget<unknown> | undefined;
   readonly static: boolean;
 }
 
@@ -45,9 +53,9 @@ export interface ClassAnnotationTarget<X = unknown>
  * @param X the type of the property's class
  */
 export interface PropertyAnnotationTarget<X = unknown>
-  extends BaseAnnotationTarget<AnnotationType.PROPERTY, X> {
+  extends BaseAnnotationTarget<AnnotationKind.PROPERTY, X> {
   readonly propertyKey: string | symbol;
-  readonly parent: ClassAnnotationTarget<unknown>;
+  readonly declaringClass: ClassAnnotationTarget<X>;
   readonly descriptor?: TypedPropertyDescriptor<unknown>;
   readonly static: boolean;
 }
@@ -57,10 +65,10 @@ export interface PropertyAnnotationTarget<X = unknown>
  * @param X the type of the method's class
  */
 export interface MethodAnnotationTarget<X = unknown>
-  extends BaseAnnotationTarget<AnnotationType.METHOD, X> {
+  extends BaseAnnotationTarget<AnnotationKind.METHOD, X> {
   readonly propertyKey: string | symbol;
   readonly descriptor: MethodPropertyDescriptor;
-  readonly parent: ClassAnnotationTarget<X>;
+  readonly declaringClass: ClassAnnotationTarget<X>;
   readonly static: boolean;
 }
 
@@ -69,11 +77,12 @@ export interface MethodAnnotationTarget<X = unknown>
  * @param X the type of the parameter's class
  */
 export interface ParameterAnnotationTarget<X = unknown>
-  extends BaseAnnotationTarget<AnnotationType.PARAMETER, X> {
+  extends BaseAnnotationTarget<AnnotationKind.PARAMETER, X> {
   readonly propertyKey: string | symbol;
   readonly parameterIndex: number;
   readonly descriptor: MethodPropertyDescriptor;
-  readonly parent: MethodAnnotationTarget<X>;
+  readonly declaringMethod: MethodAnnotationTarget<X>;
+  readonly declaringClass: ClassAnnotationTarget<X>;
   readonly static: boolean;
 }
 
@@ -83,14 +92,14 @@ export interface ParameterAnnotationTarget<X = unknown>
  * @param X The type of the class that target belongs to.
  */
 export type AnnotationTarget<
-  T extends AnnotationType = AnnotationType,
+  T extends AnnotationKind = AnnotationKind,
   X = unknown,
-> = T extends AnnotationType.CLASS
+> = T extends AnnotationKind.CLASS
   ? ClassAnnotationTarget<X>
-  : T extends AnnotationType.PARAMETER
+  : T extends AnnotationKind.PARAMETER
   ? ParameterAnnotationTarget<X>
-  : T extends AnnotationType.METHOD
+  : T extends AnnotationKind.METHOD
   ? MethodAnnotationTarget<X>
-  : T extends AnnotationType.PROPERTY
+  : T extends AnnotationKind.PROPERTY
   ? PropertyAnnotationTarget<X>
   : never;

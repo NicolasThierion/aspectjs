@@ -4,7 +4,7 @@ import { TypeOrmDataSourceDefinition } from './typeorm-datasource-definition';
 import { TypeOrmTransactionManager } from './typeorm-transaction-manager';
 
 export class TypeOrmTransactionalAspect extends TransactionalAspect {
-  override readonly transactionManager!: TransactionManager;
+  declare readonly transactionManager: TransactionManager;
   constructor(
     transactionManager: TransactionManager = new TypeOrmTransactionManager(),
   ) {

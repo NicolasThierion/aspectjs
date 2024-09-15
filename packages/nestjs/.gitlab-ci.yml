@@ -1,0 +1,43 @@
+include:
+  - ci-templates/node.yml
+
+nestjs:lint:
+  variables:
+    CWD: packages/nestjs
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+nestjs:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/nestjs
+  stage: test
+  needs:
+    - node:prepare
+
+nestjs:build:
+  extends: .node:build
+  variables:
+    CWD: packages/nestjs
+  stage: compile
+  needs:
+    - node:prepare
+
+nestjs:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: publish
+  variables:
+    CWD: packages/nestjs
+    PACKAGE_DIR: ./dist
+
+nestjs:publish:npm:
+  extends: .node:npm:publish
+  stage: release
+  variables:
+    CWD: packages/nestjs
+    PACKAGE_DIR: ./dist
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual

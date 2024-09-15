@@ -1,7 +1,9 @@
-import { BoundAnnotationsByTypeSelection } from '@aspectjs/common';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import { AnnotationsByRefSelector } from '@aspectjs/common';
+import type {
+  PointcutKind,
+  ToAnnotationKind,
+} from '../../pointcut/pointcut-kind.type';
 import type { AdviceTarget } from './../../advice/advice-target.type';
-import type { ToAnnotationType } from './../../pointcut/pointcut-target.type';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AfterReturnAdvice } from './after-return.type';
@@ -10,11 +12,14 @@ import type { AfterReturnAdvice } from './after-return.type';
  * Execution context passed to advices of type {@link AfterReturnAdvice}
  */
 export interface AfterReturnContext<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
 > {
   /** The annotation contexts **/
-  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>>;
+  readonly annotations: AnnotationsByRefSelector<
+    ToAnnotationKind<T>
+  >['annotations'];
+
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

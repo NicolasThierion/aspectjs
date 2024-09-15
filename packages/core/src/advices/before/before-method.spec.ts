@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -10,7 +10,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -22,11 +22,11 @@ describe('method advice', () => {
   let mImpl: any;
 
   const AMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
+    AnnotationKind.METHOD,
     'AMethod',
   );
   const BMethod = new AnnotationFactory('test').create(
-    AnnotationType.METHOD,
+    AnnotationKind.METHOD,
     'BMethod',
   );
   let weaver: JitWeaver;
@@ -44,7 +44,7 @@ describe('method advice', () => {
     class AAspect {
       @Before(on.methods.withAnnotations(...aannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.METHOD>,
+        ctxt: BeforeContext<PointcutKind.METHOD>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -55,7 +55,7 @@ describe('method advice', () => {
     class BAspect {
       @Before(on.methods.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.METHOD>,
+        ctxt: BeforeContext<PointcutKind.METHOD>,
         ...args: unknown[]
       ): void {
         return badvice.bind(this)(ctxt, ...args);
@@ -281,10 +281,8 @@ describe('method advice', () => {
           }
         }
         aadvice = jest.fn((ctxt: BeforeContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aMethodAnnotationContext = ctxt.annotations
-            .filter(AMethod)
-            .find()[0];
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aMethodAnnotationContext = ctxt.annotations(AMethod).find()[0];
           expect(aMethodAnnotationContext).toBeTruthy();
           expect(aMethodAnnotationContext?.args).toEqual(['annotationArg']);
           expect(aMethodAnnotationContext?.target.eval()).toBe(A.prototype.m);

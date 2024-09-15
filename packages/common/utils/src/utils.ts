@@ -1,9 +1,10 @@
 import type { Annotation } from '../../src/annotation/annotation.types';
+import { Prototype } from './types.util';
 
 export function getPrototype(
   // eslint-disable-next-line @typescript-eslint/ban-types
   target: Record<string, any> | Function | undefined,
-): Record<string, any> & { constructor?: new (...args: any[]) => any } {
+): Prototype<any> {
   if (isFunction(target)) {
     return target.prototype;
   } else if (target === null || target === undefined) {
@@ -31,7 +32,7 @@ export function isFunction(
 }
 
 export function isObject(value: unknown): value is object {
-  return typeof value === 'object' && !(value instanceof Array);
+  return typeof value === 'object' && !Array.isArray(value);
 }
 
 export function isNumber(value: unknown): value is number {

@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -9,7 +9,7 @@ import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AdviceError } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
@@ -21,10 +21,10 @@ describe('property get advice', () => {
   let baspect: any;
   const af = new AnnotationFactory('test');
   const AProperty = af.create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     function AProperty(..._args: any[]) {},
   );
-  const BProperty = af.create(AnnotationType.PROPERTY, function BProperty() {});
+  const BProperty = af.create(AnnotationKind.PROPERTY, function BProperty() {});
   let weaver: JitWeaver;
 
   beforeEach(() => {
@@ -34,12 +34,15 @@ describe('property get advice', () => {
     advice = jest.fn();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
   function setupAspects(aanotations: any[] = [], bannotations: any[] = []) {
     @Aspect('APropertyAspect')
     class AAspect {
       @Before(on.properties.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -49,7 +52,7 @@ describe('property get advice', () => {
     class BAspect {
       @Before(on.properties.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return advice.bind(this)(ctxt, ...args);
@@ -64,11 +67,17 @@ describe('property get advice', () => {
 
   describe('on pointcut @Before(on.properties.withAnnotations()', () => {
     beforeEach(() => setupAspects());
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        declare prop: string;
+        constructor() {
+          this.prop = 'p';
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -88,7 +97,7 @@ describe('property get advice', () => {
       class AAspect {
         @Before(on.properties.withAnnotations(AProperty))
         applyBefore(
-          ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+          ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
           ...args: unknown[]
         ): void {
           return advice.bind(this)(ctxt, ...args);
@@ -102,7 +111,10 @@ describe('property get advice', () => {
     it('has a "this"  bound to the aspect instance', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        declare prop: string;
+        constructor() {
+          this.prop = 'p';
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -142,7 +154,10 @@ describe('property get advice', () => {
     it('is not allowed to return', () => {
       class A {
         @AProperty()
-        prop = 'p';
+        declare prop: string;
+        constructor() {
+          this.prop = 'p';
+        }
       }
 
       expect(advice).not.toHaveBeenCalled();
@@ -166,13 +181,16 @@ describe('property get advice', () => {
     it('can write the property without any issue', () => {
       class A {
         @AProperty()
-        labels = ['a'];
+        declare labels: string[];
+        constructor() {
+          this.labels = ['a'];
+        }
       }
 
       const a = new A();
       advice = jest.fn(function (
         this: any,
-        _ctxt: BeforeContext<PointcutType.GET_PROPERTY>,
+        _ctxt: BeforeContext<PointcutKind.GET_PROPERTY>,
       ) {
         expect(this).toBe(aaspect);
         a.labels = ['a', 'B'];
@@ -191,7 +209,7 @@ describe('property get advice', () => {
       it('has context.instance = the instance that owns the property', () => {
         class A {
           @AProperty()
-          prop?: string;
+          declare prop: string;
         }
         advice = jest.fn((ctxt) => {
           thisInstance = ctxt.instance;
@@ -205,7 +223,11 @@ describe('property get advice', () => {
       it('has context.target.eval() = the value of the property', () => {
         class A {
           @AProperty()
-          prop: string = 'a';
+          declare prop: string;
+
+          constructor() {
+            this.prop = 'a';
+          }
         }
         advice = jest.fn((ctxt: BeforeContext) => {
           expect(ctxt.target.eval()).toEqual('a');
@@ -223,10 +245,8 @@ describe('property get advice', () => {
           prop?: string;
         }
         advice = jest.fn((ctxt: BeforeContext) => {
-          expect(ctxt.annotations.find().length).toEqual(2);
-          const aclassAnnotationContext = ctxt.annotations
-            .filter(AProperty)
-            .find()[0];
+          expect(ctxt.annotations().find().length).toEqual(2);
+          const aclassAnnotationContext = ctxt.annotations(AProperty).find()[0];
 
           expect(advice).toHaveBeenCalled();
           expect(aclassAnnotationContext).toBeTruthy();

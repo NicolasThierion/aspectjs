@@ -2,14 +2,14 @@ import 'jest-extended';
 import 'jest-extended/all';
 import { Before } from './../before/before.annotation';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { JoinPoint } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Around } from './around.annotation';
@@ -23,11 +23,11 @@ describe('class advice', () => {
   let baspect: any;
   let ctorImpl: any;
   const AClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'AClass',
   );
   const BClass = new AnnotationFactory('test').create(
-    AnnotationType.CLASS,
+    AnnotationKind.CLASS,
     'BClass',
   );
   let weaver: JitWeaver;
@@ -45,7 +45,7 @@ describe('class advice', () => {
     class AAspect {
       @Around(on.classes.withAnnotations(...aanotations))
       applyAround(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA.bind(this)(ctxt, ...args);
@@ -53,7 +53,7 @@ describe('class advice', () => {
 
       @Around(on.classes.withAnnotations(...aanotations))
       applyAround2(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceB.bind(this)(ctxt, ...args);
@@ -61,7 +61,7 @@ describe('class advice', () => {
 
       @Before(on.classes.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return beforeAdvice.bind(this)(ctxt, ...args);
@@ -72,7 +72,7 @@ describe('class advice', () => {
     class BAspect {
       @Around(on.classes.withAnnotations(...bannotations))
       applyAround(
-        ctxt: AroundContext<PointcutType.CLASS>,
+        ctxt: AroundContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return aroundAdviceA.bind(this)(ctxt, ...args);
@@ -199,7 +199,7 @@ describe('class advice', () => {
 
     describe('when the joinpoint is called', () => {
       beforeEach(() => {
-        aroundAdviceA = jest.fn((ctxt: AroundContext<PointcutType.CLASS>) => {
+        aroundAdviceA = jest.fn((ctxt: AroundContext<PointcutKind.CLASS>) => {
           return ctxt.joinpoint(...ctxt.args);
         });
       });
@@ -296,12 +296,9 @@ describe('class advice', () => {
           constructor() {}
         }
         aroundAdviceA = jest.fn(
-          (ctxt: AroundContext<PointcutType.CLASS, A>) => {
-            expect(ctxt.annotations.find().length).toEqual(2);
-            const aclassAnnotationContext = ctxt.annotations
-              .filter(AClass)
-              .find()[0];
-            console.log(aclassAnnotationContext?.target.eval());
+          (ctxt: AroundContext<PointcutKind.CLASS, A>) => {
+            expect(ctxt.annotations().find().length).toEqual(2);
+            const aclassAnnotationContext = ctxt.annotations(AClass).find()[0];
             expect(aclassAnnotationContext).toBeTruthy();
             expect(aclassAnnotationContext?.args).toEqual(['annotationArg']);
             expect(aclassAnnotationContext!.target.eval()).toBeInstanceOf(A);

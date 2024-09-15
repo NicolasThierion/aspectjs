@@ -8,7 +8,7 @@ import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Around } from './around.annotation';
 import { AroundContext } from './around.context';
@@ -33,7 +33,7 @@ describe('@Around advice', () => {
           on.classes.withAnnotations(AAnnotation),
         )
         applyAround(
-          ctxt: AroundContext<PointcutType.CLASS>,
+          ctxt: AroundContext<PointcutKind.CLASS>,
           ...args: unknown[]
         ): void {
           return aroundAdvice.bind(this)(ctxt, ...args);

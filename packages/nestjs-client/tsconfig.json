@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts", "./index.ts"],
+  "compilerOptions": {
+    "lib": ["DOM", "ES2015", "ES2021"],
+    "useDefineForClassFields": false,
+    "paths": {
+      "httyped-client": ["../httyped-client/index.ts"]
+    }
+  }
+}

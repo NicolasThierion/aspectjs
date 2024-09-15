@@ -1,7 +1,7 @@
 import {
-  AnnotationRegistry,
+  AnnotationContextRegistry,
+  AnnotationKind,
   AnnotationTargetFactory,
-  AnnotationType,
 } from '@aspectjs/common';
 import { getPrototype } from '@aspectjs/common/utils';
 import { Order } from '../annotations/order.annotation';
@@ -9,7 +9,7 @@ import { AdviceEntry } from './registry/advice-entry.model';
 
 export class AdviceSorter {
   constructor(
-    private readonly annotationRegistry: AnnotationRegistry,
+    private readonly annotationContextRegistry: AnnotationContextRegistry,
     private readonly annotationTargetFactory: AnnotationTargetFactory,
   ) {}
 
@@ -48,11 +48,11 @@ export class AdviceSorter {
       entry.advice.name,
     );
 
-    return this.annotationRegistry
+    return this.annotationContextRegistry
       .select(Order)
       .on({
         target: adviceTarget,
-        types: [AnnotationType.CLASS, AnnotationType.METHOD],
+        types: [AnnotationKind.CLASS, AnnotationKind.METHOD],
       })
       .find({
         searchParents: true,

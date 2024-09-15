@@ -1,13 +1,13 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
-import { AdviceError, PointcutType } from '../../public_api';
+import { AdviceError, PointcutKind } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import { Compile } from './compile.annotation';
 import { CompileContext } from './compile.context';
@@ -20,11 +20,11 @@ describe('property advice', () => {
   let baspect: any;
   let methodImpl: any;
   const AProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     'AProperty',
   );
   const BProperty = new AnnotationFactory('test').create(
-    AnnotationType.PROPERTY,
+    AnnotationKind.PROPERTY,
     'BProperty',
   );
   let weaver: JitWeaver;
@@ -41,7 +41,7 @@ describe('property advice', () => {
     class AAspect {
       @Compile(on.properties.withAnnotations(...aanotations))
       applyCompile(
-        ctxt: CompileContext<PointcutType.GET_PROPERTY>,
+        ctxt: CompileContext<PointcutKind.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return compileAdviceA.bind(this)(ctxt, ...args);
@@ -52,7 +52,7 @@ describe('property advice', () => {
     class BAspect {
       @Compile(on.properties.withAnnotations(...bannotations))
       applyCompile(
-        ctxt: CompileContext<PointcutType.GET_PROPERTY>,
+        ctxt: CompileContext<PointcutKind.GET_PROPERTY>,
         ...args: unknown[]
       ): void {
         return compileAdviceB.bind(this)(ctxt, ...args);
@@ -122,7 +122,7 @@ describe('property advice', () => {
           expect(() => {
             class A {
               @AProperty()
-              prop = 'A';
+              declare prop: string;
             }
           }).toThrow(AdviceError);
         });
@@ -140,7 +140,10 @@ describe('property advice', () => {
           });
           class A {
             @AProperty()
-            prop = 'A';
+            declare prop: string;
+            constructor() {
+              this.prop = 'A';
+            }
             get m(): any {
               return;
             }
@@ -165,13 +168,13 @@ describe('property advice', () => {
           constructor() {}
         }
         compileAdviceA = jest.fn(
-          (ctxt: CompileContext<PointcutType.CLASS, A>) => {
-            expect(ctxt.annotations.find().length).toEqual(2);
-            const aclassAnnotationContext = ctxt.annotations
-              .filter(AProperty)
+          (ctxt: CompileContext<PointcutKind.CLASS, A>) => {
+            expect(ctxt.annotations().find().length).toEqual(2);
+            const aclassAnnotationContext = ctxt
+              .annotations(AProperty)
               .find()[0];
-            const bclassAnnotationContext = ctxt.annotations
-              .filter(BProperty)
+            const bclassAnnotationContext = ctxt
+              .annotations(BProperty)
               .find()[0];
 
             expect(aclassAnnotationContext).toBeTruthy();

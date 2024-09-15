@@ -34,8 +34,7 @@
       "es2020": "./fesm2020/persistence.mjs",
       "node": "./cjs/persistence.cjs",
       "require": "./cjs/persistence.cjs",
-      "default": "./cjs/persistence.cjs",
-      "unpkg": "./umd/persistence.umd.js"
+      "default": "./cjs/persistence.cjs"
     },
     "./typeorm": {
       "types": "./typeorm/index.d.ts",
@@ -43,14 +42,12 @@
       "es2020": "./fesm2020/typeorm.mjs",
       "node": "./cjs/typeorm.cjs",
       "require": "./cjs/typeorm.cjs",
-      "default": "./cjs/typeorm.cjs",
-      "unpkg": "./umd/typeorm.umd.js"
+      "default": "./cjs/typeorm.cjs"
     }
   },
   "module": "./fesm2020/persistence.mjs",
-  "main": "./umd/persistence.umd.js",
+  "main": "./cjs/persistence.cjs",
   "devDependencies": {
-    "jest": "^29.7.0",
     "pg": "^8.11.2",
     "portfinder": "^1.0.32",
     "typeorm": "^0.3.17"

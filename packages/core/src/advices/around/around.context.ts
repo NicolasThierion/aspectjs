@@ -1,10 +1,10 @@
-import { BoundAnnotationsByTypeSelection } from '@aspectjs/common';
+import { AnnotationsByRefSelector } from '@aspectjs/common';
+import type {
+  PointcutKind,
+  ToAnnotationKind,
+} from '../../pointcut/pointcut-kind.type';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type { JoinPoint } from './../../advice/joinpoint';
-import type {
-  PointcutType,
-  ToAnnotationType,
-} from './../../pointcut/pointcut-target.type';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AroundAdvice } from './around.type';
@@ -13,11 +13,13 @@ import type { AroundAdvice } from './around.type';
  * Execution context passed to advices of type {@link AroundAdvice}
  */
 export interface AroundContext<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = object,
 > {
   /** The annotation contexts **/
-  readonly annotations: BoundAnnotationsByTypeSelection<ToAnnotationType<T>>;
+  readonly annotations: AnnotationsByRefSelector<
+    ToAnnotationKind<T>
+  >['annotations'];
   /** The 'this' instance bound to the current execution context **/
   readonly instance: X;
   /** the arguments originally passed to the joinpoint **/

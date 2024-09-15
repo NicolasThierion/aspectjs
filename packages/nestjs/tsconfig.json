@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["jest", "node"],
+    "emitDecoratorMetadata": true
+  },
+  "exclude": ["./dist", "./**/*.spec.ts"]
+}

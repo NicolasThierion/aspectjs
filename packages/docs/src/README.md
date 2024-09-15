@@ -18,18 +18,18 @@ features:
   - title: Node & Browser
     icon: globe
     details: Works both on Node and browser
-  # - title: Modular
-  #   icon: cubes
-  #   details: Works on both node and browser
+  - title: Modular
+    icon: cubes
+    details: Works on both node and browser
   - title: Plug and play
     icon: plug
     details: Install the packages, and start enhancing your existing code with aspects
-  - title: Light
-    icon: bolt
-    details: Less than 15kb minified
-  - title: Write better code
+  #- title: Lightweight
+  #  icon: bolt
+  #  details: Less than 15kb minified
+  - title: Cleaner, lesser code
     icon: link
-    details: Increase cohesion and reduce coupling with AOP
+    details: More cohesion and less boilerplate in your code
 
 copyright: false
 footer: Theme by <a href="https://theme-hope.vuejs.press/" target="_blank">VuePress Theme Hope</a> | MIT Licensed

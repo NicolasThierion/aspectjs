@@ -1,12 +1,13 @@
 import { assert, defineMetadata, getMetadata } from '@aspectjs/common/utils';
 
-import { PointcutType } from '../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { JitWeaverCanvasStrategy } from './jit-canvas.strategy';
 
 import { PropertyAnnotationTarget } from '@aspectjs/common';
-import { AdviceType } from '../../advice/advice-type.type';
+import { AdviceKind } from '../../advice/advice-type.type';
 import { JoinPoint } from '../../advice/joinpoint';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
+import { AdviceEntry } from '../../advice/registry/advice-entry.model';
 import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 import { AdviceError } from '../../errors/advice.error';
 import { CompiledSymbol } from '../../weaver/canvas/canvas-strategy.type';
@@ -18,37 +19,36 @@ import { CompiledCanvas, JitWeaverCanvas } from './jit-canvas.type';
 export class JitPropertyCanvasStrategy<
   X = unknown,
 > extends JitWeaverCanvasStrategy<
-  PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+  PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
   X
 > {
   private propertySetterStrategy: JitPropertySetCanvasStrategy<X>;
   propertySetterCanvas?: CompiledCanvas<
-    PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+    PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
     X
   >;
 
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.GET_PROPERTY]);
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutKind.GET_PROPERTY]);
     this.propertySetterStrategy = this.createPropertySetterStrategy();
   }
 
   compile(
     ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
-    selection: AdvicesSelection,
   ): PropertyDescriptor | undefined {
     this.propertySetterCanvas = new JitWeaverCanvas(
       this.propertySetterStrategy,
-    ).compile(new MutableAdviceContext<any, any>(ctxt), selection);
+    ).compile(new MutableAdviceContext<any, any>(ctxt));
 
     return this.propertySetterCanvas.compiledSymbol!;
   }
 
   override callJoinpoint(
     ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
     originalSymbol: PropertyDescriptor,
@@ -56,8 +56,8 @@ export class JitPropertyCanvasStrategy<
     assert(!!ctxt.args);
 
     assert(
-      this.pointcutTypes.includes(PointcutType.GET_PROPERTY) ||
-        this.pointcutTypes.includes(PointcutType.SET_PROPERTY),
+      this.pointcutKinds.includes(PointcutKind.GET_PROPERTY) ||
+        this.pointcutKinds.includes(PointcutKind.SET_PROPERTY),
     );
     assert(!ctxt.args?.length);
     ctxt.value = originalSymbol.get
@@ -68,11 +68,11 @@ export class JitPropertyCanvasStrategy<
 
   override link(
     ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
     compiledSymbol: CompiledSymbol<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
     getterJoinpoint: (...args: any[]) => unknown,
@@ -99,21 +99,21 @@ export class JitPropertyCanvasStrategy<
   }
 
   private createPropertySetterStrategy() {
-    return new JitPropertySetCanvasStrategy(this.weaverContext);
+    return new JitPropertySetCanvasStrategy(this.weaverContext, this.advices);
   }
 }
 
 class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
-  PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+  PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
   X
 > {
-  constructor(weaverContext: WeaverContext) {
-    super(weaverContext, [PointcutType.SET_PROPERTY]);
+  constructor(weaverContext: WeaverContext, advices: AdvicesSelection) {
+    super(weaverContext, advices, [PointcutKind.SET_PROPERTY]);
   }
 
   override callJoinpoint(
     ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
     originalSymbol: PropertyDescriptor,
@@ -129,12 +129,12 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
 
   override link(
     _ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
     compiledSymbol: PropertyDescriptor,
     joinpoint: JoinPoint,
-  ): CompiledSymbol<PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY, X> {
+  ): CompiledSymbol<PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY, X> {
     compiledSymbol = {
       ...compiledSymbol,
       set(...args: any[]) {
@@ -147,83 +147,123 @@ class JitPropertySetCanvasStrategy<X> extends JitWeaverCanvasStrategy<
   }
   override compile(
     ctxt: MutableAdviceContext<
-      PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY,
+      PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY,
       X
     >,
-    selection: AdvicesSelection,
-  ): CompiledSymbol<PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY, X> {
+  ): CompiledSymbol<PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY, X> {
     // if property already compiled, it might also be linked.
     // Use the last known compiled symbol as a reference to avoid linking twice.
-    let propertyDescriptor = getMetadata(
+    let propertyDescriptor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
-      ctxt.target.ref,
       () =>
         ctxt.target.descriptor ?? this.createPropertyDescriptor(ctxt.target),
-      true,
     );
 
     assert(!!ctxt.target.propertyKey);
     const target = ctxt.target;
 
-    const adviceEntries = [
-      ...selection.find([PointcutType.GET_PROPERTY], [AdviceType.COMPILE]),
-      ...selection.find([PointcutType.SET_PROPERTY], [AdviceType.COMPILE]),
-    ];
+    const findCompileAdvices = () => {
+      return [
+        ...new Set([
+          ...this.advices.find(
+            [PointcutKind.GET_PROPERTY],
+            [AdviceKind.COMPILE],
+          ),
+          ...this.advices.find(
+            [PointcutKind.SET_PROPERTY],
+            [AdviceKind.COMPILE],
+          ),
+        ]),
+      ];
+    };
 
-    adviceEntries
-      //  prevent calling them twice.
-      .filter((e) => !getMetadata('compiled', e, () => false))
-      .forEach((entry) => {
-        assert(typeof entry.advice === 'function');
-        const descriptor = entry.advice.call(
-          entry.aspect,
-          ctxt.asCompileContext(),
-        );
-
-        if (descriptor) {
-          if (typeof descriptor !== 'object') {
-            throw new AdviceError(
-              entry.aspect,
+    const applyCompileAdvices = () => {
+      adviceEntries
+        //  prevent calling them twice.
+        .filter(
+          (e) =>
+            !getMetadata(
+              `ajs.compiled`,
+              e.advice,
+              ctxt.target.ref.value,
+              () => false,
+            ),
+        )
+        .forEach((entry) => {
+          try {
+            defineMetadata(
+              `ajs.compiled`,
+              true,
               entry.advice,
-              ctxt.target,
-              'should return void or a property descriptor',
+              ctxt.target.ref.value,
             );
-          }
 
-          if (propertyDescriptor.configurable === false) {
-            throw new AdviceError(
+            assert(typeof entry.advice === 'function');
+            const descriptor = entry.advice.call(
               entry.aspect,
-              entry.advice,
-              ctxt.target,
-              `${target.label} is not configurable`,
+              ctxt.asCompileContext(),
             );
-          }
-          propertyDescriptor = this.normalizeDescriptor(descriptor);
-          Reflect.defineProperty(
-            ctxt.target.proto,
-            ctxt.target.propertyKey,
-            propertyDescriptor,
-          );
-        }
-        defineMetadata('compiled', true, entry);
 
-        return descriptor;
-      });
+            if (descriptor) {
+              if (typeof descriptor !== 'object') {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  'should return void or a property descriptor',
+                );
+              }
+
+              if (propertyDescriptor.configurable === false) {
+                throw new AdviceError(
+                  entry.aspect,
+                  entry.advice,
+                  ctxt.target,
+                  `${target.label} is not configurable`,
+                );
+              }
+              propertyDescriptor = this.normalizeDescriptor(descriptor);
+              Reflect.defineProperty(
+                ctxt.target.proto,
+                ctxt.target.propertyKey,
+                propertyDescriptor,
+              );
+            }
+
+            return descriptor;
+          } catch (e) {
+            defineMetadata(
+              `ajs.compiled`,
+              false,
+              entry.advice,
+              ctxt.target.ref.value,
+            );
+            throw e;
+          }
+        });
+    };
+
+    // an advice be a mixin compile advice, that in turn add new annotations & their new corresponding advices.
+    // apply compile advices until state got stable
+    let previousAdviceEntries: AdviceEntry[] = [];
+    let adviceEntries = findCompileAdvices();
+
+    while (adviceEntries.length !== previousAdviceEntries.length) {
+      previousAdviceEntries = adviceEntries;
+      applyCompileAdvices();
+      adviceEntries = findCompileAdvices();
+    }
 
     return propertyDescriptor;
   }
 
   override afterThrow(
-    ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>,
-    advicesSelection: AdvicesSelection,
+    ctxt: MutableAdviceContext<PointcutKind.SET_PROPERTY, X>,
   ) {
-    return super.afterThrow(ctxt, advicesSelection, false);
+    return super.afterThrow(ctxt, false);
   }
-  override around(
-    ctxt: MutableAdviceContext<PointcutType.SET_PROPERTY, X>,
-    advicesEntries: AdvicesSelection,
-  ) {
-    return super.around(ctxt, advicesEntries, false);
+  override around(ctxt: MutableAdviceContext<PointcutKind.SET_PROPERTY, X>) {
+    return super.around(ctxt, false);
   }
 
   private normalizeDescriptor(descriptor: PropertyDescriptor): any {

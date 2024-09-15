@@ -1,17 +1,18 @@
 import { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
 
+import { getAspectMetadata } from '../../aspect/aspect.type';
 import { Pointcut } from '../../pointcut/pointcut';
-import { PointcutType } from '../../pointcut/pointcut-target.type';
+import { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AdviceSorter } from '../advice-sort';
-import { AdviceType } from '../advice-type.type';
+import { AdviceKind } from '../advice-type.type';
 import { AdviceEntry, AdviceRegBuckets } from './advice-entry.model';
 import { AdviceRegistryFilters } from './advice.registry';
 
 export class AdvicesSelection {
   constructor(
     private readonly buckets: AdviceRegBuckets,
-    private readonly filters: AdviceRegistryFilters,
+    public readonly filters: AdviceRegistryFilters,
     private readonly adviceSorter: AdviceSorter,
   ) {
     if (this.filters.annotations) {
@@ -27,9 +28,9 @@ export class AdvicesSelection {
     );
   }
 
-  find<T extends PointcutType, P extends AdviceType>(
-    pointcutTypes?: T[],
-    adviceTypes?: P[],
+  find<T extends PointcutKind, P extends AdviceKind>(
+    pointcutKinds?: T[],
+    adviceKinds?: P[],
   ): IterableIterator<AdviceEntry<T, unknown, P>> {
     const buckets = this.buckets;
     const filters = this.filters;
@@ -38,9 +39,9 @@ export class AdvicesSelection {
       (this.filters.annotations ?? []).map((a) => AnnotationRef.of(a)),
     );
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const _pointcutTypes: PointcutType[] = pointcutTypes?.length
-      ? pointcutTypes
-      : (Object.keys(buckets) as PointcutType[]);
+    const _pointcutKinds: PointcutKind[] = pointcutKinds?.length
+      ? pointcutKinds
+      : (Object.keys(buckets) as PointcutKind[]);
 
     function* generator() {
       // advice that are applied to multiple pointcuts are merged into a single entry.
@@ -48,18 +49,20 @@ export class AdvicesSelection {
       // We have to remember what entries are generated to avoir generating the same entry twice
       const generatedEntrySet = new Set();
 
-      for (const pointcutType of _pointcutTypes) {
-        const byPointcutType = buckets[pointcutType] ?? {};
-        const _adviceTypes = adviceTypes?.length
-          ? adviceTypes
-          : (Object.keys(byPointcutType) as AdviceType[]);
+      for (const pointcutKind of _pointcutKinds) {
+        const byPointcutKind = buckets[pointcutKind] ?? {};
+        const _adviceKinds = adviceKinds?.length
+          ? adviceKinds
+          : (Object.keys(byPointcutKind) as AdviceKind[]);
 
-        for (const pointcutType of _adviceTypes) {
-          const map = byPointcutType[pointcutType];
+        for (const adviceKind of _adviceKinds) {
+          const map = byPointcutKind[adviceKind];
           if (map) {
             const adviceEntries = (
               filters.aspects?.length
-                ? filters.aspects.map((a) => map.get(a)).flat()
+                ? filters.aspects
+                    .map((a) => map.get(getAspectMetadata(a).id))
+                    .flat()
                 : [...map.values()].flat()
             )
               .filter((a) => !!a)

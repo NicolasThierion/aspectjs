@@ -1,8 +1,9 @@
 {
   "name": "@aspectjs/persistence/typeorm",
+  "version": "0.3.17",
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
   "typings": "./index.d.ts",
-  "main": "../umd/typeorm.umd.js",
+  "main": "../cjs/typeorm.cjs",
   "type": "module",
   "exports": {
     "./package.json": {
@@ -14,8 +15,7 @@
       "es2020": "../fesm2020/typeorm.mjs",
       "node": "../cjs/typeorm.cjs",
       "require": "../cjs/typeorm.cjs",
-      "default": "../cjs/typeorm.cjs",
-      "unpkg": "../umd/typeorm.umd.js"
+      "default": "../cjs/typeorm.cjs"
     }
   }
 }

@@ -2,35 +2,46 @@ import { JoinPoint } from './joinpoint';
 
 import type { AfterContext } from '../advices/after/after.context';
 import type {
-  PointcutType,
-  ToAnnotationType,
-} from '../pointcut/pointcut-target.type';
+  PointcutKind,
+  ToAnnotationKind,
+} from '../pointcut/pointcut-kind.type';
 
 import {
+  Annotation,
+  AnnotationRef,
+  AnnotationsSelector,
   AnnotationTarget,
-  BindableAnnotationsByTypeSelection,
+  BoundAnnotationsSelector,
 } from '@aspectjs/common';
+import {
+  assert,
+  defineMetadata,
+  getMetadata,
+  getMetadataKeys,
+} from '@aspectjs/common/utils';
 import type { AfterReturnContext } from '../advices/after-return/after-return.context';
 import type { AfterThrowContext } from '../advices/after-throw/after-throw.context';
 import type { AroundContext } from '../advices/around/around.context';
 import type { BeforeContext } from '../advices/before/before.context';
 import type { CompileContext } from '../advices/compile/compile.context';
-import { _BindableAnnotationTarget } from '../utils/bindable-annotation-target';
+import { _BindableAnnotationTarget } from '../utils/annotation-mixin-target';
 import { AdviceContext } from './advice.context';
 
 export class MutableAdviceContext<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
 > {
   /** The annotations contexts **/
-  annotations: BindableAnnotationsByTypeSelection<ToAnnotationType<T>, X>;
+  annotations: (
+    ...annotations: Annotation[]
+  ) => AnnotationsSelector<ToAnnotationKind<T>>;
   /** The 'this' instance bound to the current execution context **/
   instance?: X | null;
   /** the arguments originally passed to the joinpoint **/
   args?: any[];
   /** The symbol targeted by this advice (class, method, property or parameter **/
-  target: AnnotationTarget<ToAnnotationType<T>, X> &
-    _BindableAnnotationTarget<ToAnnotationType<T>, X>;
+  target: AnnotationTarget<ToAnnotationKind<T>, X> &
+    _BindableAnnotationTarget<ToAnnotationKind<T>, X>;
   /** The value originally returned by the joinpoint **/
   value?: unknown;
   /** Hold the original function, bound to its execution context and it original parameters **/
@@ -132,7 +143,7 @@ export class MutableAdviceContext<
 
   bind(instance: X) {
     this.target = this.target._bind(instance) as _BindableAnnotationTarget<
-      ToAnnotationType<T>,
+      ToAnnotationKind<T>,
       X
     >;
     return this;
@@ -160,10 +171,24 @@ function copyProps<A extends AdviceContext>(
       return res;
     }, {} as A);
 
-  const instance = ctxt.instance;
+  const annotations = newContext.annotations;
+  const newAnnotations: AdviceContext['annotations'] = (
+    ...ans: (Annotation | AnnotationRef)[]
+  ) => {
+    const selector = new BoundAnnotationsSelector(
+      annotations(...ans),
+      ctxt.instance,
+      ctxt.args,
+    );
+    return selector;
+  };
 
-  (newContext.annotations as any) = (
-    newContext.annotations as BindableAnnotationsByTypeSelection
-  ).bind(instance, ctxt.args);
+  // copy over metadata
+  getMetadataKeys(ctxt).forEach((key) => {
+    assert(false);
+    defineMetadata(key, getMetadata(key, ctxt), newContext);
+  });
+
+  (newContext.annotations as any) = newAnnotations;
   return newContext;
 }

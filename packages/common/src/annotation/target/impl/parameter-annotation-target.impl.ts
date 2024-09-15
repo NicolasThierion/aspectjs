@@ -3,10 +3,11 @@ import {
   MethodPropertyDescriptor,
   Prototype,
   assert,
+  defineMetadata,
   getMetadata,
   getPrototype,
 } from '@aspectjs/common/utils';
-import { AnnotationType } from '../../annotation.types';
+import { AnnotationKind } from '../../annotation.types';
 import {
   AnnotationTargetRef,
   ClassAnnotationTarget,
@@ -24,14 +25,14 @@ import { _MethodAnnotationTargetImpl } from './method-annotation-target.impl';
 let _globalTargetId = 0;
 
 export class _ParameterAnnotationTargetImpl<X>
-  extends _AnnotationTargetImpl<AnnotationType.PARAMETER, X>
+  extends _AnnotationTargetImpl<AnnotationKind.PARAMETER, X>
   implements ParameterAnnotationTarget<X>
 {
   readonly propertyKey: string | symbol;
   readonly descriptor: MethodPropertyDescriptor;
   readonly parameterIndex: number;
-  protected override [BOUND_INSTANCE_SYMBOL]?: X;
-  protected override [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
+  protected declare [BOUND_INSTANCE_SYMBOL]?: X;
+  protected declare [BOUND_VALUE_SYMBOL]?: (...args: unknown[]) => unknown;
 
   private _declaringClassTarget?: ClassAnnotationTarget<X>;
   private _methodTarget?: MethodAnnotationTarget<X>;
@@ -46,19 +47,29 @@ export class _ParameterAnnotationTargetImpl<X>
     isStatic: boolean,
   ) {
     super(
-      AnnotationType.PARAMETER,
+      AnnotationKind.PARAMETER,
       proto,
       argsNames(proto[propertyKey as any])[parameterIndex!] ??
         `#${parameterIndex!}`,
-      `${isStatic ? 'static ' : ''}method ${proto.constructor.name}.${String(
+      `${isStatic ? 'static ' : ''}argument ${proto.constructor.name}.${String(
         propertyKey,
-      )}`,
+      )}[${parameterIndex}]`,
       ref,
       isStatic,
     );
     this.propertyKey = propertyKey;
     this.descriptor = descriptor;
     this.parameterIndex = parameterIndex;
+  }
+
+  override defineMetadata(key: string, value: any): void {
+    defineMetadata(key, value, this.proto, this.propertyKey);
+  }
+  override getMetadata<T extends unknown>(
+    key: string,
+    defaultvalue?: (() => T) | undefined,
+  ): T {
+    return getMetadata(key, this.proto, this.propertyKey, defaultvalue);
   }
 
   static of<X>(
@@ -99,6 +110,9 @@ export class _ParameterAnnotationTargetImpl<X>
     );
   }
 
+  asDecoratorArgs() {
+    return [this.proto, this.propertyKey, this.parameterIndex];
+  }
   get declaringClass() {
     if (this._declaringClassTarget) {
       return this._declaringClassTarget;
@@ -113,7 +127,7 @@ export class _ParameterAnnotationTargetImpl<X>
 
     return this._declaringClassTarget;
   }
-  get parent(): MethodAnnotationTarget<X> {
+  get declaringMethod(): MethodAnnotationTarget<X> {
     if (this._methodTarget) {
       return this._methodTarget;
     }
@@ -130,7 +144,7 @@ export class _ParameterAnnotationTargetImpl<X>
     return this._methodTarget;
   }
   override get parentClass() {
-    return this.declaringClass.parent;
+    return this.declaringClass.parentClass;
   }
 
   override _bind(instance: X, args: unknown[]): ParameterAnnotationTarget<X> {

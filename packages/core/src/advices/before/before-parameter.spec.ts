@@ -1,7 +1,7 @@
 import 'jest-extended';
 import 'jest-extended/all';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
@@ -10,7 +10,7 @@ import { on } from '../../pointcut/pointcut-expression.factory';
 import { Before } from './before.annotation';
 
 import { AdviceError } from '../../errors/advice.error';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
 
@@ -23,11 +23,11 @@ describe('parameter advice', () => {
   let mImpl: any;
 
   const AParameter = new AnnotationFactory('test').create(
-    AnnotationType.PARAMETER,
+    AnnotationKind.PARAMETER,
     'AParameter',
   );
   const BParameter = new AnnotationFactory('test').create(
-    AnnotationType.PARAMETER,
+    AnnotationKind.PARAMETER,
     'BParameter',
   );
   let weaver: JitWeaver;
@@ -45,7 +45,7 @@ describe('parameter advice', () => {
     class AAspect {
       @Before(on.parameters.withAnnotations(...aanotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.PARAMETER>,
+        ctxt: BeforeContext<PointcutKind.PARAMETER>,
         ...args: unknown[]
       ): void {
         return aadvice.bind(this)(ctxt, ...args);
@@ -56,7 +56,7 @@ describe('parameter advice', () => {
     class BAspect {
       @Before(on.parameters.withAnnotations(...bannotations))
       applyBefore(
-        ctxt: BeforeContext<PointcutType.PARAMETER>,
+        ctxt: BeforeContext<PointcutKind.PARAMETER>,
         ...args: unknown[]
       ): void {
         return badvice.bind(this)(ctxt, ...args);
@@ -113,7 +113,7 @@ describe('parameter advice', () => {
     describe('when used together with a method decorator', () => {
       it('calls each matching advice once', () => {
         const AMethod = new AnnotationFactory('test').create(
-          AnnotationType.METHOD,
+          AnnotationKind.METHOD,
           'AMethod',
         );
         const mImpl = jest.fn();
@@ -263,15 +263,11 @@ describe('parameter advice', () => {
             mImpl(this, arg1, arg2);
           }
         }
-        aadvice = jest.fn((ctxt: BeforeContext<PointcutType.PARAMETER>) => {
-          const aParameterAnnotations = ctxt.annotations
-            .filter(AParameter)
-            .find();
-          const bParameterAnnotations = ctxt.annotations
-            .filter(BParameter)
-            .find();
+        aadvice = jest.fn((ctxt: BeforeContext<PointcutKind.PARAMETER>) => {
+          const aParameterAnnotations = ctxt.annotations(AParameter).find();
+          const bParameterAnnotations = ctxt.annotations(BParameter).find();
 
-          expect(ctxt.annotations.find().length).toEqual(3);
+          expect(ctxt.annotations().find().length).toEqual(3);
           expect(aParameterAnnotations.length).toEqual(2);
 
           expect(bParameterAnnotations.length).toEqual(1);

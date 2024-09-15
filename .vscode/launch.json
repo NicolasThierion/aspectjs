@@ -106,6 +106,29 @@
       "runtimeVersion": "18",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "name": "vscode-jest-tests.v2.aspectjs",
+      "request": "launch",
+      "args": [
+        "--runInBand",
+        "--watchAll=false",
+        "--testNamePattern",
+        "${jest.testNamePattern}",
+        "--runTestsByPath",
+        "${jest.testFile}"
+      ],
+      "skipFiles": [
+        "${workspaceFolder}/node_modules/**/*.js",
+        "<node_internals>/**"
+      ],
+
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "program": "${workspaceFolder}/node_modules/.bin/jest"
     }
   ]
 }

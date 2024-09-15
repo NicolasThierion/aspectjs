@@ -4,6 +4,8 @@
   "include": ["./**/*.ts"],
   "compilerOptions": {
     // "module": "NodeNext",
+    "lib": ["ES2015.Reflect", "ES2015", "ES2021"],
+
     "noUnusedParameters": false
   },
   "exclude": ["./dist"]

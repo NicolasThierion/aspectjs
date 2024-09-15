@@ -1,0 +1,931 @@
+
+> httyped-client@0.3.17 test:unit
+> jest --runInBand
+
+
+> httyped-client@0.3.17 test:unit
+> jest --runInBand
+
+FAIL src/annotations/headers.annotation.spec.ts
+  @Headers({<name>: <value>}) annotation
+    on a class annotated with @HttypedClient
+      calling a method annotated with get
+        ✓ adds the given header to the request (12 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (3 ms)
+      on a method annotated with @Get
+        ✓ merges with the headers of the class (2 ms)
+      on a property
+        ✓ throws an error (8 ms)
+        ✕ throws an error (2 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (4 ms)
+        ✕ throws an error (2 ms)
+        ✕ throws an error (5 ms)
+      on a parameter
+        ✕ throws an error (3 ms)
+        ✕ throws an error (2 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (3 ms)
+        ✕ throws an error (2 ms)
+        ✕ throws an error (2 ms)
+      calling a method annotated with post
+        ✓ adds the given header to the request (2 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (2 ms)
+      on a method annotated with @Post
+        ✓ merges with the headers of the class (3 ms)
+      calling a method annotated with put
+        ✓ adds the given header to the request (2 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (10 ms)
+      on a method annotated with @Put
+        ✓ merges with the headers of the class (9 ms)
+      calling a method annotated with delete
+        ✓ adds the given header to the request (7 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (9 ms)
+      on a method annotated with @Delete
+        ✓ merges with the headers of the class (8 ms)
+      calling a method annotated with patch
+        ✓ adds the given header to the request (6 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (9 ms)
+      on a method annotated with @Patch
+        ✓ merges with the headers of the class (6 ms)
+      calling a method annotated with option
+        ✓ adds the given header to the request (4 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (4 ms)
+      on a method annotated with @Option
+        ✓ merges with the headers of the class (3 ms)
+      calling a method annotated with head
+        ✓ adds the given header to the request (2 ms)
+        when parent class is annotated with @Headers
+          ✓ merges with the parent headers (3 ms)
+      on a method annotated with @Head
+        ✓ merges with the headers of the class (3 ms)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on property Api.prop"
+
+    Received function did not throw
+
+      138 |               async method(...args: any[]): Promise<any> {}
+      139 |             }
+    > 140 |           }).toThrow(
+          |              ^
+      141 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
+      142 |           );
+      143 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:140:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on property Api.prop"
+
+    Received function did not throw
+
+      138 |               async method(...args: any[]): Promise<any> {}
+      139 |             }
+    > 140 |           }).toThrow(
+          |              ^
+      141 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
+      142 |           );
+      143 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:140:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on property Api.prop"
+
+    Received function did not throw
+
+      138 |               async method(...args: any[]): Promise<any> {}
+      139 |             }
+    > 140 |           }).toThrow(
+          |              ^
+      141 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
+      142 |           );
+      143 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:140:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on property Api.prop"
+
+    Received function did not throw
+
+      138 |               async method(...args: any[]): Promise<any> {}
+      139 |             }
+    > 140 |           }).toThrow(
+          |              ^
+      141 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
+      142 |           );
+      143 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:140:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on property Api.prop"
+
+    Received function did not throw
+
+      138 |               async method(...args: any[]): Promise<any> {}
+      139 |             }
+    > 140 |           }).toThrow(
+          |              ^
+      141 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
+      142 |           );
+      143 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:140:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on property Api.prop"
+
+    Received function did not throw
+
+      138 |               async method(...args: any[]): Promise<any> {}
+      139 |             }
+    > 140 |           }).toThrow(
+          |              ^
+      141 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
+      142 |           );
+      143 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:140:14)
+
+  ● @Headers({<name>: <value>}) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Headers on argument Api.method[0]"
+
+    Received function did not throw
+
+      153 |               ): Promise<any> {}
+      154 |             }
+    > 155 |           }).toThrow(
+          |              ^
+      156 |             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
+      157 |           );
+      158 |         });
+
+      at Object.<anonymous> (src/annotations/headers.annotation.spec.ts:155:14)
+
+FAIL src/annotations/header.annotation.spec.ts
+  @Header(<name>, <value>) annotation
+    on a class annotated with @HttypedClient
+      calling a method annotated with get
+        ✓ adds the given header to the request (21 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (11 ms)
+      on a method annotated with @Get
+        ✓ merges with the headers of the class (10 ms)
+      on a property
+        ✓ throws an error (21 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (7 ms)
+        ✕ throws an error (3 ms)
+        ✕ throws an error (3 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (6 ms)
+      on a parameter
+        ✕ throws an error (4 ms)
+        ✕ throws an error (5 ms)
+        ✕ throws an error (9 ms)
+        ✕ throws an error (3 ms)
+        ✕ throws an error (4 ms)
+        ✕ throws an error (6 ms)
+        ✕ throws an error (8 ms)
+      calling a method annotated with post
+        ✓ adds the given header to the request (5 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (4 ms)
+      on a method annotated with @Post
+        ✓ merges with the headers of the class (11 ms)
+      calling a method annotated with put
+        ✓ adds the given header to the request (4 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (6 ms)
+      on a method annotated with @Put
+        ✓ merges with the headers of the class (4 ms)
+      calling a method annotated with delete
+        ✓ adds the given header to the request (8 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (14 ms)
+      on a method annotated with @Delete
+        ✓ merges with the headers of the class (5 ms)
+      calling a method annotated with patch
+        ✓ adds the given header to the request (6 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (8 ms)
+      on a method annotated with @Patch
+        ✓ merges with the headers of the class (5 ms)
+      calling a method annotated with option
+        ✓ adds the given header to the request (4 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (9 ms)
+      on a method annotated with @Option
+        ✓ merges with the headers of the class (13 ms)
+      calling a method annotated with head
+        ✓ adds the given header to the request (5 ms)
+        when parent class is annotated with @Header
+          ✓ merges with the parent headers (7 ms)
+      on a method annotated with @Head
+        ✓ merges with the headers of the class (4 ms)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on property Api.prop"
+
+    Received function did not throw
+
+      142 |               async method(...args: any[]): Promise<any> {}
+      143 |             }
+    > 144 |           }).toThrow(
+          |              ^
+      145 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+      146 |           );
+      147 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:144:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on property Api.prop"
+
+    Received function did not throw
+
+      142 |               async method(...args: any[]): Promise<any> {}
+      143 |             }
+    > 144 |           }).toThrow(
+          |              ^
+      145 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+      146 |           );
+      147 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:144:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on property Api.prop"
+
+    Received function did not throw
+
+      142 |               async method(...args: any[]): Promise<any> {}
+      143 |             }
+    > 144 |           }).toThrow(
+          |              ^
+      145 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+      146 |           );
+      147 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:144:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on property Api.prop"
+
+    Received function did not throw
+
+      142 |               async method(...args: any[]): Promise<any> {}
+      143 |             }
+    > 144 |           }).toThrow(
+          |              ^
+      145 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+      146 |           );
+      147 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:144:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on property Api.prop"
+
+    Received function did not throw
+
+      142 |               async method(...args: any[]): Promise<any> {}
+      143 |             }
+    > 144 |           }).toThrow(
+          |              ^
+      145 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+      146 |           );
+      147 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:144:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a property › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on property Api.prop"
+
+    Received function did not throw
+
+      142 |               async method(...args: any[]): Promise<any> {}
+      143 |             }
+    > 144 |           }).toThrow(
+          |              ^
+      145 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on property Api.prop`,
+      146 |           );
+      147 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:144:14)
+
+  ● @Header(<name>, <value>) annotation › on a class annotated with @HttypedClient › on a parameter › throws an error
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "[ajs.httyped-client]: Annotations are not allowed: @aspectjs.http:Header on argument Api.method[0]"
+
+    Received function did not throw
+
+      157 |               ): Promise<any> {}
+      158 |             }
+    > 159 |           }).toThrow(
+          |              ^
+      160 |             `[ajs.httyped-client]: Annotations are not allowed: ${Header.ref} on argument Api.method[0]`,
+      161 |           );
+      162 |         });
+
+      at Object.<anonymous> (src/annotations/header.annotation.spec.ts:159:14)
+
+PASS src/annotations/fetch/response-body.spec.ts
+  Given a method annotated with @Get(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (5 ms)
+      ✓ does not invoke the mappers (2 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (9 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (8 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (7 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (5 ms)
+        But the http call does not return an array
+          ✓ throws an error (6 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (4 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (2 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (2 ms)
+      ✓ calls only the last mapper that matches (2 ms)
+  Given a method annotated with @Post(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (1 ms)
+      ✓ does not invoke the mappers (2 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (1 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (2 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (2 ms)
+        But the http call does not return an array
+          ✓ throws an error (1 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (2 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (2 ms)
+      ✓ calls only the last mapper that matches (10 ms)
+  Given a method annotated with @Put(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (7 ms)
+      ✓ does not invoke the mappers (6 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (6 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (6 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (7 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (12 ms)
+        But the http call does not return an array
+          ✓ throws an error (8 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (5 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (4 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (3 ms)
+      ✓ calls only the last mapper that matches (3 ms)
+  Given a method annotated with @Delete(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (3 ms)
+      ✓ does not invoke the mappers (2 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (3 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (1 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (2 ms)
+        But the http call does not return an array
+          ✓ throws an error (1 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (1 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (2 ms)
+      ✓ calls only the last mapper that matches (1 ms)
+  Given a method annotated with @Patch(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (1 ms)
+      ✓ does not invoke the mappers (5 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (9 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (5 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (7 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (4 ms)
+        But the http call does not return an array
+          ✓ throws an error (4 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (2 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (3 ms)
+      ✓ calls only the last mapper that matches (3 ms)
+  Given a method annotated with @Option(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (3 ms)
+      ✓ does not invoke the mappers (2 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (2 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (2 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (2 ms)
+        But the http call does not return an array
+          ✓ throws an error (2 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (9 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (9 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (8 ms)
+      ✓ calls only the last mapper that matches (6 ms)
+  Given a method annotated with @Head(<path>) that returns a value
+    when no mappers matches
+      ✓ returns a JSON object as is (6 ms)
+      ✓ does not invoke the mappers (5 ms)
+    when the method returns a templated abstract(<T>)
+      and a mapper has been registered for this type constructor
+        ✓ calls the mapper that matches the typeHint (6 ms)
+      and a mapper has been registered for this type name
+        ✓ calls the mapper that matches the typeHint (4 ms)
+      and a mapper has been registered for a parent constructor
+        ✓ calls the mapper that matches the parent type (5 ms)
+      and the returned abstract is an array template
+        ✓ returns an array of values, calling the corresponding mappers (12 ms)
+        But the http call does not return an array
+          ✓ throws an error (3 ms)
+    and the method has a @TypeHint(<T>) annotation
+      that specifies the type as a constructor
+        ✓ calls the mapper that matches the typeHint (13 ms)
+      that specifies the type as a type name
+        ✓ calls the mapper that matches the typeHint (6 ms)
+    when several mappers match
+      ✓ calls the last mapper that matches (3 ms)
+      ✓ calls only the last mapper that matches (5 ms)
+
+PASS src/annotations/path-variable.annotation.spec.ts
+  @Get(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (26 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (7 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (10 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: get}) (11 ms)
+  @Post(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (6 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (6 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (6 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: post}) (5 ms)
+  @Put(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (4 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (4 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (4 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: put}) (3 ms)
+  @Delete(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (3 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (4 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (11 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: delete}) (7 ms)
+  @Patch(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (15 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (6 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (6 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: patch}) (5 ms)
+  @Option(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (14 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (10 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (7 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: option}) (6 ms)
+  @Head(path/:pathVariable) annotation on a method
+    when the method lacks an argument annotated with @PathVariable
+      ✓ throws an error (5 ms)
+    when the has an unmatched argument annotated with @PathVariable
+      ✓ throws an error (6 ms)
+    when the method has the same @PathVariable more than once
+      ✓ throws an error (5 ms)
+    when the method has an argument annotated with @PathVariable
+      ✓ calls fetch("<path>", { method: head}) (6 ms)
+
+PASS src/annotations/fetch/path.spec.ts
+  @Get(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (17 ms)
+      but parent class is
+        ✓ uses the config from the parent class (13 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (7 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: get}) (6 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: get}) (6 ms)
+  @Post(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (4 ms)
+      but parent class is
+        ✓ uses the config from the parent class (5 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (4 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: post}) (4 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: post}) (4 ms)
+  @Put(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (16 ms)
+      but parent class is
+        ✓ uses the config from the parent class (9 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (7 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: put}) (7 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: put}) (7 ms)
+  @Delete(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (6 ms)
+      but parent class is
+        ✓ uses the config from the parent class (8 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (5 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: delete}) (8 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: delete}) (6 ms)
+  @Patch(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (4 ms)
+      but parent class is
+        ✓ uses the config from the parent class (6 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (8 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: patch}) (6 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: patch}) (6 ms)
+  @Option(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (4 ms)
+      but parent class is
+        ✓ uses the config from the parent class (6 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (4 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: option}) (6 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: option}) (6 ms)
+  @Head(<path>) annotation on a method
+    when the class is not annotated with @HttypedClient()
+      ✓ throws an error (4 ms)
+      but parent class is
+        ✓ uses the config from the parent class (5 ms)
+    when the class is annotated with @HttpClient({<baseUrl>})
+      ✓ returns a promise (5 ms)
+      given no <path> argument
+        ✓ calls fetch("", { method: head}) (5 ms)
+      given a <path> argument
+        ✓ calls fetch("<path>", { method: head}) (15 ms)
+
+PASS src/annotations/body.annotation.spec.ts
+  @Body() on a method parameter
+    ✓ calls the http adapter with the provided body (4 ms)
+    when the method is not annotated with a fetch annotation
+      ✓ throws an error (25 ms)
+    when the aspect is given a mapper
+      that does not accept the given body
+        ✓ calls the http adapter with original body (7 ms)
+      that accepts the given body
+        ✓ calls the http adapter with the mapped body (3 ms)
+        ✓ calls the mapper with proper type hint (3 ms)
+
+Test Suites: 2 failed, 4 passed, 6 total
+Tests:       26 failed, 189 passed, 215 total
+Snapshots:   0 total
+Time:        2.831 s, estimated 8 s
+Ran all test suites.
+npm error Lifecycle script `test:unit` failed with error:
+npm error code 1
+npm error path /home/nicolas/projects/aspectjs/packages/httyped-client
+npm error workspace httyped-client@0.3.17
+npm error location /home/nicolas/projects/aspectjs/packages/httyped-client
+npm error command failed
+npm error command sh -c jest --runInBand

@@ -3,60 +3,41 @@ import type {
   MethodPropertyDescriptor,
 } from '@aspectjs/common/utils';
 import { MutableAdviceContext } from '../../advice/mutable-advice.context';
-import { AdvicesSelection } from '../../advice/registry/advices-selection.model';
 
 import type { JoinPoint } from '../../advice/joinpoint';
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 
 export type CompiledSymbol<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
-> = T extends PointcutType.CLASS
+> = T extends PointcutKind.CLASS
   ? ConstructorType<X>
-  : T extends PointcutType.METHOD | PointcutType.PARAMETER
+  : T extends PointcutKind.METHOD | PointcutKind.PARAMETER
   ? MethodPropertyDescriptor
-  : T extends PointcutType.GET_PROPERTY | PointcutType.SET_PROPERTY
+  : T extends PointcutKind.GET_PROPERTY | PointcutKind.SET_PROPERTY
   ? PropertyDescriptor
   : never;
 
 export interface WeaverCanvasStrategy<
-  T extends PointcutType = PointcutType,
+  T extends PointcutKind = PointcutKind,
   X = unknown,
 > {
-  compile(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-  ): CompiledSymbol<T, X> | undefined;
+  compile(ctxt: MutableAdviceContext<T, X>): CompiledSymbol<T, X> | undefined;
 
-  before(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-  ): void;
+  before(ctxt: MutableAdviceContext<T, X>): void;
 
   callJoinpoint(
     ctxt: MutableAdviceContext<T, X>,
     originalSymbol: CompiledSymbol<T, X>,
   ): unknown;
 
-  afterReturn(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-  ): T;
+  afterReturn(ctxt: MutableAdviceContext<T, X>): unknown;
 
-  afterThrow(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-  ): T;
+  afterThrow(ctxt: MutableAdviceContext<T, X>): unknown;
 
-  after(
-    ctxt: MutableAdviceContext<T, X>,
-    afteradvicesEntries: AdvicesSelection,
-  ): void;
+  after(ctxt: MutableAdviceContext<T, X>): void;
 
-  around(
-    ctxt: MutableAdviceContext<T, X>,
-    advicesEntries: AdvicesSelection,
-  ): JoinPoint;
+  around(ctxt: MutableAdviceContext<T, X>): JoinPoint;
 
   link?(
     ctxt: MutableAdviceContext<T, X>,

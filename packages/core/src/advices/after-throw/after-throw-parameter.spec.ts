@@ -3,14 +3,14 @@ import 'jest-extended/all';
 import { Before } from '../before/before.annotation';
 import { AfterThrowContext } from './after-throw.context';
 
-import { AnnotationFactory, AnnotationType } from '@aspectjs/common';
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
 import { Aspect } from '../../aspect/aspect.annotation';
 import { JitWeaver } from '../../jit/jit-weaver';
 import { on } from '../../pointcut/pointcut-expression.factory';
 
-import type { PointcutType } from '../../pointcut/pointcut-target.type';
+import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AfterThrow } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 
@@ -22,11 +22,11 @@ describe('parameter advice', () => {
   let aaspect: any;
   let baspect: any;
   const AParameter = new AnnotationFactory('test').create(
-    AnnotationType.PARAMETER,
+    AnnotationKind.PARAMETER,
     'AParameter',
   );
   const BParameter = new AnnotationFactory('test').create(
-    AnnotationType.PARAMETER,
+    AnnotationKind.PARAMETER,
     'BParameter',
   );
   let weaver: JitWeaver;
@@ -69,7 +69,7 @@ describe('parameter advice', () => {
     class BAspect {
       @AfterThrow(on.parameters.withAnnotations(...bannotations))
       applyAfterThrow(
-        ctxt: AfterThrowContext<PointcutType.CLASS>,
+        ctxt: AfterThrowContext<PointcutKind.CLASS>,
         ...args: unknown[]
       ): void {
         return afterThrowAdviceB.bind(this)(ctxt, ...args);
@@ -269,9 +269,9 @@ describe('parameter advice', () => {
         }
 
         afterThrowAdviceA1 = jest.fn((ctxt: AfterThrowContext) => {
-          expect(ctxt.annotations.find().length).toEqual(3);
-          const AParameterAnnotationContext = ctxt.annotations
-            .filter(AParameter)
+          expect(ctxt.annotations().find().length).toEqual(3);
+          const AParameterAnnotationContext = ctxt
+            .annotations(AParameter)
             .find()[0];
           expect(AParameterAnnotationContext).toBeTruthy();
           expect(AParameterAnnotationContext?.args).toEqual(['annotationArg']);

@@ -1,7 +1,7 @@
 /**
  * Speficies the type of an advice
  */
-export enum AdviceType {
+export enum AdviceKind {
   /**
    * Advice is triggered at compile time (eg: when the annotation is processed)
    */

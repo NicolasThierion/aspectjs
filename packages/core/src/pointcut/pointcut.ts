@@ -1,40 +1,44 @@
 import type { AnnotationRef } from '@aspectjs/common';
 import { assert } from '@aspectjs/common/utils';
-import { AdviceType } from '../advice/advice-type.type';
+import { AdviceKind } from '../advice/advice-type.type';
 import type { PointcutExpression } from './pointcut-expression.type';
-import type { PointcutType } from './pointcut-target.type';
+import type { PointcutKind } from './pointcut-kind.type';
 
 interface PointcutInit<
-  P extends AdviceType,
-  T extends PointcutType = PointcutType,
+  P extends AdviceKind,
+  T extends PointcutKind = PointcutKind,
 > {
-  readonly type: P;
+  readonly kind: P;
   readonly expression: PointcutExpression<T>;
 }
 
 export class Pointcut<
-  P extends AdviceType = AdviceType,
-  T extends PointcutType = PointcutType,
+  P extends AdviceKind = AdviceKind,
+  T extends PointcutKind = PointcutKind,
 > {
-  readonly type: T;
+  readonly kind: T;
   readonly annotations: AnnotationRef[];
   readonly name: string;
-  readonly adviceType: AdviceType;
+  readonly adviceKind: AdviceKind;
   private readonly _expr: PointcutExpression;
 
   constructor(pointcutInit: PointcutInit<P, T>) {
     this._expr = pointcutInit.expression;
-    this.adviceType = pointcutInit.type;
-    this.type = this._expr.type as T;
+    this.adviceKind = pointcutInit.kind;
+    this.kind = this._expr.kind as T;
     this.annotations = this._expr.annotations;
     this.name = this._expr.name;
   }
 
-  [Symbol.toPrimitive] = () => `${this.adviceType}(${this._expr})`;
+  [Symbol.toPrimitive] = () => this.toString();
+
+  toString(): string {
+    return `${this.adviceKind}(${this._expr})`;
+  }
 
   isAssignableFrom(pointcut: Pointcut): boolean {
     return (
-      pointcut.type === this.type && this.adviceType === pointcut.adviceType
+      pointcut.kind === this.kind && this.adviceKind === pointcut.adviceKind
     );
   }
 
