@@ -16,9 +16,11 @@ import { defineConfig as rollupDefineConfig } from 'rollup';
 const BUMPED_PACKAGES = [
   '@aspectjs/core',
   '@aspectjs/common',
+  '@aspectjs/nestjs',
+  '@aspectjs/memo',
+  '@aspectjs/persistence',
   'httyped-client',
   'nestjs-client',
-  '@aspectjs/nestjs',
 ];
 // This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
 interface PackageJson {

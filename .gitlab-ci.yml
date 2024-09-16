@@ -5,8 +5,6 @@ include:
 #  - packages/memo/.gitlab-ci.yml
 #  - packages/persistence/.gitlab-ci.yml
 
-image: node:18-alpine3.14
-
 stages:
   - prepare
   - test

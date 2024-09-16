@@ -1,5 +1,6 @@
+image: node:22-alpine
+
 .node-cache:
-  image: node:18-alpine3.14
   before_script:
     - npm ci --cache .npm --prefer-offline  --include=dev
   cache:
