@@ -1,9 +1,12 @@
 include:
   - ci-templates/node.yml
-#  - packages/core/.gitlab-ci.yml
-#  - packages/common/.gitlab-ci.yml
-#  - packages/memo/.gitlab-ci.yml
-#  - packages/persistence/.gitlab-ci.yml
+  - packages/core/.gitlab-ci.yml
+  - packages/common/.gitlab-ci.yml
+  - packages/memo/.gitlab-ci.yml
+  - packages/persistence/.gitlab-ci.yml
+  - packages/nestjs-client/.gitlab-ci.yml
+  - packages/nestjs/.gitlab-ci.yml
+  - packages/httyped-client/.gitlab-ci.yml
 
 stages:
   - prepare
@@ -32,10 +35,8 @@ docs:
   needs:
     - node:prepare
   script:
-    - ls -al ./
     - npm run docs:build
-    - ls -al ./packages/docs/dist/
-    - ls -al ./packages/docs/src/api
+
   artifacts:
     expire_in: 20 min
 
