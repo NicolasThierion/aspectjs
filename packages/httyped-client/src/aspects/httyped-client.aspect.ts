@@ -13,7 +13,6 @@ import {
   Aspect,
   AspectError,
   Before,
-  Compile,
   PointcutKind,
   on,
 } from '@aspectjs/core';
@@ -23,7 +22,7 @@ import {
   FetchAnnotationContext,
 } from '../annotations/fetch/fetch-annotations';
 import { Header } from '../annotations/header.annotation';
-import { Headers } from '../annotations/headers.annotation';
+import { Headers as _Headers } from '../annotations/headers.annotation';
 import { HttypedClient } from '../annotations/http-client.annotation';
 import { PathVariable } from '../annotations/path-variable.annotation';
 import { RequestParam } from '../annotations/request-param.annotation';
@@ -63,7 +62,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       );
     }
 
-    this.setClientConfig(config, clientInstance);
+    this.setClientConfig(clientInstance, config);
     return clientInstance;
   }
 
@@ -91,8 +90,8 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   }
 
   @Before(
-    on.classes.withAnnotations(Header, Headers),
-    on.methods.withAnnotations(Header, Headers),
+    on.classes.withAnnotations(Header, _Headers),
+    on.methods.withAnnotations(Header, _Headers),
     on.parameters.withAnnotations(Body),
     ...FETCH_ANNOTATIONS.map((a) => on.methods.withAnnotations(a)),
   )
@@ -110,9 +109,9 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     });
   }
 
-  @Compile(
-    on.properties.withAnnotations(Header, Headers),
-    on.parameters.withAnnotations(Header, Headers),
+  @Before(
+    on.properties.withAnnotations(Header, _Headers),
+    on.parameters.withAnnotations(Header, _Headers),
   )
   protected prohibitWrongTarget(
     ctxt: AdviceContext<PointcutKind.CLASS | PointcutKind.METHOD>,
@@ -120,7 +119,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     throw new AspectError(
       this,
       `Annotations are not allowed: ${ctxt
-        .annotations()
+        .annotations(Header, _Headers)
         .find()
         .map((a) => `${a}`)}`,
     );
@@ -147,26 +146,22 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
     try {
       url = super.handleUrl(endpointConfig, ctxt, url);
 
-      let requestInit: RequestInit = {
+      let request: Request = new Request(url, {
         ...endpointConfig.requestInit,
+        headers: new Headers({
+          ...(endpointConfig.requestInit?.headers ?? {}),
+          ...this.getHeadersMetadata(ctxt),
+        }),
+        body: this.serializeRequestBody(endpointConfig, ctxt),
+        signal: undefined,
         method: endpointMetadata.method,
-      };
+      } satisfies Partial<RequestInit> as any);
 
-      const body = this.serializeRequestBody(endpointConfig, ctxt);
-      if (body !== undefined) {
-        requestInit.body = body;
-      }
+      request = this.applyRequestHandlers(config, request);
+      url = (request as Request).url;
 
-      requestInit.headers = this.getHeadersMetadata(ctxt);
-
-      requestInit = this.applyRequestHandlers(config, {
-        ...requestInit,
-        url,
-      } as Request);
-      url = (requestInit as Request).url;
-
-      return this.callHttpAdapter(endpointConfig, url, requestInit).then(
-        async (r) => this.applyResponseHandlers(config, r as Response, ctxt),
+      return this.callHttpAdapter(endpointConfig, request).then(async (r) =>
+        this.applyResponseHandlers(config, r as Response, ctxt),
       );
     } catch (e) {
       if (e instanceof MissingPathVariableError) {
@@ -330,7 +325,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
   protected findHeadersAnnotations(
     ctxt: AfterReturnContext<PointcutKind.METHOD>,
   ) {
-    return getAnnotations(Headers)
+    return getAnnotations(_Headers)
       .on({
         target: ctxt.target,
         types: [AnnotationKind.CLASS, AnnotationKind.METHOD],
@@ -375,17 +370,21 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       return;
     }
 
-    // const typeHint =
-    // ctxt.annotations(Type).find({ searchParents: true })[0]?.args[0] ??
+    const typeHint = bodyAnnotation.target
+      .annotations(TypeHint)
+      .find({ searchParents: true })[0]?.args[0];
+    // ??
     // (
-    //   bodyAnnotation.target.parent.getMetadata(
+    //   bodyAnnotation.target.declaringClass.getMetadata(
     //     'design:paramtypes',
     //   ) as unknown[]
     // )[bodyAnnotation.target.parameterIndex];
 
     return {
       value: bodyAnnotation.target.eval(),
-      typeHint: Object.getPrototypeOf(bodyAnnotation.target.eval()).constructor,
+      typeHint:
+        typeHint ??
+        Object.getPrototypeOf(bodyAnnotation.target.eval()).constructor,
     };
   }
 

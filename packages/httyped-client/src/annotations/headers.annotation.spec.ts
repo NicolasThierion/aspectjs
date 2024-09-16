@@ -4,7 +4,6 @@ import 'whatwg-fetch';
 import { configureTesting } from '@aspectjs/common/testing';
 import { abstract } from '@aspectjs/common/utils';
 import { WeaverModule, getWeaver } from '@aspectjs/core';
-import nodeFetch from 'node-fetch';
 import { HttypedClientAspect } from '../aspects/httyped-client.aspect';
 import { HttypedClientFactory } from '../client-factory/client.factory';
 import { ALL_FETCH_ANNOTATIONS } from '../test-helpers/all-fetch-annotations.helper';
@@ -20,7 +19,7 @@ interface IApi {
 describe.each(ALL_FETCH_ANNOTATIONS)(
   `${Headers}({<name>: <value>}) annotation`,
   ({ annotation, method }) => {
-    let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
+    let fetchAdapter: typeof fetch & jest.SpyInstance;
     let httypedClientFactory: HttypedClientFactory;
     let httypedClientAspect: HttypedClientAspect;
     let api: IApi;
@@ -59,13 +58,9 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
         it('adds the given header to the request', async () => {
           await api.method();
           expect(fetchAdapter).toHaveBeenCalled();
-          const requestInit: RequestInit = fetchAdapter.mock.calls[0][1];
-          expect(requestInit.headers).toEqual(
-            expect.objectContaining({
-              header1: 'value1',
-              header2: 'value2',
-            }),
-          );
+          const request: Request = fetchAdapter.mock.calls[0][0];
+          expect(request.headers.get('header1')).toEqual('value1');
+          expect(request.headers.get('header2')).toEqual('value2');
         });
 
         describe(`when parent class is annotated with ${Headers}`, () => {
@@ -91,14 +86,10 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
 
             await api.method();
             expect(fetchAdapter).toHaveBeenCalled();
-            const requestInit: RequestInit = fetchAdapter.mock.calls[0][1];
-            expect(requestInit.headers).toEqual(
-              expect.objectContaining({
-                parentHeader: 'parentValue',
-                header1: 'value1',
-                header2: 'value2',
-              }),
-            );
+            const request: Request = fetchAdapter.mock.calls[0][0];
+            expect(request.headers.get('parentHeader')).toEqual('parentValue');
+            expect(request.headers.get('header1')).toEqual('value1');
+            expect(request.headers.get('header2')).toEqual('value2');
           });
         });
       });
@@ -119,13 +110,9 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
         it('merges with the headers of the class', async () => {
           await api.method();
           expect(fetchAdapter).toHaveBeenCalled();
-          const requestInit: RequestInit = fetchAdapter.mock.calls[0][1];
-          expect(requestInit.headers).toEqual(
-            expect.objectContaining({
-              header1: 'classValue1',
-              header2: 'methodValue2',
-            }),
-          );
+          const request: Request = fetchAdapter.mock.calls[0][0];
+          expect(request.headers.get('header1')).toEqual('classValue1');
+          expect(request.headers.get('header2')).toEqual('methodValue2');
         });
       });
       describe('on a property', () => {
@@ -137,6 +124,8 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
               prop!: string;
               async method(...args: any[]): Promise<any> {}
             }
+
+            httypedClientFactory.create(Api).prop;
           }).toThrow(
             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on property Api.prop`,
           );
@@ -152,6 +141,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
                 x: string,
               ): Promise<any> {}
             }
+            httypedClientFactory.create(Api).method('');
           }).toThrow(
             `[ajs.httyped-client]: Annotations are not allowed: ${Headers.ref} on argument Api.method[0]`,
           );

@@ -3,7 +3,6 @@ import 'whatwg-fetch';
 
 import { configureTesting } from '@aspectjs/common/testing';
 import { getWeaver, WeaverModule } from '@aspectjs/core';
-import nodeFetch from 'node-fetch';
 import { HttypedClientAspect } from '../aspects/httyped-client.aspect';
 import { HttypedClientFactory } from '../client-factory/client.factory';
 import { ALL_FETCH_ANNOTATIONS } from '../test-helpers/all-fetch-annotations.helper';
@@ -19,7 +18,7 @@ const TEST_BASE_URL = 'http://testbaseurl:8080';
 describe.each(ALL_FETCH_ANNOTATIONS)(
   `${RequestParam}() argument of method annotated with $annotationName()`,
   ({ annotation, method }) => {
-    let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
+    let fetchAdapter: typeof fetch & jest.SpyInstance;
     let httypedClientFactory: HttypedClientFactory;
     let httypedClientAspect: HttypedClientAspect;
     let api: IHttpClientApi;
@@ -49,7 +48,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
       it('appends query string "?param=value" to the request', async () => {
         await api.method('value');
         expect(fetchAdapter).toHaveBeenCalled();
-        const url = new URL(fetchAdapter.mock.calls[0][0]);
+        const url = new URL(fetchAdapter.mock.calls[0][0].url);
         const { searchParams } = url;
         expect(`${searchParams}`).toEqual(`param=value`);
       });
@@ -72,7 +71,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
         await api.method('value1', 'value2');
 
         expect(fetchAdapter).toHaveBeenCalled();
-        const url = new URL(fetchAdapter.mock.calls[0][0]);
+        const url = new URL(fetchAdapter.mock.calls[0][0].url);
         const { searchParams } = url;
         expect(`${searchParams}`).toEqual(`param1=value1&param2=value2`);
       });
@@ -95,7 +94,7 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
         await api.method('value1', 'value2');
 
         expect(fetchAdapter).toHaveBeenCalled();
-        const url = new URL(fetchAdapter.mock.calls[0][0]);
+        const url = new URL(fetchAdapter.mock.calls[0][0].url);
         const { searchParams } = url;
         expect(`${searchParams}`).toEqual(`param=value1&param=value2`);
       });

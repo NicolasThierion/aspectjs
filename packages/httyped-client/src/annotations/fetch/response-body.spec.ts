@@ -4,7 +4,6 @@ import 'whatwg-fetch';
 import { configureTesting } from '@aspectjs/common/testing';
 import { abstract } from '@aspectjs/common/utils';
 import { getWeaver, WeaverModule } from '@aspectjs/core';
-import nodeFetch from 'node-fetch';
 import { HttypedClientAspect } from '../../aspects/httyped-client.aspect';
 import { HttypedClientFactory } from '../../client-factory/client.factory';
 import { ALL_FETCH_ANNOTATIONS } from '../../test-helpers/all-fetch-annotations.helper';
@@ -33,7 +32,7 @@ class User {
 describe.each(ALL_FETCH_ANNOTATIONS)(
   'Given a method annotated with $annotationName(<path>) that returns a value',
   ({ annotation, method }) => {
-    let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
+    let fetchAdapter: typeof fetch & jest.SpyInstance;
     let httypedClientFactory: HttypedClientFactory;
     let httypedClientAspect: HttypedClientAspect;
     let api: IApi;

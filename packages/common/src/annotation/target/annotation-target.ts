@@ -1,5 +1,10 @@
 import { MethodPropertyDescriptor, Prototype } from '@aspectjs/common/utils';
-import type { AnnotationKind } from '../annotation.types';
+import type {
+  Annotation,
+  AnnotationKind,
+  AnnotationStub,
+} from '../annotation.types';
+import { AnnotationsSelector } from '../context/registry/selector';
 
 /**
  * @internal
@@ -36,6 +41,16 @@ export interface BaseAnnotationTarget<
     key: string,
     defaultvalue?: () => T,
   ): T | undefined;
+
+  annotations<
+    T extends AnnotationKind,
+    S extends AnnotationStub = AnnotationStub,
+  >(
+    annotation: S,
+  ): AnnotationsSelector<T, S>;
+  annotations(
+    ...annotation: Annotation[]
+  ): AnnotationsSelector<AnnotationKind, AnnotationStub>;
 }
 
 /**

@@ -80,11 +80,24 @@ export class AnnotationByTargetSelector<
     return this.createSelector([AnnotationKind.PROPERTY], type, propertyKey);
   }
 
-  onArgs<X, K extends keyof X = keyof X>(
+  onParameters<X, K extends keyof X = keyof X>(
     type?: ConstructorType<X> | X,
     propertyKey?: K,
   ): AnnotationsSelector<AnnotationKind.PARAMETER, S, X> {
     return this.createSelector([AnnotationKind.PARAMETER], type, propertyKey);
+  }
+
+  onParameter<X, K extends keyof X = keyof X>(
+    type: ConstructorType<X> | X,
+    propertyKey: K,
+    parameterIndex: number,
+  ): AnnotationsSelector<AnnotationKind.PARAMETER, S, X> {
+    return this.createSelector(
+      [AnnotationKind.PARAMETER],
+      type,
+      propertyKey,
+      parameterIndex,
+    );
   }
 
   private createSelector<
@@ -95,6 +108,7 @@ export class AnnotationByTargetSelector<
     annotationTypes: T[],
     targetType?: X | ConstructorType<X>,
     propertyKey?: K,
+    parameterIndex?: number,
   ): AnnotationsSelector<T, S, X> {
     const selection = new AnnotationsSelector<T, S, X>(
       this.targetFactory,
@@ -103,6 +117,7 @@ export class AnnotationByTargetSelector<
       annotationTypes,
       targetType,
       propertyKey as string | symbol,
+      parameterIndex,
     );
     if (isClassInstance(targetType)) {
       return new BoundAnnotationsSelector<T, S, X>(selection, targetType);

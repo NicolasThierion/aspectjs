@@ -5,23 +5,23 @@ import { Mapper, MappersRegistry } from '../types/mapper.type';
 import { RequestHandler } from '../types/request-handler.type';
 import { ResponseHandler } from '../types/response-handler.type';
 import { HttypedClientConfig } from './client-config.type';
+import { CONTENT_TYPE_JSON_REQUEST_HANDLER } from './content-type-json-request-handler';
 import { MAP_JSON_RESPONSE_HANDLER } from './default-json-response-handler';
 import { DefaultPathVariablesHandler } from './path-variables-handler.type';
 import { DefaultRequestParamHandler } from './request-param-handler.type';
 
-const DEFAULT_CONFIG: Required<HttypedClientConfig> = {
-  responseHandlers: [MAP_JSON_RESPONSE_HANDLER],
-  requestHandlers: [],
-  baseUrl: '',
-  requestInit: {},
-  fetchAdapter: fetch,
-  requestBodyMappers: new MappersRegistry(),
-  responseBodyMappers: new MappersRegistry(),
-  pathVariablesHandler: new DefaultPathVariablesHandler().replace,
-  requestParamsHandler: new DefaultRequestParamHandler().stringify,
-};
-
 export class HttypedClientFactory {
+  static DEFAULT_CONFIG: Required<HttypedClientConfig> = {
+    responseHandlers: [MAP_JSON_RESPONSE_HANDLER],
+    requestHandlers: [CONTENT_TYPE_JSON_REQUEST_HANDLER],
+    baseUrl: '',
+    requestInit: {},
+    fetchAdapter: fetch,
+    requestBodyMappers: new MappersRegistry(),
+    responseBodyMappers: new MappersRegistry(),
+    pathVariablesHandler: new DefaultPathVariablesHandler().replace,
+    requestParamsHandler: new DefaultRequestParamHandler().stringify,
+  };
   protected readonly config: Required<HttypedClientConfig>;
 
   constructor(config?: HttypedClientConfig | HttypedClientFactory) {
@@ -89,11 +89,11 @@ function coerceConfig(
 ): Required<HttypedClientConfig> {
   return typeof config === 'string'
     ? {
-        ...DEFAULT_CONFIG,
+        ...HttypedClientFactory.DEFAULT_CONFIG,
         baseUrl: config,
       }
     : {
-        ...DEFAULT_CONFIG,
+        ...HttypedClientFactory.DEFAULT_CONFIG,
         ...config,
       };
 }

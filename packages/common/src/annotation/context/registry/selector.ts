@@ -26,6 +26,7 @@ export class AnnotationsSelector<
   private readonly decoratorTypes: T[];
   private readonly type?: ConstructorType<X>;
   private readonly propertyKey?: string | symbol;
+  private readonly parameterIndex?: number;
 
   constructor(selector: AnnotationsSelector<T, S, X>);
   constructor(
@@ -35,6 +36,7 @@ export class AnnotationsSelector<
     decoratorTypes: T[],
     type?: ConstructorType<X> | X,
     propertyKey?: string | symbol,
+    parameterIndex?: number,
   );
   constructor(
     targetFactory: AnnotationTargetFactory | AnnotationsSelector<T, S, X>,
@@ -43,6 +45,7 @@ export class AnnotationsSelector<
     decoratorTypes?: T[],
     type?: ConstructorType<X> | X,
     propertyKey?: string | symbol,
+    parameterIndex?: number,
   ) {
     if (targetFactory instanceof AnnotationsSelector) {
       const selection = targetFactory;
@@ -52,6 +55,7 @@ export class AnnotationsSelector<
       this.decoratorTypes = selection.decoratorTypes;
       this.type = selection.type;
       this.propertyKey = selection.propertyKey;
+      this.parameterIndex = selection.parameterIndex;
     } else {
       this.targetFactory = targetFactory;
       this.annotationSet = annotationSet!;
@@ -59,6 +63,7 @@ export class AnnotationsSelector<
       this.decoratorTypes = decoratorTypes!;
       this.type = type ? getPrototype(type).constructor : undefined;
       this.propertyKey = propertyKey;
+      this.parameterIndex = parameterIndex;
     }
   }
 
@@ -87,7 +92,7 @@ export class AnnotationsSelector<
         ? [classTarget, ...getAncestors(classTarget)]
         : [classTarget];
 
-    return classTargets
+    const contexts = classTargets
       .map((target) => target.ref)
       .flatMap((ref) =>
         this.annotationSet.getAnnotations(
@@ -97,6 +102,16 @@ export class AnnotationsSelector<
           this.propertyKey,
         ),
       ) as AnnotationContext<T, S, X>[];
+
+    if (typeof this.parameterIndex === 'undefined') {
+      return contexts;
+    }
+
+    return contexts.filter(
+      (c) =>
+        (c.target as AnnotationTarget<AnnotationKind.PARAMETER>)
+          .parameterIndex === this.parameterIndex,
+    );
   }
 }
 

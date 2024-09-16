@@ -5,17 +5,19 @@ import {
 } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
 
+import { ConcreteConstructorType } from '@aspectjs/common/utils';
 import { AnnotationContextRegistry } from './annotation-context.registry';
 
 describe('AnnotationContextRegistry', () => {
   let annotationContextRegistry: AnnotationContextRegistry;
 
-  let A = class A {
-    prop1!: string;
-    prop2!: string;
-    fn1(..._args: any[]): any {}
-    fn2(..._args: any[]): any {}
-  };
+  interface IA {
+    prop1: string;
+    prop2: string;
+    fn1(..._args: any[]): any;
+    fn2(..._args: any[]): any;
+  }
+  let A: ConcreteConstructorType<IA>;
   let B = class B {};
   let X = class X {};
 
@@ -89,18 +91,18 @@ describe('AnnotationContextRegistry', () => {
     @A2Annotation('A2')
     @A1ClassAnnotation('A1class')
     @A2ClassAnnotation('A2class')
-    class _A extends A {
+    class _A implements IA {
       @A1Annotation('A1')
       @A1PropertyAnnotation('A1prop')
-      override prop1 = 'propA1';
+      prop1 = 'propA1';
 
       @A2Annotation('A2')
       @A2PropertyAnnotation('A2prop')
-      override prop2 = 'propA2';
+      prop2 = 'propA2';
 
       @A1Annotation('A1')
       @A1MethodAnnotation('A1method')
-      override fn1(
+      fn1(
         @A1Annotation('A1')
         @A1ParameterAnnotation('A1parameter')
         _arg: string,
@@ -110,7 +112,7 @@ describe('AnnotationContextRegistry', () => {
 
       @A2Annotation('A2')
       @A2MethodAnnotation('A2method')
-      override fn2(
+      fn2(
         @A2Annotation('A2')
         @A2ParameterAnnotation('A2parameter')
         _arg: string,
@@ -477,11 +479,11 @@ describe('AnnotationContextRegistry', () => {
         });
       });
     });
-    describe(`.onArgs().find()`, () => {
+    describe(`.onParameters().find()`, () => {
       it('returns all annotations found on methods arguments', () => {
         expect(
           s
-            .onArgs()
+            .onParameters()
             .find()
             .map((a) => a.ref),
         ).toEqual(
@@ -492,12 +494,12 @@ describe('AnnotationContextRegistry', () => {
         );
       });
     });
-    describe(`.onArgs(A).find()`, () => {
+    describe(`.onParameters(A).find()`, () => {
       describe('if arguments on A have annotations', () => {
         it('returns all annotations found on any argument of a method of class A', () => {
           expect(
             s
-              .onArgs(A)
+              .onParameters(A)
               .find()
               .map((a) => a.ref),
           ).toEqual(expect.arrayContaining([...A_PARAMETER_ANNOTATIONS]));
@@ -506,18 +508,18 @@ describe('AnnotationContextRegistry', () => {
 
       describe('if arguments on A do not have annotations', () => {
         it('returns an empty array', () => {
-          expect(s.onArgs(X).find()).toEqual([]);
+          expect(s.onParameters(X).find()).toEqual([]);
         });
       });
     });
 
-    describe(`.onArgs(A, 'fn')`, () => {
+    describe(`.onParameters(A, 'fn')`, () => {
       describe('.find()', () => {
         describe('if method "fn" exists on class A', () => {
           it('returns all annotations found on any argument of method "A.fn"', () => {
             expect(
               s
-                .onArgs(A, 'fn1' as any)
+                .onParameters(A, 'fn1' as any)
                 .find()
                 .map((a) => a.ref),
             ).toEqual(
@@ -531,7 +533,40 @@ describe('AnnotationContextRegistry', () => {
       });
       describe('if method "fn" does not exist on class A', () => {
         it('returns an empty array', () => {
-          expect(s.onArgs(A, 'fnX' as any)).toEqual(expect.arrayContaining([]));
+          expect(s.onParameters(A, 'fnX' as any)).toEqual(
+            expect.arrayContaining([]),
+          );
+        });
+      });
+    });
+
+    describe(`.onParameter(A, 'fn', 0)`, () => {
+      describe('.find()', () => {
+        beforeEach(() => {
+          class _A implements IA {
+            prop1!: string;
+            prop2!: string;
+            fn1(@A1Annotation() a: any, @B1Annotation() b: any): any {}
+            fn2(): any {}
+            fn3(@A2Annotation() a: any, @B2Annotation() b: any): any {}
+          }
+
+          A = _A;
+        });
+        describe('if parameter 0 exists for method "fn"', () => {
+          it('returns all annotations found on the first argument of method "A.fn"', () => {
+            expect(
+              s
+                .onParameter(A, 'fn1', 0)
+                .find()
+                .map((a) => a.ref),
+            ).toEqual([A1Annotation.ref]);
+          });
+        });
+        describe('if parameter 0 of method "fn" does not exist', () => {
+          it('returns an empty array', () => {
+            expect(s.onParameter(A, 'fn2', 0).find()).toEqual([]);
+          });
         });
       });
     });
@@ -712,11 +747,11 @@ describe('AnnotationContextRegistry', () => {
           });
         });
       });
-      describe(`.onArgs().find()`, () => {
+      describe(`.onParameters().find()`, () => {
         it('returns all "AAnnotation" annotations found on methods arguments', () => {
           expect(
             s
-              .onArgs()
+              .onParameters()
               .find()
               .map((a) => a.ref),
           ).toEqual(
@@ -726,12 +761,12 @@ describe('AnnotationContextRegistry', () => {
           );
         });
       });
-      describe(`.onArgs(A).find()`, () => {
+      describe(`.onParameters(A).find()`, () => {
         describe('if arguments on A have "AAnnotation" annotations', () => {
           it('returns all annotations found on any argument of a method of class A', () => {
             expect(
               s
-                .onArgs(A)
+                .onParameters(A)
                 .find()
                 .map((a) => a.ref),
             ).toEqual(
@@ -744,17 +779,17 @@ describe('AnnotationContextRegistry', () => {
 
         describe('if arguments on A do not have "AAnnotation" annotations', () => {
           it('returns an empty array', () => {
-            expect(s.onArgs(B).find()).toEqual([]);
+            expect(s.onParameters(B).find()).toEqual([]);
           });
         });
       });
 
-      describe(`.onArgs(A, 'fn').find()`, () => {
+      describe(`.onParameters(A, 'fn').find()`, () => {
         describe('if method "fn" exists on class A', () => {
           it('returns all "AAnnotation" annotations found on any argument of method "A.fn"', () => {
             expect(
               s
-                .onArgs(A, 'fn1' as any)
+                .onParameters(A, 'fn1' as any)
                 .find()
                 .map((a) => a.ref),
             ).toEqual(expect.arrayContaining([A1Annotation.ref]));
@@ -762,7 +797,7 @@ describe('AnnotationContextRegistry', () => {
         });
         describe('if method "fn" does not have AAnnotation annotations', () => {
           it('returns an empty array', () => {
-            expect(s.onArgs(B, 'fnX' as any)).toEqual(
+            expect(s.onParameters(B, 'fnX' as any)).toEqual(
               expect.arrayContaining([]),
             );
           });

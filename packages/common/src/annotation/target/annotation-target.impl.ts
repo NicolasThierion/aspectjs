@@ -1,5 +1,12 @@
 import { Prototype } from '@aspectjs/common/utils';
-import { AnnotationKind } from '../annotation.types';
+import { AnnotationRef } from '../annotation-ref';
+import {
+  Annotation,
+  AnnotationKind,
+  AnnotationStub,
+} from '../annotation.types';
+import { getAnnotations } from '../context/annotations.global';
+import { AnnotationsSelector } from '../context/registry/selector';
 import {
   AnnotationTarget,
   AnnotationTargetRef,
@@ -45,6 +52,47 @@ export abstract class _AnnotationTargetImpl<
     staticAttribute: boolean = false,
   ) {
     this['static'] = staticAttribute;
+  }
+
+  annotations<
+    T extends AnnotationKind,
+    S extends AnnotationStub = AnnotationStub,
+  >(annotation: S): AnnotationsSelector<T, S>;
+  annotations(
+    ...annotation: (Annotation | AnnotationRef | string)[]
+  ): AnnotationsSelector<AnnotationKind, AnnotationStub>;
+  annotations(
+    ...annotations: (Annotation | AnnotationRef | string)[]
+  ): AnnotationsSelector<AnnotationKind, AnnotationStub> {
+    switch (this.kind) {
+      case AnnotationKind.CLASS:
+        return getAnnotations(...annotations).onClass(this.proto.constructor);
+      case AnnotationKind.PROPERTY:
+        const propertyTarget =
+          this as unknown as AnnotationTarget<AnnotationKind.PROPERTY>;
+        return getAnnotations(...annotations).onProperty(
+          this.proto,
+          propertyTarget.propertyKey as any,
+        );
+      case AnnotationKind.METHOD:
+        const methodTarget =
+          this as unknown as AnnotationTarget<AnnotationKind.METHOD>;
+        return getAnnotations(...annotations).onMethod(
+          methodTarget.proto,
+          methodTarget.propertyKey as any,
+        );
+      case AnnotationKind.PARAMETER:
+        const parameterTarget =
+          this as unknown as AnnotationTarget<AnnotationKind.PARAMETER>;
+        return getAnnotations(...annotations).onParameter(
+          parameterTarget.proto,
+          parameterTarget.propertyKey as any,
+          parameterTarget.parameterIndex,
+        );
+
+      default:
+        throw new TypeError(`unknown annotation target kind: ${this.kind}`);
+    }
   }
   abstract asDecoratorArgs(): any[];
 

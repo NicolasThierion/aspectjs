@@ -1,4 +1,3 @@
-import nodeFetch from 'node-fetch';
 import 'reflect-metadata';
 import 'whatwg-fetch';
 
@@ -19,7 +18,7 @@ interface IHttpClientApi {
 const TEST_BASE_URL = 'http://testbaseurl';
 
 describe('@Body() on a method parameter', () => {
-  let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
+  let fetchAdapter: typeof fetch & jest.SpyInstance;
   let httypedClientFactory: HttypedClientFactory;
   let api: IHttpClientApi;
   let responseBodyMappers: MappersRegistry;
@@ -76,7 +75,8 @@ describe('@Body() on a method parameter', () => {
     await api.method('rest-body');
 
     expect(fetchAdapter).toBeCalledTimes(1);
-    expect(fetchAdapter.mock.calls[0][1].body).toEqual('rest-body');
+    const request: Request = fetchAdapter.mock.calls[0][0];
+    expect(await request.text()).toEqual('rest-body');
   });
 
   describe('when the aspect is given a mapper', () => {
@@ -95,7 +95,9 @@ describe('@Body() on a method parameter', () => {
         await api.method('rest-body');
 
         expect(fetchAdapter).toBeCalledTimes(1);
-        expect(fetchAdapter.mock.calls[0][1].body).toEqual('rest-body');
+        const request: Request = fetchAdapter.mock.calls[0][0];
+
+        expect(await request.text()).toEqual('rest-body');
       });
     });
     describe('that accepts the given body', () => {
@@ -111,12 +113,13 @@ describe('@Body() on a method parameter', () => {
         });
       });
 
-      it('calls the http adapter with the mapped body', () => {
+      it('calls the http adapter with the mapped body', async () => {
         expect(fetchAdapter).not.toBeCalled();
         api.method('rest-body');
 
         expect(fetchAdapter).toBeCalledTimes(1);
-        expect(fetchAdapter.mock.calls[0][1].body).toEqual('REST-BODY');
+        const request: Request = fetchAdapter.mock.calls[0][0];
+        expect(await request.text()).toEqual('REST-BODY');
       });
 
       it('calls the mapper with proper type hint', () => {

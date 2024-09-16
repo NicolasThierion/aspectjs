@@ -6,7 +6,6 @@ import 'whatwg-fetch';
 
 import { configureTesting } from '@aspectjs/common/testing';
 import { getWeaver, WeaverModule } from '@aspectjs/core';
-import nodeFetch from 'node-fetch';
 import { HttypedClientAspect } from '../aspects/httyped-client.aspect';
 import { HttypedClientFactory } from '../client-factory/client.factory';
 import { ALL_FETCH_ANNOTATIONS } from '../test-helpers/all-fetch-annotations.helper';
@@ -22,7 +21,7 @@ const TEST_BASE_URL = 'http://testbaseurl:8080';
 describe.each(ALL_FETCH_ANNOTATIONS)(
   '$annotationName(path/:pathVariable) annotation on a method',
   ({ annotation, method }) => {
-    let fetchAdapter: typeof nodeFetch & jest.SpyInstance;
+    let fetchAdapter: typeof fetch & jest.SpyInstance;
     let httypedClientFactory: HttypedClientFactory;
     let httypedClientAspect: HttypedClientAspect;
     let api: IHttpClientApi;
@@ -113,11 +112,10 @@ describe.each(ALL_FETCH_ANNOTATIONS)(
       it(`calls fetch("<path>", { method: ${method}})`, async () => {
         await api.method('a', 'b');
         expect(fetchAdapter).toHaveBeenCalled();
-        expect(fetchAdapter).toHaveBeenCalledWith(
-          `${TEST_BASE_URL}/a/b`,
-          expect.objectContaining({
-            method,
-          }),
+        const request: Request = fetchAdapter.mock.calls[0][0];
+        expect(request.url).toEqual(`${TEST_BASE_URL}/a/b/`);
+        expect(request.method.toLocaleLowerCase()).toEqual(
+          method.toLocaleLowerCase(),
         );
       });
     });

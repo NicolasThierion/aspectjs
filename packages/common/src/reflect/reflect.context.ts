@@ -11,9 +11,11 @@ import { ANNOTATION_REGISTRY_PROVIDERS } from '../annotation/registry/annotation
 import { ANNOTATION_TARGET_FACTORY_PROVIDERS } from '../annotation/target/annotation-target-factory.provider';
 import { ReflectModule } from './module/reflect-module.type';
 import type { ReflectProvider } from './reflect-provider.type';
+import { RUNTIME_STATE_PROVIDER } from './runtime-state.provider';
 
 @ReflectModule({
   providers: [
+    RUNTIME_STATE_PROVIDER,
     ...ANNOTATION_REGISTRY_PROVIDERS,
     ...ANNOTATION_CONTEXT_REGISTRY_PROVIDERS,
     ...ANNOTATION_HOOK_REGISTRY_PROVIDERS,

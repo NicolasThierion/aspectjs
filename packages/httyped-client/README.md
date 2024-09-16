@@ -40,12 +40,12 @@ import {
 @HttypedClient('users')
 export abstract class UsersApi {
   @Get()
-  find(@RequestParams() search?: { username?: string }) {
+  async find(@RequestParams() search?: { username?: string }) {
     return abstract([User]);
   }
 
   @Get(':id')
-  getById(@PathVariable('id') id: number) {
+  async getById(@PathVariable('id') id: number) {
     return abstract(User);
   }
 }
@@ -115,12 +115,12 @@ _httyped-client_ takes care of the following for you:
   export abstract class UsersApi {
     @Get()
     @TypeHint([User])
-    find(@RequestParams() search?: { username?: string }) {
+    async find(@RequestParams() search?: { username?: string }) {
       return abstract<User[]>();
     }
 
     @Get(':id')
-    getById(@PathVariable('id') id: number) {
+    async getById(@PathVariable('id') id: number) {
       return abstract(User);
     }
   }

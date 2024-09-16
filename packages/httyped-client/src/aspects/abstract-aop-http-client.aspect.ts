@@ -26,10 +26,9 @@ export abstract class AbstractAopHttpClientAspect {
 
   protected callHttpAdapter(
     endpointConfig: Required<HttypedClientConfig>,
-    url: string,
-    requestInit: RequestInit,
+    request: Request,
   ) {
-    return endpointConfig.fetchAdapter(url, requestInit as any);
+    return endpointConfig.fetchAdapter(request);
   }
 
   protected replacePathVariables(
@@ -83,7 +82,7 @@ export abstract class AbstractAopHttpClientAspect {
     requestInit: Request,
   ) {
     for (const h of config.requestHandlers) {
-      requestInit = h(requestInit) ?? requestInit;
+      h(requestInit);
     }
     return requestInit;
   }
@@ -101,9 +100,14 @@ export abstract class AbstractAopHttpClientAspect {
     return mappedResponse;
   }
 
+  /**
+   * Define a base configuration for the given Httyped client instance.
+   * @param config
+   * @param clientInstance
+   */
   protected setClientConfig(
-    config: Required<HttypedClientConfig>,
     clientInstance: InstanceType<any>,
+    config: Required<HttypedClientConfig>,
   ) {
     Reflect.defineMetadata(
       `${this.aspectId}:client-config`,
@@ -121,6 +125,11 @@ export abstract class AbstractAopHttpClientAspect {
     );
   }
 
+  /**
+   * Has the given instance be created with HttypedClientFactory ?
+   * @param clientInstance
+   * @returns true if the instance is created with HttypedClientFactory
+   */
   protected isManagedInstance(clientInstance: InstanceType<any>) {
     return !!this.getClientConfig(clientInstance);
   }
@@ -201,8 +210,9 @@ export abstract class AbstractAopHttpClientAspect {
   protected joinUrls(...paths: (string | undefined)[]): string {
     return paths
       .map((u) => u ?? '')
-      .map((u) => u.replace(/^\//, ''))
+      .map((u) => u.replace(/^\//, '').replace(/\/$/, ''))
       .filter((url) => url !== '')
-      .join('/');
+      .map((u) => `${u}/`)
+      .join('');
   }
 }

@@ -1,25 +1,37 @@
 import { abstract } from '@aspectjs/common/utils';
+import { Body } from '../src/annotations/body.annotation';
+import { Get } from '../src/annotations/fetch/get.annotation';
+import { Post } from '../src/annotations/fetch/post.annotation';
+import { Headers } from '../src/annotations/headers.annotation';
+import { HttypedClient } from '../src/annotations/http-client.annotation';
 import { PathVariable } from '../src/annotations/path-variable.annotation';
-import { TypeHint } from '../src/annotations/type.annotation';
-import { Get, HttypedClient, RequestParams } from '../src/public_api';
-import { Post } from './post.model';
+import { RequestParams } from '../src/annotations/request-params.annotation';
+import { Post as _Post } from './post.model';
 import { User } from './user.model';
 
 @HttypedClient('users')
 export abstract class UsersApi {
   @Get()
-  @TypeHint([User])
-  find(@RequestParams() search?: { username?: string }) {
-    return abstract<User[]>();
+  async find(@RequestParams() search?: { username?: string }) {
+    return abstract([User]);
   }
 
   @Get(':id')
-  getById(@PathVariable('id') id: number) {
+  async getById(@PathVariable('id') id: number) {
     return abstract(User);
   }
 
   @Get(':id/posts')
-  getUsersPosts(@PathVariable('id') userId: number) {
-    return abstract([Post]);
+  async getUsersPosts(@PathVariable('id') userId: number) {
+    return abstract([_Post]);
+  }
+
+  @Post()
+  @Headers({ 'Content-Type': 'raw' })
+  async create(
+    @Body()
+    user: User,
+  ) {
+    return abstract<void>();
   }
 }

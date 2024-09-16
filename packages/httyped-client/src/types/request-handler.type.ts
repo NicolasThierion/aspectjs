@@ -1,1 +1,1 @@
-export type RequestHandler = (request: Request) => any;
+export type RequestHandler = (request: Request) => void;
