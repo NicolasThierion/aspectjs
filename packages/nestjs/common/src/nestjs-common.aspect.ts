@@ -52,22 +52,22 @@ export class NestCommonAspect {
   constructor() {
     // 'NestCommonMixin'
 
-    // bridge @aspectjs/nestjs/common annotations
+    // bind @aspectjs/nestjs/common annotations
     this.mixin
-      .bridge(Get, NGet)
-      .bridge(Post, NPost)
-      .bridge(Put, NPut)
-      .bridge(Patch, NPatch)
-      .bridge(Delete, NDelete)
-      .bridge(Options, NOptions)
-      .bridge(Head, NHead)
-      .bridge(Body, NBody)
-      .bridge(Param, NParam)
-      .bridge(Query, NQuery);
+      .bind(Get, NGet)
+      .bind(Post, NPost)
+      .bind(Put, NPut)
+      .bind(Patch, NPatch)
+      .bind(Delete, NDelete)
+      .bind(Options, NOptions)
+      .bind(Head, NHead)
+      .bind(Body, NBody)
+      .bind(Param, NParam)
+      .bind(Query, NQuery);
 
     this.mixin
-      .bridge(Injectable, NInjectable)
-      .bridge(Controller as any, NController);
+      .bind(Injectable, NInjectable)
+      .bind(Controller as any, NController);
 
     this.mixin.createAspect(this);
   }

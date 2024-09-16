@@ -13,39 +13,39 @@ import { on } from '../pointcut/pointcut-expression.factory';
 
 export class AnnotationMixin {
   private bridgeCounter = 0;
-  private bridges: [Annotation | AnnotationRef, (...args: any) => any][] = [];
+  private bindings: [Annotation | AnnotationRef, (...args: any) => any][] = [];
 
   constructor() {}
 
-  bridge<
+  bind<
     A extends
       Annotation<AnnotationKind.CLASS> = Annotation<AnnotationKind.CLASS>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => ClassDecorator,
   ): this;
-  bridge<
+  bind<
     A extends
       Annotation<AnnotationKind.METHOD> = Annotation<AnnotationKind.METHOD>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => MethodDecorator,
   ): this;
-  bridge<
+  bind<
     A extends
       Annotation<AnnotationKind.PROPERTY> = Annotation<AnnotationKind.PROPERTY>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => PropertyDecorator,
   ): this;
-  bridge<
+  bind<
     A extends
       Annotation<AnnotationKind.PARAMETER> = Annotation<AnnotationKind.PARAMETER>,
   >(
     annotation: A | AnnotationRef,
     decorator: (...args: Parameters<A>) => ParameterDecorator,
   ): this;
-  bridge(
+  bind(
     annotation: Annotation | AnnotationRef,
     decorator:
       | ((
@@ -57,7 +57,7 @@ export class AnnotationMixin {
           | ParameterDecorator)
       | Annotation,
   ) {
-    this.bridges.push([annotation, decorator]);
+    this.bindings.push([annotation, decorator]);
     return this;
   }
 
@@ -74,15 +74,15 @@ export class AnnotationMixin {
     }
     const proto = getPrototype(aspect);
 
-    this.bridges.forEach(([annotation, decorator]) => {
+    this.bindings.forEach(([annotation, decorator]) => {
       const ref1 = AnnotationRef.of(annotation);
       const ref2 = isAnnotation(decorator)
         ? AnnotationRef.of(decorator as any)
         : `${decorator.name}_${this.bridgeCounter++}`;
 
-      const bridgeAdviceName = `bridge_${ref1}_${ref2}`;
+      const bindingAdviceName = `bridge_${ref1}_${ref2}`;
 
-      Object.defineProperty(proto, bridgeAdviceName, {
+      Object.defineProperty(proto, bindingAdviceName, {
         enumerable: false,
         configurable: true,
         value: function (ctxt: CompileContext) {
@@ -119,18 +119,18 @@ export class AnnotationMixin {
         },
       });
 
-      Object.defineProperty(proto[bridgeAdviceName], 'name', {
-        value: bridgeAdviceName,
+      Object.defineProperty(proto[bindingAdviceName], 'name', {
+        value: bindingAdviceName,
       });
-      const bridgeAdviceProp = Object.getOwnPropertyDescriptor(
+      const bindingAdviceProp = Object.getOwnPropertyDescriptor(
         proto,
-        bridgeAdviceName,
+        bindingAdviceName,
       )!;
-      assert(!!bridgeAdviceProp);
+      assert(!!bindingAdviceProp);
       Compile(on.any.withAnnotations(ref1))(
         proto,
-        bridgeAdviceName,
-        bridgeAdviceProp!,
+        bindingAdviceName,
+        bindingAdviceProp!,
       );
     });
 

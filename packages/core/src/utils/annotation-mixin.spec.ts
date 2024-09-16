@@ -18,7 +18,7 @@ import { WeaverModule } from '../weaver/weaver.module';
 import { AnnotationMixin } from './annotation-mixin';
 
 describe(`AnnotationMixin`, () => {
-  describe('configured to bridge decorator ADecorator(<args>) to annotation B(<args>)', () => {
+  describe('configured to bind decorator ADecorator(<args>) to annotation B(<args>)', () => {
     const af = new AnnotationFactory('test');
     let annotationMixin: AnnotationMixin;
 
@@ -117,25 +117,25 @@ describe(`AnnotationMixin`, () => {
       }
 
       annotationMixin = new AnnotationMixin()
-        .bridge(BClass, (a: string, b: string) =>
+        .bind(BClass, (a: string, b: string) =>
           AClassDecorator(
             a.toLocaleUpperCase() as Uppercase<string>,
             b.toLocaleUpperCase() as Uppercase<string>,
           ),
         )
-        .bridge(BMethod, (a: string, b: string) =>
+        .bind(BMethod, (a: string, b: string) =>
           AMethodDecorator(
             a.toLocaleUpperCase() as Uppercase<string>,
             b.toLocaleUpperCase() as Uppercase<string>,
           ),
         )
-        .bridge(BProperty, (a: string, b: string) =>
+        .bind(BProperty, (a: string, b: string) =>
           BPropertyDecorator(
             a.toLocaleUpperCase() as Uppercase<string>,
             b.toLocaleUpperCase() as Uppercase<string>,
           ),
         )
-        .bridge(BParameter, (a: string, b: string) =>
+        .bind(BParameter, (a: string, b: string) =>
           AParameterDecorator(
             a.toLocaleUpperCase() as Uppercase<string>,
             b.toLocaleUpperCase() as Uppercase<string>,
@@ -158,7 +158,7 @@ describe(`AnnotationMixin`, () => {
     });
 
     describe('using the X annotation on a class', () => {
-      it('calls the bridged decorator', () => {
+      it('calls the bound decorator', () => {
         decoratedClassSpy = jest.fn(function () {
           return function MyClassDecorated(this: any, x: string, y: string) {
             this.x = x.toLocaleUpperCase();
@@ -181,7 +181,7 @@ describe(`AnnotationMixin`, () => {
     });
 
     describe('using the X annotation on a method', () => {
-      it('calls the bridged decorator', () => {
+      it('calls the bound decorator', () => {
         decoratedMethodSpy = jest.fn(function () {
           return function MyMethodDecorated(this: any, x: string, y: string) {
             this.x = x.toLocaleUpperCase();
@@ -212,7 +212,7 @@ describe(`AnnotationMixin`, () => {
     });
 
     describe('using the X annotation on a property', () => {
-      it('calls the bridged decorator', () => {
+      it('calls the bound decorator', () => {
         class MyClass {
           @BProperty('a', 'b')
           prop = 'x';
@@ -225,7 +225,7 @@ describe(`AnnotationMixin`, () => {
     });
 
     describe('using the X annotation on a parameter', () => {
-      it('calls the bridged decorator', () => {
+      it('calls the bound decorator', () => {
         class MyClass {
           m(
             @BParameter('a', 'b')
@@ -243,7 +243,7 @@ describe(`AnnotationMixin`, () => {
     });
   });
 
-  describe('configured to bridge annotation A(<args>) to annotation B(<args>)', () => {
+  describe('configured to bind annotation A(<args>) to annotation B(<args>)', () => {
     const af = new AnnotationFactory('test');
     let annotationMixin: AnnotationMixin;
 
@@ -254,7 +254,7 @@ describe(`AnnotationMixin`, () => {
       A = af.create(function A(a: string, b: string) {});
       B = af.create(function B(a: string, b: string) {});
 
-      annotationMixin = new AnnotationMixin().bridge(A, B);
+      annotationMixin = new AnnotationMixin().bind(A, B);
       configureTesting(WeaverModule);
       getWeaver().enable(annotationMixin.createAspect('test'));
     });

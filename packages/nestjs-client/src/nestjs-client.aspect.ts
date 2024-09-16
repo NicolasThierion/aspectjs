@@ -31,20 +31,20 @@ export class NestClientAspect extends HttypedClientAspect {
 
   constructor() {
     super();
-    this.mixin.bridge(NestClient, HttypedClient);
+    this.mixin.bind(NestClient, HttypedClient);
 
     this.mixin
-      .bridge(Get, this.httpMethodMixinAdapter(HGet))
-      .bridge(Post, this.httpMethodMixinAdapter(HPost))
-      .bridge(Patch, this.httpMethodMixinAdapter(HPatch))
-      .bridge(Put, this.httpMethodMixinAdapter(HPut))
-      .bridge(Delete, this.httpMethodMixinAdapter(HDelete))
-      .bridge(Options, this.httpMethodMixinAdapter(HOptions))
-      .bridge(Head, this.httpMethodMixinAdapter(HHead));
+      .bind(Get, this.httpMethodMixinAdapter(HGet))
+      .bind(Post, this.httpMethodMixinAdapter(HPost))
+      .bind(Patch, this.httpMethodMixinAdapter(HPatch))
+      .bind(Put, this.httpMethodMixinAdapter(HPut))
+      .bind(Delete, this.httpMethodMixinAdapter(HDelete))
+      .bind(Options, this.httpMethodMixinAdapter(HOptions))
+      .bind(Head, this.httpMethodMixinAdapter(HHead));
 
     this.mixin
-      .bridge(Param, this.httpArgumentMixinAdapter(PathVariable))
-      .bridge(Query, this.httpArgumentMixinAdapter(RequestParam));
+      .bind(Param, this.httpArgumentMixinAdapter(PathVariable))
+      .bind(Query, this.httpArgumentMixinAdapter(RequestParam));
 
     this.mixin.createAspect(this);
   }
