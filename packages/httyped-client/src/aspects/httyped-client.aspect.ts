@@ -156,6 +156,10 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
         signal: undefined,
         method: endpointMetadata.method,
       } satisfies Partial<RequestInit> as any);
+      const contentType = this.findBodyAnnotation(ctxt)?.args[0];
+      if (contentType) {
+        request.headers.set('Content-Type', contentType);
+      }
 
       request = this.applyRequestHandlers(config, request);
       url = (request as Request).url;

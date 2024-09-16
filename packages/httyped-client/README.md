@@ -63,12 +63,16 @@ _httyped-client_ takes care of the following for you:
 - Request and response mapping
 - Calling the [`fetch` API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
 
-## ⚙️ Usage:
+## 🏁 Getting started:
 
 - Install the package
+
   ```bash
   npm i @aspectjs/core @aspectjs/common httyped-client
   ```
+
+  HttypedClient uses the [`fetch api`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). Node users may also want to install a fetch implementation (eg: [whatwg-fetch](https://www.npmjs.com/package/whatwg-fetch))
+
 - Configure your `HttypedClientFactory`:
 
   ```ts
@@ -134,9 +138,120 @@ _httyped-client_ takes care of the following for you:
   const users = await usersClient.find({ name: 'John' });
   ```
 
+## ⚙️ Documentation:
+
+### Configuration
+
+The `HttypedClientFactory` accepts the following configuration:
+
+```ts
+export interface HttypedClientConfig {
+  /**
+   * The base url of all requests (eg: host plus base route)
+   */
+  baseUrl: string;
+  /**
+   * A set of options passed to every requests
+   *
+   * default: {}
+   */
+  requestInit?: RequestInit;
+  /**
+   * The fetch implementation to use. Default: native fetch
+   */
+  fetchAdapter?: FetchAdapter;
+  /**
+   * A list of request handlers.
+   */
+  requestHandlers?: RequestHandler[];
+  /**
+   * A list of response handlers.
+   */
+  responseHandlers?: ResponseHandler[];
+  /**
+   * Responses body can be mapped with these mappers
+   */
+  responseBodyMappers?: MappersRegistry;
+  /**
+   * Requests body can be mapped with these mappers
+   */
+  requestBodyMappers?: MappersRegistry;
+  /**
+   * Used to customize how path variables are handled
+   */
+  pathVariablesHandler?: PathVariablesHandler;
+  /**
+   * Used to customize how request parameters are handled
+   */
+  requestParamsHandler?: RequestParamsHandler;
+}
+```
+
+> **info** By default, an http client is configured to send request with `Content-Type: application/json` & to try to parse a response as _json_.
+
+This configuration is inherited in all clients created through the factory, but most parameters can be overriden on a class basis.
+
+### Mappers
+
+HttypedClientFactory can be configured with mappers for the request body & response body.
+
+```ts
+httypedClientFacroty.addResponseBodyMappers({
+  typeHint: User,
+  map: (obj: UserDTO, context: MapperContext) => {
+    obj.address = obj.address = context.findMapper(Address).map(obj.address, context);
+    return obj;
+  },
+  {
+  typeHint: "Address", // typeHint can be specified as a class or as a string
+  map: (obj: AddressDTO, context: MapperContext) => {
+    return new Address(obj);
+  },
+})
+export interface Mapper<T = unknown, U = unknown> {
+  typeHint: TypeHintType | TypeHintType[];
+  map(obj: T, context: MapperContext): U;
+}
+```
+
+In this example, whenever an httypedclient interface returns a User or an array of User, the json response will be mapped automatically.
+
+> **info**
+>
+> - Mappers can be synchronous or asynchronous.
+> - Mappers are called for each items of an array of the corresponding type
+
+### Annotations
+
+You can use these annotations to design your apis:
+
+| Annotation                                   | Kind            | Description                                      |
+| -------------------------------------------- | --------------- | ------------------------------------------------ |
+| `HttypedClient(url?: string)`                | CLASS           | Define a class as an httyped-client              |
+| `Get(path?: string)`                         | METHOD          | Define a method as a "GET" endppoint             |
+| `Post(path?: string)`                        | METHOD          | Define a method as a "POST" endppoint            |
+| `Put(path?: string)`                         | METHOD          | Define a method as a "PUT" endppoint             |
+| `Delete(path?: string)`                      | METHOD          | Define a method as a "DELETE" endppoint          |
+| `Patch(path?: string)`                       | METHOD          | Define a method as a "PATCH" endppoint           |
+| `Options(path?: string)`                     | METHOD          | Define a method as a "OPTIONS" endppoint         |
+| `Head(path?: string)`                        | METHOD          | Define a method as a "HEAD" endppoint            |
+| `Body(contentType?: string)`                 | PARAMETER       | Use an argument as the request body              |
+| `RequestParam(name: string)`                 | PARAMETER       | Add that argument to the search parameters       |
+| `RequestParams(params: Record<string, any>)` | PARAMETER       | Use that argument as a set of search parameters  |
+| `PathVariable(name: string)`                 | PARAMETER       | Replace a variable in the url with this argument |
+| `Header(name: string)`                       | CLASS \| METHOD | Define an HTTP header                            |
+| `Headers()`                                  | CLASS \| METHOD | Define a set of HTTP headers                     |
+
+> **info** HttypedClient supports inheritance. Annotations of the parent class will be merged into the child class configuration
+
+<!--
+
 ## 🔗 Documentation
 
 For more advanced usage, please read the documentation: [https://httyped-client.gitlab.io/](https://httyped-client.gitlab.io/).
+
+
+-->
 
 MIT Licensed
 

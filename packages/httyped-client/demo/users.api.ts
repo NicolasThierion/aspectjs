@@ -2,7 +2,6 @@ import { abstract } from '@aspectjs/common/utils';
 import { Body } from '../src/annotations/body.annotation';
 import { Get } from '../src/annotations/fetch/get.annotation';
 import { Post } from '../src/annotations/fetch/post.annotation';
-import { Headers } from '../src/annotations/headers.annotation';
 import { HttypedClient } from '../src/annotations/http-client.annotation';
 import { PathVariable } from '../src/annotations/path-variable.annotation';
 import { RequestParams } from '../src/annotations/request-params.annotation';
@@ -27,7 +26,6 @@ export abstract class UsersApi {
   }
 
   @Post()
-  @Headers({ 'Content-Type': 'raw' })
   async create(
     @Body()
     user: User,

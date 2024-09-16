@@ -23,7 +23,6 @@ async function main() {
     },
   });
 
-  debugger;
   const localUserApi = cf.create(UsersApi);
   await localUserApi.create(user);
 }

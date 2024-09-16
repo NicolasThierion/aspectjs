@@ -1,0 +1,43 @@
+include:
+  - ci-templates/node.yml
+
+httyped-client:lint:
+  variables:
+    CWD: packages/httyped-client
+  extends: .node:lint
+  stage: test
+  needs:
+    - node:prepare
+
+httyped-client:unit:
+  extends: .node:test:unit
+  variables:
+    CWD: packages/httyped-client
+  stage: test
+  needs:
+    - node:prepare
+
+httyped-client:build:
+  extends: .node:build
+  variables:
+    CWD: packages/httyped-client
+  stage: compile
+  needs:
+    - node:prepare
+
+httyped-client:publish:gitlab:
+  extends: .node:gitlab:publish
+  stage: publish
+  variables:
+    CWD: packages/httyped-client
+    PACKAGE_DIR: ./dist
+
+httyped-client:publish:npm:
+  extends: .node:npm:publish
+  stage: release
+  variables:
+    CWD: packages/httyped-client
+    PACKAGE_DIR: ./dist
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/
+      when: manual

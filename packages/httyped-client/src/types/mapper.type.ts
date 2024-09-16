@@ -6,7 +6,15 @@ export interface MapperContext {
   readonly data: Record<string, unknown>;
 }
 export interface Mapper<T = unknown, U = unknown> {
+  /**
+   * Hint to set this mapper as a candidate for a given type
+   */
   typeHint: TypeHintType | TypeHintType[];
+  /**
+   * Map an object to a given type.
+   * @param obj the object to map
+   * @param context the context of the mapper
+   */
   map(obj: T, context: MapperContext): U;
 }
 
