@@ -20,7 +20,6 @@ export interface SidebarOptions {
 }
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-
 export function configureTypedoc() {
   const entryPoints = findEntrypoints();
 
@@ -64,7 +63,6 @@ export function configureTypedoc() {
   const opts = {
     entryPoints,
     plugin: ['typedoc-plugin-markdown'],
-    includes: entryPoints,
     tsconfig: `${__dirname}/tsconfig.json`,
     cleanOutputDir: true,
     name: 'AspectJS',

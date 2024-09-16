@@ -6,6 +6,9 @@
     "noUnusedLocals": false,
     // "module": "ES2020",
     "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "lib": ["DOM", "ESNext", "ES2015"],
     "noImplicitAny": false,
     // "moduleResolution": "nodenext",
     "downlevelIteration": true

@@ -3,6 +3,7 @@
     "target": "ES2017",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
+    "lib": ["DOM", "ESNext"],
     "declaration": true,
     "emitDeclarationOnly": true,
     "allowImportingTsExtensions": true,
