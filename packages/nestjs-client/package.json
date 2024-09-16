@@ -44,6 +44,6 @@
     "whatwg-fetch": "^3.6.2"
   },
   "dependencies": {
-    "httyped-client": "^0.3.17"
+    "httyped-client": "*"
   }
 }

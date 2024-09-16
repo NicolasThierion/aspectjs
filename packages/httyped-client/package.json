@@ -44,7 +44,7 @@
     "whatwg-fetch": "^3.6.2"
   },
   "peerDependencies": {
-    "@aspectjs/common": "^0.3.17",
-    "@aspectjs/core": "^0.3.17"
+    "@aspectjs/common": "*",
+    "@aspectjs/core": "*"
   }
 }

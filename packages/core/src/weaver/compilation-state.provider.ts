@@ -1,7 +1,5 @@
 import { AdvicesSelection } from '../advice/registry/advices-selection.model';
 
-let globalInstanceId = 0;
-
 enum CompilationStatus {
   DONE = 'DONE',
   PENDING = 'PENDING',

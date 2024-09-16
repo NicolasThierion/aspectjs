@@ -40,6 +40,6 @@
   "module": "./fesm2020/core.mjs",
   "main": "./umd/core.umd.js",
   "peerDependencies": {
-    "@aspectjs/common": "^0.3.17"
+    "@aspectjs/common": "*"
   }
 }

@@ -13,6 +13,13 @@ const { parse } = json5;
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
 
+const BUMPED_PACKAGES = [
+  '@aspectjs/core',
+  '@aspectjs/common',
+  'httyped-client',
+  'nestjs-client',
+  '@aspectjs/nestjs',
+];
 // This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
 interface PackageJson {
   name: string;
@@ -298,17 +305,36 @@ export const createConfig = (
 
         defaultHandler(warning);
       },
-      plugins: copy({
-        targets: [
-          { src: packageJsonPath, dest: `dist/` },
-          { src: assetsDir, dest: `dist/` },
-          {
-            src: readme,
-            dest: `dist/${subExportsPath}`,
-            caseSensitiveMatch: false,
-          },
-        ],
-      }),
+      plugins: [
+        copy({
+          targets: [
+            {
+              src: packageJsonPath,
+              dest: `dist/`,
+              transform(contents) {
+                const packageJson = JSON.parse(contents.toString());
+                BUMPED_PACKAGES.forEach((p) => {
+                  for (const d of [
+                    'dependencies',
+                    'devDependencies',
+                    'peerDependencies',
+                  ])
+                    if (packageJson[d]?.[p]) {
+                      packageJson[d][p] = `^${packageJson['version']}`;
+                    }
+                });
+                return JSON.stringify(packageJson, null, 2);
+              },
+            },
+            { src: assetsDir, dest: `dist/` },
+            {
+              src: readme,
+              dest: `dist/${subExportsPath}`,
+              caseSensitiveMatch: false,
+            },
+          ],
+        }),
+      ],
     });
   }
 
