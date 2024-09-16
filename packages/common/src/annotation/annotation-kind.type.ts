@@ -35,11 +35,11 @@ export type AnnotationStub<T extends AnnotationKind = AnnotationKind> = (
 ) => Decorator<T> | void;
 
 /**
- * @description An Annotation is an EcmaScript decorator with no behavior.
+ * An Annotation is an EcmaScript decorator with no behavior.
  * It is identified by a name and a group ID.
  *
- * @typeparam T - The type of the annotation, derived from `AnnotationKind`.
- * @typeparam S - The type of the annotation stub, derived from `AnnotationStub<T>`.
+ * @typeParam T - The type of the annotation, derived from `AnnotationKind`.
+ * @typeParam S - The type of the annotation stub, derived from `AnnotationStub<T>`.
  */
 export type Annotation<
   T extends AnnotationKind = any,

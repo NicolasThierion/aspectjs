@@ -6,7 +6,7 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
 /**
  * Annotation to declare an advice to be applied around a method.
  *
- * @description The Around annotation is used to apply around advice to a method.
+ * The Around annotation is used to apply around advice to a method.
  *              Around advice is executed before and after the target method's execution.
  *              It allows full control over the method's execution by intercepting the method invocation.
  *              It is commonly used for method interception, performance monitoring, or transaction management.

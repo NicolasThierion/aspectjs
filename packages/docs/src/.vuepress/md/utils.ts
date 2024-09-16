@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, readdirSync } from 'fs';
-import { path } from '@vuepress/utils';
 import { createMarkdown } from '@vuepress/markdown';
+import { path } from '@vuepress/utils';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 
 import { ROOT_DIR } from '../utils';
 
@@ -35,7 +35,7 @@ export function extractInfo(filename: string) {
   return { title, icon };
 }
 
-export function listMdFiles(dirname: string, filterIgnored = true) {
+export function listMdFiles(dirname: string, filterIgnored = true): string[] {
   const dir = path.join(ROOT_DIR, dirname);
   return readdirSync(dir, { withFileTypes: true })
     .filter((f) => f.isFile() && f.name.endsWith('.md'))

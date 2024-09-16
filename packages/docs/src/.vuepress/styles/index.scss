@@ -4,7 +4,7 @@
 // html[data-theme='light'] #app {
 //   --code-color: #686868;
 //   --code-line-color: rgba(63, 64, 66, 0.67);
-//   --code-bg-color: #f0f5ee;
+//   --code-c-bg: #f0f5ee;
 //   --code-border-color: #e2ebde;
 //   --code-highlight-line-color: #d3def5;
 // }
@@ -12,8 +12,8 @@
 html[data-theme='light'] #app {
   --code-color: #686868;
   --code-line-color: rgba(63, 64, 66, 0.67);
-  --code-bg-color: #f1f5ed;
-  --code-border-color: #dce0dc;
+  --code-c-bg: #f1f5ed;
+  --code-tabs-c-bg: #dce0dc;
   --code-highlight-line-color: #d3e6d3;
 }
 

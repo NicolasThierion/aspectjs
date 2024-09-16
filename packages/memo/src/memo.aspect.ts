@@ -13,7 +13,7 @@ interface MemoEntry {
 /**
  * Aspect that enables memoization of method results.
  *
- * @description The MemoAspect is an aspect that can be applied using the `@Memo` annotation to enable
+ * The MemoAspect is an aspect that can be applied using the `@Memo` annotation to enable
  *              memoization of method results. When a method is marked with `@Memo`, the aspect will
  *              cache the returned value of the method based on the method arguments. Subsequent calls
  *              to the method with the same arguments will return the cached result quickly instead of

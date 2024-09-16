@@ -97,7 +97,7 @@ async function _arrayToMappedType<T = unknown, U = unknown>(
     if (!mapper) {
       return array as any[] as U[];
     } else {
-      const res = [];
+      const res: any[] = [];
       for (const u of array) {
         res.push(await mapper.map(u, context));
       }

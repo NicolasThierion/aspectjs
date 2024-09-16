@@ -4,29 +4,15 @@ import { createNavbar } from './navbar/navbar';
 import { customNavbar } from './navbar/navbar.plugin';
 import { createSidebar } from './sidebar/sidebar';
 
-import { searchProPlugin } from 'vuepress-plugin-search-pro';
 import { extendsMarkdown } from './custom-blocks/custom-md';
+import { TYPEDOC_ENTRYPOINTS } from './run-typedoc';
 import { sidebarSorter } from './sidebar/sidebar-sorter';
 import { typedocPluginConfig } from './typedoc/typedoc.plugin';
+
 export default function customTheme(): Theme {
   const plugins: PluginConfig = [
     customNavbar(),
-    typedocPluginConfig(),
-    searchProPlugin({
-      autoSuggestions: false,
-      indexContent: true,
-      customFields: [
-        {
-          getter: (page: Page) => page.frontmatter.category as any,
-          formatter: 'Category: $content',
-        },
-        {
-          getter: (page: Page) => page.frontmatter.tag,
-          formatter: 'Tag: $content',
-        },
-      ],
-      // your options
-    }),
+    typedocPluginConfig(TYPEDOC_ENTRYPOINTS),
     {
       name: 'custom-markdown',
       extendsMarkdown: (md) => {
@@ -79,6 +65,21 @@ export default function customTheme(): Theme {
       },
 
       plugins: {
+        searchPro: {
+          autoSuggestions: false,
+          indexContent: true,
+          customFields: [
+            {
+              getter: (page: Page) => page.frontmatter.category as any,
+              formatter: 'Category: $content',
+            },
+            {
+              getter: (page: Page) => page.frontmatter.tag,
+              formatter: 'Tag: $content',
+            },
+          ],
+          // your options
+        },
         // all features are enabled for demo, only preserve features you need here
         mdEnhance: {
           align: false,
@@ -119,6 +120,10 @@ export default function customTheme(): Theme {
           vuePlayground: false,
         },
         prismjs: {
+          themes: {
+            light: 'gruvbox-light',
+            dark: 'gruvbox-dark',
+          },
           // light: 'one-dark',
           // ateliersulphurpool-light
           // coldark-cold

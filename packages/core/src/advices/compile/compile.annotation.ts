@@ -6,7 +6,7 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
 /**
  * Annotation to declare an advice to be applied at compile time, when a symnol is read bu the interpreter.
  *
- * @description The Compile annotation is used to apply compile advice
+ * The Compile annotation is used to apply compile advice
  * to a symbol. Compile advices are executed once, when the decorators are evaluated by the interpreter.
  *
  * @param pointcutExp (required): The pointcut expression

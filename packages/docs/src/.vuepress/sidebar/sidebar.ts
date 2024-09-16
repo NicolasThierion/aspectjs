@@ -2,8 +2,7 @@ import { path } from '@vuepress/utils';
 import { lstatSync } from 'fs';
 import {
   sidebar,
-  SidebarGroupItem,
-  SidebarItem,
+  SidebarArrayOptions,
   SidebarOptions,
 } from 'vuepress-theme-hope';
 import { extractInfo, findIndexMd, listMdDirs, listMdFiles } from '../md/utils';
@@ -11,10 +10,10 @@ import { extractInfo, findIndexMd, listMdDirs, listMdFiles } from '../md/utils';
 import { LOCALES } from '../locales';
 import { ROOT_DIR } from '../utils';
 import { sidebarSorter } from './sidebar-sorter';
-const COLLABSIBLE_LENGTH_THRESHOLD = 7;
+const COLLABSIBLE_LENGTH_THRESHOLD = 4;
 
-function buildSidebarItems(dir: string): SidebarItem {
-  const children: SidebarItem[] = listMdFiles(dir)
+function buildSidebarItems(dir: string): SidebarArrayOptions {
+  const children: string[] = listMdFiles(dir)
     // .sort((s1, s2) => {
     //   if (s1 === 'README.md') return 1;
     //   return s1.localeCompare(s2, 'en', {
@@ -61,10 +60,10 @@ function buildSidebarItems(dir: string): SidebarItem {
 
   return {
     text: title,
-    icon,
     children,
+    icon,
     collapsible: children?.length > COLLABSIBLE_LENGTH_THRESHOLD,
-  } satisfies SidebarItem;
+  };
 }
 export function createSidebar(localePrefix = '/') {
   const localesDirs = Object.keys(LOCALES)
@@ -77,13 +76,11 @@ export function createSidebar(localePrefix = '/') {
 
   return sidebar(
     dirs.reduce((options: any, dir) => {
-      const config: SidebarGroupItem = buildSidebarItems(dir) as any;
-      config.collapsible;
+      const config = buildSidebarItems(dir);
       return {
         ...options,
         [`${dir}/`]: [config],
-        collapsible: config.children?.length > COLLABSIBLE_LENGTH_THRESHOLD,
-      } satisfies SidebarItem;
-    }, {} as any as SidebarOptions),
+      } as SidebarOptions;
+    }, {} as SidebarOptions),
   );
 }

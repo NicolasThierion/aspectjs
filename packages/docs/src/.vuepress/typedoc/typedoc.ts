@@ -1,18 +1,14 @@
 import { findUpSync } from 'find-up';
 import { readFileSync } from 'fs';
 import { globSync } from 'glob';
-import Handlebars from 'handlebars';
 import json5 from 'json5';
 import { dirname, join } from 'path';
 import { Application, ProjectReflection, TypeDocOptions } from 'typedoc';
 import * as url from 'url';
 const { parse } = json5;
 
-export interface PluginOptions extends TypeDocOptions {
-  sidebar?: SidebarOptions;
-  hideBreadcrumbs?: boolean;
-  hideInPageTOC?: boolean;
-}
+import { PluginOptions } from 'typedoc-plugin-markdown';
+
 export interface SidebarOptions {
   fullNames: boolean;
   parentCategory: string;
@@ -20,48 +16,13 @@ export interface SidebarOptions {
 }
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-export function configureTypedoc() {
-  const entryPoints = findEntrypoints();
-
-  // override helper to exclude ReflectionKind from sidebar
-  const _registerHelper = Handlebars.registerHelper;
-  Handlebars.registerHelper = function (...args): void {
-    if (args[0] === 'reflectionTitle') {
-      return _registerHelper.call(
-        this,
-        'reflectionTitle',
-        function (shouldEscape = true) {
-          const title = [''];
-          title.push(
-            shouldEscape ? escapeChars(this.model.name) : this.model.name,
-          );
-          if (this.model.typeParameters) {
-            const typeParameters = this.model.typeParameters
-              .map((typeParameter) => typeParameter.name)
-              .join(', ');
-            title.push(`<${typeParameters}${shouldEscape ? '\\>' : '>'}`);
-          }
-          return title.join('');
-        },
-      );
-    }
-
-    return _registerHelper.apply(this, args);
-  };
-
-  function escapeChars(str: string) {
-    return str
-      .replace(/>/g, '\\>')
-      .replace(/_/g, '\\_')
-      .replace(/`/g, '\\`')
-      .replace(/\|/g, '\\|');
-  }
-  // const plugin = pluginFn(...args);
+export function configureTypedoc(entryPoints?: string[]) {
+  entryPoints ??= findEntrypoints();
 
   let typedocApplication: Application;
   let project: ProjectReflection;
   const opts = {
-    entryPoints,
+    entryPoints: entryPoints!,
     plugin: ['typedoc-plugin-markdown'],
     tsconfig: `${__dirname}/tsconfig.json`,
     cleanOutputDir: true,
@@ -73,6 +34,10 @@ export function configureTypedoc() {
     groupOrder: ['Modules', 'Variables', 'Functions', '*'],
     excludeNotDocumented: true,
     categorizeByGroup: false,
+
+    hideGroupHeadings: true,
+    hideBreadcrumbs: true,
+
     // theme: MarkdownTheme,
     hideParameterTypesInTitle: true,
     navigation: {
@@ -81,7 +46,7 @@ export function configureTypedoc() {
     },
     // Plugin options
     out: 'src/api',
-  } satisfies Partial<TypeDocOptions>;
+  } satisfies Partial<PluginOptions | TypeDocOptions>;
 
   return {
     generateDocs: async () => {

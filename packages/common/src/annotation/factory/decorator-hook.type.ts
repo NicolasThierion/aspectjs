@@ -8,7 +8,7 @@ import type {
 
 /**
  * @internal
- * @description A DecoratorHook is a configuration for the {@link AnnotationFactory}
+ * A DecoratorHook is a configuration for the {@link AnnotationFactory}
  * to create typescript decorators that corresponds to a given annotation.
  */
 export type DecoratorHook<

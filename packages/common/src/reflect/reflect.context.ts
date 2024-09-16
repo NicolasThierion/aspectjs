@@ -28,7 +28,7 @@ const DEFAULT_MODULES = [AnnotationsModule];
 /**
  * @internal
  *
- * @description The ReflectContext is a container for the global values and services of the framework.
+ * The ReflectContext is a container for the global values and services of the framework.
  * The services are added to the context in the form of {@link ReflectProvider}s,
  * through the use of {@link ReflectModuleConfiguration}s.
  */

@@ -2,12 +2,12 @@ import chokidar from 'chokidar';
 import { findUpSync } from 'find-up';
 import { readFileSync } from 'fs';
 import { globSync } from 'glob';
-import { configureTypedoc } from './typedoc';
 import json5 from 'json5';
 import { dirname, join } from 'path';
-import { Application, ProjectReflection, TypeDocOptions } from 'typedoc';
+import { TypeDocOptions } from 'typedoc';
 import * as url from 'url';
 import { PluginFunction, PluginObject } from 'vuepress';
+import { configureTypedoc } from './typedoc';
 // import { typedocPlugin } from 'vuepress-plugin-typedoc';
 const { parse } = json5;
 
@@ -24,8 +24,8 @@ export interface SidebarOptions {
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-export function typedocPluginConfig(): PluginFunction {
-  const entryPoints = findEntrypoints();
+export function typedocPluginConfig(entryPoints?: string[]): PluginFunction {
+  entryPoints ??= findEntrypoints();
 
   return (...args) => {
     // const pluginFn = typedocPlugin({
@@ -59,7 +59,7 @@ export function typedocPluginConfig(): PluginFunction {
 
     // override helper to exclude ReflectionKind from sidebar
 
-    const project = configureTypedoc();
+    const project = configureTypedoc(entryPoints);
     const plugin: PluginObject = {
       name: 'my-typedoc',
       async onInitialized(app) {
@@ -67,7 +67,7 @@ export function typedocPluginConfig(): PluginFunction {
       },
       onWatched(app, watchers, reload) {
         const pagesWatcher = chokidar.watch(
-          entryPoints.map((e) => dirname(e)).map((e) => join(e, '**/*.ts')),
+          entryPoints!.map((e) => dirname(e)).map((e) => join(e, '**/*.ts')),
           {
             cwd: app.dir.source(),
             ignoreInitial: true,

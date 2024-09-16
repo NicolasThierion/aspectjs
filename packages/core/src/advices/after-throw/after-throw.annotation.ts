@@ -6,7 +6,7 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
 /**
  * Annotation to declare an advice to be applied after a method throws an exception.
  *
- * @description The AfterThrow annotation is used to apply after-throwing advice to a method.
+ * The AfterThrow annotation is used to apply after-throwing advice to a method.
  *              After-throwing advice is executed after the target method throws an exception.
  *              It is commonly used to handle exceptions, perform cleanup tasks, or additional actions
  *              that need to be executed after an exception is thrown.
