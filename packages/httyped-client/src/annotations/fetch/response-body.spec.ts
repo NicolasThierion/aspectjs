@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import 'reflect-metadata';
 import 'whatwg-fetch';
 
@@ -24,7 +27,7 @@ const USER: User = {
 };
 
 class User {
-  type: 'user' = 'user';
+  type: 'user' = 'user' as const;
   name!: string;
   lastName!: string;
 }

@@ -36,11 +36,8 @@ export interface BaseAnnotationTarget<
   eval(): unknown;
 
   defineMetadata(key: string, value: any): void;
-  getMetadata<T extends unknown>(key: string, defaultvalue: () => T): T;
-  getMetadata<T extends unknown>(
-    key: string,
-    defaultvalue?: () => T,
-  ): T | undefined;
+  getMetadata<T>(key: string, defaultvalue: () => T): T;
+  getMetadata<T>(key: string, defaultvalue?: () => T): T | undefined;
 
   annotations<
     T extends AnnotationKind,

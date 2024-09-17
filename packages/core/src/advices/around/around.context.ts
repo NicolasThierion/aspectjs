@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AnnotationsByRefSelector } from '@aspectjs/common';
 import type {
   PointcutKind,
@@ -6,7 +7,6 @@ import type {
 import type { AdviceTarget } from './../../advice/advice-target.type';
 import type { JoinPoint } from './../../advice/joinpoint';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AroundAdvice } from './around.type';
 
 /**

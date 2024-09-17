@@ -131,7 +131,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       // not received a client config = not created through the HttypedClientFactory.
       return;
     }
-    let config = this.getClientConfig(ctxt.instance!);
+    const config = this.getClientConfig(ctxt.instance!);
 
     const endpointMetadata = this.getEndpointMetadata(ctxt);
     const classMetadata = this.getClassMetadata(ctxt);
@@ -268,7 +268,7 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
       () => {
         const fetchAnnotation = this.findHttpMethodAnnotation(ctxt)!;
 
-        let url = fetchAnnotation.args[0] ?? '';
+        const url = fetchAnnotation.args[0] ?? '';
 
         const metadata = {
           url,

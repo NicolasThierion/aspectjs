@@ -44,7 +44,7 @@ export class _ClassAnnotationTargetImpl<X = unknown>
   override defineMetadata(key: string, value: any): void {
     defineMetadata(key, value, this.proto);
   }
-  override getMetadata<T extends unknown>(
+  override getMetadata<T>(
     key: string,
     defaultvalue?: (() => T) | undefined,
   ): T {

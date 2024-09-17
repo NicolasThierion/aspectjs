@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   AnnotationFactory,
   AnnotationKind,
@@ -54,7 +55,7 @@ describe('JitWeaver', () => {
             }
 
             @AClass()
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line
             class A {}
 
             new A();
@@ -76,7 +77,7 @@ describe('JitWeaver', () => {
                 'AClass',
               );
               @AClass()
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              // eslint-disable-next-line
               class A {}
 
               @Aspect()
@@ -97,7 +98,7 @@ describe('JitWeaver', () => {
                 'AClass',
               );
               @AClass()
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              // eslint-disable-next-line
               class A {}
 
               @Aspect()

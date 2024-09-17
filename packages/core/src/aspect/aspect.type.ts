@@ -20,7 +20,7 @@ import { PointcutExpression } from '../pointcut/pointcut-expression.type';
 import { AspectMetadata, AspectOptions } from './aspect-metadata.type';
 import { Aspect } from './aspect.annotation';
 
-export type AspectType = object & {};
+export type AspectType = object & unknown;
 
 let _globalAspectId = 0;
 

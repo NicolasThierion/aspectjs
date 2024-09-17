@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AnnotationsByRefSelector } from '@aspectjs/common';
 import type {
   PointcutKind,
@@ -5,7 +6,6 @@ import type {
 } from '../../pointcut/pointcut-kind.type';
 import type { AdviceTarget } from './../../advice/advice-target.type';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AfterAdvice } from './after.type';
 /**
  * Execution context passed to advices of type {@link AfterAdvice}

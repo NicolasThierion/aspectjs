@@ -29,7 +29,7 @@ export class _PropertyAnnotationTargetImpl<X>
   override defineMetadata(key: string, value: any): void {
     defineMetadata(key, value, this.proto, this.propertyKey);
   }
-  override getMetadata<T extends unknown>(
+  override getMetadata<T>(
     key: string,
     defaultvalue?: (() => T) | undefined,
   ): T {

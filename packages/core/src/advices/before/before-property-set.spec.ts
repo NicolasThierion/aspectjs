@@ -13,7 +13,7 @@ import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { AdviceError } from '../../public_api';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
-// eslint-disable @typescript-eslint/no-unused-vars
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 describe('property set advice', () => {
   let advice: ReturnType<typeof jest.fn>;

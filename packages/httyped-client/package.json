@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm run clean && npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
-    "test:unit": "jest --runInBand",
+    "test:unit": "jest --runInBand --collectCoverage",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf ./dist && rimraf ./*.tgz"

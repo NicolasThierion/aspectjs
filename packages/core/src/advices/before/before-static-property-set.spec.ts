@@ -12,7 +12,7 @@ import { Before } from './before.annotation';
 import type { PointcutKind } from '../../pointcut/pointcut-kind.type';
 import { WeaverModule } from '../../weaver/weaver.module';
 import type { BeforeContext } from './before.context';
-// eslint-disable @typescript-eslint/no-unused-vars
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 describe('static property set advice', () => {
   let aadvice: ReturnType<typeof jest.fn>;

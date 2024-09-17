@@ -8,7 +8,7 @@ let abstractCounter = 0;
  * @param receipe the function to be executed without throwing an error in case ${@link abstract} method is called.
  * @returns
  */
-export const _defuseAbstract = (receipe: () => {}) => {
+export const _defuseAbstract = (receipe: () => unknown) => {
   const _abstractThrows = abstractThrows;
   const _abstractCounter = abstractCounter;
   abstractThrows = false;
@@ -45,12 +45,12 @@ export const _defuseAbstract = (receipe: () => {}) => {
  *
  * @param T the type of the value to be replaced.
  */
-export function abstract<T extends any>(): T;
+export function abstract<T>(): T;
 
-export function abstract<T extends any>(template: [ConstructorType<T>]): T[];
-export function abstract<T extends any>(template: ConstructorType<T>): T;
-export function abstract<T extends any>(template: T): T;
-export function abstract<T extends any>(template?: T | ConstructorType<T>): T {
+export function abstract<T>(template: [ConstructorType<T>]): T[];
+export function abstract<T>(template: ConstructorType<T>): T;
+export function abstract<T>(template: T): T;
+export function abstract<T>(template?: T | ConstructorType<T>): T {
   if (abstractThrows) {
     throw new Error(
       'abstract value has not been superseded by an annotation behavior.',

@@ -16,10 +16,10 @@ export const MAP_JSON_RESPONSE_HANDLER: ResponseHandler = async (
   config,
   ctxt,
 ) => {
-  let body = await response.json();
+  const body = await response.json();
 
   if (body) {
-    let typeHint = await _findTypeHint(ctxt);
+    const typeHint = await _findTypeHint(ctxt);
 
     const context: MapperContext = {
       mappers: config.responseBodyMappers,
@@ -105,7 +105,7 @@ async function _arrayToMappedType<T = unknown, U = unknown>(
     }
   } else if (typeHint.length === array.length) {
     const res: any[] = [];
-    for (let i in typeHint) {
+    for (const i in typeHint) {
       const t = typeHint[i]!;
       const mapper = context.mappers.findMapper(t);
       if (!mapper) {

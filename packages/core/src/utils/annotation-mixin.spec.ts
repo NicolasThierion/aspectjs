@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import {
   Annotation,
   AnnotationFactory,
@@ -350,7 +353,7 @@ describe(`AnnotationMixin`, () => {
         if (annotation !== Compile) {
           expect(adviceBSpy).not.toHaveBeenCalled();
           const x = new X();
-          let prop = x.prop;
+          const prop = x.prop;
         }
         expect(adviceBSpy).toHaveBeenCalledTimes(1);
       });

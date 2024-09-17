@@ -47,16 +47,18 @@ export abstract class AbstractAopHttpClientAspect {
     ctxt: AdviceContext,
     url: string,
   ): string {
-    let { protocol, host, pathname, hash, searchParams } = new URL(url);
+    const { protocol, host, pathname, hash, searchParams } = new URL(url);
+
+    let pathname_ = pathname;
     url = `${protocol}//${host}`;
 
     if (pathname) {
-      pathname = this.replacePathVariables(pathname, endpointConfig, ctxt);
+      pathname_ = this.replacePathVariables(pathname_, endpointConfig, ctxt);
 
-      url = `${url}${pathname}`;
+      url = `${url}${pathname_}`;
     }
 
-    let requestParamsEntries = [
+    const requestParamsEntries = [
       ...searchParams.entries(),
       ...this.findRequestParams(ctxt),
     ];

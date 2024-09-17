@@ -64,26 +64,26 @@ export abstract class _AnnotationTargetImpl<
   annotations(
     ...annotations: (Annotation | AnnotationRef | string)[]
   ): AnnotationsSelector<AnnotationKind, AnnotationStub> {
+    const propertyTarget =
+      this as unknown as AnnotationTarget<AnnotationKind.PROPERTY>;
+    const methodTarget =
+      this as unknown as AnnotationTarget<AnnotationKind.METHOD>;
+    const parameterTarget =
+      this as unknown as AnnotationTarget<AnnotationKind.PARAMETER>;
     switch (this.kind) {
       case AnnotationKind.CLASS:
         return getAnnotations(...annotations).onClass(this.proto.constructor);
       case AnnotationKind.PROPERTY:
-        const propertyTarget =
-          this as unknown as AnnotationTarget<AnnotationKind.PROPERTY>;
         return getAnnotations(...annotations).onProperty(
           this.proto,
           propertyTarget.propertyKey as any,
         );
       case AnnotationKind.METHOD:
-        const methodTarget =
-          this as unknown as AnnotationTarget<AnnotationKind.METHOD>;
         return getAnnotations(...annotations).onMethod(
           methodTarget.proto,
           methodTarget.propertyKey as any,
         );
       case AnnotationKind.PARAMETER:
-        const parameterTarget =
-          this as unknown as AnnotationTarget<AnnotationKind.PARAMETER>;
         return getAnnotations(...annotations).onParameter(
           parameterTarget.proto,
           parameterTarget.propertyKey as any,
@@ -97,7 +97,7 @@ export abstract class _AnnotationTargetImpl<
   abstract asDecoratorArgs(): any[];
 
   abstract defineMetadata(key: string, value: any): void;
-  abstract getMetadata<T extends unknown>(
+  abstract getMetadata<T>(
     key: string,
     defaultvalue?: (() => T) | undefined,
   ): T | undefined;

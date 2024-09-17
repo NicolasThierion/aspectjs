@@ -3,7 +3,7 @@ import { configureTesting } from '@aspectjs/common/testing';
 import { AnnotationKind } from '../annotation.types';
 import { AnnotationTargetFactory } from './annotation-target.factory';
 
-// eslint-disable  @typescript-eslint/no-unused-vars
+/* eslint-disable @typescript-eslint/no-unused-vars */
 describe('AnnotationTargetFactory', () => {
   class X {
     static prop?: string = 'staticProp';

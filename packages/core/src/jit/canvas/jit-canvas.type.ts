@@ -73,6 +73,7 @@ export class JitWeaverCanvas<
           ctxt.instance &&
           getPrototype(ctxt.instance) !== ctxt.target.proto
         ) {
+          /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
           const [_proto, propertyKey, parameterIndex] =
             ctxt.target.asDecoratorArgs();
           const actualTarget = reflectContext()

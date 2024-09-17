@@ -46,7 +46,7 @@ export class MappersRegistry {
 
   findMapper<T, U extends T>(typeHint: TypeHintType<U>): Mapper<T> | undefined {
     let mapper = this.mappers.get(typeHint);
-    if (!mapper && typeof (typeHint as Function) === 'function') {
+    if (!mapper && typeof (typeHint as ConstructorType<any>) === 'function') {
       // try to lookup mappers by type name
       mapper = this._findMapperByCtor<T, U>(typeHint as ConstructorType<T>);
     }
@@ -57,7 +57,7 @@ export class MappersRegistry {
   private _findMapperByCtor<T, U extends T>(
     ctor: ConstructorType<T>,
   ): Mapper<U> | undefined {
-    let mapper =
+    const mapper =
       this.mappers.get(ctor) ?? (this.mappers.get(ctor.name) as Mapper<U>);
 
     if (!mapper) {

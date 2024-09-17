@@ -192,6 +192,7 @@ export class AnnotationFactory {
     annotationStub: S,
     annotationArgs: any[],
   ): Decorator {
+    /* eslint-disable-next-line @typescript-eslint/no-this-alias */
     const _this = this;
     return function (
       this: any,
@@ -271,6 +272,7 @@ export class AnnotationFactory {
     targetArgs: any[],
   ) {
     const targetFactory = reflect.get(AnnotationTargetFactory);
+    /* eslint-disable-next-line prefer-spread */
     const target = targetFactory.of.apply(targetFactory, targetArgs as any);
     assert(!!target);
     return new AnnotationContext(annotation, annotationArgs, target);

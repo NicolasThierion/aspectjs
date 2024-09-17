@@ -82,5 +82,4 @@ describe('PointcutExpression', () => {
   });
 });
 
-export { };
-
+export {};

@@ -19,7 +19,7 @@
     "noUnusedParameters": false,
     "noUnusedLocals": false,
     "lib": ["DOM", "ES2015", "ES2022"],
-    "types": ["reflect-metadata"]
+    "types": ["reflect-metadata", "node"]
   },
   "exclude": ["**/*.spec.ts", "**/jest.config.ts"]
 }

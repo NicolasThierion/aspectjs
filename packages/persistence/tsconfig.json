@@ -6,7 +6,7 @@
     "baseUrl": ".",
     "types": ["jest", "node"],
     "emitDecoratorMetadata": true,
-    "lib": ["DOM", "ES2018", "ES2019.Array"],
+    "lib": ["DOM", "ES2021", "ES2019.Array"],
     "paths": {
       "*": ["node_modules/*", "src/*"],
       "@aspectjs/persistence": ["./src/public_api.ts"],

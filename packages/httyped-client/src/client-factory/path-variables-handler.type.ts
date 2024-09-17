@@ -21,7 +21,7 @@ export class DefaultPathVariablesHandler {
     [...path.matchAll(this.pattern)].forEach(([match, variableName]) => {
       const _match = match!;
       const _variableName = variableName!;
-      if (!pathVariables.hasOwnProperty(_variableName)) {
+      if (!Object.prototype.hasOwnProperty.call(pathVariables, _variableName)) {
         throw new MissingPathVariableError(path, _match);
       }
       let variable = pathVariables[_variableName];

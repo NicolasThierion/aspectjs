@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import 'jest-extended';
 import 'jest-extended/all';
 
@@ -19,7 +20,6 @@ describe('parameter advice', () => {
   let badvice: ReturnType<typeof jest.fn>;
   let aaspect: any;
   let baspect: any;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let mImpl: any;
 
   const AParameter = new AnnotationFactory('test').create(

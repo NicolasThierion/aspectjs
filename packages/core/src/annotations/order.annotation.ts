@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { _CORE_ANNOTATION_FACTORY } from '../utils';
 
 const OrderAnnotation = _CORE_ANNOTATION_FACTORY.create(function Order(
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   precedence: number,
 ) {});
 

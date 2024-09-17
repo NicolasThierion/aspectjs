@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 (function (Object) {
   typeof globalThis !== 'object' &&
@@ -9,7 +10,7 @@
         }),
         _T_));
   function get() {
-    var global = this || self;
+    const global = this || self;
     global.globalThis = global;
     delete Object.prototype._T_;
   }
