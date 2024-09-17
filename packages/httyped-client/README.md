@@ -17,7 +17,7 @@
 ## 📜 Abstract
 
 Inspired by the [retrofit](https://square.github.io/retrofit/) java library,
-**httyped-client** uses **[AspectJS](https://github.com/NicolasThierion/aspectjs)** to design HTTP clients with only annotations (and few lines of code).
+**httyped-client** uses **[AspectJS](https://github.com/NicolasThierion/aspectjs)** to design HTTP clients with only annotations (and a few lines of code).
 
 ## 🚀 Why?
 
@@ -117,18 +117,28 @@ _httyped-client_ takes care of the following for you:
 
   @HttypedClient('users')
   export abstract class UsersApi {
+    @Get(':id')
+    async getById(@PathVariable('id') id: number) {
+      return abstract(User); // type is inferred from the value given to abstract
+    }
     @Get()
     @TypeHint([User])
     async find(@RequestParams() search?: { username?: string }) {
-      return abstract<User[]>();
+      return abstract([User]);
     }
 
-    @Get(':id')
-    async getById(@PathVariable('id') id: number) {
-      return abstract(User);
+    @Get()
+    @TypeHint("UserPost") // can also use the TypeHint annotation select an appropriate mapper
+    async getUserPosts() {
+      return abstract<UserPost>();
     }
   }
   ```
+
+
+  > **Note:**
+  > - Annotations from the package `@aspectjs/nestjs/common` share the same signature as those from `@nestjs/common`.
+  > - TypeScript does not support decorators on interfaces. Instead, we use abstract classes. The `abstract()` value returned by the method serves as a placeholder, allowing TypeScript to properly infer the actual return type and helping `httyped-client` select the appropriate response mapper.
 
 - Create an instance of the httyped client, and use it 🎉
 
@@ -187,13 +197,13 @@ export interface HttypedClientConfig {
 }
 ```
 
-> **info** By default, an http client is configured to send request with `Content-Type: application/json` & to try to parse a response as _json_.
+> **Note**: By default, an HTTP client is configured to send requests with `Content-Type: application/json` and to parse the response as JSON.
 
-This configuration is inherited in all clients created through the factory, but most parameters can be overriden on a class basis.
+This configuration is inherited by all clients created through the factory, but most parameters can be overridden on a per-class basis.
 
 ### Mappers
 
-HttypedClientFactory can be configured with mappers for the request body & response body.
+`HttypedClientFactory` can be configured with mappers for both the request body and response body.
 
 ```ts
 httypedClientFacroty.addResponseBodyMappers({
@@ -214,7 +224,8 @@ export interface Mapper<T = unknown, U = unknown> {
 }
 ```
 
-In this example, whenever an httypedclient interface returns a User or an array of User, the json response will be mapped automatically.
+In this example, whenever an `httyped-client` interface returns a `User` or an array of `User`, the JSON response will be automatically mapped.
+
 
 > **info**
 >

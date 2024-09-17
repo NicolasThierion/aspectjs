@@ -23,7 +23,7 @@ Inspired by the [AspectJ](https://www.eclipse.org/aspectj/) java framework,
 **AspectJS** leverages **[ES Decorators](https://github.com/tc39/proposal-decorators)** to bring
 Aspect Oriented Programming to Javascript and Typescript.
 
-## 🚀 Why?
+## 💡 Why?
 
 [ECMAScript Decorators](https://github.com/tc39/proposal-decorators) are fantastic: they allow developers to **hide boilerplate code** behind a simple `@` sign, keeping the code clean, easy to read, and easy to write. Widely used in popular projects such as [Angular](https://angular.io/), [Nest.js](https://nestjs.com/) or [TypeORM](https://github.com/typeorm/typeorm), decorators have one major drawback: they come with their own built-in behavior, making interoperability between tools difficult, and preventing them from being repurposed for other uses.
 
@@ -76,9 +76,9 @@ getWeaver().enable(new AB_Aspect())
 </ul>
 
 
-## ⚙️ Usage:
+## 🚀 Getting started:
 
-- Install the package
+- Install the packages
   ```bash
   npm i @aspectjs/core @aspectjs/common
   ```

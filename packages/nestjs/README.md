@@ -1,19 +1,23 @@
 # @aspectjs/nestjs
 
-## Why ?
+## 💡 Why ?
 
-NestJS heavily relies on [Experimental decorators](https://github.com/tc39/proposal-decorators) to provide a clean and modern design architecture based on AOP.
-This package offers a conversion of some of the NestJS decorators into **AspectJS annotations**, allowing you to repurpose these annotations with external aspects.
+NestJS heavily relies on [experimental decorators](https://github.com/tc39/proposal-decorators) to provide a clean and modern design architecture based on AOP.  
+This package offers a conversion of some NestJS decorators into **AspectJS annotations**, allowing you to repurpose these annotations with external aspects.
 
-## Installation
+By themselves, the annotations do nothing, but they require the activation of third-party aspects to introduce actual behavior.
+
+## ⚙️ Installation
 
 ```bash
 npm i @aspectjs/nestjs
 ```
 
-## Annotations
+## 📜 Documentation
 
-## `@aspectjs/nestjs/common`
+### `@aspectjs/nestjs/common`
+
+This package binds the following annotations from `@nestjs/common`: 
 
 | Annotation      |
 |-----------------|

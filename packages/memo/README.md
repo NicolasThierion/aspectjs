@@ -2,7 +2,7 @@
 
 @aspectjs/memo is a project that enables memoization of methods using a simple `@Memo()` annotation.
 
-## Memoization
+## 📜 Memoization
 
 Memoization is a technique used in computer programming to optimize the execution time of a function by caching its results for a given set of inputs. When a function is memoized, the first time it is called with specific arguments, the result is computed and stored in memory. Subsequent calls to the same function with the same arguments retrieve the cached result instead of re-executing the function.
 
@@ -58,17 +58,17 @@ main();
 
 Memoization is based on the assumption that a function will produce the same result for the same set of inputs. By caching the result, subsequent calls can be avoided, reducing the computational overhead. This technique is particularly effective when a function is called multiple times with the same arguments, as it eliminates redundant computations.
 
-## <i class="fa fa-wrench"/> Installation
+## 🚀 Getting started
 
+- install the required packages
 ```sh
 npm i @aspectjs/core @aspectjs/common @aspectjs/memo
 ```
 
-## <i class="fa fa-book"/> Usage
+- Enable the `MemoAspect`
 
 Memoization can be achieved by enabling the `MemoAspect` aspect. This aspect enables memoization by intercepting methods marked with the `@Memo()` annotation.
 
-- Enable the `MemoAspect`
   **aop.ts**
 
   ```ts
