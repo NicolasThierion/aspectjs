@@ -1,6 +1,6 @@
 {
   "name": "nestjs-client",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "An AOP powered typesafe http client for your NestJS controllers, inspired by Retrofit library for java",
   "repository": {
     "type": "git",
