@@ -25,12 +25,12 @@ httyped-client:build:
   needs:
     - node:prepare
 
-httyped-client:publish:gitlab:
-  extends: .node:gitlab:publish
-  stage: publish
-  variables:
-    CWD: packages/httyped-client
-    PACKAGE_DIR: ./dist
+# httyped-client:publish:gitlab:
+#   extends: .node:gitlab:publish
+#   stage: publish
+#   variables:
+#     CWD: packages/httyped-client
+#     PACKAGE_DIR: ./dist
 
 httyped-client:publish:npm:
   extends: .node:npm:publish

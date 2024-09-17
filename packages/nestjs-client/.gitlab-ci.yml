@@ -25,12 +25,12 @@ nestjs-client:build:
   needs:
     - node:prepare
 
-nestjs-client:publish:gitlab:
-  extends: .node:gitlab:publish
-  stage: publish
-  variables:
-    CWD: packages/nestjs-client
-    PACKAGE_DIR: ./dist
+# nestjs-client:publish:gitlab:
+#   extends: .node:gitlab:publish
+#   stage: publish
+#   variables:
+#     CWD: packages/nestjs-client
+#     PACKAGE_DIR: ./dist
 
 nestjs-client:publish:npm:
   extends: .node:npm:publish
