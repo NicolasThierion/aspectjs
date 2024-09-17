@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.4.2](https://github.com/NicolasThierion/aspectjs/compare/v0.4.1...v0.4.2) (2024-09-17)
+
 ## [0.4.1](https://github.com/NicolasThierion/aspectjs/compare/v0.4.0...v0.4.1) (2024-09-17)
 
 ## [0.4.0](https://github.com/NicolasThierion/aspectjs/compare/v0.3.17...v0.4.0) (2024-09-16)
