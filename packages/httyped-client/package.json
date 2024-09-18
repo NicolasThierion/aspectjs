@@ -1,6 +1,6 @@
 {
   "name": "httyped-client",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "An AOP powered typesafe http client, inspired by the Retrofit library for java",
   "repository": {
     "type": "git",
