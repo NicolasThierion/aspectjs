@@ -1,6 +1,5 @@
+import { AnnotationFactory, AnnotationKind } from '@aspectjs/common';
 import { configureTesting } from '@aspectjs/common/testing';
-import { AnnotationKind } from '../annotation/annotation.types';
-import { AnnotationFactory } from '../annotation/factory/annotation.factory';
 import { _defuseAbstract, abstract } from './abstract.type';
 
 describe('abstract() helper', () => {

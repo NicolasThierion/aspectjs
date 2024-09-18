@@ -1,5 +1,5 @@
 import { AnnotationKind } from '@aspectjs/common';
-import { Delete as NDelete } from '@nestjs/common';
+import type { Delete as NDelete } from '@nestjs/common';
 import { NESTJS_COMMON_ANNOTATION_FACTORY } from '../annotation-factory.global';
 import { ReplaceReturnType } from '../type.utils';
 

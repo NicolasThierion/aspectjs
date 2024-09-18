@@ -13,7 +13,7 @@ import { ALL_FETCH_ANNOTATIONS } from '../../test-helpers/all-fetch-annotations.
 import { MapperError } from '../../types/mapper.error';
 import { Mapper } from '../../types/mapper.type';
 import { HttypedClient } from '../http-client.annotation';
-import { TypeHint } from '../type.annotation';
+import { TypeHint } from '../type-hint.annotation';
 
 const TEST_BASE_URL = 'http://testbaseurl';
 

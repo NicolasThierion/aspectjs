@@ -1,4 +1,4 @@
-import { ConstructorType } from '@aspectjs/common/utils';
+import { ConstructorType } from '../types.util';
 import type { AbstractToken } from './abstract-token.type';
 
 export class _AbstractTokenImpl<T = unknown> implements AbstractToken<T> {

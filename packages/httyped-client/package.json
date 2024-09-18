@@ -11,6 +11,7 @@
     "test": "npm run clean && npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "jest --runInBand --collectCoverage",
+    "pack": "npm pack ./dist",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf ./dist && rimraf ./*.tgz"
@@ -27,16 +28,16 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/httyped-client.js",
-      "es2020": "./fesm2020/httyped-client.mjs",
-      "node": "./cjs/httyped-client.cjs",
-      "require": "./cjs/httyped-client.cjs",
-      "default": "./cjs/httyped-client.cjs",
+      "fesm2020": "./fesm2020/httyped-client.mjs",
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./esm2020/index.mjs",
+      "require": "./cjs/index.cjs",
+      "import": "./fesm2020/httyped-client.mjs",
       "unpkg": "./umd/httyped-client.umd.min.js"
     }
   },
   "module": "./fesm2020/httyped-client.mjs",
-  "main": "./umd/httyped-client.umd.min.js",
+  "main": "./umd/httyped-client.umd.js",
   "devDependencies": {
     "jest": "^29.5.0",
     "tsx": "^4.19.0",

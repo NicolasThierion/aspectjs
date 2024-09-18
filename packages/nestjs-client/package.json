@@ -11,6 +11,7 @@
     "test": "npm run clean && npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "npm run clean && jest --runInBand --passWithNoTests",
+    "pack": "npm pack ./dist",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
     "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf ./dist && rimraf ./*.tgz"
@@ -27,11 +28,11 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/nestjs-client.js",
-      "es2020": "./fesm2020/nestjs-client.mjs",
-      "node": "./cjs/nestjs-client.cjs",
-      "require": "./cjs/nestjs-client.cjs",
-      "default": "./cjs/nestjs-client.cjs",
+      "fesm2020": "./fesm2020/nestjs-client.mjs",
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./esm2020/index.mjs",
+      "require": "./cjs/index.cjs",
+      "import": "./fesm2020/nestjs-client.mjs",
       "unpkg": "./umd/nestjs-client.umd.min.js"
     }
   },

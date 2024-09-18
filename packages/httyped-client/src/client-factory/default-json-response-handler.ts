@@ -5,7 +5,7 @@ import {
   isAbstractToken,
 } from '@aspectjs/common/utils';
 import { AfterReturnContext, PointcutKind } from '@aspectjs/core';
-import { TypeHint } from '../annotations/type.annotation';
+import { TypeHint } from '../annotations/type-hint.annotation';
 import { MapperError } from '../types/mapper.error';
 import { MapperContext } from '../types/mapper.type';
 import { ResponseHandler } from '../types/response-handler.type';
@@ -16,6 +16,9 @@ export const MAP_JSON_RESPONSE_HANDLER: ResponseHandler = async (
   config,
   ctxt,
 ) => {
+  if (!response.ok) {
+    return response;
+  }
   const body = await response.json();
 
   if (body) {

@@ -7,10 +7,10 @@ const nodeResolve = require('@rollup/plugin-node-resolve');
 
 const external = ['@emotion/hash', 'json-stable-stringify', 'uid'];
 const { createConfig } = require('../../rollup.config.cjs');
-module.exports = createConfig({
-  rootDir: __dirname,
+module.exports = createConfig(__dirname, {
   // external,
   output: {
+    preserveModules: false,
     globals: {
       '@emotion/hash': 'hash',
       'json-stable-stringify': 'json-stable-stringify',

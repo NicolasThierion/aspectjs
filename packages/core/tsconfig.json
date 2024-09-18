@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.json",
-  "include": ["./**/*.ts"],
+  "include": ["./src/**/*.ts", "./index.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["ES2015.Reflect", "ES2015", "ES2021"],

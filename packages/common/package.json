@@ -11,11 +11,9 @@
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "npm run clean && jest --runInBand --collectCoverage",
+    "pack": "npm pack ./dist",
     "lint": "eslint \"src/**/*.{ts,js,json}\" --fix",
-    "build:common": "rollup --config ./rollup.config.cjs",
-    "build:utils": "rollup --config ./utils/rollup.config.cjs",
-    "build:testing": "rollup --config ./testing/rollup.config.cjs",
-    "build": "npm run build:utils && npm run build:common && npm run build:testing",
+    "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf ./dist && rimraf ./*.tgz"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
@@ -28,35 +26,32 @@
   "sideEffects": false,
   "types": "./index.d.ts",
   "exports": {
-    "./package.json": {
-      "default": "./package.json"
+    ".": {
+      "types": "./index.d.ts",
+      "fesm2020": "./fesm2020/common.mjs",
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./esm2020/index.mjs",
+      "unpkg": "./umd/common.umd.min.js",
+      "import": "./fesm2020/common.mjs",
+      "require": "./cjs/index.cjs"
     },
     "./utils": {
       "types": "./utils/index.d.ts",
-      "esm2020": "./esm2020/index.js",
-      "es2020": "./fesm2020/utils.mjs",
-      "node": "./cjs/utils.cjs",
-      "require": "./cjs/utils.cjs",
-      "default": "./cjs/utils.cjs",
-      "unpkg": "./umd/utils.umd.js"
+      "fesm2020": "./fesm2020/utils.mjs",
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./esm2020/utils/index.mjs",
+      "unpkg": "./umd/utils.umd.min.js",
+      "import": "./fesm2020/utils.mjs",
+      "require": "./cjs/utils/index.cjs"
     },
     "./testing": {
       "types": "./testing/index.d.ts",
-      "esm2020": "./esm2020/index.js",
-      "es2020": "./fesm2020/testing.mjs",
-      "node": "./cjs/testing.cjs",
-      "require": "./cjs/testing.cjs",
-      "default": "./cjs/testing.cjs",
-      "unpkg": "./umd/testing.umd.js"
-    },
-    ".": {
-      "types": "./index.d.ts",
-      "esm2020": "./esm2020/common.js",
-      "es2020": "./fesm2020/common.mjs",
-      "node": "./cjs/common.cjs",
-      "require": "./cjs/common.cjs",
-      "default": "./cjs/common.cjs",
-      "unpkg": "./umd/common.umd.js"
+      "fesm2020": "./fesm2020/testing.mjs",
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./esm2020/testing/index.mjs",
+      "unpkg": "./umd/testing.umd.min.js",
+      "import": "./fesm2020/testing.mjs",
+      "require": "./cjs/testing/index.cjs"
     }
   },
   "module": "./fesm2020/common.mjs",

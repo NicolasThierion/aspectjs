@@ -1,11 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.json",
-  // "include": ["./**/*.ts", "./index.ts"],
-  "files": ["./index.ts"],
+  "include": ["./src/**/*.ts", "./index.ts"],
   "compilerOptions": {
     "baseUrl": "./",
-    "lib": ["DOM", "ES2015", "ES2021"],
+    "lib": ["DOM", "ES2021"],
     "useDefineForClassFields": false
   }
 }

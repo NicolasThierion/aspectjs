@@ -11,6 +11,7 @@
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "npm run clean && jest --runInBand --collectCoverage",
+    "pack": "npm pack ./dist",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
     "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf dist && rimraf ./*.tgz"
@@ -24,20 +25,18 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./package.json": {
-      "default": "./package.json"
-    },
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/core.mjs",
-      "es2020": "./fesm2020/core.mjs",
-      "node": "./cjs/core.cjs",
-      "require": "./cjs/core.cjs",
-      "default": "./cjs/core.cjs",
-      "unpkg": "./umd/core.umd.js"
+      "fesm2020": "./fesm2020/core.mjs",
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./fesm2020/index.mjs",
+      "require": "./cjs/index.cjs",
+      "import": "./fesm2020/core.mjs",
+      "unpkg": "./umd/core.umd.min.js"
     }
   },
   "module": "./fesm2020/core.mjs",
+  "types": "./index.d.ts",
   "main": "./umd/core.umd.js",
   "peerDependencies": {
     "@aspectjs/common": "*"

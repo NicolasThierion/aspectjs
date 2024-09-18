@@ -11,9 +11,9 @@
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "npm run clean && jest --runInBand --passWithNoTests",
+    "pack": "npm pack ./dist",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
-    "build:common": "rollup --config ./common/rollup.config.cjs",
-    "build": "rollup --config ./rollup.config.cjs && npm run build:common",
+    "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf dist && rimraf ./*.tgz"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
@@ -25,28 +25,33 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./package.json": {
-      "default": "./package.json"
-    },
     ".": {
       "types": "./index.d.ts",
-      "esm2020": "./esm2020/nestjs.mjs",
-      "es2020": "./fesm2020/nestjs.mjs",
-      "node": "./cjs/nestjs.cjs",
-      "require": "./cjs/nestjs.cjs",
-      "default": "./cjs/nestjs.cjs"
+      "esm2020": "./esm2020/index.mjs",
+      "esm": "./esm2020/index.mjs",
+      "node": "./cjs/index.cjs",
+      "require": "./cjs/index.cjs",
+      "unpkg": "./umd/nestjs.umd.min.js"
     },
     "./common": {
       "types": "./common/index.d.ts",
-      "esm2020": "./esm2020/index.js",
-      "es2020": "./fesm2020/common.mjs",
-      "node": "./cjs/common.cjs",
-      "require": "./cjs/common.cjs",
-      "default": "./cjs/common.cjs"
+      "esm2020": "./esm2020/common/index.mjs",
+      "esm": "./esm2020/common/index.mjs",
+      "node": "./cjs/common/index.cjs",
+      "require": "./cjs/common/index.cjs",
+      "unpkg": "./umd/common.umd.min.js"
+    },
+    "./common/register": {
+      "types": "./common/register/index.d.ts",
+      "esm2020": "./esm2020/common/register/index.mjs",
+      "esm": "./esm2020/common/register/index.mjs",
+      "node": "./cjs/common/register/index.cjs",
+      "require": "./cjs/common/register/index.cjs"
     }
   },
-  "module": "./fesm2020/nestjs.mjs",
-  "main": "./cjs/nestjs.cjs",
+  "module": "./esm2020/index.mjs",
+  "types": "./index.d.ts",
+  "main": "./cjs/index.cjs",
   "optionalDependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",

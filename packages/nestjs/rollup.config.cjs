@@ -1,7 +1,6 @@
 /* eslint-disable */
 const { createConfig } = require('../../rollup.config.cjs');
-
-module.exports = createConfig({
-  rootDir: __dirname,
-  tsconfig: './tsconfig.lib.json',
+const external = ['@nestjs/common'];
+module.exports = createConfig(__dirname, {
+  external,
 });

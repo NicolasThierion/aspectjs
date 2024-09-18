@@ -1,365 +1,447 @@
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import findUp from 'find-up';
-import { existsSync, readFileSync } from 'fs';
-import json5 from 'json5';
-import { basename, dirname, join, relative, resolve } from 'path';
-import type { OutputOptions, Plugin, RollupOptions } from 'rollup';
+import { globSync } from 'glob';
+import { basename, dirname, extname, isAbsolute, join, resolve } from 'path';
+import type {
+  InputPluginOption,
+  ModuleFormat,
+  OutputOptions,
+  Plugin,
+  RollupOptions,
+} from 'rollup';
 import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import dts from 'rollup-plugin-dts';
+import esbuild from 'rollup-plugin-esbuild';
 import tmp from 'tmp';
+import { PackageJson } from './build/package-json.type.cts';
 
-const { parse } = json5;
+import type { OutputPlugin } from 'rollup';
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
 
-const BUMPED_PACKAGES = [
-  '@aspectjs/core',
-  '@aspectjs/common',
-  '@aspectjs/nestjs',
-  '@aspectjs/memo',
-  '@aspectjs/persistence',
-  'httyped-client',
-  'nestjs-client',
-];
-// This file was created with the help of  https://github.com/VitorLuizC/typescript-library-boilerplate
-interface PackageJson {
-  name: string;
-  version: string;
-  author: string;
-  license: string;
-}
-
 export interface CreateConfigOptions {
-  pkg?: PackageJson;
-  tsconfig?: string;
-
-  rootDir?: string;
   input?: string;
-  output?: {
-    globals?: Record<string, string>;
-    commonJS?: boolean;
-    umd?: boolean;
-    esm2020?: boolean;
-    fesm2020?: boolean;
-    dts?: boolean;
-  };
-  plugins?: Plugin[];
-  typesInput?: string;
+  outDir?: string;
   external?: string[];
+  plugins?: Plugin[];
+  output?: {
+    preserveModules: boolean;
+    globals?: Record<string, string>;
+  };
 }
 
 export const createConfig = (
-  optionsOrRootDir: string | CreateConfigOptions,
+  rootDir: string,
+  overrideOptions: CreateConfigOptions = {},
 ) => {
-  const options =
-    typeof optionsOrRootDir === 'string'
-      ? {
-          rootDir: optionsOrRootDir,
-        }
-      : optionsOrRootDir;
-  options.rootDir = options.rootDir ?? '.';
-  if (options.input) {
-    options.input = options.input.startsWith('.')
-      ? join(options.rootDir, options.input)
-      : options.input;
-  } else {
-    options.input = join(options.rootDir, 'index.ts');
+  const outDir = overrideOptions?.outDir ?? 'dist';
+  const pkg = PackageJson.read(rootDir);
+  const allPackages = findPackageJsons(__dirname).map((p) =>
+    PackageJson.read(p),
+  );
+  const allExports = [
+    ...new Set(
+      allPackages.flatMap((p) =>
+        Object.values(p.findExports()).map((e) => e.name),
+      ),
+    ),
+  ];
+
+  const globals = allExports.reduce(
+    (globals, e) => {
+      return {
+        ...globals,
+        [e]: createGlobalName(e),
+      };
+    },
+    {} as Record<string, string>,
+  );
+
+  const globalOutputOptions = overrideOptions?.output ?? ({} as any);
+  delete overrideOptions?.output;
+  const globalOptions = coerceRollupOptions(pkg, overrideOptions);
+  globalOptions.external = globalOptions.external.concat(allExports);
+
+  const outputOptions: RollupOptions['output'] = [];
+  globalOptions.output = outputOptions;
+
+  const options: RollupOptions[] = [
+    runPlugin(
+      del({
+        targets: [outDir],
+        hook: 'buildStart',
+      }),
+    ),
+  ];
+  // generate bundles
+  options.push(
+    ...globalOptions.input.flatMap((input) => {
+      const res: RollupOptions[] = [];
+      const packageExport = pkg.findExport(input);
+
+      const exportedJsFiles = Object.values(packageExport.files)
+        .map((f) => join(outDir, f))
+        // types are handled in another output
+        .filter((exportFile) => !exportFile.endsWith('.d.ts'));
+
+      const bundleOptions = exportedJsFiles.map((file) => {
+        const output = file.match(/.min.js$/)
+          ? [
+              // generate both min & !min
+              createBundleOutput(
+                file.replace(/.min.js$/, '.js'),
+                packageExport.name,
+              ),
+              createBundleOutput(file, packageExport.name),
+            ]
+          : [createBundleOutput(file, packageExport.name)];
+        return {
+          ...globalOptions,
+          input,
+          plugins: [
+            ...globalOptions.plugins,
+            createTypescriptPlugin(
+              findTsConfig(join(rootDir, packageExport.path)),
+              {},
+            ),
+          ],
+          output,
+        } satisfies RollupOptions;
+      });
+
+      res.push(...bundleOptions);
+
+      if (packageExport.files['types']) {
+        const dtsOptions = {
+          ...globalOptions,
+          input,
+          plugins: [
+            ...globalOptions.plugins,
+            createDtsPlugin(
+              findTsConfig(join(rootDir, packageExport.path)),
+              {},
+            ),
+          ],
+          output: [
+            {
+              format: 'esm',
+              globals,
+              preserveModules: false,
+              // dir: outDir,
+              file: join(
+                outDir,
+                'dts',
+                `${packageExport.name.split('/').splice(-1)[0]!}.js`,
+              ),
+            },
+          ],
+        } satisfies RollupOptions;
+
+        const dtsBundleOptions = {
+          ...globalOptions,
+          input,
+          plugins: [
+            ...globalOptions.plugins,
+            dts(),
+            del({
+              targets: [join(outDir, 'dts')],
+              hook: 'buildEnd',
+            }),
+          ],
+          output: [
+            {
+              file: join(outDir, packageExport.files['types']!),
+              format: 'esm',
+            },
+          ],
+        } satisfies RollupOptions;
+        res.push(dtsOptions, dtsBundleOptions);
+      }
+
+      return res;
+    }),
+  );
+
+  options.push(copyPackageJson(pkg.file!, outDir));
+
+  options
+    .flatMap((o) => o.output)
+    .filter((o) => !!o)
+    .forEach((o) => {
+      o!.globals = {
+        ...o!.globals,
+        ...globalOutputOptions.globals,
+      };
+    });
+
+  return rollupDefineConfig(options);
+
+  function coerceRollupOptions(
+    pkg: PackageJson,
+    options: CreateConfigOptions = {},
+  ): Omit<RollupOptions, 'external'> & {
+    input: string[];
+    output: OutputOptions[];
+    plugins: InputPluginOption[];
+    external: string[];
+  } {
+    const input: string[] = (
+      Array.isArray(options.input)
+        ? options.input
+        : typeof options.input === 'string'
+        ? [options.input]
+        : inferInputFilesFromPackage(pkg)
+    ).map((i) => (isAbsolute(i) ? i : resolve(rootDir, i)));
+
+    if (options.output) {
+      throw new Error('specified option "output" is not supported');
+    }
+
+    const res: ReturnType<typeof coerceRollupOptions> = {
+      ...options,
+      input,
+      external: [],
+      plugins: [],
+      output: [],
+    };
+    if (options?.external) {
+      res.external = res.external.concat(options.external as any[]);
+    }
+    if (options?.plugins) {
+      res.plugins = res.plugins.concat(options.plugins!);
+    }
+
+    return res;
   }
 
-  const localTsConfig = [
-    'tsconfig.lib.json',
-    'tsconfig.app.json',
-    'tsconfig.json',
-  ]
-    .map((tsconfig) => join(options.rootDir ?? '.', tsconfig))
-    .filter((tsconfig) => existsSync(tsconfig))[0]!;
+  function inferInputFilesFromPackage(pkg: PackageJson): string[] {
+    const inputFiles = Object.keys(pkg.exports ?? {}).map((exportDir) => {
+      const entrydir = join(rootDir, exportDir);
+      let indexFile =
+        overrideOptions.input ??
+        globSync(
+          [
+            'index.{js,ts,mjs,cjs,mts,cts,jsx,tsx}',
+            'public_api.{js,ts,mjs,cjs,mts,cts,jsx,tsx}',
+          ],
+          {
+            cwd: entrydir,
+          },
+        )[0];
 
-  options.tsconfig =
-    options.tsconfig ??
-    (existsSync(localTsConfig)
-      ? localTsConfig
-      : resolve(__dirname, './tsconfig.json'));
+      if (!indexFile) {
+        throw new Error(`index.{js,ts} not found in directory ${entrydir}`);
+      }
 
-  const packageJsonPath = join(options.rootDir, 'package.json');
+      return join(rootDir, exportDir, indexFile);
+    });
 
-  const subExportsPath = relative(process.cwd(), dirname(packageJsonPath));
+    return inputFiles;
+  }
+  function createBundleOutput(
+    exportFile: string,
+    exportName: string,
+  ): OutputOptions {
+    const format: ModuleFormat | 'dts' = inferFormatFromFile(exportFile);
+    if (format === 'dts') {
+      throw new Error(`.d.ts bundle not supported at the moment`);
+    }
 
-  options.pkg = options.pkg ?? parse(readFileSync(packageJsonPath).toString());
+    const preserveModules =
+      globalOutputOptions.preserveModules ??
+      !inferFlatFromExportFilename(exportFile);
 
-  const baseName =
-    subExportsPath || options.pkg!.name.split('/').splice(-1)[0]!;
+    const plugins: OutputPlugin[] = [];
 
-  const name = options
-    .pkg!.name.replace(/^@/, '')
+    const minify = exportFile.endsWith('.min.js');
+    if (minify) {
+      plugins.push(
+        terser({
+          compress: true,
+          ie8: false,
+          keep_classnames: true,
+          ecma: 5,
+        }),
+      );
+    }
+
+    const name = createGlobalName(exportName);
+
+    const outputOptions: OutputOptions = {
+      format,
+      ...globalOutputOptions,
+
+      entryFileNames: `[name]${extname(exportFile)}`,
+      plugins,
+      name,
+      exports: 'named',
+      globals,
+      banner: makeBanner(pkg),
+    };
+
+    if (format !== 'umd') {
+      // specify preserveModules breaks UMD build for unknown reason
+      outputOptions.preserveModules = preserveModules;
+    }
+    if (preserveModules) {
+      outputOptions.dir = dirname(exportFile);
+    } else {
+      outputOptions.file = exportFile;
+    }
+
+    return outputOptions;
+  }
+
+  function copyPackageJson(
+    packageJsonPath: string,
+    distDir: string,
+  ): RollupOptions {
+    return runPlugin(
+      copy({
+        targets: [
+          {
+            src: packageJsonPath,
+            dest: distDir,
+            transform(contents) {
+              const packageJson: PackageJson = JSON.parse(contents.toString());
+
+              allExports.forEach((p) => {
+                for (const d of [
+                  'dependencies',
+                  'devDependencies',
+                  'peerDependencies',
+                ] satisfies (keyof PackageJson)[])
+                  if (packageJson[d]?.[p]) {
+                    packageJson[d][p] = `^${packageJson['version']}`;
+                  }
+              });
+              return JSON.stringify(packageJson, null, 2);
+            },
+          },
+        ],
+      }),
+    );
+  }
+
+  function createTypescriptPlugin(
+    tsconfig: string | undefined,
+    options: Partial<Parameters<typeof esbuild>[0]> = {},
+  ): OutputPlugin {
+    return esbuild({
+      ...options,
+
+      // cacheDir: '.rollup.tscache',
+      tsconfig,
+
+      sourceMap: true,
+      // explicitly disable declarations, as a rollup config is dedicated for them
+    });
+  }
+};
+
+function createGlobalName(packageName: string) {
+  return packageName
+    .replace(/^@/, '')
     .split('/')
-    .concat(subExportsPath)
     .filter((p) => !!p)
     .join('.')
     .replaceAll(/-(\w)/g, (_m, g) => g.toUpperCase());
+}
 
-  const pkg = options.pkg!;
-  const external = [
-    ...(options.external ?? []),
-    '@aspectjs/common',
-    '@aspectjs/common/testing',
-    '@aspectjs/common/utils',
-    '@aspectjs/core',
-  ];
+function inferFormatFromFile(exportFile: string): ModuleFormat | 'dts' {
+  switch (extname(exportFile).toLowerCase()) {
+    case '.cjs':
+      return 'cjs';
+    case '.mjs':
+      return 'esm';
+    case '.js':
+      return 'umd';
+    default:
+      if (exportFile.endsWith('.d.ts')) {
+        return 'dts';
+      }
+      throw new TypeError(
+        `Unsupported file extension for entrypoint ${exportFile as any}`,
+      );
+  }
+}
 
-  // const external = (moduleId: string) => {
-  //   return !moduleId.startsWith('.') && !moduleId.startsWith('');
-  // };
+function inferFlatFromExportFilename(exportFile: string) {
+  if (inferFormatFromFile(exportFile) === 'umd') {
+    return true;
+  }
+  return !!exportFile.match(/fesm.*\//g);
+}
+
+function findTsConfig(cwd: string) {
+  const tsconfigPath = findUp.sync(
+    ['tsconfig.lib.json', 'tsconfig.app.json', 'tsconfig.json'],
+    {
+      cwd,
+    },
+  );
+
+  if (!tsconfigPath) {
+    throw new Error(`tsconfig.json not found in directory ${cwd}`);
+  }
+
+  return tsconfigPath;
+}
+
+function createDtsPlugin(
+  tsconfig: string | undefined,
+  options: Partial<Parameters<typeof typescript>[0]> = {},
+): OutputPlugin {
+  return typescript({
+    ...options,
+    tsconfig,
+    sourceMap: false,
+    declaration: true,
+    declarationDir: join('types'),
+    emitDeclarationOnly: true,
+    skipLibCheck: true,
+    noUnusedParameters: false,
+    noUnusedLocals: false,
+  });
+}
+
+function findPackageJsons(rootDir: string) {
+  return globSync('**/package.json', {
+    cwd: rootDir,
+    ignore: ['**/node_modules/**/*', '**/dist/**/*'],
+  }).map((p) => join(rootDir, p));
+}
+
+function runPlugin(...plugins: Plugin[]): RollupOptions {
+  const dumyInput = tmp.fileSync({
+    template: 'EMPTY-XXXXXX',
+  }).name;
+
+  return {
+    input: dumyInput,
+    onwarn: (warning, defaultHandler) => {
+      if (
+        warning.code === 'EMPTY_BUNDLE' &&
+        warning.names![0] === basename(dumyInput)
+      ) {
+        return;
+      }
+
+      defaultHandler(warning);
+    },
+    plugins,
+  };
+}
+function makeBanner(pkg: PackageJson) {
   /**
    * Comment with library information to be appended in the generated bundles.
    */
-  const banner = `/*!
- * ${pkg.name} v${pkg.version}
- * (c) ${pkg.author}
- * Released under the ${pkg.license} License.
- */
+  return `/*!
+* ${pkg.name} v${pkg.version}
+* (c) ${pkg.author}
+* Released under the ${pkg.license} License.
+*/
 `;
-
-  /**
-   * Creates an output options object for Rollup.js.
-   * @param {import('rollup').OutputOptions} outputOptions
-   * @returns {import('rollup').OutputOptions}
-   */
-  function createOutputOptions(
-    outputOptions: Partial<OutputOptions>,
-  ): OutputOptions {
-    return {
-      banner,
-      name,
-      exports: 'named',
-      sourcemap: true,
-      ...outputOptions,
-      globals: {
-        ...(options.output?.globals ?? {}),
-        '@aspectjs/common': 'aspectjs.common',
-        '@aspectjs/common/testing': 'aspectjs.common.testing',
-        '@aspectjs/common/utils': 'aspectjs.common.utils',
-        '@aspectjs/core': 'aspectjs.core',
-      },
-    };
-  }
-
-  const config: RollupOptions[] = [];
-  /**
-   * @type {import('rollup').RollupOptions}
-   */
-  const bundleOptions = {
-    input: options.input,
-    output: [] as OutputOptions[],
-    plugins: [
-      // sourcemaps(),
-      ...(options.plugins ?? []),
-      typescript({
-        // cacheDir: '.rollup.tscache',
-        tsconfig: options.tsconfig,
-        compilerOptions: {
-          // explicitly disable declarations, as a rollup config is dedicated for them
-          declaration: false,
-          declarationDir: undefined,
-          declarationMap: undefined,
-          sourceMap: true,
-          inlineSources: true,
-          module: 'esnext',
-        },
-      }),
-    ],
-    external,
-  } satisfies RollupOptions;
-
-  if (options.output?.commonJS ?? true) {
-    // CommonJS
-    bundleOptions.output.push(
-      createOutputOptions({
-        file: `./dist/cjs/${baseName}.cjs`,
-        format: 'cjs',
-        preserveModules: false,
-      }),
-    );
-  }
-
-  if (options.output?.esm2020 ?? true) {
-    bundleOptions.output.push(
-      // ES 2020
-      createOutputOptions({
-        dir: join(`./dist/esm2020/`, subExportsPath),
-        format: 'esm',
-        preserveModules: true,
-      }),
-    );
-  }
-  if (options.output?.fesm2020 ?? true) {
-    bundleOptions.output.push(
-      // FESM2020
-      createOutputOptions({
-        file: `./dist/fesm2020/${baseName}.mjs`,
-        format: 'esm',
-        preserveModules: false,
-      }),
-    );
-  }
-
-  if (options.output?.umd ?? true) {
-    bundleOptions.output.push(
-      // UMD
-      createOutputOptions({
-        file: `./dist/umd/${baseName}.umd.js`,
-        format: 'umd',
-        preserveModules: false,
-      }),
-      // UMD min
-      createOutputOptions({
-        file: `./dist/umd/${baseName}.umd.min.js`,
-        format: 'umd',
-        plugins: [terser()],
-        preserveModules: false,
-      }),
-    );
-  }
-
-  if (bundleOptions.output.length) {
-    config.push(bundleOptions);
-  }
-
-  /**
-   * Generate only types into dist/types/index.d.ts
-   */
-  if (options.output?.dts ?? true) {
-    const dtsOutput: OutputOptions = {
-      ...bundleOptions.output[0]!,
-      sourcemap: false,
-    };
-    dtsOutput.file = `./dist/dts/${baseName}.js`;
-
-    const dtsOptions: RollupOptions = {
-      input: options.input,
-
-      // .d.ts
-      output: dtsOutput,
-      // types
-      plugins: [
-        ...(options.plugins ?? []),
-
-        typescript({
-          tsconfig: options.tsconfig,
-
-          compilerOptions: {
-            moduleDetection: 'force',
-            declarationDir: join('types', subExportsPath),
-            declaration: true,
-            sourceMap: false,
-            emitDeclarationOnly: true,
-            skipLibCheck: true,
-            moduleResolution: 'node',
-            noUnusedParameters: false,
-            noUnusedLocals: false,
-            module: 'ES2020',
-            newLine: 'LF',
-          },
-        }),
-      ],
-      external,
-    };
-
-    /**
-     * Bundle previously generated dist/types/index.d.ts
-     */
-
-    const typesDir = join(dirname(dtsOutput.file!), 'types');
-
-    options.typesInput =
-      options.typesInput ?? join(typesDir, subExportsPath, 'index.d.ts');
-
-    const dtsBundleOptions: RollupOptions = {
-      input: options.typesInput,
-      // .d.ts bundle
-      output: [
-        {
-          file: join(`dist`, subExportsPath, `index.d.ts`),
-          format: 'es',
-        },
-      ],
-      plugins: [
-        ...(options.plugins ?? []),
-
-        dts(),
-        del({
-          targets: ['dist/types', 'dist/dts'],
-          hook: 'buildEnd',
-        }),
-      ],
-      external,
-    };
-
-    config.push(dtsOptions, dtsBundleOptions);
-  }
-
-  // building the main bundle
-  if (!subExportsPath) {
-    const readme =
-      findUp.sync('README.md') ??
-      findUp.sync('readme.md') ??
-      findUp.sync('Readme.md') ??
-      'README.md';
-    const assetsDir =
-      findUp.sync('.assets', {
-        type: 'directory',
-      }) ?? '.assets';
-
-    tmp.setGracefulCleanup();
-    // rollup throw an error if no input, so give a dummy one
-    const dumyInput = tmp.fileSync({
-      template: 'DUMMY_INPUT_ASSETS_GOAL-XXXXXX',
-    }).name;
-    config.push({
-      input: dumyInput,
-      onwarn: (warning, defaultHandler) => {
-        if (
-          warning.code === 'EMPTY_BUNDLE' &&
-          warning.names![0] === basename(dumyInput)
-        ) {
-          return;
-        }
-
-        defaultHandler(warning);
-      },
-      plugins: [
-        copy({
-          targets: [
-            {
-              src: packageJsonPath,
-              dest: `dist/`,
-              transform(contents) {
-                const packageJson = JSON.parse(contents.toString());
-                BUMPED_PACKAGES.forEach((p) => {
-                  for (const d of [
-                    'dependencies',
-                    'devDependencies',
-                    'peerDependencies',
-                  ])
-                    if (packageJson[d]?.[p]) {
-                      packageJson[d][p] = `^${packageJson['version']}`;
-                    }
-                });
-                return JSON.stringify(packageJson, null, 2);
-              },
-            },
-            { src: assetsDir, dest: `dist/` },
-            {
-              src: readme,
-              dest: `dist/${subExportsPath}`,
-              caseSensitiveMatch: false,
-            },
-          ],
-        }),
-      ],
-    });
-  }
-
-  return rollupDefineConfig(config);
-};
+}

@@ -1,5 +1,5 @@
 import { AnnotationKind } from '@aspectjs/common';
-import { Query as NQuery, PipeTransform, Type } from '@nestjs/common';
+import type { Query as NQuery, PipeTransform, Type } from '@nestjs/common';
 import { NESTJS_COMMON_ANNOTATION_FACTORY } from '../annotation-factory.global';
 import { ReplaceReturnType } from '../type.utils';
 

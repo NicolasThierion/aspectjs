@@ -1,5 +1,5 @@
 import { AnnotationKind } from '@aspectjs/common';
-import { Patch as NPatch } from '@nestjs/common';
+import type { Patch as NPatch } from '@nestjs/common';
 import { NESTJS_COMMON_ANNOTATION_FACTORY } from '../annotation-factory.global';
 import { ReplaceReturnType } from '../type.utils';
 

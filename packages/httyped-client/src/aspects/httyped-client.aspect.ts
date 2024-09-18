@@ -27,7 +27,7 @@ import { HttypedClient } from '../annotations/http-client.annotation';
 import { PathVariable } from '../annotations/path-variable.annotation';
 import { RequestParam } from '../annotations/request-param.annotation';
 import { RequestParams } from '../annotations/request-params.annotation';
-import { TypeHint } from '../annotations/type.annotation';
+import { TypeHint } from '../annotations/type-hint.annotation';
 import { HttypedClientConfig } from '../client-factory/client-config.type';
 import {
   MissingPathVariableError,

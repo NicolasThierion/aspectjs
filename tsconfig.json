@@ -1,5 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
+  "include": ["rollup.config.ts"],
+
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -10,7 +12,6 @@
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "importHelpers": true,
-
     // Module settings.
     // "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -36,7 +37,7 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "paths": {
-      "@aspectjs/common": ["./spackages/common/src/public_api.ts"],
+      "@aspectjs/common": ["./packages/common/src/public_api.ts"],
       "@aspectjs/common/testing": [
         "./packages/common/testing/src/public_api.ts"
       ],

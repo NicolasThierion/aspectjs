@@ -1,5 +1,5 @@
 import { AnnotationKind } from '@aspectjs/common';
-import { Header as NHeader } from '@nestjs/common';
+import type { Header as NHeader } from '@nestjs/common';
 import { NESTJS_COMMON_ANNOTATION_FACTORY } from '../annotation-factory.global';
 import { ReplaceReturnType } from '../type.utils';
 

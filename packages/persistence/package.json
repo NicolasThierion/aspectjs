@@ -11,9 +11,9 @@
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "eslint \"src/**/*.{ts,js,json}\"",
     "test:unit": "npm run clean && jest --runInBand --collectCoverage",
+    "pack": "npm pack ./dist",
     "lint": "eslint \"*/**/*.{ts,js,json}\" --fix",
-    "build:typeorm": "rollup --config ./typeorm/rollup.config.cjs",
-    "build": "rollup --config ./rollup.config.cjs && npm run build:typeorm",
+    "build": "rollup --config ./rollup.config.cjs",
     "clean": "rimraf dist && rimraf ./*.tgz"
   },
   "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
@@ -25,27 +25,22 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./package.json": {
-      "default": "./package.json"
-    },
     ".": {
       "types": "./index.d.ts",
       "esm2020": "./esm2020/persistence.mjs",
-      "es2020": "./fesm2020/persistence.mjs",
-      "node": "./cjs/persistence.cjs",
-      "require": "./cjs/persistence.cjs",
-      "default": "./cjs/persistence.cjs"
+      "esm": "./esm2020/persistence.mjs",
+      "require": "./cjs/index.cjs",
+      "import": "./esm2020/persistence.mjs"
     },
     "./typeorm": {
       "types": "./typeorm/index.d.ts",
-      "esm2020": "./esm2020/index.js",
-      "es2020": "./fesm2020/typeorm.mjs",
-      "node": "./cjs/typeorm.cjs",
-      "require": "./cjs/typeorm.cjs",
-      "default": "./cjs/typeorm.cjs"
+      "esm2020": "./esm2020/typeorm/index.mjs",
+      "esm": "./esm2020/typeorm/index.mjs",
+      "require": "./cjs/typeorm/_index.cjs",
+      "import": "./esm2020/typeorm/index.mjs"
     }
   },
-  "module": "./fesm2020/persistence.mjs",
+  "module": "./esm2020/persistence.mjs",
   "main": "./cjs/persistence.cjs",
   "peerDependencies": {
     "typeorm": "^0.3.17",

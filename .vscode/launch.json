@@ -19,11 +19,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "persistence build",
+      "name": "nestjs build",
       "runtimeExecutable": "npm",
       "runtimeVersion": "20",
       "outputCapture": "std",
-      "cwd": "${workspaceFolder}/packages/persistence",
+      "cwd": "${workspaceFolder}/packages/nestjs",
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"],
       "runtimeArgs": ["run", "build"]
@@ -77,6 +77,15 @@
       "cwd": "${workspaceFolder}/packages/common",
       "runtimeVersion": "20",
       "runtimeArgs": ["run", "build"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "tsup common",
+      "runtimeExecutable": "tsup",
+      "cwd": "${workspaceFolder}/packages/common",
+      "runtimeVersion": "20",
       "console": "integratedTerminal"
     },
     {

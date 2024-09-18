@@ -1,16 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.json",
-  "include": ["./**/*.ts", "./index.ts"],
+  "include": ["./src/**/*.ts", "./index.ts"],
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "ES2015",
-      "ES2021",
-      "ES2015.Reflect",
-      "es2020",
-      "DOM.Iterable"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2021", "ES2015.Reflect"],
+    "types": ["reflect-metadata"],
     "useDefineForClassFields": false
   }
 }

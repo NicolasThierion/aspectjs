@@ -1,5 +1,5 @@
 import { Address } from './address.model';
-import { Company } from './compoany.model.';
+import { Company } from './company.model.';
 
 export class User {
   id!: number;
