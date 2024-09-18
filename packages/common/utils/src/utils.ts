@@ -1,4 +1,3 @@
-import type { Annotation } from '../../src/annotation/annotation.types';
 import { Prototype } from './types.util';
 
 export function getPrototype(
@@ -17,11 +16,11 @@ export function getPrototype(
     : Object.getPrototypeOf(target);
 }
 
-export function isAnnotation(obj: unknown): obj is Annotation {
+export function isAnnotation(obj: unknown): boolean {
   return (
     typeof obj === 'function' &&
-    typeof (obj as Annotation).ref?.groupId === 'string' &&
-    typeof (obj as Annotation).ref?.name === 'string'
+    typeof (obj as any).ref?.groupId === 'string' &&
+    typeof (obj as any).ref?.name === 'string'
   );
 }
 

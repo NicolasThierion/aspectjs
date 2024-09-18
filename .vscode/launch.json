@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "core build",
       "runtimeExecutable": "npm",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "outputCapture": "std",
       "cwd": "${workspaceFolder}/packages/core",
       "console": "integratedTerminal",
@@ -19,9 +19,21 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "persistence build",
+      "runtimeExecutable": "npm",
+      "runtimeVersion": "20",
+      "outputCapture": "std",
+      "cwd": "${workspaceFolder}/packages/persistence",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["run", "build"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "test all",
       "runtimeExecutable": "npm",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "outputCapture": "std",
       "console": "integratedTerminal",
       "runtimeArgs": ["run", "test:unit"]
@@ -31,7 +43,7 @@
       "request": "launch",
       "name": "test common",
       "runtimeExecutable": "npm",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "outputCapture": "std",
       "cwd": "${workspaceFolder}/packages/common",
       "console": "integratedTerminal",
@@ -42,7 +54,7 @@
       "request": "launch",
       "name": "test core",
       "runtimeExecutable": "npm",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "outputCapture": "std",
       "cwd": "${workspaceFolder}/packages/core",
       "console": "integratedTerminal",
@@ -53,7 +65,7 @@
       "request": "launch",
       "name": "rollup",
       "runtimeExecutable": "npm",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
     },
@@ -63,7 +75,7 @@
       "name": "rollup common",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/packages/common",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
     },
@@ -73,7 +85,7 @@
       "name": "rollup memo",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/packages/memo",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
     },
@@ -83,7 +95,7 @@
       "name": "rollup common:testing",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/packages/common",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "build:testing"],
       "console": "integratedTerminal"
     },
@@ -93,7 +105,7 @@
       "name": "rollup core",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/packages/core",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
     },
@@ -103,7 +115,7 @@
       "name": "rollup persistence",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/packages/persistence",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "build"],
       "console": "integratedTerminal"
     },

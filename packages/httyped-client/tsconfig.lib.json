@@ -3,7 +3,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "lib": ["DOM", "ES2015", "ES2021", "ES2015.Reflect"],
     "types": ["reflect-metadata"]
   },
   "include": ["./src/**/*.ts", "index.ts"],

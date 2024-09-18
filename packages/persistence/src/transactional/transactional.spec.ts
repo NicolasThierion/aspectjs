@@ -1,7 +1,7 @@
 import { configureTesting } from '@aspectjs/common/testing';
 import { getWeaver } from '@aspectjs/core';
-import { TypeOrmTransactionalAspect } from '@aspectjs/persistence/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
+import { TypeOrmTransactionalAspect } from '../../typeorm/src/typeorm-transactional.aspect';
 import { Db, initDb } from '../test-helpers/init-db';
 import { createDataSource } from '../test-helpers/typeorm/init-ds';
 import { Post } from '../test-helpers/typeorm/post.entity';

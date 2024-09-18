@@ -47,6 +47,11 @@
   },
   "module": "./fesm2020/persistence.mjs",
   "main": "./cjs/persistence.cjs",
+  "peerDependencies": {
+    "typeorm": "^0.3.17",
+    "@aspectjs/core": "*",
+    "@aspectjs/common": "*"
+  },
   "devDependencies": {
     "pg": "^8.11.2",
     "portfinder": "^1.0.32",

@@ -3,12 +3,13 @@ import typescript from '@rollup/plugin-typescript';
 import findUp from 'find-up';
 import { existsSync, readFileSync } from 'fs';
 import json5 from 'json5';
-import { dirname, join, relative, resolve } from 'path';
+import { basename, dirname, join, relative, resolve } from 'path';
 import type { OutputOptions, Plugin, RollupOptions } from 'rollup';
 import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import dts from 'rollup-plugin-dts';
 import tmp from 'tmp';
+
 const { parse } = json5;
 
 import { defineConfig as rollupDefineConfig } from 'rollup';
@@ -59,7 +60,13 @@ export const createConfig = (
         }
       : optionsOrRootDir;
   options.rootDir = options.rootDir ?? '.';
-  options.input = options.input ?? join(options.rootDir, 'index.ts');
+  if (options.input) {
+    options.input = options.input.startsWith('.')
+      ? join(options.rootDir, options.input)
+      : options.input;
+  } else {
+    options.input = join(options.rootDir, 'index.ts');
+  }
 
   const localTsConfig = [
     'tsconfig.lib.json',
@@ -138,7 +145,7 @@ export const createConfig = (
     };
   }
 
-  const definedOptions: RollupOptions[] = [];
+  const config: RollupOptions[] = [];
   /**
    * @type {import('rollup').RollupOptions}
    */
@@ -151,14 +158,15 @@ export const createConfig = (
       typescript({
         // cacheDir: '.rollup.tscache',
         tsconfig: options.tsconfig,
-        target: 'ES6',
-        // explicitly disable declarations, as a rollup config is dedicated for them
-        declaration: false,
-        declarationDir: undefined,
-        declarationMap: undefined,
-        sourceMap: true,
-        inlineSources: true,
-        module: 'esnext',
+        compilerOptions: {
+          // explicitly disable declarations, as a rollup config is dedicated for them
+          declaration: false,
+          declarationDir: undefined,
+          declarationMap: undefined,
+          sourceMap: true,
+          inlineSources: true,
+          module: 'esnext',
+        },
       }),
     ],
     external,
@@ -215,15 +223,19 @@ export const createConfig = (
   }
 
   if (bundleOptions.output.length) {
-    definedOptions.push(bundleOptions);
+    config.push(bundleOptions);
   }
 
   /**
    * Generate only types into dist/types/index.d.ts
    */
   if (options.output?.dts ?? true) {
-    const dtsOutput = { ...bundleOptions.output[0]! };
+    const dtsOutput: OutputOptions = {
+      ...bundleOptions.output[0]!,
+      sourcemap: false,
+    };
     dtsOutput.file = `./dist/dts/${baseName}.js`;
+
     const dtsOptions: RollupOptions = {
       input: options.input,
 
@@ -234,12 +246,21 @@ export const createConfig = (
         ...(options.plugins ?? []),
 
         typescript({
-          tsconfig: /*
-          options.tsconfig ?? */ resolve(__dirname, './tsconfig.bundle.json'),
-          declaration: true,
-          emitDeclarationOnly: true,
-          skipLibCheck: true,
-          paths: {},
+          tsconfig: options.tsconfig,
+
+          compilerOptions: {
+            moduleDetection: 'force',
+            declarationDir: join('types', subExportsPath),
+            declaration: true,
+            sourceMap: false,
+            emitDeclarationOnly: true,
+            skipLibCheck: true,
+            moduleResolution: 'node',
+            noUnusedParameters: false,
+            noUnusedLocals: false,
+            module: 'ES2020',
+            newLine: 'LF',
+          },
         }),
       ],
       external,
@@ -275,7 +296,7 @@ export const createConfig = (
       external,
     };
 
-    definedOptions.push(dtsOptions, dtsBundleOptions);
+    config.push(dtsOptions, dtsBundleOptions);
   }
 
   // building the main bundle
@@ -295,12 +316,12 @@ export const createConfig = (
     const dumyInput = tmp.fileSync({
       template: 'DUMMY_INPUT_ASSETS_GOAL-XXXXXX',
     }).name;
-    definedOptions.push({
+    config.push({
       input: dumyInput,
       onwarn: (warning, defaultHandler) => {
         if (
           warning.code === 'EMPTY_BUNDLE' &&
-          warning.names![0] === 'DUMMY_INPUT_ASSETS_GOAL'
+          warning.names![0] === basename(dumyInput)
         ) {
           return;
         }
@@ -340,5 +361,5 @@ export const createConfig = (
     });
   }
 
-  return rollupDefineConfig(definedOptions);
+  return rollupDefineConfig(config);
 };

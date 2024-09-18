@@ -1,4 +1,4 @@
-import { assert } from '@aspectjs/common/utils';
+import { assert } from './assert.util';
 import { isUndefined } from './utils';
 
 declare let Reflect: {

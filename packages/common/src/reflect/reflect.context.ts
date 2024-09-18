@@ -4,11 +4,11 @@ import { assert, ConstructorType } from '@aspectjs/common/utils';
  * Returns an object to store global values across the framework
  */
 
-import { getProviderName, getProviders } from '../../utils/src/module.utils';
 import { ANNOTATION_CONTEXT_REGISTRY_PROVIDERS } from '../annotation/context/registry/annotation-context-registry.provider';
 import { ANNOTATION_HOOK_REGISTRY_PROVIDERS } from '../annotation/factory/annotation-factory.provider';
 import { ANNOTATION_REGISTRY_PROVIDERS } from '../annotation/registry/annotation-registry.provider';
 import { ANNOTATION_TARGET_FACTORY_PROVIDERS } from '../annotation/target/annotation-target-factory.provider';
+import { ReflectModuleConfiguration } from './module/reflect-module-config.type';
 import { ReflectModule } from './module/reflect-module.type';
 import type { ReflectProvider } from './reflect-provider.type';
 import { RUNTIME_STATE_PROVIDER } from './runtime-state.provider';
@@ -171,4 +171,23 @@ export class ReflectContext {
 
     this.providersToResolve.delete(providerName);
   }
+}
+
+function getProviders(m: unknown): ReflectProvider[] {
+  assert(!!m);
+  const config: ReflectModuleConfiguration = (m as any)[Symbol.for('@ajs:rmd')];
+  if (!config) {
+    throw new TypeError(`object ${m} is not a module`);
+  }
+
+  return config.providers;
+}
+
+function getProviderName<T>(
+  providerType: ReflectProvider<T>['provide'],
+): string {
+  assert(!!providerType);
+  return typeof providerType === 'string'
+    ? providerType
+    : providerType.__providerName ?? providerType.name;
 }

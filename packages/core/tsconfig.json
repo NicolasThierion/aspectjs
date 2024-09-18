@@ -3,7 +3,7 @@
   "extends": "../../tsconfig.json",
   "include": ["./**/*.ts"],
   "compilerOptions": {
-    // "module": "NodeNext",
+    "baseUrl": ".",
     "lib": ["ES2015.Reflect", "ES2015", "ES2021"],
 
     "noUnusedParameters": false

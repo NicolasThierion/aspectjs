@@ -36,7 +36,7 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "paths": {
-      "@aspectjs/common": ["packages/common/src/public_api.ts"],
+      "@aspectjs/common": ["./spackages/common/src/public_api.ts"],
       "@aspectjs/common/testing": [
         "./packages/common/testing/src/public_api.ts"
       ],

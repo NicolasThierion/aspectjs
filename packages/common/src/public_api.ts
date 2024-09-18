@@ -16,6 +16,8 @@ export * from './annotation/target/annotation-target.impl';
 export * from './annotation/target/bound-annotation-target';
 // export * from './annotation/trigger/annotation-trigger.registry';
 // export * from './annotation/trigger/annotation-trigger.type';
+export * from '../utils/src/abstract/abstract-token.type';
+export * from '../utils/src/abstract/abstract.type';
 export * from './reflect/module/reflect-module-config.type';
 export * from './reflect/module/reflect-module.type';
 export * from './reflect/reflect-provider.type';

@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "test http client",
       "runtimeExecutable": "npm",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "outputCapture": "std",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",

@@ -1,4 +1,4 @@
-import { isFunction } from '@aspectjs/common/utils';
+import { isFunction } from './utils';
 
 let __debug = false;
 

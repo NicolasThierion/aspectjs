@@ -1,4 +1,4 @@
-import { ConstructorType } from '@aspectjs/common/utils';
+import { ConstructorType } from '../types.util';
 import { _AbstractTokenImpl } from './abstract-token-impl.type';
 
 let abstractThrows = true;

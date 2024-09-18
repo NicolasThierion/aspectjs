@@ -5,7 +5,7 @@ import {
   AnnotationKind,
   AnnotationStub,
 } from '../annotation.types';
-import { getAnnotations } from '../context/annotations.global';
+import { AnnotationContextRegistry } from '../context/registry/annotation-context.registry';
 import { AnnotationsSelector } from '../context/registry/selector';
 import {
   AnnotationTarget,
@@ -70,25 +70,32 @@ export abstract class _AnnotationTargetImpl<
       this as unknown as AnnotationTarget<AnnotationKind.METHOD>;
     const parameterTarget =
       this as unknown as AnnotationTarget<AnnotationKind.PARAMETER>;
+
+    // avoid circular dep the dirty way...
+    const annotationsReg = (globalThis as any).__reflectContext.get(
+      AnnotationContextRegistry,
+    );
     switch (this.kind) {
       case AnnotationKind.CLASS:
-        return getAnnotations(...annotations).onClass(this.proto.constructor);
+        return annotationsReg
+          .select(...annotations)
+          .onClass(this.proto.constructor);
       case AnnotationKind.PROPERTY:
-        return getAnnotations(...annotations).onProperty(
-          this.proto,
-          propertyTarget.propertyKey as any,
-        );
+        return annotationsReg
+          .select(...annotations)
+          .onProperty(this.proto, propertyTarget.propertyKey as any);
       case AnnotationKind.METHOD:
-        return getAnnotations(...annotations).onMethod(
-          methodTarget.proto,
-          methodTarget.propertyKey as any,
-        );
+        return annotationsReg
+          .select(...annotations)
+          .onMethod(methodTarget.proto, methodTarget.propertyKey as any);
       case AnnotationKind.PARAMETER:
-        return getAnnotations(...annotations).onParameter(
-          parameterTarget.proto,
-          parameterTarget.propertyKey as any,
-          parameterTarget.parameterIndex,
-        );
+        return annotationsReg
+          .select(...annotations)
+          .onParameter(
+            parameterTarget.proto,
+            parameterTarget.propertyKey as any,
+            parameterTarget.parameterIndex,
+          );
 
       default:
         throw new TypeError(`unknown annotation target kind: ${this.kind}`);

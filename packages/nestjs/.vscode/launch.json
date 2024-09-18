@@ -28,7 +28,7 @@
       "name": "npm test",
       "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "runtimeArgs": ["run", "test:unit"],
       "console": "integratedTerminal"
     }
