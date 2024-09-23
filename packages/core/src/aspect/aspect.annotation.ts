@@ -22,7 +22,8 @@ import type { AspectOptions } from './aspect-metadata.type';
  */
 export const Aspect = _CORE_ANNOTATION_FACTORY.create(
   AnnotationKind.CLASS,
+  'Aspect',
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  function Aspect(id: string | AspectOptions = {}) {},
+  function (id: string | AspectOptions = {}) {},
 );

@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Header = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Header() {} as ReplaceReturnType<typeof NHeader, void>,
+  'Header',
+  function () {} as ReplaceReturnType<typeof NHeader, void>,
 );

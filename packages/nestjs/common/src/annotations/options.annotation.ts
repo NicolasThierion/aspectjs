@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Options = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Options() {} as ReplaceReturnType<typeof NOptions, void>,
+  'Options',
+  function () {} as ReplaceReturnType<typeof NOptions, void>,
 );

@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Get = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Get() {} as ReplaceReturnType<typeof NGet, void>,
+  'Get',
+  function () {} as ReplaceReturnType<typeof NGet, void>,
 );

@@ -28,7 +28,8 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
  */
 export const Around = _CORE_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
+  'Around',
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  function Around(...pointcutExps: PointcutExpression[]) {},
+  function (...pointcutExps: PointcutExpression[]) {},
 );

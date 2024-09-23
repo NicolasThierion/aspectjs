@@ -22,9 +22,14 @@ describe('property set advice', () => {
   const af = new AnnotationFactory('test');
   const AProperty = af.create(
     AnnotationKind.PROPERTY,
-    function AProperty(..._args: any[]) {},
+    'AProperty',
+    function (..._args: any[]) {},
   );
-  const BProperty = af.create(AnnotationKind.PROPERTY, function BProperty() {});
+  const BProperty = af.create(
+    AnnotationKind.PROPERTY,
+    'BProperty',
+    function () {},
+  );
   let weaver: JitWeaver;
 
   beforeEach(() => {

@@ -7,11 +7,14 @@ import { _CORE_ANNOTATION_FACTORY } from '../utils';
 let _Annotation: Annotation; // fixes force import @aspectjs/common in .d.ts generation
 // https://github.com/microsoft/TypeScript/issues/54743
 
-const OrderAnnotation = _CORE_ANNOTATION_FACTORY.create(function Order(
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  precedence: number,
-) {});
+const OrderAnnotation = _CORE_ANNOTATION_FACTORY.create(
+  'Order',
+  function (
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    precedence: number,
+  ) {},
+);
 
 Object.defineProperties(OrderAnnotation, {
   LOWEST_PRECEDENCE: {

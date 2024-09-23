@@ -28,7 +28,8 @@ import { _CORE_ANNOTATION_FACTORY } from '../../utils';
  */
 export const AfterThrow = _CORE_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
+  'AfterThrow',
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  function AfterThrow(...pointcutExps: PointcutExpression[]) {},
+  function (...pointcutExps: PointcutExpression[]) {},
 );

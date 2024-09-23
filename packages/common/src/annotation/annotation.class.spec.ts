@@ -13,7 +13,7 @@ describe(`Class Annotations`, () => {
   beforeEach(() => {
     configureTesting();
     factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
-    AClass = factory.create(AClassStub);
+    AClass = factory.create('AClassStub', AClassStub);
   });
   afterEach(() => {
     jest.clearAllMocks();

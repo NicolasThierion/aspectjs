@@ -160,7 +160,7 @@ describe('JitWeaver', () => {
         it('replaces the previously registered aspect ', () => {
           const advice = jest.fn();
           const TestAnnotation = new AnnotationFactory('tests').create(
-            function TestAnnotation() {},
+            'TestAnnotation',
           );
           @Aspect()
           class Aspect1 {
@@ -192,7 +192,7 @@ describe('JitWeaver', () => {
         it('replaces the previously registered aspect ', () => {
           const advice = jest.fn();
           const TestAnnotation = new AnnotationFactory('tests').create(
-            function TestAnnotation() {},
+            'TestAnnotation',
           );
           @Aspect('test')
           class Aspect1 {

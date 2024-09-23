@@ -16,7 +16,7 @@ describe(`Property Annotations`, () => {
   beforeEach(() => {
     configureTesting();
     factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
-    AProperty = factory.create(APropertyStub);
+    AProperty = factory.create('APropertyStub', APropertyStub);
   });
   afterEach(() => {
     jest.clearAllMocks();

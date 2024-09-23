@@ -4,7 +4,7 @@
   "include": ["./src/**/*.ts", "./index.ts"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2021", "ES2015.Reflect"],
-    "types": ["reflect-metadata"],
+    "types": ["reflect-metadata", "jest"],
     "useDefineForClassFields": false
   }
 }

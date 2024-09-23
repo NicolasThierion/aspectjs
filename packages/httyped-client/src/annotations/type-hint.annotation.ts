@@ -2,7 +2,8 @@
 import { AnnotationFactory } from '@aspectjs/common';
 import { TypeHintType } from './../types/type-hint.type';
 export const TypeHint = new AnnotationFactory('aspectjs.utils').create(
+  'TypeHint',
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  function TypeHint(type: TypeHintType | TypeHintType[]) {},
+  function (type: TypeHintType | TypeHintType[]) {},
 );

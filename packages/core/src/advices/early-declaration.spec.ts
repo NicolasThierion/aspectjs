@@ -8,7 +8,10 @@ describe('@Before property advice', () => {
   beforeEach(() => _setReflectContext(new ReflectTestingContext()));
   describe('when the property is declared before enabling the weaver', () => {
     it('calls the advice before the property is get', () => {
-      const EarlyAnnotation = af.create(function EarlyAnnotation() {});
+      const EarlyAnnotation = af.create(
+        'EarlyAnnotation',
+        function EarlyAnnotation() {},
+      );
 
       class A {
         @EarlyAnnotation()

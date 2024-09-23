@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Put = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Put() {} as ReplaceReturnType<typeof NPut, void>,
+  'Put',
+  function () {} as ReplaceReturnType<typeof NPut, void>,
 );

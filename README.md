@@ -91,6 +91,7 @@ getWeaver().enable(new AB_Aspect())
   const ANNOTATION_FACTORY = new AnnotationFactory('demo');
   const Toasted = ANNOTATION_FACTORY.create(
     AnnotationKind.METHOD,
+    'Toasted', 
     function Toasted() {},
   );
   ```

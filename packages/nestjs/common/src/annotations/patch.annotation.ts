@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Patch = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Patch() {} as ReplaceReturnType<typeof NPatch, void>,
+  'Patch',
+  function () {} as ReplaceReturnType<typeof NPatch, void>,
 );

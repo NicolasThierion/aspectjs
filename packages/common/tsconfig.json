@@ -2,7 +2,6 @@
   "$schema": "http://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.json",
   "include": ["./src/**/*.ts", "./index.ts"],
-  "exclude": ["./**/*.spec.ts"],
   "compilerOptions": {
     "baseUrl": "."
   }

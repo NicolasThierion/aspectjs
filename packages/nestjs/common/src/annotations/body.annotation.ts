@@ -11,7 +11,7 @@ export const Body = NESTJS_COMMON_ANNOTATION_FACTORY.create<
       property: string,
       ...pipes: (Type<PipeTransform> | PipeTransform)[]
     ) => void)
->(AnnotationKind.PARAMETER, function Body() {} as ReplaceReturnType<
+>(AnnotationKind.PARAMETER, 'Body', function Body() {} as ReplaceReturnType<
   typeof NBody,
   void
 >);

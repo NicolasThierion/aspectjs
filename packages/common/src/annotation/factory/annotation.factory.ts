@@ -30,22 +30,15 @@ let anonymousAnnotationId = 0;
  * @typeParam T the type of annotation to create
  * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
  */
-export interface AnnotationCreateOptions<
-  T extends AnnotationKind,
-  S extends AnnotationStub<T>,
-> {
+export interface AnnotationCreateOptions<T extends AnnotationKind> {
   /**
    * The name of the annotation to create.
    */
-  name?: string;
-  /**
-   * An no-op function with the same signature as the annotation to create.
-   */
-  annotationStub?: S;
+  name: string;
   /**
    * The type of annotation to create.
    */
-  type?: T;
+  kind: T;
 }
 /**
  * Factory to create an {@link Annotation}.
@@ -66,21 +59,15 @@ export class AnnotationFactory {
   ) {}
 
   /**
-   * Create an annotation with the given `type` and `name`.
-   * @param type The type of annotation to create.
-   * @param name The name of the annotation to create.
+   * Create with the a n annotation.
+   * @param options The options for the annotation to create.
+   * @param annotationStub The signature of the annotation to create.
    * @typeParam T the type of annotation to create
    * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
-   * @example
-   * ```ts
-   * const LogErrors = new AnnotationFactory('demo').create();
-   * // Or:
-   * const LogErrors = new AnnotationFactory('demo').create(AnnotationKind.METHOD, 'LogErrors');
-   * ```
    */
   create<T extends AnnotationKind, S extends AnnotationStub<T>>(
-    type?: T,
-    name?: string,
+    options?: AnnotationCreateOptions<T>,
+    annotationStub?: S,
   ): Annotation<T, S>;
 
   /**
@@ -94,13 +81,14 @@ export class AnnotationFactory {
    * const LogErrors = new AnnotationFactory('demo').create('LogErrors');
    * ```
    */
-  create<S extends AnnotationStub>(name?: string): Annotation<any, S>;
+  create<S extends AnnotationStub>(name: string): Annotation<any, S>;
 
   /**
    * Create a new annotation wwith the given type and signature. The created annotation accepts the same parameters as with the the provid function.
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
    * @param type The type of annotation to create.
+   * @param name The name of the annotation to create.
    * @param annotationStub The signature of the annotation to create.
    * @typeParam T the type of annotation to create
    * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
@@ -108,13 +96,15 @@ export class AnnotationFactory {
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create(
    *    AnnotationKind.METHOD,
+   *    'Log',
    *    function Log(
    *      level: 'info' | 'warn' | 'error' | 'debug' = 'error',
    * ) {});
    * ```
    */
   create<T extends AnnotationKind, S extends AnnotationStub<T>>(
-    type?: T,
+    type: T,
+    name?: string,
     annotationStub?: S,
   ): Annotation<T, S>;
 
@@ -123,51 +113,43 @@ export class AnnotationFactory {
    * The created annotation has the same name as the given function, and accepts the same parameters.
    * If no annotation type is given, the annotation could be used above classes, methods, properties, attributes and parameters.
    *
+   * @param name The name of the annotation to create.
    * @param annotationStub The signature of the annotation to create.
    * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
    * @example
    * ```ts
    * const LogErrors = new AnnotationFactory('demo').create(
-   *    AnnotationKind.METHOD,
+   *    'Log',
    *    function Log(
    *      level: 'info' | 'warn' | 'error' | 'debug' = 'error',
    * ) {});
    * ```
    */
-  create<S extends AnnotationStub>(annotationStub?: S): Annotation<any, S>;
+  create<S extends AnnotationStub>(
+    name?: string,
+    annotationStub?: S,
+  ): Annotation<any, S>;
 
-  /**
-   * Create with the a n annotation.
-   * @param options The options for the annotation to create.
-   * @typeParam T the type of annotation to create
-   * @typeParam S the signature of the annotation to create. It defines the name of the annotation and the set of accepted parameters.
-   */
   create<T extends AnnotationKind, S extends AnnotationStub<T>>(
-    options?: AnnotationCreateOptions<T, S>,
-  ): Annotation<T, S>;
-  create<T extends AnnotationKind, S extends AnnotationStub<T>>(
-    init?: string | S | AnnotationCreateOptions<T, S> | AnnotationKind,
-    annotationStub?: S | string,
+    init?: string | AnnotationCreateOptions<T> | AnnotationKind,
+    nameOrAnnotationStub?: S | string,
+    annotationStub?: S,
   ): Annotation<T, S> {
-    const _opts = typeof init === 'object' ? init : {};
+    const _opts: Partial<AnnotationCreateOptions<T>> =
+      typeof init === 'object' ? init : {};
 
-    if (typeof annotationStub === 'function') {
-      _opts.annotationStub = annotationStub;
-    } else if (typeof annotationStub === 'string') {
-      _opts.name = annotationStub;
-    }
-
-    if (typeof _opts.annotationStub === 'function') {
-      _opts.name = _opts.annotationStub.name;
-    }
-
-    if (typeof init === 'string') {
+    if (typeof init === 'object') {
+      annotationStub = nameOrAnnotationStub as S;
+    } else if (typeof init === 'string') {
       _opts.name = init;
-    } else if (typeof init === 'function') {
-      _opts.name = init.name;
-      _opts.annotationStub = init;
     } else if (typeof init === typeof AnnotationKind) {
-      _opts.type = init as T;
+      _opts.kind = init as T;
+    }
+
+    if (typeof nameOrAnnotationStub === 'string') {
+      _opts.name = nameOrAnnotationStub;
+    } else if (typeof nameOrAnnotationStub === 'function') {
+      annotationStub = nameOrAnnotationStub;
     }
 
     const groupId = this.groupId;
@@ -175,12 +157,12 @@ export class AnnotationFactory {
       _opts.name = `anonymousAnnotation#${anonymousAnnotationId++}`;
     }
 
-    if (!_opts.annotationStub) {
-      _opts.annotationStub = function () {} as S;
+    if (!annotationStub) {
+      annotationStub = function () {} as S;
     }
 
     // create the annotation (ie: decorator factory)
-    return this._createAnnotation(groupId, _opts.name, _opts.annotationStub);
+    return this._createAnnotation(groupId, _opts.name, annotationStub);
   }
 
   // Turn an annotation into an ES decorator

@@ -20,7 +20,8 @@ describe('static property get advice', () => {
   const af = new AnnotationFactory('test');
   const AProperty = af.create(
     AnnotationKind.PROPERTY,
-    function AProperty(..._args: any[]) {},
+    'AProperty',
+    function (..._args: any[]) {},
   );
   let weaver: JitWeaver;
 

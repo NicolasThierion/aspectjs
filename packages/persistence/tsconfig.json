@@ -7,6 +7,5 @@
     "skipLibCheck": true,
     "types": ["jest", "node"],
     "lib": ["DOM", "ES2021", "ES2019.Array"]
-  },
-  "exclude": ["./dist", "./**/*.spec.ts"]
+  }
 }

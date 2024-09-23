@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Post = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Post() {} as ReplaceReturnType<typeof NPost, void>,
+  'Post',
+  function () {} as ReplaceReturnType<typeof NPost, void>,
 );

@@ -12,5 +12,6 @@ export const Controller: Annotation<
   | ((prefix: string | string[]) => void)
   | ((options: ControllerOptions) => void)
 > = NESTJS_COMMON_ANNOTATION_FACTORY.create(
-  function Controller() {} as ReplaceReturnType<typeof NController, void>,
+  'Controller',
+  function () {} as ReplaceReturnType<typeof NController, void>,
 ) as any;

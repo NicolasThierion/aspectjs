@@ -45,6 +45,8 @@
       "@aspectjs/core": ["./packages/core/src/public_api.ts"],
       "@aspectjs/core/testing": ["./packages/core/testing/src/public_api.ts"],
       "@aspectjs/nestjs/common": ["./packages/nestjs/common/src/public_api.ts"],
+      "@aspectjs/persistence": ["./packages/persistence/src/public_api.ts"],
+
       "httyped-client": ["./packages/httyped-client/src/public_api.ts"],
       "nestjs-client": ["./packages/nestjs-client/src/public_api.ts"]
     }

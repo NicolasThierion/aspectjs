@@ -26,9 +26,12 @@ export interface MemoOptions {
  * }
  * ```
  */
-export const Memo = memoAnnotationFactory.create(function Memo(
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line
-  options?: MemoOptions,
-) {});
+export const Memo = memoAnnotationFactory.create(
+  'Memo',
+  function (
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line
+    options?: MemoOptions,
+  ) {},
+);

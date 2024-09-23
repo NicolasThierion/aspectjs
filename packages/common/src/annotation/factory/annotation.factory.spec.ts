@@ -16,14 +16,14 @@ describe('AnnotationFactory(groupId)', () => {
     factory = new AnnotationFactory(FACTORY_GROUP_TEST_ID);
   });
 
-  describe('.create(<AnnotationStub>)', () => {
+  describe('.create("name" , <AnnotationStub>)', () => {
     it('returns a function', () => {
-      AClass = factory.create(AClassStub);
+      AClass = factory.create('AClassStub', AClassStub);
       expect(typeof AClass).toBe('function');
     });
 
     it('returns an annotation', () => {
-      AClass = factory.create(AClassStub);
+      AClass = factory.create('AClassStub', AClassStub);
       expect(AClass.groupId).toBeDefined();
       expect(AClass.name).toBeDefined();
       expect(AClass.ref).toBeDefined();
@@ -36,19 +36,19 @@ describe('AnnotationFactory(groupId)', () => {
 
     describe('called twice with the same Annotation name', () => {
       it('throws an error', () => {
-        factory.create(function X() {});
-        expect(() => factory.create(function X() {})).toThrow(
+        factory.create('X', function X() {});
+        expect(() => factory.create('X', function X() {})).toThrow(
           `Annotation "@${factory.groupId}:X" already exists`,
         );
       });
     });
-    describe('returns an an Annotation with property', () => {
+    describe('returns an Annotation with property', () => {
       beforeEach(() => {
-        AClass = factory.create(AClassStub);
+        AClass = factory.create('AClassStub', AClassStub);
       });
       describe('.name', () => {
-        it('matches stub name', () => {
-          expect(AClass.name).toEqual(AClassStub.name);
+        it('matches the given name', () => {
+          expect(AClass.name).toEqual('AClassStub');
         });
       });
       describe('.groupId', () => {

@@ -54,19 +54,23 @@ describe(`AnnotationMixin`, () => {
     beforeEach(() => {
       BClass = af.create(
         AnnotationKind.CLASS,
-        function BClass(a: string, b: string) {},
+        'BClass',
+        function (a: string, b: string) {},
       );
       BMethod = af.create(
         AnnotationKind.METHOD,
-        function BMethod(a: string, b: string) {},
+        'BMethod',
+        function (a: string, b: string) {},
       );
       BProperty = af.create(
         AnnotationKind.PROPERTY,
-        function BProperty(a: string, b: string) {},
+        'BProperty',
+        function (a: string, b: string) {},
       );
       BParameter = af.create(
         AnnotationKind.PARAMETER,
-        function BParameter(a: string, b: string) {},
+        'BParameter',
+        function (a: string, b: string) {},
       );
 
       classDecoratorSpy = jest.fn();
@@ -254,8 +258,8 @@ describe(`AnnotationMixin`, () => {
     let B: Annotation<any, (a: string, b: string) => void>;
 
     beforeEach(() => {
-      A = af.create(function A(a: string, b: string) {});
-      B = af.create(function B(a: string, b: string) {});
+      A = af.create('A', function (a: string, b: string) {});
+      B = af.create('B', function (a: string, b: string) {});
 
       annotationMixin = new AnnotationMixin().bind(A, B);
       configureTesting(WeaverModule);

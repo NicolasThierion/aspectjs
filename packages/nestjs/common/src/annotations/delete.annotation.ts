@@ -5,5 +5,6 @@ import { ReplaceReturnType } from '../type.utils';
 
 export const Delete = NESTJS_COMMON_ANNOTATION_FACTORY.create(
   AnnotationKind.METHOD,
-  function Delete() {} as ReplaceReturnType<typeof NDelete, void>,
+  'Delete',
+  function () {} as ReplaceReturnType<typeof NDelete, void>,
 );
