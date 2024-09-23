@@ -1,11 +1,11 @@
 {
-  "name": "nestjs-client",
+  "name": "nestjs-httyped-client",
   "version": "0.5.1",
   "description": "An AOP powered typesafe http client for your NestJS controllers, inspired by Retrofit library for java",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicolasThierion/aspectjs.git",
-    "directory": "packages/nestjs-client"
+    "directory": "packages/nestjs-httyped-client"
   },
   "scripts": {
     "test": "npm run clean && npm run test:lint && npm run test:unit",
@@ -28,16 +28,16 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "fesm2020": "./fesm2020/nestjs-client.mjs",
+      "fesm2020": "./fesm2020/nestjs-httyped-client.mjs",
       "esm2020": "./esm2020/index.mjs",
       "esm": "./esm2020/index.mjs",
       "require": "./cjs/index.cjs",
-      "import": "./fesm2020/nestjs-client.mjs",
-      "unpkg": "./umd/nestjs-client.umd.min.js"
+      "import": "./fesm2020/nestjs-httyped-client.mjs",
+      "unpkg": "./umd/nestjs-httyped-client.umd.min.js"
     }
   },
-  "module": "./fesm2020/nestjs-client.mjs",
-  "main": "./umd/nestjs-client.umd.min.js",
+  "module": "./fesm2020/nestjs-httyped-client.mjs",
+  "main": "./umd/nestjs-httyped-client.umd.min.js",
   "devDependencies": {
     "jest": "^29.5.0",
     "tsx": "^4.19.0",

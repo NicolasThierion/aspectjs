@@ -4,7 +4,7 @@ include:
   - packages/common/.gitlab-ci.yml
   - packages/memo/.gitlab-ci.yml
   - packages/persistence/.gitlab-ci.yml
-  - packages/nestjs-client/.gitlab-ci.yml
+  - packages/nestjs-httyped-client/.gitlab-ci.yml
   - packages/nestjs/.gitlab-ci.yml
   - packages/httyped-client/.gitlab-ci.yml
 

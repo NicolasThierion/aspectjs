@@ -48,7 +48,9 @@
       "@aspectjs/persistence": ["./packages/persistence/src/public_api.ts"],
 
       "httyped-client": ["./packages/httyped-client/src/public_api.ts"],
-      "nestjs-client": ["./packages/nestjs-client/src/public_api.ts"]
+      "nestjs-httyped-client": [
+        "./packages/nestjs-httyped-client/src/public_api.ts"
+      ]
     }
   },
   "ts-node": {

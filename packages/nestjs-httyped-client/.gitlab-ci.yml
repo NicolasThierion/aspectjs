@@ -1,42 +1,42 @@
 include:
   - ci-templates/node.yml
 
-nestjs-client:lint:
+nestjs-httyped-client:lint:
   variables:
-    CWD: packages/nestjs-client
+    CWD: packages/nestjs-httyped-client
   extends: .node:lint
   stage: test
   needs:
     - node:prepare
 
-nestjs-client:unit:
+nestjs-httyped-client:unit:
   extends: .node:test:unit
   variables:
-    CWD: packages/nestjs-client
+    CWD: packages/nestjs-httyped-client
   stage: test
   needs:
     - node:prepare
 
-nestjs-client:build:
+nestjs-httyped-client:build:
   extends: .node:build
   variables:
-    CWD: packages/nestjs-client
+    CWD: packages/nestjs-httyped-client
   stage: compile
   needs:
     - node:prepare
 
-# nestjs-client:publish:gitlab:
+# nestjs-httyped-client:publish:gitlab:
 #   extends: .node:gitlab:publish
 #   stage: publish
 #   variables:
-#     CWD: packages/nestjs-client
+#     CWD: packages/nestjs-httyped-client
 #     PACKAGE_DIR: ./dist
 
-nestjs-client:publish:npm:
+nestjs-httyped-client:publish:npm:
   extends: .node:npm:publish
   stage: release
   variables:
-    CWD: packages/nestjs-client
+    CWD: packages/nestjs-httyped-client
     PACKAGE_DIR: ./dist
   rules:
     - if: $CI_COMMIT_REF_NAME =~ /^v\d+\.\d+\.\d+.*$/

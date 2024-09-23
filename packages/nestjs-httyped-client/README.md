@@ -1,10 +1,10 @@
-# nestjs-client
+# nestjs-httyped-client
 
 > Give your NestJS controller a nice, clean HTTP client with zero additional code 🎉 !
 
-[![ci-status]](https://gitlab.com/aspectjs/nestjs-client)
-[![coverage report]](https://gitlab.com/aspectjs/nestjs-client/-/commits/main)
-[![Latest Release]](https://gitlab.com/aspectjs/nestjs-client/-/releases)
+[![ci-status]](https://gitlab.com/aspectjs/nestjs-httyped-client)
+[![coverage report]](https://gitlab.com/aspectjs/nestjs-httyped-client/-/commits/main)
+[![Latest Release]](https://gitlab.com/aspectjs/nestjs-httyped-client/-/releases)
 
 ## 💡 Why?
 
@@ -79,7 +79,7 @@ export class UserController {
 </ul>
 
 Inspired by the [retrofit](https://square.github.io/retrofit/) java library,
-`nestjs-client` use the _same decorators_ from your existing NestJS controller to give you a corresponding implementation of an http client.
+`nestjs-httyped-client` use the _same decorators_ from your existing NestJS controller to give you a corresponding implementation of an http client.
 By leveraging [AspectJS](https://www.npmjs.com/package/@aspectjs/core) and the [`httyped-client`](https://www.npmjs.com/package/httyped-client), this library simplifies the creation of synchronized clients, reducing redundancy and ensuring your client always reflects your server-side API.
 
 
@@ -156,7 +156,7 @@ export class UserController extends UserApi {
 
 - Install the packages.
   ```bash
-  npm i @aspectjs/core @aspectjs/common @aspectjs/nestjs nestjs-client
+  npm i @aspectjs/core @aspectjs/common @aspectjs/nestjs nestjs-httyped-client
   ```
   
   To use on nodeJS, you may also need a implementation for the fetch api: 
@@ -242,7 +242,7 @@ export class UserController extends UserApi {
 ```ts
 import 'whatwg-fetch';
 import { getWeaver } from '@aspectjs/core';
-import { NestClientAspect } from 'nestjs-client';
+import { NestClientAspect } from 'nestjs-httyped-client';
 
 getWeaver().enable(new NestClientAspect());
 ```
@@ -260,6 +260,6 @@ await usersClient.getById(1)
 ```
 
 
-[coverage report]: https://gitlab.com/aspectjs/nestjs-client/badges/main/coverage.svg?job=memo:unit
-[ci-status]: https://gitlab.com/aspectjs/nestjs-client/badges/main/pipeline.svg
-[Latest Release]: https://gitlab.com/aspectjs/nestjs-client/-/badges/release.svg
+[coverage report]: https://gitlab.com/aspectjs/nestjs-httyped-client/badges/main/coverage.svg?job=memo:unit
+[ci-status]: https://gitlab.com/aspectjs/nestjs-httyped-client/badges/main/pipeline.svg
+[Latest Release]: https://gitlab.com/aspectjs/nestjs-httyped-client/-/badges/release.svg
