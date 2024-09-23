@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/nestjs",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Compatibility package to leverage AspectJS with NestJS decorators",
   "repository": {
     "type": "git",
