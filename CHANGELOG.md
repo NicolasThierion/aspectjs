@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.5.0](https://github.com/NicolasThierion/aspectjs/compare/v0.4.4...v0.5.0) (2024-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **common:** AnnotationFactory.create now take a mandatory annotation name when giving annotationStub
+
+* **common:** AnnotationFactory.create now take a mandatory annotation name when giving annotationStub ([0bf1e7f](https://github.com/NicolasThierion/aspectjs/commit/0bf1e7f0b3c7599823b66eb5a4e74dde69ce7e71))
+
 ## [0.4.4](https://github.com/NicolasThierion/aspectjs/compare/v0.4.3...v0.4.4) (2024-09-18)
 
 ## [0.4.3](https://github.com/NicolasThierion/aspectjs/compare/v0.4.2...v0.4.3) (2024-09-17)
