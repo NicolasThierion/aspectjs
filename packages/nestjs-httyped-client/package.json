@@ -1,6 +1,6 @@
 {
   "name": "nestjs-httyped-client",
-  "version": "0.5.1",
+  "version": "0.5.3",
   "description": "An AOP powered typesafe http client for your NestJS controllers, inspired by Retrofit library for java",
   "repository": {
     "type": "git",

@@ -166,6 +166,7 @@ export const createConfig = (
 
   options.push(copyPackageJson(pkg.file!, outDir));
 
+  options.push(copyReadme());
   options
     .flatMap((o) => o.output)
     .filter((o) => !!o)
@@ -338,6 +339,32 @@ export const createConfig = (
       sourceMap: true,
       // explicitly disable declarations, as a rollup config is dedicated for them
     });
+  }
+
+  function copyReadme() {
+    const readme =
+      findUp.sync('README.md', { cwd: rootDir }) ??
+      findUp.sync('readme.md', { cwd: rootDir }) ??
+      findUp.sync('Readme.md', { cwd: rootDir }) ??
+      'README.md';
+    const assetsDir =
+      findUp.sync('.assets', {
+        cwd: rootDir,
+        type: 'directory',
+      }) ?? '.assets';
+
+    return runPlugin(
+      copy({
+        targets: [
+          { src: assetsDir, dest: outDir },
+          {
+            src: readme,
+            dest: outDir,
+            caseSensitiveMatch: false,
+          },
+        ],
+      }),
+    );
   }
 };
 

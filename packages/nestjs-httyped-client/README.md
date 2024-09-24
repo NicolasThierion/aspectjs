@@ -1,10 +1,29 @@
 # nestjs-httyped-client
 
-> Give your NestJS controller a nice, clean HTTP client with zero additional code 🎉 !
+<h3 align="center">Give your NestJS controller a nice, clean HTTP client with zero additional code 🎉 !</p>
 
+<p align="center">
+
+<!--
 [![ci-status]](https://gitlab.com/aspectjs/nestjs-httyped-client)
 [![coverage report]](https://gitlab.com/aspectjs/nestjs-httyped-client/-/commits/main)
+-->
+[![npm version]](https://www.npmjs.com/package/nestjs-httyped-client)
+[![license]](https://www.npmjs.com/package/nestjs-httyped-client)
+[![NPM Downloads]](https://www.npmjs.com/package/nestjs-httyped-client)
+[![bundlejs]](https://bundlejs.com/?q=nestjs-httyped-client&treeshake=[*]%2C[*])
+
+<!--
 [![Latest Release]](https://gitlab.com/aspectjs/nestjs-httyped-client/-/releases)
+-->
+
+</p><br/><br/>
+
+
+## 🎉 Demo
+
+See the demo on [Stackblitz](https://stackblitz.com/edit/nestjs-httyped-client-demo-0-5-1?file=src%2Fusers%2Fusers.controller.ts,src%2Fmain.ts,src%2Faop.ts&file=src%2Fusers%2Fusers.client.ts,src%2Fusers%2Fusers.api.ts&terminal=start:dev).
+
 
 ## 💡 Why?
 

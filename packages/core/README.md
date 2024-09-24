@@ -23,11 +23,10 @@ Inspired by the [AspectJ](https://www.eclipse.org/aspectj/) java framework,
 **AspectJS** leverages **[ES Decorators](https://github.com/tc39/proposal-decorators)** to bring
 Aspect Oriented Programming to Javascript and Typescript.
 
-## 🎉 Demo
 
-See the demo on [stackblitz](https://stackblitz.com/edit/aspectjs-demo-0-5-1?file=index.html).
+## 🎉 Demo:
 
-## 💡 Why?
+Demo on [stackedit](https://stackblitz.com/edit/aspectjs-demo-0-5-1?file=index.ts).
 
 [ECMAScript Decorators](https://github.com/tc39/proposal-decorators) are fantastic: they allow developers to **hide boilerplate code** behind a simple `@` sign, keeping the code clean, easy to read, and easy to write. Widely used in popular projects such as [Angular](https://angular.io/), [Nest.js](https://nestjs.com/) or [TypeORM](https://github.com/typeorm/typeorm), decorators have one major drawback: they come with their own built-in behavior, making interoperability between tools difficult, and preventing them from being repurposed for other uses.
 

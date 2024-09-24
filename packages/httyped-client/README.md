@@ -4,20 +4,29 @@
 
 <p align="center">
 
+<!--
 [![ci-status]](https://gitlab.com/aspectjs/httyped-client)
 [![coverage report]](https://gitlab.com/aspectjs/httyped-client/-/commits/main)
+-->
 [![npm version]](https://www.npmjs.com/package/httyped-client)
 [![license]](https://www.npmjs.com/package/httyped-client)
 [![NPM Downloads]](https://www.npmjs.com/package/httyped-client)
 [![bundlejs]](https://bundlejs.com/?q=httyped-client&treeshake=[*]%2C[*])
-[![Latest Release]](https://gitlab.com/aspectjs/httyped-client/-/releases)
 
+<!--
+[![Latest Release]](https://gitlab.com/aspectjs/httyped-client/-/releases)
+-->
 </p><br/><br/>
 
 ## 📜 Abstract
 
 Inspired by the [retrofit](https://square.github.io/retrofit/) java library,
 **httyped-client** uses **[AspectJS](https://github.com/NicolasThierion/aspectjs)** to design HTTP clients with only annotations (and a few lines of code).
+
+
+## 🎉 Demo
+
+See the demo on [stackblitz](https://stackblitz.com/edit/httyped-demo-0-5-1?file=src%2Fmain.ts,src%2Fclient-factory.ts&file=src%2Fusers.client.ts&terminal=start).
 
 ## 🚀 Why?
 

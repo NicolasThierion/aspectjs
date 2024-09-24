@@ -15,7 +15,7 @@ export interface Mapper<T = unknown, U = unknown> {
    * @param obj the object to map
    * @param context the context of the mapper
    */
-  map(obj: T, context: MapperContext): U;
+  map(obj: U, context: MapperContext): T;
 }
 
 export class MappersRegistry {
@@ -44,8 +44,8 @@ export class MappersRegistry {
     return this.mappers[Symbol.iterator]();
   }
 
-  findMapper<T, U extends T>(typeHint: TypeHintType<U>): Mapper<T> | undefined {
-    let mapper = this.mappers.get(typeHint);
+  findMapper<T, U extends T>(typeHint: TypeHintType<T>): Mapper<T> | undefined {
+    let mapper = this.mappers.get(typeHint) as Mapper<T, U> | undefined;
     if (!mapper && typeof (typeHint as ConstructorType<any>) === 'function') {
       // try to lookup mappers by type name
       mapper = this._findMapperByCtor<T, U>(typeHint as ConstructorType<T>);
@@ -54,11 +54,11 @@ export class MappersRegistry {
     return mapper;
   }
 
-  private _findMapperByCtor<T, U extends T>(
+  private _findMapperByCtor<T, U>(
     ctor: ConstructorType<T>,
-  ): Mapper<U> | undefined {
-    const mapper =
-      this.mappers.get(ctor) ?? (this.mappers.get(ctor.name) as Mapper<U>);
+  ): Mapper<T, U> | undefined {
+    const mapper = (this.mappers.get(ctor) ??
+      this.mappers.get(ctor.name)) as Mapper<T, U>;
 
     if (!mapper) {
       const parent = ctor.prototype
