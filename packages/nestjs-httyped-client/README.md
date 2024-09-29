@@ -282,3 +282,12 @@ await usersClient.getById(1)
 [coverage report]: https://gitlab.com/aspectjs/nestjs-httyped-client/badges/main/coverage.svg?job=memo:unit
 [ci-status]: https://gitlab.com/aspectjs/nestjs-httyped-client/badges/main/pipeline.svg
 [Latest Release]: https://gitlab.com/aspectjs/nestjs-httyped-client/-/badges/release.svg
+
+
+[npm version]: https://img.shields.io/npm/v/nestjs-httyped-client.svg
+[license]: https://img.shields.io/npm/l/nestjs-httyped-client.svg
+[NPM Downloads]: https://img.shields.io/npm/dm/nestjs-httyped-client.svg
+
+[bundlejs]: https://deno.bundlejs.com/badge?q=nestjs-httyped-client,@aspectjs/core,@aspectjs/common&treeshake=[*],[*]
+
+

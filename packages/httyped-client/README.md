@@ -137,7 +137,7 @@ _httyped-client_ takes care of the following for you:
     }
 
     @Get()
-    @TypeHint("UserPost") // can also use the TypeHint annotation select an appropriate mapper
+    @TypeHint("UserPost") // can also use the TypeHint annotation to select an appropriate mapper
     async getUserPosts() {
       return abstract<UserPost>();
     }
@@ -146,7 +146,6 @@ _httyped-client_ takes care of the following for you:
 
 
   > **Note:**
-  > - Annotations from the package `@aspectjs/nestjs/common` share the same signature as those from `@nestjs/common`.
   > - TypeScript does not support decorators on interfaces. Instead, we use abstract classes. The `abstract()` value returned by the method serves as a placeholder, allowing TypeScript to properly infer the actual return type and helping `httyped-client` select the appropriate response mapper.
 
 - Create an instance of the httyped client, and use it 🎉
@@ -282,4 +281,4 @@ MIT Licensed
 [license]: https://img.shields.io/npm/l/httyped-client.svg
 [NPM Downloads]: https://img.shields.io/npm/dm/httyped-client.svg
 
-[bundlejs]: https://deno.bundlejs.com/badge?q=httyped-client,@aspectjs/core&treeshake=[*],[*]
+[bundlejs]: https://deno.bundlejs.com/badge?q=httyped-client,@aspectjs/core,@aspectjs/common&treeshake=[*],[*]

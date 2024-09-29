@@ -274,8 +274,10 @@ export class HttypedClientAspect extends AbstractAopHttpClientAspect {
           url,
           method:
             fetchAnnotation.ref.name.toLowerCase() as HttpEndpointMetadata['method'],
-          requestInit: fetchAnnotation.args[1],
+          requestInit: fetchAnnotation.args[1] ?? {},
         };
+
+        metadata.requestInit.headers ??= {};
 
         ctxt.target.defineMetadata(`${ASPECT_ID}:endpoint`, metadata);
 
