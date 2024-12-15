@@ -69,4 +69,4 @@ Benefits of using _AOP_
 
 ## 🎉 Demo:
 
-<iframe src="https://stackblitz.com/edit/aspectjs-demo?file=index.ts" width="100%" height="540px" border="none"></iframe>
+<iframe src="https://stackblitz.com/edit/aspectjs-demo-0-5-1?file=index.html" width="100%" height="540px" border="none"></iframe>
