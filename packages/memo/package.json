@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/memo",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Memoize methods with a simple annotation",
   "repository": {
     "type": "git",

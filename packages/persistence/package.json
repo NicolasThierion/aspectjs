@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/persistence",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "ORM annotations",
   "repository": {
     "type": "git",

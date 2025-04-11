@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.5.4](https://github.com/NicolasThierion/aspectjs/compare/v0.5.3...v0.5.4) (2025-04-11)
+
+
+### Bug Fixes
+
+* static methods being deleted from annotated classes. fixes [#45](https://github.com/NicolasThierion/aspectjs/issues/45) ([c323e4c](https://github.com/NicolasThierion/aspectjs/commit/c323e4ce06609fdc26889ffb4ea0db6443c84835))
+
 ## [0.5.3](https://github.com/NicolasThierion/aspectjs/compare/v0.5.1...v0.5.3) (2024-09-24)
 
 ## [0.5.2](https://github.com/NicolasThierion/aspectjs/compare/v0.5.1...v0.5.2) (2024-09-24)
