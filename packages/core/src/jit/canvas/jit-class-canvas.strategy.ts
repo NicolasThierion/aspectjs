@@ -36,7 +36,7 @@ export class JitClassCanvasStrategy<
     let constructor = ctxt.target.getMetadata(
       '@ajs:compiledSymbol',
       () => ctxt.target.proto.constructor,
-    ) as ConstructorType<X>;
+    );
 
     const findCompileAdvices = () => {
       return [...this.advices.find([PointcutKind.CLASS], [AdviceKind.COMPILE])];

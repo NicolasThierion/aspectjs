@@ -30,3 +30,4 @@ pnpmfile.js
 *.log.*
 dist/
 *.tgz
+.history

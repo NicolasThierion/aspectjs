@@ -33,6 +33,9 @@ describe(`Class Annotations`, () => {
     let A = class A {
       someProp = 'someProp';
       static someStaticProp = 'someStaticProp';
+      static someStaticMethod() {
+        return 'someStaticMethod';
+      }
     };
 
     beforeEach(() => {
@@ -40,6 +43,9 @@ describe(`Class Annotations`, () => {
       class AImpl {
         someProp = 'someProp';
         static someStaticProp = 'someStaticProp';
+        static someStaticMethod() {
+          return 'someStaticMethod';
+        }
       }
 
       A = AImpl;
@@ -57,6 +63,9 @@ describe(`Class Annotations`, () => {
     });
     it(`should keep the static class attributes`, () => {
       expect(A.someStaticProp).toEqual('someStaticProp');
+    });
+    it(`should keep the static class methods`, () => {
+      expect(A.someStaticMethod()).toEqual('someStaticMethod');
     });
   });
 });

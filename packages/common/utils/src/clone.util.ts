@@ -11,11 +11,25 @@ export const _copyPropsAndMeta = <T extends {} = any>(
 ) => {
   const valueType = typeof source;
 
+  assert(valueType === 'object' || valueType === 'function');
   if (valueType === 'object' || valueType === 'function') {
     // copy static props
-    Object.keys(source).forEach((k) => {
-      (target as any)[k] = (source as any)[k];
-    });
+    Object.defineProperties(
+      target,
+      Object.entries(Object.getOwnPropertyDescriptors(source))
+        .filter(([name]) => {
+          const ownDescriptor = Object.getOwnPropertyDescriptor(target, name);
+
+          return !ownDescriptor || ownDescriptor.configurable;
+        })
+        .reduce(
+          (descriptors, [name, descriptor]) => ({
+            ...descriptors,
+            [name]: descriptor,
+          }),
+          {},
+        ),
+    );
 
     getMetadataKeys(source)
       .map((key) => [key, getMetadata(key, source)] as [string, any])
@@ -30,7 +44,5 @@ export const _copyPropsAndMeta = <T extends {} = any>(
           defineMetadata(key, value, target, pk);
         });
     });
-  } else {
-    assert(false);
   }
 };

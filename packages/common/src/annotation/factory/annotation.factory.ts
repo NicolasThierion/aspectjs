@@ -220,7 +220,7 @@ export class AnnotationFactory {
                     );
                     _copyPropsAndMeta(newDecoree, decoree); // copy static props
                   } else if (newDecoree.value) {
-                    _copyPropsAndMeta(newDecoree.value, (decoree as any).value); // copy static props
+                    _copyPropsAndMeta(newDecoree.value, decoree.value); // copy static props
                   }
                 }
 
@@ -240,7 +240,7 @@ export class AnnotationFactory {
             }
           },
           noopDecorator.apply(this, targetArgs as any) as any,
-        ) as any;
+        );
     };
   }
 

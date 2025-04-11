@@ -233,4 +233,24 @@ describe('class advice', () => {
       });
     });
   });
+
+  it('preserves static class attributes', () => {
+    @AClass()
+    class A {
+      static test = 'test';
+    }
+
+    expect(A.test).toEqual('test');
+  });
+
+  it('preserves static class methods', () => {
+    @AClass()
+    class A {
+      static test() {
+        return 'test';
+      }
+    }
+
+    expect(A.test()).toEqual('test');
+  });
 });
