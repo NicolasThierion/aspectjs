@@ -1,0 +1,17 @@
+{
+  "name": "aspectjs-demo-restricted-types",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "ts-node main.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "@aspectjs/common": "^0.5.4",
+    "@aspectjs/core": "^0.5.4"
+  }
+}

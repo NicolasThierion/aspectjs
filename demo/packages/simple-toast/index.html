@@ -1,0 +1,37 @@
+<html>
+
+<head>
+
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous">
+  </script>
+  <script  type="module" src="index.ts"></script>
+
+</head>
+
+<body>
+  <section class="container" id="app">
+    <div class="card mt-3">
+      <div class="card-body">
+        <form name="send-comment" onsubmit="return false">
+          <div class="form-floating mb-3">
+            <input name="email" type="text" class="form-control" id="emailInput" placeholder="email">
+            <label for="emailInput">Email address</label>
+          </div>
+          <div class="form-floating mb-3">
+            <textarea name="value" style="height: 200px; resize: none" class="form-control" placeholder="Leave a comment here" id="commentInput"></textarea>
+            <label for="commentInput">Comments</label>
+          </div>
+          <div class="text-end">
+            <input type="submit" onclick="controller.submitComment(controller.createComment(document['send-comment']))" class="btn btn-primary "></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</body>
+<html>

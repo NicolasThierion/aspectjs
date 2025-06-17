@@ -1,0 +1,3 @@
+# aspectjs-demo-nest
+
+This project shows how to use [`nestjs-httyped-client`](https://www.npmjs.com/package/nestjs-httyped-client) to create a typesafe, zero code HTTP client that works with the decorators from NestJS we all know already: `@Get`, `@Post`, `@Body`, ...

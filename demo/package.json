@@ -1,0 +1,24 @@
+{
+  "name": "aspectjs-demo",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "workspaces": [
+    "./packages/*"
+  ],
+  "type": "module",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aspectjs/common": "file:../aspectjs/packages/common/aspectjs-common-0.5.1.tgz",
+    "@aspectjs/core": "file:../aspectjs/packages/core/aspectjs-core-0.5.1.tgz",
+    "@aspectjs/memo": "file:../aspectjs/packages/memo/aspectjs-memo-0.5.1.tgz",
+    "@aspectjs/nestjs": "file:../aspectjs/packages/nestjs/aspectjs-nestjs-0.5.1.tgz",
+    "@aspectjs/persistence": "file:../aspectjs/packages/persistence/aspectjs-persistence-0.5.1.tgz",
+    "httyped-client": "file:../aspectjs/packages/httyped-client/httyped-client-0.5.1.tgz",
+    "nestjs-httyped-client": "file:../aspectjs/packages/nestjs-httyped-client/nestjs-httyped-client-0.5.1.tgz",
+    "whatwg-fetch": "^3.6.20"
+  }
+}
